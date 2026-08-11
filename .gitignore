@@ -7,3 +7,5 @@ release
 *.tsbuildinfo
 .dev-app-styles.json
 .pnpm-store
+.scratch
+.vscode
