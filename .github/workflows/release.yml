@@ -41,7 +41,8 @@ jobs:
           pnpm --filter @orthodox-prayer-toolkit/core build
           pnpm --filter @orthodox-prayer-toolkit/app build:electron
 
-      # Unsigned OSS builds work with empty CSC_* secrets.
+      # Unsigned OSS builds work without CSC_* secrets.
+      # Important: never export empty CSC_LINK — electron-builder treats "" as a file path.
       # Signing: set MAC_CSC_* / WIN_CSC_* (or CSC_*) — see docs/RELEASE.md.
 
       - name: Package & publish (macOS)
@@ -51,12 +52,21 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ secrets.MAC_CSC_LINK || secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD || secrets.CSC_KEY_PASSWORD }}
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ (secrets.MAC_CSC_LINK || secrets.CSC_LINK) && 'true' || 'false' }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: pnpm exec electron-builder --config electron-builder.yml --mac --publish always
+        run: |
+          if [ -z "${CSC_LINK}" ]; then
+            unset CSC_LINK CSC_KEY_PASSWORD
+            export CSC_IDENTITY_AUTO_DISCOVERY=false
+          else
+            export CSC_IDENTITY_AUTO_DISCOVERY=true
+          fi
+          if [ -z "${APPLE_API_KEY}" ]; then
+            unset APPLE_API_KEY APPLE_API_KEY_ID APPLE_API_ISSUER APPLE_TEAM_ID
+          fi
+          pnpm exec electron-builder --config electron-builder.yml --mac --publish always
 
       - name: Package & publish (Windows)
         if: runner.os == 'Windows'
@@ -65,7 +75,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ secrets.WIN_CSC_LINK || secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD || secrets.CSC_KEY_PASSWORD }}
-        run: pnpm exec electron-builder --config electron-builder.yml --win --publish always
+        shell: bash
+        run: |
+          if [ -z "${CSC_LINK}" ]; then
+            unset CSC_LINK CSC_KEY_PASSWORD
+            export CSC_IDENTITY_AUTO_DISCOVERY=false
+          fi
+          pnpm exec electron-builder --config electron-builder.yml --win --publish always
 
       - name: Package & publish (Linux)
         if: runner.os == 'Linux'

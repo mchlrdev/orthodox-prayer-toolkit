@@ -27,6 +27,10 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # App typecheck resolves @orthodox-prayer-toolkit/core via packages/core/dist.
+      - name: Build core
+        run: pnpm --filter @orthodox-prayer-toolkit/core build
+
       - name: Typecheck
         run: pnpm typecheck
 

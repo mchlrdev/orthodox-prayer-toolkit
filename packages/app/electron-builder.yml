@@ -1,5 +1,7 @@
 appId: org.orthodox.prayer-toolkit
 productName: Orthodox Prayer Toolkit
+# Must not come from package.json "name" (@scope/pkg) — AppImage/NSIS reject @ and /.
+executableName: OrthodoxPrayerToolkit
 copyright: Copyright © Orthodox Prayer Toolkit contributors
 
 directories:
@@ -16,6 +18,8 @@ asar: true
 # electron-updater reads these from GitHub Releases (latest*.yml).
 publish:
   provider: github
+  owner: mchlrdev
+  repo: orthodox-prayer-toolkit
   releaseType: release
 
 afterSign: scripts/notarize.cjs
@@ -63,6 +67,7 @@ nsis:
 linux:
   icon: resources/icon.png
   category: Office
+  executableName: orthodox-prayer-toolkit
   target:
     - target: AppImage
       arch:

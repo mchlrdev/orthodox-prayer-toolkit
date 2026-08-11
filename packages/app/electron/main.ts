@@ -532,7 +532,7 @@ function buildAppMenu(): void {
           label: "GitHub Releases",
           click: () => {
             void shell.openExternal(
-              "https://github.com/orthodox-prayer-toolkit/orthodox-prayer-toolkit/releases",
+              "https://github.com/mchlrdev/orthodox-prayer-toolkit/releases",
             );
           },
         },

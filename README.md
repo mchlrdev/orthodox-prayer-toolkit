@@ -9,7 +9,7 @@ Standalone toolkit for liturgical prayer texts: self-contained multilingual JSON
 ## Download
 
 Prebuilt desktop apps (macOS, Windows, Linux) are published on
-[GitHub Releases](https://github.com/orthodox-prayer-toolkit/orthodox-prayer-toolkit/releases):
+[GitHub Releases](https://github.com/mchlrdev/orthodox-prayer-toolkit/releases):
 
 | Platform | Artifact |
 |----------|----------|

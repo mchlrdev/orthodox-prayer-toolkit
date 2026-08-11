@@ -150,6 +150,8 @@ links stay correct. In Actions, `GITHUB_REPOSITORY` is also used.
 |---------|----------------|
 | No `latest-mac.yml` on release | macOS job failed or didn’t publish |
 | App never sees updates | Tag not semver `vX.Y.Z`, or version in app `package.json` ≥ release |
+| macOS: `packages/app not a file` / empty CSC password | Empty `CSC_LINK` was exported — release workflow must `unset` empty signing env vars |
+| Linux: `executableName` contains `@` | Missing `executableName` in electron-builder.yml (package name is scoped) |
 | macOS CI fails on signing | Missing `CSC_IDENTITY_AUTO_DISCOVERY=false` without cert — workflow sets this when secrets are empty |
 | Notarize skipped | Missing `APPLE_API_*` secrets (expected for unsigned) |
 | pnpm / electron-builder module not found | Repo uses `.npmrc` `shamefully-hoist=true` for packaging |
