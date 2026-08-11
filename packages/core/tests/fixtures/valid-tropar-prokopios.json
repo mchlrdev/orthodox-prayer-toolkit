@@ -1,0 +1,65 @@
+{
+  "id": "tropar-prokopios",
+  "type": "troparion",
+  "book": "menaion",
+  "tone": 4,
+  "variants": [
+    {
+      "lang": "de",
+      "variant": "standard",
+      "title": "Tropar des Großmärtyrers Prokopios",
+      "license": "unknown",
+      "source": "draft"
+    },
+    {
+      "lang": "cu",
+      "variant": "synodal-cyrl",
+      "title": "Тропарь великомученику Прокопию",
+      "license": "unknown",
+      "source": "draft"
+    }
+  ],
+  "structure": [
+    {
+      "id": "r1",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Ton 4. Tropar des Großmärtyrers."
+        }
+      ]
+    },
+    {
+      "id": "v1",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Dein Märtyrer Prokopius, Herr,",
+            "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+            "denn mit seiner Kraft hat er die Tyrannen besiegt",
+            "und die Dämonen kraftlos gemacht.",
+            "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+          ]
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "lines": [
+            "Мученик Твой, Господи, Прокопий,",
+            "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+          ]
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "custom": {
+      "saint_id": "prokopios-von-caesarea"
+    }
+  }
+}

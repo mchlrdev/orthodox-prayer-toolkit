@@ -1,0 +1,108 @@
+import {
+  KIND_PRESETS,
+  plainText,
+  type Prayer,
+  type Translation,
+} from "@orthodox-prayer-toolkit/core";
+import type { ActiveVariant } from "../variant";
+
+export function usesLines(kind: string): boolean {
+  return kind === "verse";
+}
+
+export function kindOptions(prayer: Prayer): string[] {
+  const used = prayer.structure.map((b) => b.kind);
+  return [...new Set([...KIND_PRESETS, ...used])];
+}
+
+export function getTranslation(
+  prayer: Prayer,
+  blockId: string,
+  active: ActiveVariant,
+): Translation | undefined {
+  const block = prayer.structure.find((b) => b.id === blockId);
+  return block?.translations.find(
+    (t) => t.lang === active.lang && t.variant === active.variant,
+  );
+}
+
+export function setTranslation(
+  prayer: Prayer,
+  blockId: string,
+  active: ActiveVariant,
+  payload: Omit<Translation, "lang" | "variant"> | null,
+): Prayer {
+  return {
+    ...prayer,
+    structure: prayer.structure.map((block) => {
+      if (block.id !== blockId) return block;
+      const others = block.translations.filter(
+        (t) => !(t.lang === active.lang && t.variant === active.variant),
+      );
+      if (payload === null) {
+        return { ...block, translations: others };
+      }
+      return {
+        ...block,
+        translations: [
+          ...others,
+          { lang: active.lang, variant: active.variant, ...payload },
+        ],
+      };
+    }),
+  };
+}
+
+export function isTranslationFilled(
+  prayer: Prayer,
+  blockId: string,
+  col: ActiveVariant,
+): boolean {
+  const block = prayer.structure.find((b) => b.id === blockId);
+  if (!block) return false;
+  const tr = getTranslation(prayer, blockId, col);
+  if (!tr) return false;
+  if (usesLines(block.kind)) {
+    return (tr.lines ?? []).some((l) => plainText(l).trim().length > 0);
+  }
+  return tr.text !== undefined && plainText(tr.text).trim().length > 0;
+}
+
+/** True when every declared prayer variant has no content for this block. */
+export function isBlockEmptyAcrossVariants(
+  prayer: Prayer,
+  blockId: string,
+  options?: { treatAsEmpty?: ActiveVariant },
+): boolean {
+  if (!prayer.structure.some((b) => b.id === blockId)) return true;
+  const ignore = options?.treatAsEmpty;
+  return prayer.variants.every((v) => {
+    if (
+      ignore &&
+      v.lang === ignore.lang &&
+      v.variant === ignore.variant
+    ) {
+      return true;
+    }
+    return !isTranslationFilled(prayer, blockId, {
+      lang: v.lang,
+      variant: v.variant,
+    });
+  });
+}
+
+export function fillPercent(
+  prayer: Prayer,
+  col: ActiveVariant,
+): { filled: number; total: number; percent: number } {
+  const total = prayer.structure.length;
+  if (total === 0) return { filled: 0, total: 0, percent: 100 };
+  const filled = prayer.structure.filter((b) =>
+    isTranslationFilled(prayer, b.id, col),
+  ).length;
+  return {
+    filled,
+    total,
+    percent: Math.round((filled / total) * 100),
+  };
+}

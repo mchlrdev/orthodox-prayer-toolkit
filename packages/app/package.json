@@ -1,0 +1,38 @@
+{
+  "name": "@orthodox-prayer-toolkit/app",
+  "productName": "Orthodox Prayer Toolkit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-first Electron editor for orthodox prayer libraries",
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "postinstall": "node ./scripts/fix-electron-name.mjs",
+    "dev": "vite",
+    "dev:electron": "node ./scripts/fix-electron-name.mjs && ELECTRON=1 vite",
+    "build": "tsc -p tsconfig.node.json --noEmit && vite build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit"
+  },
+  "dependencies": {
+    "@mantine/core": "^7.17.2",
+    "@mantine/hooks": "^7.17.2",
+    "@mantine/notifications": "^7.17.2",
+    "@orthodox-prayer-toolkit/core": "workspace:*",
+    "@tabler/icons-react": "^3.31.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^35.0.3",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "vitest": "^3.0.9"
+  }
+}

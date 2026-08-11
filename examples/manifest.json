@@ -1,0 +1,7 @@
+{
+  "description": "Dev-only sample library — not a production corpus",
+  "defaultVariant": {
+    "lang": "de",
+    "variant": "standard"
+  }
+}

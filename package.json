@@ -1,0 +1,17 @@
+{
+  "name": "orthodox-prayer-toolkit",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Standalone toolkit for liturgical prayer JSON (schema, validate, export) and a local-first Electron editor",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "dev": "pnpm --filter @orthodox-prayer-toolkit/app dev",
+    "dev:electron": "pnpm --filter @orthodox-prayer-toolkit/app dev:electron",
+    "test": "pnpm -r run test",
+    "typecheck": "pnpm -r run typecheck"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.15.1"
+}

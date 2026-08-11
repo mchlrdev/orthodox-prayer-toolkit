@@ -1,0 +1,26 @@
+{
+  "id": "tropar-prokopios",
+  "title": "Тропарь великомученику Прокопию",
+  "type": "troparion",
+  "lang": "cu",
+  "variant": "synodal-cyrl",
+  "book": "menaion",
+  "tone": 4,
+  "license": "unknown",
+  "source": "draft",
+  "structure": [
+    {
+      "id": "v1",
+      "kind": "verse",
+      "lines": [
+        "Мученик Твой, Господи, Прокопий,",
+        "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+      ]
+    }
+  ],
+  "meta": {
+    "custom": {
+      "saint_id": "prokopios-von-caesarea"
+    }
+  }
+}

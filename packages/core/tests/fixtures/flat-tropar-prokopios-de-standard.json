@@ -1,0 +1,34 @@
+{
+  "id": "tropar-prokopios",
+  "title": "Tropar des Großmärtyrers Prokopios",
+  "type": "troparion",
+  "lang": "de",
+  "variant": "standard",
+  "book": "menaion",
+  "tone": 4,
+  "license": "unknown",
+  "source": "draft",
+  "structure": [
+    {
+      "id": "r1",
+      "kind": "annotation",
+      "text": "Ton 4. Tropar des Großmärtyrers."
+    },
+    {
+      "id": "v1",
+      "kind": "verse",
+      "lines": [
+        "Dein Märtyrer Prokopius, Herr,",
+        "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+        "denn mit seiner Kraft hat er die Tyrannen besiegt",
+        "und die Dämonen kraftlos gemacht.",
+        "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+      ]
+    }
+  ],
+  "meta": {
+    "custom": {
+      "saint_id": "prokopios-von-caesarea"
+    }
+  }
+}

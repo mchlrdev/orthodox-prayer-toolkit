@@ -1,0 +1,27 @@
+{
+  "annotation": {
+    "fontSize": "1rem",
+    "color": "accent",
+    "fontWeight": "400",
+    "fontStyle": "normal"
+  },
+  "heading": {
+    "fontSize": "1.125rem",
+    "color": "accent",
+    "fontWeight": "400",
+    "fontStyle": "normal"
+  },
+  "verse": {
+    "fontSize": "1rem",
+    "color": "base",
+    "fontWeight": "400",
+    "fontStyle": "normal",
+    "initialCap": "true"
+  },
+  "subheading": {
+    "fontSize": "1rem",
+    "color": "accent",
+    "fontWeight": "400",
+    "fontStyle": "normal"
+  }
+}

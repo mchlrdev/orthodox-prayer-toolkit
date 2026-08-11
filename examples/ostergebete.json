@@ -1,0 +1,210 @@
+{
+  "id": "ostergebete",
+  "type": "prayer",
+  "book": "horologion",
+  "tone": null,
+  "variants": [
+    {
+      "lang": "de",
+      "variant": "standard",
+      "title": "Ostergebete",
+      "license": "unknown",
+      "source": "draft"
+    },
+    {
+      "lang": "en",
+      "variant": "standard",
+      "title": "Trisagion Prayers",
+      "license": "unknown",
+      "source": "draft"
+    }
+  ],
+  "structure": [
+    {
+      "id": "t1",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "en",
+          "variant": "standard",
+          "text": "Trisagion Prayers"
+        },
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Auf die Gebete unserer heiligen Väter, Herr Jesus Christus, unser Gott, erbarme Dich unser. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r1",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "en",
+          "variant": "standard",
+          "text": "Glory to the Father, and to the Son, and to the Holy Spirit, both now and ever, and unto the ages of ages. Amen."
+        },
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Dann dreimal das Ostertroparion im 5. Ton:"
+        }
+      ]
+    },
+    {
+      "id": "b3-msn8ttu3",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Christus ist erstanden von den Toten,",
+            "hat zertreten im Tode den Tod,",
+            "und denen in den Gräbern",
+            "das Leben geschenkt."
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "gfhfgh"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b4-msn8tzri",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Χριστός ανέστη εκ νεκρών,",
+            "θανάτω θάνατον πατήσας,",
+            "και τοις εν τοις μνήμασι,",
+            "ζωὴν χαρισάμενος!"
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "gfhfgh"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b5-msn8u4z2",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Христос воскресе из мертвых,",
+            "смертию смерть поправ,",
+            "и сущим во гробех живот даровав!"
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "fgh"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b6-msn8v66f",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Auferstehungshymnus im 6. Ton"
+        }
+      ]
+    },
+    {
+      "id": "b7-msn8vgcw",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Die Auferstehung Christi haben wir geschaut, / so lasset uns anbeten den heiligen Herrn Jesus, / Den allein sündelosen. / Vor Deinem Kreuze fallen wir nieder, o Christus, / und Deine heilige Auferstehung besingen und verherrlichen wir. / Denn Du bist unser Gott, / außer Dir kennen wir keinen anderen. / Deinen Namen rufen wir an. / Kommt, all ihr Gläubigen, / lasset uns anbeten die heilige Auferstehung Christi. / Denn siehe, durch das Kreuz ist Freude gekommen in die ganze Welt. / Allezeit lobsingen wir dem Herrn / und preisen Seine Auferstehung. / Denn Er hat die  Kreuzigung erlitten // und durch den  Tod den Tod zertreten."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b8-msn8ws11",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Hypakoi im 4. Ton:"
+        }
+      ]
+    },
+    {
+      "id": "b9-msn8x1js",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Die Frauen um Maria kamen dem Tagesanbruch zuvor, / und fanden den Stein vom Grabe weggewälzt, / da hörten sie von dem Engel: / „Ihn, der in ewigem Lichte ist,/ was sucht ihr Ihn wie einen Menschen bei den Toten? / Schauet die Grabtücher und laufet und verkündet der Welt, / daß erstanden ist der Herr, der getötet den Tod. // Denn Er ist der Sohn Gottes, der da errettet das Menschengeschlecht."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b10-msn8xgkt",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            [
+              {
+                "t": "note",
+                "v": "Dann vierzigmal:"
+              },
+              {
+                "t": "text",
+                "v": " Herr, erbarme Dich!"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b11-msn8xx8l",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Auf die Gebete unserer heiligen Väter, Herr Jesus Christus, unser Gott, erbarme Dich unser. Amen."
+          ]
+        }
+      ]
+    }
+  ],
+  "meta": {}
+}
