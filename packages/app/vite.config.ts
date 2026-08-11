@@ -27,7 +27,9 @@ export default defineConfig({
                 build: {
                   outDir: "dist-electron",
                   rollupOptions: {
-                    external: ["electron"],
+                    // Keep Electron and updater as Node requires so electron-builder
+                    // can ship them from node_modules inside the asar.
+                    external: ["electron", "electron-updater"],
                   },
                 },
               },

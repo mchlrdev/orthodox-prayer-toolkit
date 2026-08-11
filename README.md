@@ -3,7 +3,25 @@
 Standalone toolkit for liturgical prayer texts: self-contained multilingual JSON, Core library (validate / export / styles), and a local-first Electron editor.
 
 **Product decisions:** [docs/prayer-framework.md](docs/prayer-framework.md)  
+**Releases / signing / auto-update:** [docs/RELEASE.md](docs/RELEASE.md)  
 **MVP / follow-on specs & tickets:** [.scratch/](.scratch/) (incl. dark-mode work under `.scratch/opt-dark-mode-color-system/`)
+
+## Download
+
+Prebuilt desktop apps (macOS, Windows, Linux) are published on
+[GitHub Releases](https://github.com/orthodox-prayer-toolkit/orthodox-prayer-toolkit/releases):
+
+| Platform | Artifact |
+|----------|----------|
+| macOS | `.dmg` (install) / `.zip` (used by auto-update) |
+| Windows | NSIS `.exe` installer |
+| Linux | `.AppImage` |
+
+Installed builds check for updates automatically and via **Check for Updates…**.
+Until code signing is configured, first launch may show OS trust warnings — see
+[docs/RELEASE.md](docs/RELEASE.md).
+
+License: [MIT](LICENSE).
 
 ## Packages
 
@@ -29,6 +47,9 @@ pnpm dev
 
 # Optional Electron window
 pnpm dev:electron
+
+# Local macOS package smoke test
+pnpm dist:dir
 ```
 
 In browser/Electron dev, the `examples/` library loads automatically.

@@ -4,8 +4,10 @@ import {
   dialog,
   globalShortcut,
   ipcMain,
+  Menu,
   shell,
 } from "electron";
+import { autoUpdater } from "electron-updater";
 import {
   existsSync,
   mkdirSync,
@@ -366,6 +368,179 @@ function registerIpc(): void {
     allowCloseWindows.add(win);
     win.close();
   });
+
+  ipcMain.handle("app:check-for-updates", async () => {
+    if (!app.isPackaged) {
+      return { ok: false as const, reason: "dev" as const };
+    }
+    try {
+      const result = await autoUpdater.checkForUpdates();
+      return {
+        ok: true as const,
+        version: result?.updateInfo?.version ?? null,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("[autoUpdater] Manual check failed:", message);
+      return { ok: false as const, reason: "error" as const, message };
+    }
+  });
+}
+
+function setupAutoUpdater(): void {
+  if (!app.isPackaged) return;
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on("checking-for-update", () => {
+    console.log("[autoUpdater] Checking for update…");
+  });
+  autoUpdater.on("update-available", (info) => {
+    console.log(`[autoUpdater] Update available: ${info.version}`);
+  });
+  autoUpdater.on("update-not-available", () => {
+    console.log("[autoUpdater] Already up to date.");
+  });
+  autoUpdater.on("error", (error) => {
+    console.error("[autoUpdater]", error);
+  });
+  autoUpdater.on("update-downloaded", (info) => {
+    console.log(`[autoUpdater] Downloaded ${info.version}; will install on quit.`);
+    const win =
+      BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+    const boxOptions = {
+      type: "info" as const,
+      title: "Update ready",
+      message: `Version ${info.version} has been downloaded.`,
+      detail:
+        "Restart now to apply the update, or continue working and restart later.",
+      buttons: ["Restart now", "Later"],
+      defaultId: 0,
+      cancelId: 1,
+    };
+    const prompt = win
+      ? dialog.showMessageBox(win, boxOptions)
+      : dialog.showMessageBox(boxOptions);
+    void prompt.then((result) => {
+      if (result.response === 0) {
+        autoUpdater.quitAndInstall();
+      }
+    });
+  });
+
+  // Delay so the window can appear before network I/O.
+  setTimeout(() => {
+    void autoUpdater.checkForUpdatesAndNotify().catch((error: unknown) => {
+      console.error("[autoUpdater] Startup check failed:", error);
+    });
+  }, 5_000);
+}
+
+function buildAppMenu(): void {
+  const isMac = process.platform === "darwin";
+  const template: Electron.MenuItemConstructorOptions[] = [
+    ...(isMac
+      ? [
+          {
+            label: APP_NAME,
+            submenu: [
+              { role: "about" as const },
+              { type: "separator" as const },
+              {
+                label: "Check for Updates…",
+                click: () => {
+                  if (!app.isPackaged) {
+                    void dialog.showMessageBox({
+                      type: "info",
+                      title: "Updates",
+                      message: "Update checks run only in packaged builds.",
+                    });
+                    return;
+                  }
+                  void autoUpdater.checkForUpdatesAndNotify().catch((error: unknown) => {
+                    console.error("[autoUpdater] Menu check failed:", error);
+                  });
+                },
+              },
+              { type: "separator" as const },
+              { role: "services" as const },
+              { type: "separator" as const },
+              { role: "hide" as const },
+              { role: "hideOthers" as const },
+              { role: "unhide" as const },
+              { type: "separator" as const },
+              { role: "quit" as const },
+            ],
+          },
+        ]
+      : []),
+    {
+      label: "File",
+      submenu: [isMac ? { role: "close" } : { role: "quit" }],
+    },
+    {
+      label: "Edit",
+      submenu: [
+        { role: "undo" },
+        { role: "redo" },
+        { type: "separator" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        { role: "selectAll" },
+      ],
+    },
+    {
+      label: "View",
+      submenu: [
+        { role: "reload" },
+        { role: "toggleDevTools" },
+        { type: "separator" },
+        { role: "resetZoom" },
+        { role: "zoomIn" },
+        { role: "zoomOut" },
+        { type: "separator" },
+        { role: "togglefullscreen" },
+      ],
+    },
+    {
+      label: "Help",
+      submenu: [
+        ...(!isMac
+          ? [
+              {
+                label: "Check for Updates…",
+                click: () => {
+                  if (!app.isPackaged) {
+                    void dialog.showMessageBox({
+                      type: "info",
+                      title: "Updates",
+                      message: "Update checks run only in packaged builds.",
+                    });
+                    return;
+                  }
+                  void autoUpdater.checkForUpdatesAndNotify().catch((error: unknown) => {
+                    console.error("[autoUpdater] Menu check failed:", error);
+                  });
+                },
+              },
+              { type: "separator" as const },
+            ]
+          : []),
+        {
+          label: "GitHub Releases",
+          click: () => {
+            void shell.openExternal(
+              "https://github.com/orthodox-prayer-toolkit/orthodox-prayer-toolkit/releases",
+            );
+          },
+        },
+      ],
+    },
+  ];
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
 app.whenReady().then(() => {
@@ -375,7 +550,9 @@ app.whenReady().then(() => {
   }
 
   registerIpc();
+  buildAppMenu();
   createWindow();
+  setupAutoUpdater();
 
   // Don't auto-open DevTools on launch — on macOS that can race with window
   // hit-testing and leave the UI unable to receive clicks. Toggle manually.

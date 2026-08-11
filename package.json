@@ -7,8 +7,14 @@
     "build": "pnpm -r run build",
     "dev": "pnpm --filter @orthodox-prayer-toolkit/app dev",
     "dev:electron": "pnpm --filter @orthodox-prayer-toolkit/app dev:electron",
+    "dist": "pnpm --filter @orthodox-prayer-toolkit/app dist",
+    "dist:dir": "pnpm --filter @orthodox-prayer-toolkit/app dist:dir",
     "test": "pnpm -r run test",
     "typecheck": "pnpm -r run typecheck"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/orthodox-prayer-toolkit/orthodox-prayer-toolkit.git"
   },
   "engines": {
     "node": ">=20"
