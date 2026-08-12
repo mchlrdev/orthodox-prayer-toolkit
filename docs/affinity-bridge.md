@@ -1,39 +1,46 @@
-# Affinity-Bridge v0 (fest)
+# Affinity bridge
 
-Entscheidung D09.
+Decision notes for mapping prayer structure to **named paragraph styles** for Affinity Publisher (and similar DTP tools).
+
+Layout exporters in Core (`exportLayoutRtf`, `exportLayoutDocx`) implement the toolkit side of this pipeline. Full print/product ownership remains with the consumer document.
 
 ## Pipeline
 
 ```
-ow_prayer_json (Schema)
-  → bridge-tool (später)
-  → .docx oder .rtf
-       Absatzstile: OW_Title, OW_Rubric, OW_Verse, OW_Prose, OW_Response, OW_Note
-  → Affinity Publisher: Import / Platzieren
-  → Stile im Publisher-Dokument einmalig gestalten
+Prayer JSON (schema)
+  → Core layout export (RTF or DOCX)
+       Named paragraph styles (prefix stem, default `opt`)
+  → Affinity Publisher: place / import
+  → Style the named styles once in the Publisher document
 ```
 
-## Stil-Mapping
+Style prefix stem can be set per library via `manifest.stylePrefixStem` (see [library.md](library.md)).
 
-| JSON `kind` | Absatzstil |
-|-------------|------------|
-| (Dokumenttitel aus title_de) | `OW_Title` |
-| `rubric` | `OW_Rubric` |
-| `verse` | `OW_Verse` (eine Zeile → ein Absatz oder Soft-Break — Bridge-Option) |
-| `prose` | `OW_Prose` |
-| `response` | `OW_Response` |
-| `title` | `OW_Title` |
-| `note` | weglassen wenn `print: false`, sonst `OW_Note` |
-| Inline-`note`-Runs in `text`/`lines` | Zeichenstil `OW_InlineNote` innerhalb des Absatzes (nicht eigener Absatz) |
+## Kind → paragraph style (conceptual)
 
-Inline-Anmerkungen (z. B. `(NN)`, `(zwölfmal)`) liegen als Runs `{ "t": "note", "v": "…" }` in der Zeile; Bridge mappt sie auf Character Styles.
+Exact prefixed names depend on the stem and exporter; the semantic mapping is:
 
-## Nicht v0
+| JSON `kind` (typical) | Role in layout |
+|-----------------------|----------------|
+| Document / variant title | Title paragraph style |
+| `heading` / `subheading` | Heading styles |
+| `annotation` | Rubric / annotation style |
+| `verse` | Verse style (one content line → paragraph or soft-break — exporter option) |
+| Other custom kinds | Mapped via kind → style name rules in the exporter |
 
-- IDML-Direktwrite
-- automatisches Buch-TOC
-- Website-CSS in der Bridge
+Inline `note` runs inside `text` / `lines` map to a **character** style (inline note), not their own paragraph.
 
-## Wann bauen
+## Not in v0 bridge scope
 
-Nachdem ≥5 echte Gebete mit gültiger Lizenz im Schema liegen.
+- IDML direct write
+- Automatic book TOC generation
+- Pushing website CSS into Affinity
+
+## When to lean on this
+
+After you have real licensed prayers in schema and a Publisher template whose paragraph styles match the export names. See [Core API — Layout](core-api.md#layout-rtf--docx).
+
+## Related
+
+- [Prayer format](prayer-format.md)
+- [Product decisions](prayer-framework.md)

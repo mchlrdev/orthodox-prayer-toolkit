@@ -1,63 +1,112 @@
-# orthodox-prayer-toolkit
+# Orthodox Prayer Toolkit
 
-Standalone toolkit for liturgical prayer texts: self-contained multilingual JSON, Core library (validate / export / styles), and a local-first Electron editor.
+**Local-first editor and library for multilingual liturgical prayer texts.**
 
-**Product decisions:** [docs/prayer-framework.md](docs/prayer-framework.md)  
-**Releases / signing / auto-update:** [docs/RELEASE.md](docs/RELEASE.md)  
-**MVP / follow-on specs & tickets:** [.scratch/](.scratch/) (incl. dark-mode work under `.scratch/opt-dark-mode-color-system/`)
+One prayer = one JSON file. Shared structure, per-language (and per-edition) translations, schema validation, and exports — without a database, CMS, or cloud account.
+
+[Download](#download) · [Quick start](#quick-start) · [Documentation](docs/README.md) · [Releases](https://github.com/mchlrdev/orthodox-prayer-toolkit/releases)
+
+---
+
+## Why this exists
+
+Liturgical prayers are usually trapped in Word docs, PDFs, or single-locale CMS fields. Parallel translations get out of sync; layout and content get mixed; sharing a text means copying files by hand.
+
+This toolkit treats prayers as **structured data**:
+
+- **Self-contained** — each prayer file loads without a database or folder hierarchy
+- **Multilingual by design** — language + variant (edition/script) on the same structure
+- **Content ≠ design** — semantics in JSON; typography in app/library styles
+- **Local-first** — open a folder on disk; files are the source of truth
+- **Reusable** — Core library for validate / export; desktop app for editing
+
+Downstream sites, print tools, or Affinity workflows can consume flat JSON, HTML, or layout exports without owning the authoring format.
+
+## Features
+
+| Area | What you get |
+|------|----------------|
+| **Editor** | Open a library folder, create/edit/delete prayers, switch variants, outline navigation, live preview |
+| **Validation** | JSON Schema + Core `validate()` with errors in the UI |
+| **Styles** | Kind-based typography (app defaults + per-library overrides) |
+| **Export** | Flat single-variant JSON, HTML, Layout RTF / DOCX (named paragraph styles) |
+| **Core package** | Pure TypeScript API usable without Electron |
 
 ## Download
 
-Prebuilt desktop apps (macOS, Windows, Linux) are published on
+Prebuilt apps for **macOS**, **Windows**, and **Linux** are on
 [GitHub Releases](https://github.com/mchlrdev/orthodox-prayer-toolkit/releases):
 
 | Platform | Artifact |
 |----------|----------|
-| macOS | `.dmg` (install) / `.zip` (used by auto-update) |
-| Windows | NSIS `.exe` installer |
+| macOS | `.dmg` (install) · `.zip` (auto-update) |
+| Windows | NSIS `.exe` |
 | Linux | `.AppImage` |
 
-Installed builds check for updates automatically and via **Check for Updates…**.
-Until code signing is configured, first launch may show OS trust warnings — see
-[docs/RELEASE.md](docs/RELEASE.md).
+Installed builds check for updates automatically (and via **Check for Updates…**).
 
-License: [MIT](LICENSE).
+**macOS note (unsigned builds):** If macOS says the app is **damaged**, run once:
+
+```bash
+xattr -cr "/Applications/OrthodoxPrayerToolkit.app"
+```
+
+(Then open the app again.) Details and signing plans: [docs/RELEASE.md](docs/RELEASE.md).
+
+## Quick start
+
+**Requirements:** Node.js 20+, [pnpm](https://pnpm.io) 11.
+
+```bash
+git clone https://github.com/mchlrdev/orthodox-prayer-toolkit.git
+cd orthodox-prayer-toolkit
+pnpm install
+
+pnpm test
+pnpm --filter @orthodox-prayer-toolkit/core build
+
+# Browser-first UI (default) — http://localhost:5173
+pnpm dev
+
+# Optional native window
+pnpm dev:electron
+```
+
+In development, the `examples/` sample library loads automatically (not a production corpus).
+
+| Script | Purpose |
+|--------|---------|
+| `pnpm test` | Run all package tests |
+| `pnpm typecheck` | TypeScript across the monorepo |
+| `pnpm build` | Build all packages |
+| `pnpm dist:dir` | Local unpacked macOS app (smoke test) |
+| `pnpm release` | Bump version → tag → push (CI builds installers) |
 
 ## Packages
 
 | Path | Role |
 |------|------|
-| `packages/core` | Schema, `validate`, flat/HTML/Layout export, `indexKinds`, `resolveStyles` |
-| `packages/app` | Electron + React + Mantine editor |
-| `examples/` | Dev-only sample library (not a production corpus) |
+| [`packages/core`](packages/core) | Schema, validate, flat/HTML/layout export, kind index, styles |
+| [`packages/app`](packages/app) | Electron + React + Mantine editor |
+| [`examples/`](examples) | Dev-only sample library |
 
-## Quick start
+## Library layout
 
-```bash
-cd orthodox-prayer-toolkit
-pnpm install
-# If pnpm blocks native builds (Electron/esbuild):
-pnpm approve-builds --all
-
-pnpm test
-pnpm --filter @orthodox-prayer-toolkit/core build
-
-# Browser-first dev (default) — open http://localhost:5173
-pnpm dev
-
-# Optional Electron window
-pnpm dev:electron
-
-# Local macOS package smoke test
-pnpm dist:dir
-
-# Cut a release (bump version → commit → tag → push; Actions builds installers)
-pnpm release
+```
+my-prayer-library/
+  manifest.json                      # optional collection meta
+  .orthodox-prayer-toolkit/
+    styles.json                      # kind-style overrides
+  tropar-prokopios.json              # one prayer per file → {id}.json
 ```
 
-In browser/Electron dev, the `examples/` library loads automatically.
+- **Identity** = `id` (filename must be `{id}.json`)
+- **Display titles** live on each language variant — there is no separate canonical title
+- **Taxonomy** (`type`, `book`, `occasion`, …) lives in JSON fields, not folder paths
 
-## Core API (test seam)
+Details: [Prayer format](docs/prayer-format.md) · [Library](docs/library.md)
+
+## Core API (sketch)
 
 ```ts
 import {
@@ -68,33 +117,32 @@ import {
   exportLayoutDocx,
   indexKinds,
   resolveStyles,
-  renameKind,
-  resolveLibraryStylePrefixStem,
-  DEFAULT_KIND_STYLES,
-  FALLBACK_KIND_STYLE,
-  DEFAULT_STYLE_PREFIX_STEM,
 } from "@orthodox-prayer-toolkit/core";
+
+const result = validate(json);
+if (result.ok) {
+  const flat = exportVariant(result.prayer, { lang: "de", variant: "standard" });
+}
 ```
 
-## Library layout
+Full surface: [Core API](docs/core-api.md)
 
-```
-my-prayer-library/
-  manifest.json                 # optional collection meta
-  .orthodox-prayer-toolkit/
-    styles.json                 # library kind-style overrides
-  {id}.json                     # one prayer per file
-```
+## Documentation
 
-Identity = `id` (filename must be `{id}.json`). Display titles live on each language variant — there is no separate canonical title. Taxonomy lives in JSON fields, not folder paths.
+| Doc | Audience |
+|-----|----------|
+| [Documentation hub](docs/README.md) | Everyone |
+| [Overview & architecture](docs/overview.md) | Humans & agents |
+| [Prayer format](docs/prayer-format.md) | Authors & integrators |
+| [Development](docs/development.md) | Contributors |
+| [Glossary](docs/glossary.md) | Shared vocabulary |
+| [Releasing](docs/RELEASE.md) | Maintainers |
+| [AGENTS.md](AGENTS.md) | Coding agents |
 
-### Id / filename rule
+## Status
 
-- On save, the file is written as `{id}.json`.
-- Renaming `id` renames the file; if the target already exists, save is blocked (no silent overwrite).
-- Duplicate ids across the library are reported when opening/refreshing.
+Early open-source release (`0.1.x`). The MVP editor and Core export surface are usable; signing/notarization and a production prayer corpus are intentionally out of this repository.
 
-## MVP coverage (tickets 01–21)
+## License
 
-Core: schema, validate, flat export, kind index, style resolve, rename kind, collision helpers.  
-App: open library, list/create/open/save/delete, validation UI, identity + variants + structure + translations, variant switch, preview, flat export, kind styles (app + library override), optional manifest.
+[MIT](LICENSE) © Orthodox Prayer Toolkit contributors

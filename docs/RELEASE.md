@@ -75,9 +75,30 @@ Expect OS warnings:
 
 | Platform | What users see | Workaround |
 |----------|----------------|------------|
+| macOS | **“OrthodoxPrayerToolkit.app is damaged and can’t be opened”** (or similar) | Quarantine on unsigned GitHub downloads — see below |
 | macOS | “App can’t be opened because… unidentified developer” | Right-click app → **Open** (once), or System Settings → Privacy & Security |
 | Windows | SmartScreen “Windows protected your PC” | **More info** → **Run anyway** |
 | Linux | Usually none for AppImage | `chmod +x` the AppImage |
+
+### macOS “damaged” / won’t open (unsigned)
+
+Gatekeeper often shows **damaged** for Electron apps downloaded from the
+internet when they are not Developer-ID–signed and notarized. The file is fine;
+macOS is blocking it via the quarantine flag.
+
+After installing from the DMG (or unzipping), clear quarantine once:
+
+```bash
+# App in Applications:
+xattr -cr "/Applications/OrthodoxPrayerToolkit.app"
+
+# Or wherever you put it, e.g. from the DMG mount:
+xattr -cr "/Applications/Orthodox Prayer Toolkit.app"
+```
+
+Then open the app again (double-click or right-click → Open).
+
+Permanent fix: Apple Developer ID signing + notarization (section below).
 
 Unsigned builds still auto-update as long as Release assets + `latest*.yml`
 files are present.
