@@ -1,6 +1,6 @@
 {
   "name": "@orthodox-prayer-toolkit/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Schema, validation, flat export, kind indexing, and style resolution for prayer JSON",
   "type": "module",
   "main": "./dist/index.js",
