@@ -22,11 +22,13 @@ publish:
   repo: orthodox-prayer-toolkit
   releaseType: release
 
-afterSign: scripts/notarize.cjs
+afterSign: scripts/afterSign.cjs
 
 mac:
   category: public.app-category.productivity
   icon: resources/icon.icns
+  # Signing: with CSC_LINK → Developer ID via electron-builder; without → afterSign.cjs
+  # applies free ad-hoc codesign (fixes Apple Silicon "damaged" for GitHub DMGs).
   target:
     - target: dmg
       arch:

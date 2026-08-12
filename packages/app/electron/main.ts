@@ -439,6 +439,12 @@ function setupAutoUpdater(): void {
 }
 
 function buildAppMenu(): void {
+  // Windows/Linux: no in-window menu bar (macOS uses the system menu bar).
+  if (process.platform !== "darwin") {
+    Menu.setApplicationMenu(null);
+    return;
+  }
+
   const isMac = process.platform === "darwin";
   const template: Electron.MenuItemConstructorOptions[] = [
     ...(isMac

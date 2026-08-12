@@ -80,28 +80,33 @@ Expect OS warnings:
 | Windows | SmartScreen “Windows protected your PC” | **More info** → **Run anyway** |
 | Linux | Usually none for AppImage | `chmod +x` the AppImage |
 
-### macOS “damaged” / won’t open (unsigned)
+### macOS Gatekeeper without paying Apple
 
-Gatekeeper often shows **damaged** for Electron apps downloaded from the
-internet when they are not Developer-ID–signed and notarized. The file is fine;
-macOS is blocking it via the quarantine flag.
+On **Apple Silicon**, a completely **unsigned** Electron app often shows
+**“is damaged”** with no Privacy & Security bypass. That is stricter than many
+other DMGs you’ve used — those are usually Developer-ID–signed/notarized (or at
+least ad-hoc signed).
 
-After installing from the DMG (or unzipping), clear quarantine once:
+This project’s Release workflow applies a **free ad-hoc signature** when no
+`CSC_LINK` is set (`scripts/afterSign.cjs`). After the next release you should
+see the normal warning and can use:
+
+- Right-click → **Open**, or
+- **System Settings → Privacy & Security → Open Anyway**
+
+No Terminal / `xattr` required for that path. (Notarized “just works” still needs
+the paid Apple Developer Program — optional, not required for OSS.)
+
+If you still have an **old** unsigned install:
 
 ```bash
-# App in Applications:
 xattr -cr "/Applications/OrthodoxPrayerToolkit.app"
-
-# Or wherever you put it, e.g. from the DMG mount:
-xattr -cr "/Applications/Orthodox Prayer Toolkit.app"
 ```
 
-Then open the app again (double-click or right-click → Open).
+### macOS “damaged” on old builds only
 
-Permanent fix: Apple Developer ID signing + notarization (section below).
-
-Unsigned builds still auto-update as long as Release assets + `latest*.yml`
-files are present.
+Gatekeeper quarantine + missing signature on Apple Silicon. Fixed going forward
+via ad-hoc signing in CI (above).
 
 ---
 

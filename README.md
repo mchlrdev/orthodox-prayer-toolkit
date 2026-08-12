@@ -45,13 +45,9 @@ Prebuilt apps for **macOS**, **Windows**, and **Linux** are on
 
 Installed builds check for updates automatically (and via **Check for Updates…**).
 
-**macOS note (unsigned builds):** If macOS says the app is **damaged**, run once:
-
-```bash
-xattr -cr "/Applications/OrthodoxPrayerToolkit.app"
-```
-
-(Then open the app again.) Details and signing plans: [docs/RELEASE.md](docs/RELEASE.md).
+**macOS:** Unsigned GitHub builds use a free **ad-hoc** signature so you get
+Privacy & Security → **Open Anyway** (not “damaged”). Details: [docs/RELEASE.md](docs/RELEASE.md).
+Paid Apple notarization is optional and not required.
 
 ## Quick start
 

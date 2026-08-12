@@ -117,6 +117,8 @@ body,
   min-width: 0;
   min-height: 0;
   position: relative;
+  /* Edge toggles peek past the viewport; clip so they don't create a scrollbar. */
+  overflow-x: clip;
 }
 
 .sidebar {

@@ -70,11 +70,12 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         shell: bash
         run: |
-          if [ -z "${CSC_LINK}" ]; then
-            unset CSC_LINK CSC_KEY_PASSWORD
-            export CSC_IDENTITY_AUTO_DISCOVERY=false
-          else
+          if [ -n "${CSC_LINK}" ]; then
             export CSC_IDENTITY_AUTO_DISCOVERY=true
+          else
+            unset CSC_LINK CSC_KEY_PASSWORD
+            # Skip keychain discovery; afterSign.cjs applies free ad-hoc signature.
+            export CSC_IDENTITY_AUTO_DISCOVERY=false
           fi
           if [ -z "${APPLE_API_KEY}" ]; then
             unset APPLE_API_KEY APPLE_API_KEY_ID APPLE_API_ISSUER APPLE_TEAM_ID
