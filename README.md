@@ -2,7 +2,7 @@
 
 **Local-first editor and library for multilingual liturgical prayer texts.**
 
-One prayer = one JSON file. Shared structure, per-language (and per-edition) translations, schema validation, and exports — without a database, CMS, or cloud account.
+One prayer = one JSON file. Shared structure, per-language (and per-edition) translations, schema validation, and exports.
 
 [Download](#download) · [Quick start](#quick-start) · [Documentation](docs/README.md) · [Releases](https://github.com/mchlrdev/orthodox-prayer-toolkit/releases)
 
@@ -16,8 +16,8 @@ This toolkit treats prayers as **structured data**:
 
 - **Self-contained** — each prayer file loads without a database or folder hierarchy
 - **Multilingual by design** — language + variant (edition/script) on the same structure
-- **Content ≠ design** — semantics in JSON; typography in app/library styles
-- **Local-first** — open a folder on disk; files are the source of truth
+- **Content ≠ design** — the file only contains the straucture, style is handled wherever you need it
+- **Local-first** — open a folder on disk; files are the source of truth, no lock-in
 - **Reusable** — Core library for validate / export; desktop app for editing
 
 Downstream sites, print tools, or Affinity workflows can consume flat JSON, HTML, or layout exports without owning the authoring format.

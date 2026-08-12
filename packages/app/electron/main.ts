@@ -7,7 +7,7 @@ import {
   Menu,
   shell,
 } from "electron";
-import { autoUpdater } from "electron-updater";
+import electronUpdater from "electron-updater";
 import {
   existsSync,
   mkdirSync,
@@ -25,6 +25,7 @@ import {
   walkJsonFiles,
 } from "../nodeFs";
 
+const { autoUpdater } = electronUpdater;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 process.env.APP_ROOT = join(__dirname, "..");
