@@ -6,26 +6,41 @@ themselves via `electron-updater` against those releases.
 
 ## From your Mac (happy path)
 
-1. Ensure `main` is green (CI) and you are ready to ship.
-2. Bump the version in [`packages/app/package.json`](../packages/app/package.json)
-   (source of truth for electron-builder). Keep the root `package.json` version
-   in sync if you use it for reference.
-3. Commit, then tag and push:
+1. Commit all work you want in the release. You must be on `main` with a
+   **clean** working tree (`pnpm release` refuses otherwise).
+2. Ideally wait until CI on `origin/main` is green for the previous push.
+3. Ship:
 
 ```bash
-git tag v0.2.0
-git push origin main --tags
+pnpm release
 ```
 
-4. The [Release workflow](../.github/workflows/release.yml) runs on
-   `macos-latest`, `windows-latest`, and `ubuntu-latest`, uploads installers to
-   the GitHub Release for that tag, and writes `latest*.yml` metadata that
-   auto-update needs.
+That runs [bumpp](https://github.com/antfu-collective/bumpp): you pick **patch** /
+**minor** / **major** (or type a version). It then:
+
+- bumps `version` in the root and all workspace `package.json` files
+- creates commit `chore: release vX.Y.Z` and tag `vX.Y.Z`
+- pushes `main` **and** the tag (`--push`)
+
+Non-interactive:
+
+```bash
+pnpm release -- patch
+pnpm release -- minor
+pnpm release -- major
+```
+
+4. The [Release workflow](../.github/workflows/release.yml) starts from the tag
+   push, builds macOS / Windows / Linux, and uploads installers plus `latest*.yml`
+   (needed for auto-update).
 
 5. Confirm the release page lists:
    - macOS: `.dmg`, `.zip`, `latest-mac.yml`
    - Windows: `.exe` (NSIS), `latest.yml`
    - Linux: `.AppImage`, `latest-linux.yml`
+
+`packages/app/package.json` `version` is what electron-builder embeds in the
+installers; keep releasing via `pnpm release` so root / app / core stay in sync.
 
 ### Local smoke test (macOS only)
 
@@ -153,7 +168,7 @@ links stay correct. In Actions, `GITHUB_REPOSITORY` is also used.
 | macOS: `packages/app not a file` / empty CSC password | Empty `CSC_LINK` was exported — release workflow must `unset` empty signing env vars |
 | Linux: `executableName` contains `@` | Missing `executableName` in electron-builder.yml (package name is scoped) |
 | macOS/Windows: `422 already_exists` on release | Parallel jobs raced creating the same GitHub Release — builds use `--publish never`, one job uploads assets |
-| Windows job hangs for hours | Job `timeout-minutes` is 60; check “Build Core + App” step logs |
+| Windows job hangs for hours | Old `ELECTRON=1 vite build` nested electron builds; packaging uses `scripts/build-electron.mjs` instead. Job `timeout-minutes` is 60. |
 | macOS CI fails on signing | Missing `CSC_IDENTITY_AUTO_DISCOVERY=false` without cert — workflow sets this when secrets are empty |
 | Notarize skipped | Missing `APPLE_API_*` secrets (expected for unsigned) |
 | pnpm / electron-builder module not found | Repo uses `.npmrc` `shamefully-hoist=true` for packaging |

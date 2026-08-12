@@ -50,6 +50,9 @@ pnpm dev:electron
 
 # Local macOS package smoke test
 pnpm dist:dir
+
+# Cut a release (bump version → commit → tag → push; Actions builds installers)
+pnpm release
 ```
 
 In browser/Electron dev, the `examples/` library loads automatically.

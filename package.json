@@ -9,6 +9,7 @@
     "dev:electron": "pnpm --filter @orthodox-prayer-toolkit/app dev:electron",
     "dist": "pnpm --filter @orthodox-prayer-toolkit/app dist",
     "dist:dir": "pnpm --filter @orthodox-prayer-toolkit/app dist:dir",
+    "release": "node ./scripts/release.mjs",
     "test": "pnpm -r run test",
     "typecheck": "pnpm -r run typecheck"
   },
@@ -19,5 +20,8 @@
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "pnpm@11.15.1"
+  "packageManager": "pnpm@11.15.1",
+  "devDependencies": {
+    "bumpp": "^12.2.0"
+  }
 }

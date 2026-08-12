@@ -50,9 +50,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build Core + App renderer/main
+        shell: bash
         run: |
           pnpm --filter @orthodox-prayer-toolkit/core build
           pnpm --filter @orthodox-prayer-toolkit/app build:electron
+        env:
+          # Avoid interactive Electron download prompts in CI.
+          ELECTRON_GET_USE_PROXY: "0"
 
       - name: Package (no publish)
         working-directory: packages/app

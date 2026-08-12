@@ -1,11 +1,44 @@
+# Dependencies
 node_modules
+.pnpm-store
+
+# Build outputs
 dist
 dist-electron
 release
+packages/app/release/
+
+# Packaged installers (if ever created outside release/)
+*.AppImage
+*.dmg
+*.exe
+
+# Env / secrets
+.env
+.env.*
+!.env.example
 *.local
-.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Tests / coverage
+coverage
+*.lcov
+
+# TypeScript / tooling caches
 *.tsbuildinfo
-.dev-app-styles.json
-.pnpm-store
-.scratch
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea
+*.swp
 .vscode
+.cursor/
+
+# Local scratch / app prefs
+.scratch
+.dev-app-styles.json

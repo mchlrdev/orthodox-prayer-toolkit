@@ -41,6 +41,7 @@ jobs:
         run: pnpm build
 
       - name: Build Electron bundles
+        shell: bash
         run: pnpm --filter @orthodox-prayer-toolkit/app build:electron
         env:
           # Avoid interactive Electron download prompts in CI.
