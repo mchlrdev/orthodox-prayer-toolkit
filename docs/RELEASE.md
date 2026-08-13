@@ -56,10 +56,14 @@ you enable signing (below).
 
 ## Auto-update behaviour
 
-- Packaged apps check GitHub Releases a few seconds after launch.
-- Menu: **Check for Updates…** (app menu on macOS, Help on Windows/Linux).
-- When an update is downloaded, the user can restart immediately or later
-  (`quitAndInstall` on quit).
+- Packaged apps check GitHub Releases a few seconds after launch and download
+  updates in the background.
+- When an update is ready, a dialog offers **Install and Restart** or **Later**.
+  Later dismisses the prompt for this session only: the update is **not**
+  installed on quit, and the next launch asks again.
+- Menu: **Check for Updates…** (app menu on macOS) always shows a result
+  (install prompt if a download is ready, up to date, or an error). An explicit
+  menu check re-shows the install dialog even after Later in the same session.
 - Dev / `pnpm dev:electron` never talks to the update feed.
 
 Update checks require a **public** GitHub repository (or a token for private

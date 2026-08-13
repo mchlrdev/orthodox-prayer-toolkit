@@ -388,6 +388,99 @@ function registerIpc(): void {
   });
 }
 
+type UpdateCheckSource = "startup" | "menu";
+
+let updatePromptDismissedThisSession = false;
+let pendingUpdateVersion: string | null = null;
+let manualCheckInFlight = false;
+let installPromptOpen = false;
+
+function updaterParentWindow(): BrowserWindow | undefined {
+  return BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+}
+
+function showUpdaterDialog(
+  options: Electron.MessageBoxOptions,
+): Promise<Electron.MessageBoxReturnValue> {
+  const win = updaterParentWindow();
+  return win ? dialog.showMessageBox(win, options) : dialog.showMessageBox(options);
+}
+
+function promptInstallUpdate(version: string, force: boolean): void {
+  if (installPromptOpen) return;
+  if (!force && updatePromptDismissedThisSession) return;
+  if (force) {
+    updatePromptDismissedThisSession = false;
+  }
+  installPromptOpen = true;
+
+  void showUpdaterDialog({
+    type: "info",
+    title: "Update ready",
+    message: `Version ${version} has been downloaded.`,
+    detail:
+      "Install and restart now, or continue working. If you choose Later, you will be asked again the next time you open the app.",
+    buttons: ["Install and Restart", "Later"],
+    defaultId: 0,
+    cancelId: 1,
+  }).then((result) => {
+    installPromptOpen = false;
+    if (result.response === 0) {
+      autoUpdater.quitAndInstall();
+      return;
+    }
+    updatePromptDismissedThisSession = true;
+    autoUpdater.autoInstallOnAppQuit = false;
+  });
+}
+
+function showManualCheckError(error: unknown): void {
+  if (!manualCheckInFlight) return;
+  manualCheckInFlight = false;
+  const detail = error instanceof Error ? error.message : String(error);
+  void showUpdaterDialog({
+    type: "error",
+    title: "Update check failed",
+    message: "Could not check for updates.",
+    detail,
+  });
+}
+
+async function runUpdateCheck(source: UpdateCheckSource): Promise<void> {
+  if (!app.isPackaged) {
+    if (source === "menu") {
+      await showUpdaterDialog({
+        type: "info",
+        title: "Updates",
+        message: "Update checks run only in packaged builds.",
+      });
+    }
+    return;
+  }
+
+  if (source === "menu" && pendingUpdateVersion) {
+    promptInstallUpdate(pendingUpdateVersion, true);
+    return;
+  }
+
+  if (source === "menu") {
+    manualCheckInFlight = true;
+  }
+
+  try {
+    await autoUpdater.checkForUpdates();
+  } catch (error) {
+    console.error(`[autoUpdater] ${source} check failed:`, error);
+    if (source === "menu") {
+      showManualCheckError(error);
+    }
+  }
+}
+
+function onCheckForUpdatesMenu(): void {
+  void runUpdateCheck("menu");
+}
+
 function setupAutoUpdater(): void {
   if (!app.isPackaged) return;
 
@@ -399,42 +492,44 @@ function setupAutoUpdater(): void {
   });
   autoUpdater.on("update-available", (info) => {
     console.log(`[autoUpdater] Update available: ${info.version}`);
+    if (manualCheckInFlight) {
+      void showUpdaterDialog({
+        type: "info",
+        title: "Update available",
+        message: `Version ${info.version} is available and is downloading.`,
+        detail: "You'll be asked to install it when the download finishes.",
+      });
+    }
   });
   autoUpdater.on("update-not-available", () => {
     console.log("[autoUpdater] Already up to date.");
+    if (manualCheckInFlight) {
+      manualCheckInFlight = false;
+      void showUpdaterDialog({
+        type: "info",
+        title: "Updates",
+        message: "You're up to date.",
+        detail: `Version ${app.getVersion()} is the latest release.`,
+      });
+    }
   });
   autoUpdater.on("error", (error) => {
     console.error("[autoUpdater]", error);
+    showManualCheckError(error);
   });
   autoUpdater.on("update-downloaded", (info) => {
-    console.log(`[autoUpdater] Downloaded ${info.version}; will install on quit.`);
-    const win =
-      BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
-    const boxOptions = {
-      type: "info" as const,
-      title: "Update ready",
-      message: `Version ${info.version} has been downloaded.`,
-      detail:
-        "Restart now to apply the update, or continue working and restart later.",
-      buttons: ["Restart now", "Later"],
-      defaultId: 0,
-      cancelId: 1,
-    };
-    const prompt = win
-      ? dialog.showMessageBox(win, boxOptions)
-      : dialog.showMessageBox(boxOptions);
-    void prompt.then((result) => {
-      if (result.response === 0) {
-        autoUpdater.quitAndInstall();
-      }
-    });
+    pendingUpdateVersion = info.version;
+    console.log(`[autoUpdater] Downloaded ${info.version}.`);
+    const force = manualCheckInFlight;
+    if (manualCheckInFlight) {
+      manualCheckInFlight = false;
+    }
+    promptInstallUpdate(info.version, force);
   });
 
   // Delay so the window can appear before network I/O.
   setTimeout(() => {
-    void autoUpdater.checkForUpdatesAndNotify().catch((error: unknown) => {
-      console.error("[autoUpdater] Startup check failed:", error);
-    });
+    void runUpdateCheck("startup");
   }, 5_000);
 }
 
@@ -456,19 +551,7 @@ function buildAppMenu(): void {
               { type: "separator" as const },
               {
                 label: "Check for Updates…",
-                click: () => {
-                  if (!app.isPackaged) {
-                    void dialog.showMessageBox({
-                      type: "info",
-                      title: "Updates",
-                      message: "Update checks run only in packaged builds.",
-                    });
-                    return;
-                  }
-                  void autoUpdater.checkForUpdatesAndNotify().catch((error: unknown) => {
-                    console.error("[autoUpdater] Menu check failed:", error);
-                  });
-                },
+                click: () => onCheckForUpdatesMenu(),
               },
               { type: "separator" as const },
               { role: "services" as const },
@@ -518,19 +601,7 @@ function buildAppMenu(): void {
           ? [
               {
                 label: "Check for Updates…",
-                click: () => {
-                  if (!app.isPackaged) {
-                    void dialog.showMessageBox({
-                      type: "info",
-                      title: "Updates",
-                      message: "Update checks run only in packaged builds.",
-                    });
-                    return;
-                  }
-                  void autoUpdater.checkForUpdatesAndNotify().catch((error: unknown) => {
-                    console.error("[autoUpdater] Menu check failed:", error);
-                  });
-                },
+                click: () => onCheckForUpdatesMenu(),
               },
               { type: "separator" as const },
             ]
