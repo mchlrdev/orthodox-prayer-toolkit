@@ -1261,9 +1261,16 @@ body,
   box-sizing: border-box;
 }
 
-.prayer-row:hover,
-.prayer-row[data-active="true"] {
+.prayer-row:hover {
   background: rgba(0, 0, 0, 0.04);
+}
+
+.prayer-row[data-active="true"] {
+  background: color-mix(in srgb, var(--opt-accent) 14%, transparent);
+}
+
+.prayer-row[data-active="true"]:hover {
+  background: color-mix(in srgb, var(--opt-accent) 18%, transparent);
 }
 
 .prayer-row-main {
