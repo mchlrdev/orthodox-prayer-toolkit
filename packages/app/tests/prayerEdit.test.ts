@@ -15,6 +15,7 @@ import {
   removeBlock,
   renameKindWithStyles,
   setBlockKind,
+  translationEditorContent,
 } from "../src/prayerEdit";
 
 const col = { lang: "de", variant: "standard" };
@@ -192,6 +193,29 @@ describe("fill helpers", () => {
       total: 2,
       percent: 50,
     });
+  });
+
+  it("treats verse text as filled when lines are absent", () => {
+    const prayer: Prayer = {
+      ...basePrayer(),
+      structure: [
+        {
+          id: "v1",
+          kind: "verse",
+          translations: [
+            {
+              lang: "de",
+              variant: "standard",
+              text: "Auf die Gebete unserer heiligen Väter…",
+            },
+          ],
+        },
+      ],
+    };
+    expect(isTranslationFilled(prayer, "v1", col)).toBe(true);
+    expect(translationEditorContent("verse", prayer.structure[0]?.translations[0])).toEqual([
+      "Auf die Gebete unserer heiligen Väter…",
+    ]);
   });
 
   it("treats a block as empty across variants when no translation has content", () => {

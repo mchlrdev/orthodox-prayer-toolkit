@@ -249,70 +249,77 @@ export function PrayerWorkspace({
           </Group>
         </div>
 
-        <div
-          className="workspace-split-bar"
-          data-split={split ? "true" : undefined}
-        >
-          <div className="split-chip-row">
-            {visibleVariants.map((col, index) => (
-              <ColumnChip
-                key={`${variantKey(col)}-${index}`}
-                meta={metaFor(prayer, col)}
-                col={col}
-                canRemove={visibleVariants.length > 1}
-                options={allOptions}
-                onReplace={(next) => replaceColumn(index, next)}
-                onRemove={() => removeColumn(index)}
-              />
-            ))}
+        {prayer.variants.length > 1 ? (
+          <div
+            className="workspace-split-bar"
+            data-split={split ? "true" : undefined}
+          >
+            <div className="split-chip-row">
+              {visibleVariants.map((col, index) => (
+                <ColumnChip
+                  key={`${variantKey(col)}-${index}`}
+                  meta={metaFor(prayer, col)}
+                  col={col}
+                  canRemove={visibleVariants.length > 1}
+                  options={allOptions}
+                  onReplace={(next) => replaceColumn(index, next)}
+                  onRemove={() => removeColumn(index)}
+                />
+              ))}
 
-            {availableToAdd.length > 0 ? (
-              <Menu shadow="md" width={260} position="bottom-start" withinPortal>
-                <Menu.Target>
-                  <button
-                    type="button"
-                    className="split-add"
-                    aria-label="Add translation column"
-                  >
-                    <IconPlus size={14} stroke={2.2} />
-                    <span>Add</span>
-                  </button>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  <Menu.Label>Add translation</Menu.Label>
-                  {availableToAdd.map((v) => (
-                    <Menu.Item
-                      key={variantKey(v)}
-                      onClick={() =>
-                        addColumn({ lang: v.lang, variant: v.variant })
-                      }
+              {availableToAdd.length > 0 ? (
+                <Menu
+                  shadow="md"
+                  width={260}
+                  position="bottom-start"
+                  withinPortal
+                >
+                  <Menu.Target>
+                    <button
+                      type="button"
+                      className="split-add"
+                      aria-label="Add translation column"
                     >
-                      <Text size="sm" fw={500}>
-                        {v.lang} / {v.variant}
-                      </Text>
-                      {v.title ? (
-                        <Text size="xs" c="dimmed" lineClamp={1}>
-                          {v.title}
-                        </Text>
-                      ) : null}
-                    </Menu.Item>
-                  ))}
-                  {availableToAdd.length > 1 ? (
-                    <>
-                      <Menu.Divider />
+                      <IconPlus size={14} stroke={2.2} />
+                      <span>Add</span>
+                    </button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Label>Add translation</Menu.Label>
+                    {availableToAdd.map((v) => (
                       <Menu.Item
-                        leftSection={<IconColumns2 size={14} />}
-                        onClick={showAll}
+                        key={variantKey(v)}
+                        onClick={() =>
+                          addColumn({ lang: v.lang, variant: v.variant })
+                        }
                       >
-                        Show all
+                        <Text size="sm" fw={500}>
+                          {v.lang} / {v.variant}
+                        </Text>
+                        {v.title ? (
+                          <Text size="xs" c="dimmed" lineClamp={1}>
+                            {v.title}
+                          </Text>
+                        ) : null}
                       </Menu.Item>
-                    </>
-                  ) : null}
-                </Menu.Dropdown>
-              </Menu>
-            ) : null}
+                    ))}
+                    {availableToAdd.length > 1 ? (
+                      <>
+                        <Menu.Divider />
+                        <Menu.Item
+                          leftSection={<IconColumns2 size={14} />}
+                          onClick={showAll}
+                        >
+                          Show all
+                        </Menu.Item>
+                      </>
+                    ) : null}
+                  </Menu.Dropdown>
+                </Menu>
+              ) : null}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       <div className="workspace-body" ref={scrollRootRef}>

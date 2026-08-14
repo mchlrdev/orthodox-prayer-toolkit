@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Prayer } from "@orthodox-prayer-toolkit/core";
 import {
   buildPrayerOutline,
+  OUTLINE_ACTIVE_THRESHOLD_SLACK_PX,
   resolveActiveOutlineId,
   type OutlineAnchor,
 } from "../src/prayerEdit/outline";
@@ -197,5 +198,29 @@ describe("resolveActiveOutlineId", () => {
   it("applies the sticky header offset to the threshold", () => {
     // scrollTop 90 + offset 20 = 110 → h1 qualifies, s0 also does; last is h1
     expect(resolveActiveOutlineId(anchors, 90, 20)).toBe("h1");
+  });
+
+  it("keeps the jumped heading active when measurement is 1px past the threshold", () => {
+    // Outline jump lands the target at scrollTop + headerOffset. getBoundingClientRect
+    // often reports that top a fraction/pixel below the sticky line, which must not
+    // leave the previous heading marked active.
+    const jumped: OutlineAnchor[] = [
+      { blockId: "h1", kind: "heading", top: 100, orphan: false },
+      { blockId: "h2", kind: "heading", top: 300.75, orphan: false },
+    ];
+    expect(resolveActiveOutlineId(jumped, 260, 40)).toBe("h2");
+  });
+
+  it("does not activate a heading clearly below the reading line", () => {
+    const jumped: OutlineAnchor[] = [
+      { blockId: "h1", kind: "heading", top: 100, orphan: false },
+      {
+        blockId: "h2",
+        kind: "heading",
+        top: 300 + OUTLINE_ACTIVE_THRESHOLD_SLACK_PX + 1,
+        orphan: false,
+      },
+    ];
+    expect(resolveActiveOutlineId(jumped, 260, 40)).toBe("h1");
   });
 });

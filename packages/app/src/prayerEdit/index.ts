@@ -1,5 +1,6 @@
 export {
   usesLines,
+  translationEditorContent,
   kindOptions,
   getTranslation,
   setTranslation,
@@ -30,6 +31,7 @@ export {
 export {
   buildPrayerOutline,
   flattenOutlineEntries,
+  OUTLINE_ACTIVE_THRESHOLD_SLACK_PX,
   resolveActiveOutlineId,
   type OutlineAnchor,
   type OutlineEntry,

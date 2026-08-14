@@ -1,6 +1,7 @@
 import {
   KIND_PRESETS,
   plainText,
+  type InlineContent,
   type Prayer,
   type Translation,
 } from "@orthodox-prayer-toolkit/core";
@@ -8,6 +9,22 @@ import type { ActiveVariant } from "../variant";
 
 export function usesLines(kind: string): boolean {
   return kind === "verse";
+}
+
+/**
+ * What the editor shows for a translation. Verse is line-mode and reads
+ * `lines`; if a file only has `text` on verse, treat it as one line.
+ */
+export function translationEditorContent(
+  kind: string,
+  tr: Translation | undefined,
+): InlineContent | InlineContent[] {
+  if (usesLines(kind)) {
+    if (tr?.lines && tr.lines.length > 0) return tr.lines;
+    if (tr?.text !== undefined) return [tr.text];
+    return [];
+  }
+  return tr?.text ?? "";
 }
 
 export function kindOptions(prayer: Prayer): string[] {
@@ -63,7 +80,8 @@ export function isTranslationFilled(
   const tr = getTranslation(prayer, blockId, col);
   if (!tr) return false;
   if (usesLines(block.kind)) {
-    return (tr.lines ?? []).some((l) => plainText(l).trim().length > 0);
+    const lines = translationEditorContent(block.kind, tr) as InlineContent[];
+    return lines.some((l) => plainText(l).trim().length > 0);
   }
   return tr.text !== undefined && plainText(tr.text).trim().length > 0;
 }

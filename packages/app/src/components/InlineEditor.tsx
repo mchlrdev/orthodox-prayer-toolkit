@@ -58,6 +58,7 @@ import {
   moveBlock as moveBlockInPrayer,
   removeBlock,
   setBlockKind,
+  translationEditorContent,
   usesLines,
 } from "../prayerEdit";
 
@@ -1080,9 +1081,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
               <div className="split-row">
                 {visibleVariants.map((col) => {
                   const tr = getTranslation(prayer, block.id, col);
-                  const content: InlineContent | InlineContent[] = lineMode
-                    ? (tr?.lines ?? [])
-                    : (tr?.text ?? "");
+                  const content = translationEditorContent(block.kind, tr);
 
                   return (
                     <div

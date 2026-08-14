@@ -8,6 +8,7 @@ Guides for people using or extending the Orthodox Prayer Toolkit, and for agents
 |------------|------|
 | Understand what the project is | [Overview](overview.md) |
 | Author or consume prayer JSON | [Prayer format](prayer-format.md) |
+| Encode a prayer with an LLM | [LLM ingest skill](../skills/encode-prayer/SKILL.md) |
 | Set up a library folder | [Library layout](library.md) |
 | Call Core from code | [Core API](core-api.md) |
 | Hack on the repo | [Development](development.md) |
@@ -32,6 +33,7 @@ orthodox-prayer-toolkit/
   packages/app/      Electron + React + Mantine editor
   examples/          Dev sample library (not production content)
   docs/              This documentation
+  skills/            Portable LLM ingest skill (`encode-prayer/SKILL.md`)
   scripts/           Release helper
   .github/workflows/ CI + release builds
 ```

@@ -79,6 +79,12 @@ export function buildPrayerOutline(
 }
 
 /**
+ * Pixel slack so a heading landed on the sticky reading line by outline jump
+ * still counts as active when getBoundingClientRect reports it slightly below.
+ */
+export const OUTLINE_ACTIVE_THRESHOLD_SLACK_PX = 1;
+
+/**
  * Scrollspy: last heading (or orphan root subheading) whose top is at or
  * above the scrollport top + sticky offset. Nested subheadings never win.
  */
@@ -87,7 +93,8 @@ export function resolveActiveOutlineId(
   scrollTop: number,
   headerOffset: number,
 ): string | null {
-  const threshold = scrollTop + headerOffset;
+  const threshold =
+    scrollTop + headerOffset + OUTLINE_ACTIVE_THRESHOLD_SLACK_PX;
   let active: string | null = null;
 
   for (const anchor of anchors) {

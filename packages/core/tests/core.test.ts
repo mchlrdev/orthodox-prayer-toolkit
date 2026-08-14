@@ -758,6 +758,7 @@ describe("resolveStyles", () => {
     expect(DEFAULT_KIND_STYLES.heading?.htmlTag).toBe("h2");
     expect(DEFAULT_KIND_STYLES.subheading?.htmlTag).toBe("h3");
     expect(DEFAULT_KIND_STYLES.verse?.htmlTag).toBe("p");
+    expect(DEFAULT_KIND_STYLES.verse?.fontSize).toBe("1rem");
     expect(DEFAULT_KIND_STYLES.annotation?.htmlTag).toBe("p");
     expect(FALLBACK_KIND_STYLE.htmlTag).toBeUndefined();
   });

@@ -86,24 +86,36 @@ Not enforced by schema — suggestions in the UI:
 
 Custom kinds are allowed; library style maps discover them when the library opens.
 
+Classify by **role**, not by print color or typeface — books often set genre labels and rubrics identically.
+
+| Kind | Role |
+|------|------|
+| `heading` | Names a section or liturgical item (“Troparion im 4. Ton”). At most one level above `subheading`. |
+| `subheading` | Second heading level only. |
+| `annotation` | Rubric / instruction with no spoken words of its own (“Dann dreimal das Ostertroparion im 5. Ton:”). |
+| `verse` | Spoken or sung prayer text, including doxologies (Gloria Patri), Kyrie, Amen-formulas. |
+
+A glued genre label such as `Troparion im 4. Ton: Gebetstext…` is a **heading block plus a verse block**. A glued rubric plus spoken words on one line (`Dann vierzigmal: Herr, erbarme Dich!`) is one `verse` with an inline `note` run for the rubric. LLM encoding: [skills/encode-prayer/SKILL.md](../skills/encode-prayer/SKILL.md).
+
 ### Payload shapes
 
 | Typical use | Payload |
 |-------------|---------|
-| Prose / rubric-like / headings | `text` — string or inline **runs** |
-| Verse / line-broken chant | `lines` — array of strings or runs |
+| Headings, annotations | `text` — string or inline **runs** |
+| Verse | `lines` always — one item per poetic line, or one item for continuous chant (keep `/` `//` in the string) |
 
-`lines` are **content** lines, not layout/print line breaks.
+### Languages inside one edition
+
+A German (or other) page that also prints a hymn in Greek or Church Slavonic is still **one variant**. Those snippets are extra `verse` blocks of that same `(lang, variant)`, in source order. Register another variant only when the source is a full parallel edition of the whole prayer.
 
 ### Inline notes (runs)
 
-When a string needs marked spans (e.g. parenthetical notes), use runs instead of a plain string:
+When a string needs marked spans, use runs instead of a plain string. Note runs hold the rubric; surrounding spaces live on adjacent `text` runs:
 
 ```json
 [
-  { "t": "text", "v": "Say this " },
-  { "t": "note", "v": "thrice" },
-  { "t": "text", "v": "." }
+  { "t": "note", "v": "Dann vierzigmal:" },
+  { "t": "text", "v": " Herr, erbarme Dich!" }
 ]
 ```
 
@@ -128,13 +140,13 @@ Exports map `note` runs to HTML / layout character styles as appropriate.
   ],
   "structure": [
     {
-      "id": "r1",
-      "kind": "annotation",
+      "id": "h1",
+      "kind": "heading",
       "translations": [
         {
           "lang": "de",
           "variant": "standard",
-          "text": "Ton 4."
+          "text": "Troparion im 4. Ton"
         }
       ]
     },
@@ -191,3 +203,5 @@ Other exporters (`exportHtml`, `exportLayoutRtf`, `exportLayoutDocx`) take the s
 4. Prefer omitting missing translations over empty strings  
 5. License + source set on every variant  
 6. Keep layout out of the source file  
+7. Spoken doxologies are `verse`; glued rubric + spoken words use a `note` run  
+8. Extra languages on a monolingual page are sequential blocks of that variant; `/` stays in the string  

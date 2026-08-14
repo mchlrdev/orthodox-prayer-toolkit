@@ -463,7 +463,6 @@ body,
 .content-outline-link[data-active="true"] {
   background: color-mix(in srgb, var(--opt-accent) 22%, transparent);
   color: var(--opt-accent);
-  box-shadow: inset 2px 0 0 var(--opt-accent);
 }
 
 .content-outline-link[data-kind="subheading"][data-active="true"] {

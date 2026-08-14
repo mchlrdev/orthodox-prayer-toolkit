@@ -32,7 +32,7 @@ export const DEFAULT_KIND_STYLES: StyleMap = {
     htmlTag: "p",
   },
   verse: {
-    fontSize: "1.125rem",
+    fontSize: "1rem",
     color: "base",
     fontWeight: "400",
     fontStyle: "normal",
