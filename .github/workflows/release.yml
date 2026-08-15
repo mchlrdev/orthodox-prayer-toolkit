@@ -82,6 +82,10 @@ jobs:
           fi
           pnpm exec electron-builder --config electron-builder.yml ${{ matrix.eb_args }} --publish never
 
+      # Publish job has no checkout — hyphenate here while the repo is present.
+      - name: Hyphenate artifact names for electron-updater
+        run: node packages/app/scripts/sanitize-release-artifacts.mjs packages/app/release
+
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -112,9 +116,6 @@ jobs:
 
       - name: List files
         run: find dist -type f | sort
-
-      - name: Hyphenate artifact names for electron-updater
-        run: node packages/app/scripts/sanitize-release-artifacts.mjs dist
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2

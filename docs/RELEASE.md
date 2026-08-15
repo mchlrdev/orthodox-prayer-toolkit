@@ -197,7 +197,7 @@ links stay correct. In Actions, `GITHUB_REPOSITORY` is also used.
 |---------|----------------|
 | No `latest-mac.yml` on release | macOS job failed or didn’t publish |
 | App never sees updates | Tag not semver `vX.Y.Z`, or version in app `package.json` ≥ release |
-| `Cannot download …-mac.zip, status 404` | Installer filenames had spaces. GitHub stores them with dots (`Orthodox.Prayer.Toolkit-…`) while `latest-mac.yml` + electron-updater request hyphens (`Orthodox-Prayer-Toolkit-…`). `artifactName` in `electron-builder.yml` must stay space-free; the Release workflow also hyphenates before upload. |
+| `Cannot download …-mac.zip, status 404` | Installer filenames had spaces. GitHub stores them with dots (`Orthodox.Prayer.Toolkit-…`) while `latest-mac.yml` + electron-updater request hyphens (`Orthodox-Prayer-Toolkit-…`). `artifactName` in `electron-builder.yml` must stay space-free; the Release **build** job hyphenates names before upload (the publish job has no repo checkout). |
 | macOS: `packages/app not a file` / empty CSC password | Empty `CSC_LINK` was exported — release workflow must `unset` empty signing env vars |
 | Linux: `executableName` contains `@` | Missing `executableName` in electron-builder.yml (package name is scoped) |
 | macOS/Windows: `422 already_exists` on release | Parallel jobs raced creating the same GitHub Release — builds use `--publish never`, one job uploads assets |
