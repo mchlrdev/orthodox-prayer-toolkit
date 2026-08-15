@@ -24,6 +24,7 @@ import {
   resolveUnderRoot,
   walkJsonFiles,
 } from "../nodeFs";
+import { startMacUpdateInstall } from "./macUpdateInstall";
 
 const { autoUpdater } = electronUpdater;
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -392,6 +393,7 @@ type UpdateCheckSource = "startup" | "menu";
 
 let updatePromptDismissedThisSession = false;
 let pendingUpdateVersion: string | null = null;
+let downloadedUpdateFile: string | null = null;
 let manualCheckInFlight = false;
 let installPromptOpen = false;
 
@@ -426,12 +428,56 @@ function promptInstallUpdate(version: string, force: boolean): void {
   }).then((result) => {
     installPromptOpen = false;
     if (result.response === 0) {
-      autoUpdater.quitAndInstall();
+      // Sheet must finish dismissing before we quit the parent window.
+      setImmediate(() => installAndRestart());
       return;
     }
     updatePromptDismissedThisSession = true;
     autoUpdater.autoInstallOnAppQuit = false;
   });
+}
+
+function allowWindowsToClose(): void {
+  for (const win of BrowserWindow.getAllWindows()) {
+    allowCloseWindows.add(win);
+    win.removeAllListeners("close");
+  }
+}
+
+function installAndRestart(): void {
+  allowWindowsToClose();
+  if (process.platform === "darwin") {
+    if (!downloadedUpdateFile) {
+      void showUpdaterDialog({
+        type: "error",
+        title: "Update install failed",
+        message: "Could not install the update.",
+        detail:
+          "The downloaded file is missing. Quit the app and install the latest DMG from GitHub Releases.",
+      });
+      return;
+    }
+    try {
+      startMacUpdateInstall({
+        execPath: process.execPath,
+        pid: process.pid,
+        zipPath: downloadedUpdateFile,
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      console.error("[autoUpdater] macOS install helper failed:", detail);
+      void showUpdaterDialog({
+        type: "error",
+        title: "Update install failed",
+        message: "Could not install the update.",
+        detail,
+      });
+      return;
+    }
+    app.quit();
+    return;
+  }
+  autoUpdater.quitAndInstall(false, true);
 }
 
 function showManualCheckError(error: unknown): void {
@@ -485,7 +531,9 @@ function setupAutoUpdater(): void {
   if (!app.isPackaged) return;
 
   autoUpdater.autoDownload = true;
-  autoUpdater.autoInstallOnAppQuit = true;
+  // Squirrel.Mac (used by electron-updater on Darwin) needs a Developer ID.
+  // Ad-hoc / unsigned builds no-op on quitAndInstall; we swap the .app ourselves.
+  autoUpdater.autoInstallOnAppQuit = process.platform !== "darwin";
 
   autoUpdater.on("checking-for-update", () => {
     console.log("[autoUpdater] Checking for update…");
@@ -519,6 +567,10 @@ function setupAutoUpdater(): void {
   });
   autoUpdater.on("update-downloaded", (info) => {
     pendingUpdateVersion = info.version;
+    downloadedUpdateFile =
+      "downloadedFile" in info && typeof info.downloadedFile === "string"
+        ? info.downloadedFile
+        : null;
     console.log(`[autoUpdater] Downloaded ${info.version}.`);
     const force = manualCheckInFlight;
     if (manualCheckInFlight) {

@@ -61,6 +61,10 @@ you enable signing (below).
 - When an update is ready, a dialog offers **Install and Restart** or **Later**.
   Later dismisses the prompt for this session only: the update is **not**
   installed on quit, and the next launch asks again.
+  On **macOS** (unsigned / ad-hoc), Install and Restart does **not** use
+  Squirrel.Mac — it unpacks the ZIP and replaces the `.app` after quit. That
+  helper ships in the **running** app, so the first build that contains it must
+  be installed from the DMG once; later updates can use the button.
 - Menu: **Check for Updates…** (app menu on macOS) always shows a result
   (install prompt if a download is ready, up to date, or an error). An explicit
   menu check re-shows the install dialog even after Later in the same session.
@@ -198,6 +202,7 @@ links stay correct. In Actions, `GITHUB_REPOSITORY` is also used.
 | No `latest-mac.yml` on release | macOS job failed or didn’t publish |
 | App never sees updates | Tag not semver `vX.Y.Z`, or version in app `package.json` ≥ release |
 | `Cannot download …-mac.zip, status 404` | Installer filenames had spaces. GitHub stores them with dots (`Orthodox.Prayer.Toolkit-…`) while `latest-mac.yml` + electron-updater request hyphens (`Orthodox-Prayer-Toolkit-…`). `artifactName` in `electron-builder.yml` must stay space-free; the Release **build** job hyphenates names before upload (the publish job has no repo checkout). |
+| **Install and Restart** does nothing (macOS) | Squirrel.Mac needs a Developer ID. Unsigned/ad-hoc builds install via a helper script in the running app — install that build from the DMG once. Check `/tmp/orthodox-prayer-toolkit-update.log` if a later button-click still fails. |
 | macOS: `packages/app not a file` / empty CSC password | Empty `CSC_LINK` was exported — release workflow must `unset` empty signing env vars |
 | Linux: `executableName` contains `@` | Missing `executableName` in electron-builder.yml (package name is scoped) |
 | macOS/Windows: `422 already_exists` on release | Parallel jobs raced creating the same GitHub Release — builds use `--publish never`, one job uploads assets |
