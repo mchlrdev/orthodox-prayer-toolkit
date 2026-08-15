@@ -113,6 +113,9 @@ jobs:
       - name: List files
         run: find dist -type f | sort
 
+      - name: Hyphenate artifact names for electron-updater
+        run: node packages/app/scripts/sanitize-release-artifacts.mjs dist
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:

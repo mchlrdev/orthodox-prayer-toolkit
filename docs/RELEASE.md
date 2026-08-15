@@ -64,6 +64,8 @@ you enable signing (below).
 - Menu: **Check for Updates…** (app menu on macOS) always shows a result
   (install prompt if a download is ready, up to date, or an error). An explicit
   menu check re-shows the install dialog even after Later in the same session.
+  Startup checks stay silent on failure (offline, 404) so a launch is not blocked
+  by a dialog — use the menu item to see the error.
 - Dev / `pnpm dev:electron` never talks to the update feed.
 
 Update checks require a **public** GitHub repository (or a token for private
@@ -195,6 +197,7 @@ links stay correct. In Actions, `GITHUB_REPOSITORY` is also used.
 |---------|----------------|
 | No `latest-mac.yml` on release | macOS job failed or didn’t publish |
 | App never sees updates | Tag not semver `vX.Y.Z`, or version in app `package.json` ≥ release |
+| `Cannot download …-mac.zip, status 404` | Installer filenames had spaces. GitHub stores them with dots (`Orthodox.Prayer.Toolkit-…`) while `latest-mac.yml` + electron-updater request hyphens (`Orthodox-Prayer-Toolkit-…`). `artifactName` in `electron-builder.yml` must stay space-free; the Release workflow also hyphenates before upload. |
 | macOS: `packages/app not a file` / empty CSC password | Empty `CSC_LINK` was exported — release workflow must `unset` empty signing env vars |
 | Linux: `executableName` contains `@` | Missing `executableName` in electron-builder.yml (package name is scoped) |
 | macOS/Windows: `422 already_exists` on release | Parallel jobs raced creating the same GitHub Release — builds use `--publish never`, one job uploads assets |

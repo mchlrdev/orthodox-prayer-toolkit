@@ -4,6 +4,11 @@ productName: Orthodox Prayer Toolkit
 executableName: OrthodoxPrayerToolkit
 copyright: Copyright © Orthodox Prayer Toolkit contributors
 
+# Installer filenames must not contain spaces. GitHub Releases rewrites
+# spaces to dots (Orthodox.Prayer.Toolkit-…); electron-updater looks up the
+# hyphenated names written into latest*.yml (Orthodox-Prayer-Toolkit-…).
+artifactName: "Orthodox-Prayer-Toolkit-${version}-${arch}.${ext}"
+
 directories:
   output: release
   buildResources: resources
@@ -60,6 +65,7 @@ win:
         - x64
 
 nsis:
+  artifactName: "Orthodox-Prayer-Toolkit-Setup-${version}.${ext}"
   oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
