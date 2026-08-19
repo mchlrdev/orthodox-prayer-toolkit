@@ -34,6 +34,14 @@ function setPlistString(xml, key, value) {
   return xml.replace(re, `$1${value}$3`);
 }
 
+function isCompleteBundle(appDir) {
+  return (
+    existsSync(join(appDir, "Contents", "Info.plist")) &&
+    existsSync(join(appDir, "Contents", "Frameworks")) &&
+    existsSync(join(appDir, "Contents", "MacOS", "Electron"))
+  );
+}
+
 const electronRoot = findElectronRoot();
 if (!electronRoot) {
   console.warn("[fix-electron-name] electron package not found; skip");
@@ -50,6 +58,18 @@ if (!existsSync(stockApp) && !existsSync(namedApp)) {
   process.exit(0);
 }
 
+// Incomplete dist (partial extract-zip / interrupted install) — do not rename.
+const activeApp = existsSync(stockApp) ? stockApp : namedApp;
+if (!isCompleteBundle(activeApp)) {
+  console.warn(
+    "[fix-electron-name] Electron.app bundle is incomplete (missing Info.plist/Frameworks).",
+  );
+  console.warn(
+    "[fix-electron-name] Re-extract the Electron zip (on macOS: ditto -x -k <cache.zip> <electron>/dist), then retry.",
+  );
+  process.exit(0);
+}
+
 // Rename stock bundle so Dock / Force Quit show our name.
 if (existsSync(stockApp)) {
   if (existsSync(namedApp)) {
@@ -60,17 +80,8 @@ if (existsSync(stockApp)) {
   console.log(`[fix-electron-name] renamed Electron.app → ${BUNDLE_NAME}`);
 }
 
-const plistPath = join(namedApp, "Contents", "Info.plist");
-if (!existsSync(plistPath)) {
-  console.warn("[fix-electron-name] Info.plist missing after rename; skip");
-  process.exit(0);
-}
-
-let xml = readFileSync(plistPath, "utf8");
-xml = setPlistString(xml, "CFBundleName", APP_NAME);
-xml = setPlistString(xml, "CFBundleDisplayName", APP_NAME);
-writeFileSync(plistPath, xml);
-
+// Keep path.txt in sync with the renamed bundle *before* optional plist edits,
+// so a missing Info.plist never leaves the launcher pointing at Electron.app.
 const expectedPath = `${BUNDLE_NAME}/Contents/MacOS/Electron`;
 const currentPath = existsSync(pathTxt)
   ? readFileSync(pathTxt, "utf8").trim()
@@ -79,6 +90,17 @@ if (currentPath !== expectedPath) {
   writeFileSync(pathTxt, expectedPath);
   console.log(`[fix-electron-name] path.txt → ${expectedPath}`);
 }
+
+const plistPath = join(namedApp, "Contents", "Info.plist");
+if (!existsSync(plistPath)) {
+  console.warn("[fix-electron-name] Info.plist missing after rename; skip plist patch");
+  process.exit(0);
+}
+
+let xml = readFileSync(plistPath, "utf8");
+xml = setPlistString(xml, "CFBundleName", APP_NAME);
+xml = setPlistString(xml, "CFBundleDisplayName", APP_NAME);
+writeFileSync(plistPath, xml);
 
 console.log(`[fix-electron-name] ready as "${APP_NAME}"`);
 console.log(

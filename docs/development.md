@@ -44,6 +44,22 @@ Rule of thumb: if a behaviour should be true without a UI, implement and test it
 3. Prefer Core unit tests with JSON fixtures for format/export changes.
 4. Keep the app thin: session/draft UI over Core APIs.
 
+### Electron `ENOENT` / incomplete `.app` (macOS)
+
+On some Node versions (notably **26**), electron’s `extract-zip` can leave a truncated `Electron.app` (stub binary only, no `Frameworks` / `Info.plist`). `pnpm dev:electron` then fails with `spawn …/Electron ENOENT` or a broken Dock app.
+
+`packages/app` postinstall / `dev:electron` run `ensure-electron.mjs`, which re-extracts the cached zip with `ditto` when the bundle looks incomplete. Manual recovery:
+
+```bash
+rm -rf ~/Library/Caches/electron
+pnpm install
+# or, with a cached zip already present:
+# ditto -x -k ~/Library/Caches/electron/*/electron-v*-darwin-*.zip \
+#   node_modules/.pnpm/electron@*/node_modules/electron/dist
+```
+
+Prefer Node **20** or **22** (see Prerequisites) for day-to-day Electron work.
+
 ## CI
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) on `main` / PRs:
