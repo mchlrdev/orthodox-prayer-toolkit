@@ -171,38 +171,49 @@ export function FindReplacePanel({
         </div>
       </div>
 
-      {state.replaceExpanded ? (
-        <div className="find-replace-row find-replace-row-replace">
-          <TextInput
-            ref={replaceInputRef}
-            className="find-replace-input"
-            size="xs"
-            placeholder="Replace"
-            value={state.replaceWith}
-            onChange={(event) => onReplaceWithChange(event.currentTarget.value)}
-            leftSection={<IconReplace size={14} stroke={1.8} />}
-            aria-label="Replace with"
-          />
-          <Group gap="xs" wrap="nowrap" className="find-replace-actions">
-            <Button
+      <div
+        className="find-replace-replace-wrap"
+        data-expanded={state.replaceExpanded ? "true" : undefined}
+        aria-hidden={!state.replaceExpanded}
+      >
+        <div className="find-replace-replace-inner">
+          <div className="find-replace-row find-replace-row-replace">
+            <TextInput
+              ref={replaceInputRef}
+              className="find-replace-input"
               size="xs"
-              variant="default"
-              onClick={onReplaceCurrent}
-              disabled={matchCount === 0}
-            >
-              Replace
-            </Button>
-            <Button
-              size="xs"
-              variant="default"
-              onClick={onReplaceAll}
-              disabled={matchCount === 0}
-            >
-              Replace all
-            </Button>
-          </Group>
+              placeholder="Replace"
+              value={state.replaceWith}
+              onChange={(event) =>
+                onReplaceWithChange(event.currentTarget.value)
+              }
+              leftSection={<IconReplace size={14} stroke={1.8} />}
+              aria-label="Replace with"
+              tabIndex={state.replaceExpanded ? 0 : -1}
+            />
+            <Group gap="xs" wrap="nowrap" className="find-replace-actions">
+              <Button
+                size="xs"
+                variant="default"
+                onClick={onReplaceCurrent}
+                disabled={matchCount === 0}
+                tabIndex={state.replaceExpanded ? 0 : -1}
+              >
+                Replace
+              </Button>
+              <Button
+                size="xs"
+                variant="default"
+                onClick={onReplaceAll}
+                disabled={matchCount === 0}
+                tabIndex={state.replaceExpanded ? 0 : -1}
+              >
+                Replace all
+              </Button>
+            </Group>
+          </div>
         </div>
-      ) : null}
+      </div>
     </div>
   );
 }

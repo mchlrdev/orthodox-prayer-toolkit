@@ -275,7 +275,13 @@ export function PrayerWorkspace({
                 <IconDownload size={16} />
               </ActionIcon>
             </Tooltip>
-            <Button size="xs" loading={busy} onClick={onSave} disabled={!dirty}>
+            <Button
+              size="xs"
+              color="accent"
+              loading={busy}
+              onClick={onSave}
+              disabled={!dirty}
+            >
               Save
             </Button>
           </Group>

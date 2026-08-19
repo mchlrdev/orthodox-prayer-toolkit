@@ -19,7 +19,8 @@
     "color": "base",
     "fontWeight": "400",
     "fontStyle": "normal",
-    "initialCap": "true"
+    "initialCap": "true",
+    "textAlign": "left"
   },
   "subheading": {
     "fontSize": "1rem",

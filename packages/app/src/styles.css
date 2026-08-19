@@ -39,15 +39,47 @@
   color-scheme: dark;
 }
 
-/* Dialogs are white (same as settings-hub pane); the app shell stays --opt-bg. */
+/* Dialogs: white in light; same deep surface as inputs in dark. */
 .mantine-Modal-content,
 .mantine-Modal-header {
   background: var(--opt-surface-solid);
 }
 
-/* Menus / inputs: same cool surface as the shell (no Mantine drift). */
-:root[data-mantine-color-scheme="dark"] .mantine-Modal-content,
-:root[data-mantine-color-scheme="dark"] .mantine-Modal-header,
+:root[data-mantine-color-scheme="dark"] .mantine-Modal-content {
+  background: var(--opt-bg);
+  border: 1px solid var(--opt-border);
+}
+
+:root[data-mantine-color-scheme="dark"] .mantine-Modal-header {
+  background: var(--opt-bg);
+}
+
+/* Modal actions — same bordered controls as inputs on the dark surface. */
+:root[data-mantine-color-scheme="dark"] .mantine-Modal-content .mantine-Button-root[data-variant="default"] {
+  background: var(--opt-bg);
+  border-color: var(--opt-border);
+  color: var(--opt-text);
+}
+
+:root[data-mantine-color-scheme="dark"] .mantine-Modal-content .mantine-Button-root[data-variant="default"]:hover:not(:disabled) {
+  background: var(--opt-hover);
+}
+
+:root[data-mantine-color-scheme="dark"] .mantine-Modal-content .mantine-Button-root[data-variant="outline"] {
+  background: transparent;
+  border-color: var(--opt-border-strong);
+}
+
+:root[data-mantine-color-scheme="dark"] .mantine-Modal-content .mantine-Button-root[data-variant="outline"][data-color="accent"] {
+  color: var(--opt-accent);
+  border-color: color-mix(in srgb, var(--opt-accent) 40%, var(--opt-border-strong));
+}
+
+:root[data-mantine-color-scheme="dark"] .mantine-Modal-content .mantine-Button-root[data-variant="outline"][data-color="accent"]:hover:not(:disabled) {
+  background: var(--mantine-color-accent-light);
+}
+
+/* Menus / dropdowns: elevated surface (no Mantine drift). */
 :root[data-mantine-color-scheme="dark"] .mantine-Popover-dropdown,
 :root[data-mantine-color-scheme="dark"] .mantine-Menu-dropdown,
 :root[data-mantine-color-scheme="dark"] .mantine-Select-dropdown {
@@ -89,6 +121,7 @@
 
 :root[data-mantine-color-scheme="dark"] .mantine-SegmentedControl-root {
   background: var(--opt-bg);
+  border: 1px solid var(--opt-border);
 }
 
 :root[data-mantine-color-scheme="dark"] .mantine-Checkbox-input:not(:checked) {
@@ -350,6 +383,20 @@ body,
   border: none;
   background: rgba(0, 0, 0, 0.28);
   cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.sidebar-backdrop[data-visible="true"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@starting-style {
+  .sidebar-backdrop[data-visible="true"] {
+    opacity: 0;
+  }
 }
 
 .content-outline {
@@ -473,6 +520,14 @@ body,
 .content-outline-link[data-active="true"] {
   background: color-mix(in srgb, var(--opt-accent) 22%, transparent);
   color: var(--opt-accent);
+}
+
+:root[data-mantine-color-scheme="dark"] .content-outline-link {
+  border: 1px solid transparent;
+}
+
+:root[data-mantine-color-scheme="dark"] .content-outline-link[data-active="true"] {
+  border-color: var(--opt-border);
 }
 
 .content-outline-link[data-kind="subheading"][data-active="true"] {
@@ -637,6 +692,30 @@ body,
   width: 100%;
 }
 
+.workspace-content {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Enter-only fade on prayer switch — exit stays instant so list hopping stays snappy. */
+.workspace-content[data-view="prayer"] {
+  animation: workspace-content-enter 120ms ease forwards;
+}
+
+@keyframes workspace-content-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 .workspace {
   display: flex;
   flex-direction: column;
@@ -695,6 +774,10 @@ body,
     background-color 120ms ease,
     border-color 120ms ease,
     transform 100ms ease-out;
+}
+
+:root[data-mantine-color-scheme="dark"] .split-chip {
+  border-color: var(--opt-border);
 }
 
 .split-chip:hover {
@@ -1091,6 +1174,25 @@ body,
   /* same flex row; input grows, buttons stay put */
 }
 
+.find-replace-replace-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 200ms ease,
+    opacity 200ms ease;
+}
+
+.find-replace-replace-wrap[data-expanded="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.find-replace-replace-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .find-replace-input {
   flex: 1 1 0;
   min-width: 3rem;
@@ -1176,6 +1278,39 @@ body,
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  animation: library-welcome-enter 300ms ease forwards;
+}
+
+@keyframes library-welcome-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.library-welcome-recents .library-welcome-recent-row {
+  animation: library-welcome-enter 300ms ease forwards;
+}
+
+.library-welcome-recents .library-welcome-recent-row:nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.library-welcome-recents .library-welcome-recent-row:nth-child(3) {
+  animation-delay: 80ms;
+}
+
+.library-welcome-recents .library-welcome-recent-row:nth-child(4) {
+  animation-delay: 120ms;
+}
+
+.library-welcome-recents .library-welcome-recent-row:nth-child(n + 5) {
+  animation-delay: 120ms;
 }
 
 .library-welcome-kicker {
@@ -1356,6 +1491,19 @@ body,
 .prayer-row:hover,
 .prayer-row[data-active="true"] {
   background: rgba(0, 0, 0, 0.04);
+}
+
+:root[data-mantine-color-scheme="dark"] .prayer-row {
+  border: 1px solid transparent;
+}
+
+:root[data-mantine-color-scheme="dark"] .prayer-row:hover {
+  background: var(--opt-hover);
+}
+
+:root[data-mantine-color-scheme="dark"] .prayer-row[data-active="true"] {
+  background: var(--opt-hover);
+  border-color: var(--opt-border);
 }
 
 .prayer-row-main {
@@ -1602,6 +1750,7 @@ body,
 
 :root[data-mantine-color-scheme="dark"] .color-select-trigger {
   background: var(--opt-bg);
+  border-color: var(--opt-border);
 }
 
 .color-swatch {
@@ -1638,6 +1787,19 @@ body,
 .option-row[data-active="true"] {
   background: rgba(0, 0, 0, 0.07);
   font-weight: 600;
+}
+
+:root[data-mantine-color-scheme="dark"] .option-row {
+  border: 1px solid transparent;
+}
+
+:root[data-mantine-color-scheme="dark"] .option-row:hover {
+  background: var(--opt-hover);
+}
+
+:root[data-mantine-color-scheme="dark"] .option-row[data-active="true"] {
+  background: var(--opt-hover-strong);
+  border-color: var(--opt-border);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1720,11 +1882,66 @@ body,
   font-weight: 600;
 }
 
+:root[data-mantine-color-scheme="dark"] .settings-hub-nav-item {
+  border: 1px solid transparent;
+}
+
+:root[data-mantine-color-scheme="dark"] .settings-hub-nav-item[data-active] {
+  border-color: var(--opt-border);
+}
+
 .settings-hub-pane {
+  position: relative;
   flex: 1 1 0;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
+  background: var(--opt-surface-solid);
+}
+
+:root[data-mantine-color-scheme="dark"] .settings-hub-pane {
+  background: var(--opt-bg);
+}
+
+.settings-hub-pane-section {
+  position: absolute;
+  inset: 0;
   overflow: auto;
   padding: 20px 24px 24px;
-  background: var(--opt-surface-solid);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+.settings-hub-pane-section[data-active="true"] {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+
+/* Settings accordions (separated) — same surface as modal/inputs in dark mode. */
+:root[data-mantine-color-scheme="dark"] .settings-accordion .mantine-Accordion-item {
+  background: var(--opt-bg);
+  border-color: var(--opt-border);
+}
+
+:root[data-mantine-color-scheme="dark"] .settings-accordion .mantine-Accordion-item[data-active] {
+  background: var(--opt-bg);
+  border-color: var(--opt-border);
+}
+
+/* Hover the full header row (control + Remove), not just the control. */
+.settings-accordion .mantine-Accordion-item > .mantine-Group {
+  width: 100%;
+  border-radius: inherit;
+  transition: background-color 120ms ease;
+}
+
+.settings-accordion .mantine-Accordion-item > .mantine-Group:hover {
+  background: var(--opt-hover);
+}
+
+.settings-accordion .mantine-Accordion-control:hover,
+.settings-accordion .mantine-Accordion-control:active {
+  background: transparent;
 }

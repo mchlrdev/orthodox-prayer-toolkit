@@ -220,6 +220,19 @@ export function App() {
     !overlayLibraryPinned &&
     (!libraryCollapsed || !contentCollapsed);
 
+  const workspaceView = useMemo(() => {
+    if (selectedPath && !draft) {
+      return { key: `invalid:${selectedPath}`, kind: "invalid" as const };
+    }
+    if (draft && visibleVariants.length > 0) {
+      return { key: `prayer:${selectedPath}`, kind: "prayer" as const };
+    }
+    if (library) {
+      return { key: "pick", kind: "pick" as const };
+    }
+    return { key: "welcome", kind: "welcome" as const };
+  }, [selectedPath, draft, visibleVariants.length, library]);
+
   return (
     <>
       <div
@@ -285,52 +298,58 @@ export function App() {
         </aside>
 
         <main className="workspace-main">
-          {selectedPath && !draft ? (
-            <InvalidPrayerScreen path={selectedPath} errors={draftErrors} />
-          ) : draft && visibleVariants.length > 0 ? (
-            <PrayerWorkspace
-              prayer={draft}
-              prayerPath={selectedPath ?? ""}
-              libraryRoot={library?.root ?? ""}
-              visibleVariants={visibleVariants}
-              styles={resolvedStyles}
-              styleEditing={{
-                resolved: resolvedStyles,
-                appStyles,
-                libraryStyles: library?.libraryStyles ?? {},
-                libraryEnabled: Boolean(library),
-                onChangeApp: (next) => void session.persistAppStyles(next),
-                onChangeLibrary: (next) =>
-                  void session.persistLibraryStyles(next),
-              }}
-              busy={busy}
-              dirty={dirty}
-              editorRef={editorRef}
-              scrollRootRef={scrollRootRef}
-              onChange={session.updateDraft}
-              onVisibleVariantsChange={setVisibleVariants}
-              onSave={() => void session.saveDraft()}
-              onSettings={() => setSettingsOpen(true)}
-              onExport={() => setExportOpen(true)}
-              onRenameKind={(from, to) => {
-                void session.requestKindRename(from, to);
-              }}
-            />
-          ) : library ? (
-            <div className="workspace-empty">
-              Select a prayer from the library.
-            </div>
-          ) : (
-            <LibraryWelcome
-              recent={recentLibraries}
-              busy={busy}
-              desktopAvailable={!isBrowserDev()}
-              onOpenRecent={handleOpenRecent}
-              onRemoveRecent={session.removeRecentLibrary}
-              onOpenFolder={handleOpenFolder}
-              onNewLibrary={() => setNewLibraryOpen(true)}
-            />
-          )}
+          <div
+            className="workspace-content"
+            key={workspaceView.key}
+            data-view={workspaceView.kind}
+          >
+            {selectedPath && !draft ? (
+              <InvalidPrayerScreen path={selectedPath} errors={draftErrors} />
+            ) : draft && visibleVariants.length > 0 ? (
+              <PrayerWorkspace
+                prayer={draft}
+                prayerPath={selectedPath ?? ""}
+                libraryRoot={library?.root ?? ""}
+                visibleVariants={visibleVariants}
+                styles={resolvedStyles}
+                styleEditing={{
+                  resolved: resolvedStyles,
+                  appStyles,
+                  libraryStyles: library?.libraryStyles ?? {},
+                  libraryEnabled: Boolean(library),
+                  onChangeApp: (next) => void session.persistAppStyles(next),
+                  onChangeLibrary: (next) =>
+                    void session.persistLibraryStyles(next),
+                }}
+                busy={busy}
+                dirty={dirty}
+                editorRef={editorRef}
+                scrollRootRef={scrollRootRef}
+                onChange={session.updateDraft}
+                onVisibleVariantsChange={setVisibleVariants}
+                onSave={() => void session.saveDraft()}
+                onSettings={() => setSettingsOpen(true)}
+                onExport={() => setExportOpen(true)}
+                onRenameKind={(from, to) => {
+                  void session.requestKindRename(from, to);
+                }}
+              />
+            ) : library ? (
+              <div className="workspace-empty">
+                Select a prayer from the library.
+              </div>
+            ) : (
+              <LibraryWelcome
+                recent={recentLibraries}
+                busy={busy}
+                desktopAvailable={!isBrowserDev()}
+                onOpenRecent={handleOpenRecent}
+                onRemoveRecent={session.removeRecentLibrary}
+                onOpenFolder={handleOpenFolder}
+                onNewLibrary={() => setNewLibraryOpen(true)}
+              />
+            )}
+          </div>
         </main>
 
         <aside
@@ -371,10 +390,13 @@ export function App() {
           )}
         </ActionIcon>
 
-        {showBackdrop ? (
+        {overlayMode && !overlayLibraryPinned ? (
           <button
             type="button"
             className="sidebar-backdrop"
+            data-visible={showBackdrop ? "true" : undefined}
+            aria-hidden={!showBackdrop}
+            tabIndex={showBackdrop ? 0 : -1}
             aria-label="Close sidebar"
             onClick={closeOverlays}
           />

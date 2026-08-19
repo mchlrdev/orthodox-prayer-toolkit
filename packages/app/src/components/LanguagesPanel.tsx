@@ -84,6 +84,7 @@ export function LanguagesPanel({
   return (
     <Stack gap="sm">
       <Accordion
+        className="settings-accordion"
         variant="separated"
         radius="md"
         value={openedLanguage}

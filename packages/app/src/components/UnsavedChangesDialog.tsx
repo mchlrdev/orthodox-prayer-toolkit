@@ -34,19 +34,19 @@ export function UnsavedChangesDialog({
     >
       <Stack gap="md">
         <Text size="sm">{label} Save all, discard all, or cancel.</Text>
-        <Group justify="flex-end" gap="xs">
+        <Group justify="flex-end" gap="sm" wrap="wrap">
           <Button variant="default" onClick={onCancel} disabled={loading}>
             Cancel
           </Button>
           <Button
-            variant="default"
+            variant="outline"
             color="accent"
             onClick={onDiscard}
             disabled={loading}
           >
             Discard all
           </Button>
-          <Button onClick={onSaveAll} loading={loading}>
+          <Button color="accent" onClick={onSaveAll} loading={loading}>
             Save all
           </Button>
         </Group>

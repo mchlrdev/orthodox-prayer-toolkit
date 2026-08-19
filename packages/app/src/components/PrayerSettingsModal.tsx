@@ -96,13 +96,21 @@ export function PrayerSettingsModal({
           })}
         </nav>
         <div className="settings-hub-pane">
-          <div hidden={pane !== "prayer"}>
+          <div
+            className="settings-hub-pane-section"
+            data-active={pane === "prayer" ? "true" : undefined}
+            aria-hidden={pane !== "prayer"}
+          >
             <Stack gap="lg">
               <PrayerBasicsFields prayer={prayer} onChange={onChange} />
               <ExtraFieldsEditor prayer={prayer} onChange={onChange} />
             </Stack>
           </div>
-          <div hidden={pane !== "languages"}>
+          <div
+            className="settings-hub-pane-section"
+            data-active={pane === "languages" ? "true" : undefined}
+            aria-hidden={pane !== "languages"}
+          >
             <LanguagesPanel
               prayer={prayer}
               activeVariant={activeVariant}
@@ -110,7 +118,11 @@ export function PrayerSettingsModal({
               onActiveVariantChange={onActiveVariantChange}
             />
           </div>
-          <div hidden={pane !== "styles"}>
+          <div
+            className="settings-hub-pane-section"
+            data-active={pane === "styles" ? "true" : undefined}
+            aria-hidden={pane !== "styles"}
+          >
             <KindStylesPanel
               kinds={styles.kinds}
               resolved={styles.resolved}
