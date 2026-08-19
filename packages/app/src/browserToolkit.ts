@@ -181,6 +181,8 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
     },
 
     onCloseRequested: () => () => {},
+    onFindRequested: () => () => {},
+    onFindNextRequested: () => () => {},
     confirmClose: () => {},
     setDirty: () => {},
 

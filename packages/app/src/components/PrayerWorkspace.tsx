@@ -1,4 +1,4 @@
-import { useMemo, useRef, type Ref } from "react";
+import { useCallback, useMemo, useRef, type Ref } from "react";
 import {
   ActionIcon,
   Badge,
@@ -12,6 +12,7 @@ import {
   IconColumns2,
   IconDownload,
   IconPlus,
+  IconSearch,
   IconSettings,
   IconX,
 } from "@tabler/icons-react";
@@ -22,7 +23,10 @@ import {
   type VariantMeta,
 } from "@orthodox-prayer-toolkit/core";
 import { InlineEditor, type InlineEditorHandle } from "./InlineEditor";
+import { FindReplacePanel } from "./FindReplacePanel";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { usePrayerScroll } from "../prayerScroll";
+import { useFindReplace } from "../findReplace/useFindReplace";
 import {
   parseVariantKey,
   sameVariant,
@@ -155,6 +159,14 @@ export function PrayerWorkspace({
   onRenameKind,
 }: Props) {
   const bodyRef = useRef<HTMLDivElement | null>(null);
+  const localEditorRef = useRef<InlineEditorHandle | null>(null);
+  const setEditorRef = useCallback(
+    (handle: InlineEditorHandle | null) => {
+      localEditorRef.current = handle;
+      assignRef(editorRef, handle);
+    },
+    [editorRef],
+  );
   usePrayerScroll(libraryRoot, prayerPath, bodyRef);
   const split = visibleVariants.length > 1;
 
@@ -205,9 +217,20 @@ export function PrayerWorkspace({
 
   const headerTitle = resolveDisplayTitle(prayer, visibleVariants[0] ?? null);
 
+  const findReplace = useFindReplace({
+    prayer,
+    prayerPath,
+    visibleVariants,
+    onChange,
+    scrollRootRef: bodyRef,
+  });
+
   return (
     <div className="workspace">
-      <div className="workspace-header">
+      <div
+        className="workspace-header"
+        data-find-open={findReplace.state.open ? "true" : undefined}
+      >
         <div className="workspace-header-top">
           <Group gap="sm" wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
             <h1 className="workspace-title">{headerTitle}</h1>
@@ -218,6 +241,18 @@ export function PrayerWorkspace({
             ) : null}
           </Group>
           <Group gap="xs" wrap="nowrap">
+            <Tooltip label="Find (⌘F)" withArrow openDelay={300}>
+              <ActionIcon
+                size="sm"
+                variant={findReplace.state.open ? "light" : "subtle"}
+                color={findReplace.state.open ? "accent" : "gray"}
+                aria-label="Find"
+                aria-pressed={findReplace.state.open}
+                onClick={() => findReplace.toggleFind()}
+              >
+                <IconSearch size={16} />
+              </ActionIcon>
+            </Tooltip>
             <Tooltip label="Settings" withArrow openDelay={300}>
               <ActionIcon
                 size="sm"
@@ -317,6 +352,44 @@ export function PrayerWorkspace({
             </div>
           </div>
         ) : null}
+
+        {findReplace.state.open ? (
+          <FindReplacePanel
+            state={findReplace.state}
+            matchCount={findReplace.matches.length}
+            currentIndex={findReplace.activeIndex}
+            findInputRef={findReplace.findInputRef}
+            replaceInputRef={findReplace.replaceInputRef}
+            onQueryChange={(query) =>
+              findReplace.patch({ query, currentIndex: 0 })
+            }
+            onReplaceWithChange={(replaceWith) =>
+              findReplace.patch({ replaceWith })
+            }
+            onToggleMatchCase={() =>
+              findReplace.patch({
+                matchCase: !findReplace.state.matchCase,
+                currentIndex: 0,
+              })
+            }
+            onToggleWholeWord={() =>
+              findReplace.patch({
+                wholeWord: !findReplace.state.wholeWord,
+                currentIndex: 0,
+              })
+            }
+            onToggleReplaceExpanded={() =>
+              findReplace.patch({
+                replaceExpanded: !findReplace.state.replaceExpanded,
+              })
+            }
+            onClose={findReplace.closeFind}
+            onNext={findReplace.goNext}
+            onPrev={findReplace.goPrev}
+            onReplaceCurrent={findReplace.replaceCurrent}
+            onReplaceAll={findReplace.requestReplaceAll}
+          />
+        ) : null}
       </div>
 
       <div
@@ -328,7 +401,7 @@ export function PrayerWorkspace({
       >
         <div className="workspace-body-inner" data-split={split ? "true" : undefined}>
           <InlineEditor
-            ref={editorRef}
+            ref={setEditorRef}
             prayer={prayer}
             visibleVariants={visibleVariants}
             styles={styles}
@@ -338,6 +411,19 @@ export function PrayerWorkspace({
           />
         </div>
       </div>
+
+      <ConfirmDialog
+        opened={findReplace.replaceAllOpen}
+        onClose={findReplace.cancelReplaceAll}
+        onConfirm={findReplace.confirmReplaceAll}
+        title="Replace all?"
+        message={`Replace ${findReplace.replaceAllSummary.count} occurrence${
+          findReplace.replaceAllSummary.count === 1 ? "" : "s"
+        } in ${findReplace.replaceAllSummary.blockCount} block${
+          findReplace.replaceAllSummary.blockCount === 1 ? "" : "s"
+        }?`}
+        confirmLabel="Replace all"
+      />
     </div>
   );
 }

@@ -102,8 +102,8 @@ function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 1280,
     height: 840,
-    // Match --opt-sidebar-width; overlay mode already handles narrow layouts.
-    minWidth: 280,
+    // Minimum window width; find bar + chrome need ~400px.
+    minWidth: 400,
     minHeight: 400,
     title: APP_NAME,
     show: false,
@@ -745,6 +745,12 @@ function setupAutoUpdater(): void {
   }, 5_000);
 }
 
+function sendToFocusedWindow(channel: string): void {
+  const win =
+    BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+  win?.webContents.send(channel);
+}
+
 function buildAppMenu(): void {
   // Windows/Linux: no in-window menu bar (macOS uses the system menu bar).
   if (process.platform !== "darwin") {
@@ -791,6 +797,17 @@ function buildAppMenu(): void {
         { role: "copy" },
         { role: "paste" },
         { role: "selectAll" },
+        { type: "separator" },
+        {
+          label: "Find…",
+          accelerator: "CmdOrCtrl+F",
+          click: () => sendToFocusedWindow("app:find"),
+        },
+        {
+          label: "Find Next",
+          accelerator: "CmdOrCtrl+G",
+          click: () => sendToFocusedWindow("app:find-next"),
+        },
       ],
     },
     {

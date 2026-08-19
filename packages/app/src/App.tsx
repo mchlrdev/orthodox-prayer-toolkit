@@ -25,6 +25,7 @@ import { UnsavedChangesDialog } from "./components/UnsavedChangesDialog";
 import { LibraryWelcome } from "./components/LibraryWelcome";
 import { NewLibraryModal } from "./components/NewLibraryModal";
 import type { InlineEditorHandle } from "./components/InlineEditor";
+import type { LibraryEntry } from "./library";
 import { usePrayerSession } from "./usePrayerSession";
 import type { SessionNotice } from "./session";
 import { loadSidebarPrefs, saveSidebarPrefs } from "./sidebarPrefs";
@@ -70,6 +71,7 @@ export function App() {
   const overlayMode = useMediaQuery(OVERLAY_BREAKPOINT) ?? false;
   const editorRef = useRef<InlineEditorHandle>(null);
   const scrollRootRef = useRef<HTMLDivElement | null>(null);
+  const prevOverlayModeRef = useRef<boolean | null>(null);
 
   useEffect(() => {
     saveSidebarPrefs({ libraryCollapsed, contentCollapsed });
@@ -80,34 +82,14 @@ export function App() {
     setColorScheme(toMantineColorScheme(colorSchemePref));
   }, [colorSchemePref, setColorScheme]);
 
-  useEffect(() => {
-    if (!overlayMode) return;
-    if (!libraryCollapsed && !contentCollapsed) {
-      setLibraryCollapsed(true);
-    }
-  }, [overlayMode, libraryCollapsed, contentCollapsed]);
 
-  const toggleLibrary = useCallback(() => {
-    setLibraryCollapsed((c) => {
-      const next = !c;
-      if (overlayMode && !next) setContentCollapsed(true);
-      return next;
-    });
-  }, [overlayMode]);
-
-  const toggleContent = useCallback(() => {
-    setContentCollapsed((c) => {
-      const next = !c;
-      if (overlayMode && !next) setLibraryCollapsed(true);
-      return next;
-    });
-  }, [overlayMode]);
-
-  const closeOverlays = useCallback(() => {
-    if (!overlayMode) return;
-    setLibraryCollapsed(true);
-    setContentCollapsed(true);
-  }, [overlayMode]);
+  const handleSelectEntry = useCallback(
+    (entry: LibraryEntry) => {
+      void session.openEntry(entry);
+      if (overlayMode) setLibraryCollapsed(true);
+    },
+    [overlayMode, session],
+  );
 
   const handleOutlineJump = useCallback(
     (blockId: string) => {
@@ -149,6 +131,52 @@ export function App() {
     leaveBusy,
   } = session;
 
+  const overlayLibraryPinned =
+    overlayMode &&
+    Boolean(library) &&
+    !(selectedPath && !draft) &&
+    !(draft && visibleVariants.length > 0);
+
+  useEffect(() => {
+    const prev = prevOverlayModeRef.current;
+    prevOverlayModeRef.current = overlayMode;
+    if (!overlayMode) return;
+
+    if (overlayLibraryPinned) {
+      setLibraryCollapsed(false);
+      setContentCollapsed(true);
+      return;
+    }
+
+    if (prev === null || !prev) {
+      setLibraryCollapsed(true);
+      setContentCollapsed(true);
+    }
+  }, [overlayMode, overlayLibraryPinned]);
+
+  const toggleLibrary = useCallback(() => {
+    setLibraryCollapsed((c) => {
+      if (overlayLibraryPinned) return false;
+      const next = !c;
+      if (overlayMode && !next) setContentCollapsed(true);
+      return next;
+    });
+  }, [overlayMode, overlayLibraryPinned]);
+
+  const toggleContent = useCallback(() => {
+    setContentCollapsed((c) => {
+      const next = !c;
+      if (overlayMode && !next) setLibraryCollapsed(true);
+      return next;
+    });
+  }, [overlayMode]);
+
+  const closeOverlays = useCallback(() => {
+    if (!overlayMode || overlayLibraryPinned) return;
+    setLibraryCollapsed(true);
+    setContentCollapsed(true);
+  }, [overlayMode, overlayLibraryPinned]);
+
   useEffect(() => {
     setSettingsPane("prayer");
   }, [selectedPath]);
@@ -188,7 +216,9 @@ export function App() {
   }, [library, unsaved, draft, createDraft]);
 
   const showBackdrop =
-    overlayMode && (!libraryCollapsed || !contentCollapsed);
+    overlayMode &&
+    !overlayLibraryPinned &&
+    (!libraryCollapsed || !contentCollapsed);
 
   return (
     <>
@@ -238,7 +268,7 @@ export function App() {
               busy={busy}
               description={library?.manifest?.description}
               recent={recentLibraries}
-              onSelect={(entry) => void session.openEntry(entry)}
+              onSelect={handleSelectEntry}
               onOpenFolder={handleOpenFolder}
               onOpenRecent={handleOpenRecent}
               onRemoveRecent={session.removeRecentLibrary}

@@ -248,6 +248,60 @@ export function mapOffsetToLine(
   };
 }
 
+function resolveTextNode(
+  root: HTMLElement,
+  offset: number,
+): { node: Text; offset: number } | null {
+  let remaining = Math.max(0, offset);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let last: Text | null = null;
+  let node = walker.nextNode() as Text | null;
+  while (node) {
+    last = node;
+    const len = node.textContent?.length ?? 0;
+    if (remaining <= len) {
+      return { node, offset: remaining };
+    }
+    remaining -= len;
+    node = walker.nextNode() as Text | null;
+  }
+  if (last) {
+    return { node: last, offset: last.textContent?.length ?? 0 };
+  }
+  return null;
+}
+
+/** Build a DOM range from plain-text offsets inside a contenteditable root. */
+export function createRangeFromOffsets(
+  root: HTMLElement,
+  start: number,
+  end: number,
+): Range | null {
+  let from = Math.max(0, start);
+  let to = Math.max(0, end);
+  if (to < from) [from, to] = [to, from];
+
+  const startPos = resolveTextNode(root, from);
+  const endPos = resolveTextNode(root, to);
+  if (!startPos || !endPos) return null;
+
+  const range = document.createRange();
+  range.setStart(startPos.node, startPos.offset);
+  range.setEnd(endPos.node, endPos.offset);
+  return range;
+}
+
+/** Client rectangles for a plain-text range inside an editable root. */
+export function rangeRectsFromOffsets(
+  root: HTMLElement,
+  start: number,
+  end: number,
+): DOMRect[] {
+  const range = createRangeFromOffsets(root, start, end);
+  if (!range) return [];
+  return [...range.getClientRects()];
+}
+
 export function findNoteRunIndexAtOffset(
   content: InlineContent,
   offset: number,

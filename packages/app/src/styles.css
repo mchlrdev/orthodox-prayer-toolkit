@@ -12,7 +12,9 @@
   --opt-hover: rgba(0, 0, 0, 0.04);
   --opt-hover-strong: rgba(0, 0, 0, 0.08);
   --opt-glass: rgba(255, 255, 255, 0.92);
+  --opt-on-accent: #ffffff;
   --opt-sidebar-width: 280px;
+  --opt-min-app-width: 400px;
   --opt-prayer-font: "Source Serif 4", "Iowan Old Style", "Palatino Linotype",
     Palatino, Georgia, serif;
   color-scheme: light;
@@ -33,6 +35,7 @@
   --opt-hover: rgba(255, 255, 255, 0.06);
   --opt-hover-strong: rgba(255, 255, 255, 0.1);
   --opt-glass: rgba(28, 28, 30, 0.94);
+  --opt-on-accent: #1a1a1a;
   color-scheme: dark;
 }
 
@@ -107,6 +110,7 @@ body,
 #root {
   height: 100%;
   width: 100%;
+  min-width: var(--opt-min-app-width);
   margin: 0;
   background: var(--opt-bg);
   color: var(--opt-text);
@@ -1050,6 +1054,88 @@ body,
   display: flex;
   flex-direction: column;
   align-items: stretch;
+}
+
+::highlight(find-match) {
+  background-color: color-mix(in srgb, var(--opt-accent) 28%, transparent);
+}
+
+::highlight(find-match-current) {
+  background-color: var(--opt-accent);
+  color: var(--opt-on-accent);
+}
+
+.find-replace-panel {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-inline: 20px;
+  padding-block-start: 4px;
+  padding-block-end: 12px;
+}
+
+.workspace-header[data-find-open="true"] .workspace-split-bar {
+  padding-bottom: 8px;
+}
+
+.find-replace-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.find-replace-row-replace {
+  /* same flex row; input grows, buttons stay put */
+}
+
+.find-replace-input {
+  flex: 1 1 0;
+  min-width: 3rem;
+}
+
+.find-replace-input .mantine-Input-wrapper,
+.find-replace-input .mantine-Input-input {
+  min-width: 0;
+}
+
+.find-replace-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.find-replace-toggles,
+.find-replace-nav {
+  flex-shrink: 0;
+}
+
+.find-replace-toggles .find-replace-toggle-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.find-replace-counter {
+  flex: 0 0 4.5rem;
+  width: 4.5rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.find-replace-row-replace .find-replace-actions {
+  gap: 8px;
+}
+
+.find-replace-input .mantine-Input-input {
+  min-height: 28px;
+  height: 28px;
 }
 
 .workspace-body-inner {

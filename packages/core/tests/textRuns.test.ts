@@ -4,6 +4,7 @@ import {
   normalizeRuns,
   packInline,
   plainText,
+  replaceRangeInInline,
   splitInline,
   toRuns,
   toggleNoteRange,
@@ -188,6 +189,27 @@ describe("splitInline", () => {
         { t: "text", v: ":" },
       ],
     });
+  });
+});
+
+describe("replaceRangeInInline", () => {
+  it("replaces plain text", () => {
+    expect(replaceRangeInInline("Hello world", 6, 11, "there")).toBe("Hello there");
+  });
+
+  it("keeps note role when replacing inside a note run", () => {
+    const content: InlineContent = [
+      { t: "text", v: "Kyrie " },
+      { t: "note", v: "eleison" },
+    ];
+    expect(replaceRangeInInline(content, 6, 13, "Lord")).toEqual([
+      { t: "text", v: "Kyrie " },
+      { t: "note", v: "Lord" },
+    ]);
+  });
+
+  it("inserts text when range is empty", () => {
+    expect(replaceRangeInInline("Amen", 4, 4, "!")).toBe("Amen!");
   });
 });
 

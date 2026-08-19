@@ -307,6 +307,47 @@ export function splitInline(
   };
 }
 
+/**
+ * Replace plain-text [start, end) with `replacement`, preserving run roles
+ * outside the range. Replacement inherits the role when the range lies entirely
+ * within one run; otherwise it is inserted as text.
+ */
+export function replaceRangeInInline(
+  content: InlineContent,
+  start: number,
+  end: number,
+  replacement: string,
+): InlineContent {
+  const runs = normalizeRuns(toRuns(content));
+  const plain = plainText(runs);
+  let from = Math.max(0, Math.min(start, plain.length));
+  let to = Math.max(0, Math.min(end, plain.length));
+  if (to < from) [from, to] = [to, from];
+
+  if (from === to && replacement.length === 0) {
+    return packInline(runs) ?? "";
+  }
+
+  let replaceRole: "text" | "note" = "text";
+  let pos = 0;
+  for (const run of runs) {
+    const next = pos + run.v.length;
+    if (from >= pos && to <= next) {
+      replaceRole = run.t;
+      break;
+    }
+    pos = next;
+  }
+
+  const { before, after } = splitInline(content, from, to);
+  const pieces: TextRun[] = [...toRuns(before ?? "")];
+  if (replacement.length > 0) {
+    pieces.push({ t: replaceRole, v: replacement });
+  }
+  pieces.push(...toRuns(after ?? ""));
+  return packInline(pieces) ?? "";
+}
+
 /** Convert the note run at `runIndex` to text and repack. */
 export function unmarkNoteAt(
   content: InlineContent,

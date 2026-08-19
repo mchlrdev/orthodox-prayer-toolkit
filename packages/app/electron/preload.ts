@@ -49,6 +49,10 @@ export type PrayerToolkitApi = {
   pickPrayerJson: () => Promise<{ name: string; content: string } | null>;
   showItem: (fullPath: string) => Promise<void>;
   basename: (path: string) => Promise<string>;
+  /** Electron only: subscribe to Edit → Find. Returns unsubscribe. */
+  onFindRequested: (cb: () => void) => () => void;
+  /** Electron only: subscribe to Edit → Find Next. Returns unsubscribe. */
+  onFindNextRequested: (cb: () => void) => () => void;
   /** Electron only: subscribe to window close requests. Returns unsubscribe. */
   onCloseRequested: (cb: () => void) => () => void;
   /** Electron only: allow the window to close after unsaved-changes handling. */
@@ -98,6 +102,20 @@ const api: PrayerToolkitApi = {
     ipcRenderer.on("app:close-requested", handler);
     return () => {
       ipcRenderer.removeListener("app:close-requested", handler);
+    };
+  },
+  onFindRequested: (cb) => {
+    const handler = () => cb();
+    ipcRenderer.on("app:find", handler);
+    return () => {
+      ipcRenderer.removeListener("app:find", handler);
+    };
+  },
+  onFindNextRequested: (cb) => {
+    const handler = () => cb();
+    ipcRenderer.on("app:find-next", handler);
+    return () => {
+      ipcRenderer.removeListener("app:find-next", handler);
     };
   },
   confirmClose: () => {
