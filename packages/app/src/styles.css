@@ -67,15 +67,11 @@
 
 :root[data-mantine-color-scheme="dark"] .mantine-Modal-content .mantine-Button-root[data-variant="outline"] {
   background: transparent;
-  border-color: var(--opt-border-strong);
-}
-
-:root[data-mantine-color-scheme="dark"] .mantine-Modal-content .mantine-Button-root[data-variant="outline"][data-color="accent"] {
-  color: var(--opt-accent);
   border-color: color-mix(in srgb, var(--opt-accent) 40%, var(--opt-border-strong));
+  color: var(--opt-accent);
 }
 
-:root[data-mantine-color-scheme="dark"] .mantine-Modal-content .mantine-Button-root[data-variant="outline"][data-color="accent"]:hover:not(:disabled) {
+:root[data-mantine-color-scheme="dark"] .mantine-Modal-content .mantine-Button-root[data-variant="outline"]:hover:not(:disabled) {
   background: var(--mantine-color-accent-light);
 }
 
