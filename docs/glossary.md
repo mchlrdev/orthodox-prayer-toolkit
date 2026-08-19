@@ -10,9 +10,9 @@ Shared domain language for humans and agents. Prefer these terms in UI, docs, an
 | **Prayer** | One self-contained multilingual JSON document (`Prayer` type). | document (ambiguous), page |
 | **Variant** | One `(lang, variant)` edition in the prayer’s registry, with its own title, license, and source. | locale alone, translation file |
 | **Block** | One unit in a Prayer `structure` (`id`, `kind`, `translations`). Editor commits and reorder ops mutate Blocks, not free-form HTML. | paragraph, section, row |
-| **Kind** | Open string semantic role on a block (`verse`, `annotation`, custom…). | tag (HTML), style name |
-| **Kind style** | Visual tokens for a block kind (`fontSize`, `color`, `fontWeight`, `fontStyle`, optional `initialCap` / `htmlTag`). From app defaults and library `styles.json` after allowlisted validation. | CSS theme, stylesheet |
-| **Kind rename** | Renaming a block kind updates every prayer in the open Library that uses it (and both style maps). Confirm when more than one prayer is affected. | refactor kind, retag |
+| **Kind** | Open string semantic role on a block (`verse`, `annotation`, custom…). Built-in presets keep lowercase ids in JSON; the app shows title-case labels and does not allow renaming or deleting them. Custom kinds are stored on the library (`styles.json`) and remain until removed, even if unused. | tag (HTML), style name |
+| **Kind style** | Visual tokens for a block kind (`fontSize`, `color`, `fontWeight`, `fontStyle`, optional `initialCap` / `htmlTag`). Built-in defaults plus the open library’s `styles.json`. | CSS theme, stylesheet |
+| **Kind rename** | Renaming a block kind updates every prayer in the open Library that uses it (and the library style map). Confirm when more than one prayer is affected. | refactor kind, retag |
 | **Flat export** | Single-variant derived document from `exportVariant`. | “compile”, “render” |
 | **Structure (model A)** | Shared block skeleton; texts hang off per-variant translations on each block. | parallel files per language |
 

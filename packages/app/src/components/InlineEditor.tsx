@@ -24,6 +24,7 @@ import {
 import {
   FALLBACK_KIND_STYLE,
   isRunArray,
+  kindDisplayLabel,
   plainText,
   toggleNoteRange,
   type InlineContent,
@@ -66,8 +67,6 @@ type StyleEditing = {
   resolved: StyleMap;
   appStyles: StyleMap;
   libraryStyles: StyleMap;
-  target: "app" | "library";
-  onTargetChange: (t: "app" | "library") => void;
   libraryEnabled: boolean;
   onChangeApp: (next: StyleMap) => void;
   onChangeLibrary: (next: StyleMap) => void;
@@ -647,7 +646,10 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
   const kindUiBlockIdRef = useRef<string | null>(null);
   kindUiBlockIdRef.current = kindUiBlockId;
 
-  const kinds = useMemo(() => kindOptions(prayer), [prayer]);
+  const kinds = useMemo(
+    () => kindOptions(prayer, Object.keys(styleEditing.resolved)),
+    [prayer, styleEditing.resolved],
+  );
   const split = visibleVariants.length > 1;
   const kindsUsedKey = prayer.structure.map((b) => b.kind).join("\0");
 
@@ -989,6 +991,11 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                 if (target.closest(".inline-block-chrome")) return;
                 if (target.closest(".inline-content")) return;
                 if (target.closest(".inline-note-toolbar")) return;
+                // Kind edit / pickers portal to document.body; without this,
+                // preventDefault below steals focus from the Kind name field.
+                if (target.closest("[role='dialog']")) return;
+                if (target.closest(".mantine-Popover-dropdown")) return;
+                if (target.closest(".mantine-Combobox-dropdown")) return;
 
                 const row = e.currentTarget.querySelector(".split-row");
                 if (!row) return;
@@ -1130,7 +1137,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
           onClick={() => addBlock()}
         >
           <IconPlus size={14} stroke={2.2} />
-          <span>Add {lastAddedKind}</span>
+          <span>Add {kindDisplayLabel(lastAddedKind)}</span>
         </button>
         <Menu shadow="md" width={180} position="bottom-start" withinPortal>
           <Menu.Target>
@@ -1150,7 +1157,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                 onClick={() => addBlock(kind)}
                 disabled={kind === lastAddedKind}
               >
-                {kind}
+                {kindDisplayLabel(kind)}
               </Menu.Item>
             ))}
           </Menu.Dropdown>

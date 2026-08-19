@@ -1,5 +1,7 @@
 import {
   deleteKind,
+  isKindPreset,
+  type KindStyle,
   renameKind,
   type Prayer,
   type StyleMap,
@@ -18,13 +20,23 @@ export function removeStyleKey(map: StyleMap, kind: string): StyleMap {
   return rest;
 }
 
+/** Keep a custom kind on the library even if no block uses it yet. */
+export function ensureKindStyle(
+  libraryStyles: StyleMap,
+  kind: string,
+  style: KindStyle,
+): StyleMap {
+  if (isKindPreset(kind) || kind in libraryStyles) return libraryStyles;
+  return { ...libraryStyles, [kind]: { ...style } };
+}
+
 export type KindStyleMaps = {
   prayer: Prayer;
   appStyles: StyleMap;
   libraryStyles: StyleMap;
 };
 
-/** Rename a kind on the prayer and remap both style maps. */
+/** Rename a kind on the prayer and remap both style maps. Presets are fixed. */
 export function renameKindWithStyles(
   prayer: Prayer,
   appStyles: StyleMap,
@@ -32,6 +44,9 @@ export function renameKindWithStyles(
   from: string,
   to: string,
 ): KindStyleMaps {
+  if (isKindPreset(from)) {
+    return { prayer, appStyles, libraryStyles };
+  }
   return {
     prayer: renameKind(prayer, from, to),
     appStyles: renameStyleKey(appStyles, from, to),
@@ -39,13 +54,16 @@ export function renameKindWithStyles(
   };
 }
 
-/** Delete a kind on the prayer and drop style keys. */
+/** Delete a kind on the prayer and drop style keys. Presets are fixed. */
 export function deleteKindWithStyles(
   prayer: Prayer,
   appStyles: StyleMap,
   libraryStyles: StyleMap,
   kind: string,
 ): KindStyleMaps {
+  if (isKindPreset(kind)) {
+    return { prayer, appStyles, libraryStyles };
+  }
   return {
     prayer: deleteKind(prayer, kind),
     appStyles: removeStyleKey(appStyles, kind),

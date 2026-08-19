@@ -8,6 +8,8 @@ type Props = {
   message: string;
   confirmLabel?: string;
   loading?: boolean;
+  zIndex?: number;
+  withinPortal?: boolean;
 };
 
 export function ConfirmDialog({
@@ -18,9 +20,19 @@ export function ConfirmDialog({
   message,
   confirmLabel = "Delete",
   loading = false,
+  zIndex,
+  withinPortal,
 }: Props) {
   return (
-    <Modal opened={opened} onClose={onClose} title={title} size="sm" centered>
+    <Modal
+      opened={opened}
+      onClose={onClose}
+      title={title}
+      size="sm"
+      centered
+      zIndex={zIndex}
+      withinPortal={withinPortal}
+    >
       <Stack gap="md">
         <Text size="sm">{message}</Text>
         <Group justify="flex-end" gap="xs">

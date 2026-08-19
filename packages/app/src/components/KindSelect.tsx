@@ -1,38 +1,39 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import {
   ActionIcon,
   Button,
   Group,
   Modal,
   Popover,
-  Select,
   Stack,
-  Tabs,
   Text,
   TextInput,
   UnstyledButton,
 } from "@mantine/core";
 import {
   IconCheck,
-  IconDots,
+  IconPencil,
   IconPlus,
   IconTrash,
 } from "@tabler/icons-react";
 import {
   FALLBACK_KIND_STYLE,
-  KIND_PRESETS,
+  isKindPreset,
+  isValidKindId,
+  kindDisplayLabel,
+  sanitizeKindIdInput,
   type KindStyle,
   type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { KindStyleFields } from "./KindStyleFields";
+import { kindRenameIssue, orderKinds, ensureKindStyle } from "../prayerEdit";
 
 type StyleEditing = {
   resolved: StyleMap;
   appStyles: StyleMap;
   libraryStyles: StyleMap;
-  target: "app" | "library";
-  onTargetChange: (t: "app" | "library") => void;
   libraryEnabled: boolean;
   onChangeApp: (next: StyleMap) => void;
   onChangeLibrary: (next: StyleMap) => void;
@@ -53,23 +54,12 @@ type Props = {
   onIdle?: () => void;
 };
 
-/** Presets first (stable order), custom kinds at the bottom. */
-function orderKinds(options: string[]): string[] {
-  const unique = [...new Set(options)];
-  const presetSet = new Set<string>(KIND_PRESETS);
-  const presets = KIND_PRESETS.filter((k) => unique.includes(k));
-  const custom = unique
-    .filter((k) => !presetSet.has(k))
-    .sort((a, b) => a.localeCompare(b));
-  return [...presets, ...custom];
-}
-
 function styleForKind(kind: string, editing: StyleEditing): KindStyle {
-  const stored =
-    editing.target === "app"
-      ? editing.appStyles[kind]
-      : editing.libraryStyles[kind];
-  return stored ?? editing.resolved[kind] ?? FALLBACK_KIND_STYLE;
+  return (
+    editing.libraryStyles[kind] ??
+    editing.resolved[kind] ??
+    FALLBACK_KIND_STYLE
+  );
 }
 
 export function kindTriggerStyle(compact: boolean): CSSProperties {
@@ -101,7 +91,7 @@ export function KindTrigger({
       className="option-row"
       style={kindTriggerStyle(compact)}
     >
-      {value}
+      {kindDisplayLabel(value)}
     </UnstyledButton>
   );
 }
@@ -123,13 +113,15 @@ export function KindSelect({
   const [newKind, setNewKind] = useState("");
   const [editingKind, setEditingKind] = useState<string | null>(null);
   const [renameTo, setRenameTo] = useState("");
-  const [tab, setTab] = useState<string | null>("name");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const onIdleRef = useRef(onIdle);
   onIdleRef.current = onIdle;
   const idleArmedRef = useRef(defaultOpen || false);
 
   const all = orderKinds(options);
+  const editingPreset = editingKind !== null && isKindPreset(editingKind);
+  const canRenameEditing = Boolean(onRename) && !editingPreset;
+  const canDeleteEditing = Boolean(onDelete) && !editingPreset;
   const canEdit = Boolean(onRename || styleEditing || onDelete);
 
   const setOpen = (o: boolean) => {
@@ -149,8 +141,18 @@ export function KindSelect({
   }, [opened, editingKind]);
 
   const commitAdd = () => {
-    const next = newKind.trim();
-    if (!next) return;
+    const next = sanitizeKindIdInput(newKind);
+    if (!isValidKindId(next)) return;
+    if (styleEditing) {
+      const styles = ensureKindStyle(
+        styleEditing.libraryStyles,
+        next,
+        FALLBACK_KIND_STYLE,
+      );
+      if (styles !== styleEditing.libraryStyles) {
+        styleEditing.onChangeLibrary(styles);
+      }
+    }
     onChange(next);
     setNewKind("");
     setAdding(false);
@@ -158,10 +160,11 @@ export function KindSelect({
   };
 
   const openEdit = (kind: string) => {
+    const active = document.activeElement;
+    if (active instanceof HTMLElement) active.blur();
     setOpen(false);
     setEditingKind(kind);
     setRenameTo(kind);
-    setTab("name");
     setConfirmDelete(false);
   };
 
@@ -170,14 +173,17 @@ export function KindSelect({
     setConfirmDelete(false);
   };
 
-  const commitRename = () => {
-    if (!editingKind || !onRename) return;
-    const next = renameTo.trim();
-    if (!next || next === editingKind) {
-      closeEdit();
-      return;
+  const renameIssue =
+    editingKind && canRenameEditing
+      ? kindRenameIssue(editingKind, renameTo, all)
+      : null;
+
+  const finishEdit = () => {
+    if (canRenameEditing && editingKind && onRename) {
+      if (renameIssue) return;
+      const next = renameTo.trim();
+      if (next && next !== editingKind) onRename(editingKind, next);
     }
-    onRename(editingKind, next);
     closeEdit();
   };
 
@@ -195,23 +201,87 @@ export function KindSelect({
     if (!nextStyle.htmlTag) {
       delete nextStyle.htmlTag;
     }
-    if (styleEditing.target === "app") {
-      styleEditing.onChangeApp({
-        ...styleEditing.appStyles,
-        [editingKind]: nextStyle,
-      });
-    } else {
-      styleEditing.onChangeLibrary({
-        ...styleEditing.libraryStyles,
-        [editingKind]: nextStyle,
-      });
-    }
+    styleEditing.onChangeLibrary({
+      ...styleEditing.libraryStyles,
+      [editingKind]: nextStyle,
+    });
   };
 
   const currentStyle =
     editingKind && styleEditing
       ? styleForKind(editingKind, styleEditing)
       : null;
+
+  const editingLabel = editingKind ? kindDisplayLabel(editingKind) : "";
+
+  const editModal = (
+    <Modal
+      opened={editingKind !== null}
+      onClose={closeEdit}
+      title={editingKind ? `Edit kind “${editingLabel}”` : "Edit kind"}
+      size="sm"
+      centered
+      trapFocus
+      withinPortal={false}
+      zIndex={400}
+      styles={{
+        content: { overflow: "visible" },
+        body: { overflow: "visible" },
+      }}
+    >
+      <Stack
+        gap="sm"
+        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        {canRenameEditing ? (
+          <TextInput
+            label="Kind"
+            value={renameTo}
+            onChange={(e) =>
+              setRenameTo(sanitizeKindIdInput(e.currentTarget.value))
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.stopPropagation();
+                finishEdit();
+              }
+            }}
+            error={renameIssue ?? undefined}
+            autoFocus
+          />
+        ) : null}
+        {styleEditing && currentStyle ? (
+          <>
+            <KindStyleFields
+              style={currentStyle}
+              onChange={patchStyle}
+              portalDropdowns={false}
+            />
+          </>
+        ) : null}
+        <Group
+          justify={canDeleteEditing ? "space-between" : "flex-end"}
+          mt="xs"
+        >
+          {canDeleteEditing ? (
+            <Button
+              variant="subtle"
+              color="accent"
+              leftSection={<IconTrash size={14} />}
+              onClick={() => setConfirmDelete(true)}
+            >
+              Delete
+            </Button>
+          ) : null}
+          <Button onClick={finishEdit} disabled={Boolean(renameIssue)}>
+            Done
+          </Button>
+        </Group>
+      </Stack>
+    </Modal>
+  );
 
   return (
     <>
@@ -228,10 +298,17 @@ export function KindSelect({
             className="option-row"
             style={kindTriggerStyle(compact)}
           >
-            {value}
+            {kindDisplayLabel(value)}
           </UnstyledButton>
         </Popover.Target>
-        <Popover.Dropdown p={6}>
+        <Popover.Dropdown
+          p={6}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === "Escape") {
+              e.stopPropagation();
+            }
+          }}
+        >
           <Stack gap={2}>
             {all.map((kind) => {
               const active = kind === value;
@@ -247,7 +324,7 @@ export function KindSelect({
                     }}
                   >
                     <Text size="sm" style={{ flex: 1 }}>
-                      {kind}
+                      {kindDisplayLabel(kind)}
                     </Text>
                     {active ? <IconCheck size={14} /> : null}
                   </UnstyledButton>
@@ -260,9 +337,9 @@ export function KindSelect({
                         e.stopPropagation();
                         openEdit(kind);
                       }}
-                      aria-label={`Edit kind ${kind}`}
+                      aria-label={`Edit kind ${kindDisplayLabel(kind)}`}
                     >
-                      <IconDots size={14} />
+                      <IconPencil size={14} />
                     </ActionIcon>
                   ) : null}
                 </Group>
@@ -275,10 +352,20 @@ export function KindSelect({
                   size="xs"
                   placeholder="new-kind"
                   value={newKind}
-                  onChange={(e) => setNewKind(e.currentTarget.value)}
+                  onChange={(e) =>
+                    setNewKind(sanitizeKindIdInput(e.currentTarget.value))
+                  }
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") commitAdd();
-                    if (e.key === "Escape") setAdding(false);
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      commitAdd();
+                    }
+                    if (e.key === "Escape") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setAdding(false);
+                    }
                   }}
                   style={{ flex: 1 }}
                   autoFocus
@@ -303,130 +390,29 @@ export function KindSelect({
         </Popover.Dropdown>
       </Popover>
 
-      <Modal
-        opened={editingKind !== null}
-        onClose={closeEdit}
-        title={editingKind ? `Edit kind “${editingKind}”` : "Edit kind"}
-        size="sm"
-        centered
-      >
-        <Tabs value={tab} onChange={setTab}>
-          <Tabs.List mb="sm">
-            {onRename ? <Tabs.Tab value="name">Name</Tabs.Tab> : null}
-            {styleEditing ? <Tabs.Tab value="style">Style</Tabs.Tab> : null}
-          </Tabs.List>
-
-          {onRename ? (
-            <Tabs.Panel value="name">
-              <Stack gap="sm">
-                <Text size="sm" c="dimmed">
-                  Renames this kind across the current prayer.
-                </Text>
-                <TextInput
-                  label="Kind"
-                  value={renameTo}
-                  onChange={(e) => setRenameTo(e.currentTarget.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") commitRename();
-                  }}
-                  data-autofocus
-                />
-                <Group justify="space-between">
-                  {onDelete ? (
-                    <Button
-                      variant="subtle"
-                      color="accent"
-                      leftSection={<IconTrash size={14} />}
-                      onClick={() => setConfirmDelete(true)}
-                    >
-                      Delete
-                    </Button>
-                  ) : (
-                    <span />
-                  )}
-                  <Group gap="xs">
-                    <Button variant="default" onClick={closeEdit}>
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={commitRename}
-                      disabled={!renameTo.trim()}
-                    >
-                      Save
-                    </Button>
-                  </Group>
-                </Group>
-              </Stack>
-            </Tabs.Panel>
-          ) : null}
-
-          {styleEditing && currentStyle ? (
-            <Tabs.Panel value="style">
-              <Stack gap="sm">
-                <Text size="xs" c="dimmed">
-                  Styles apply to this kind only. Library overrides win over
-                  app defaults.
-                </Text>
-                <KindStyleFields
-                  style={currentStyle}
-                  onChange={patchStyle}
-                  leading={
-                    <Select
-                      label="Apply to"
-                      data={[
-                        { value: "app", label: "App defaults" },
-                        {
-                          value: "library",
-                          label: "Library override",
-                          disabled: !styleEditing.libraryEnabled,
-                        },
-                      ]}
-                      value={styleEditing.target}
-                      allowDeselect={false}
-                      onChange={(v) => {
-                        if (v === "app" || v === "library") {
-                          styleEditing.onTargetChange(v);
-                        }
-                      }}
-                    />
-                  }
-                />
-                <Group justify="space-between" mt="xs">
-                  {onDelete ? (
-                    <Button
-                      variant="subtle"
-                      color="accent"
-                      leftSection={<IconTrash size={14} />}
-                      onClick={() => setConfirmDelete(true)}
-                    >
-                      Delete
-                    </Button>
-                  ) : (
-                    <span />
-                  )}
-                  <Button onClick={closeEdit}>Done</Button>
-                </Group>
-              </Stack>
-            </Tabs.Panel>
-          ) : null}
-        </Tabs>
-      </Modal>
-
-      <ConfirmDialog
-        opened={confirmDelete && editingKind !== null}
-        onClose={() => setConfirmDelete(false)}
-        title="Delete kind?"
-        message={
-          editingKind === "verse"
-            ? `Delete “${editingKind}”? Blocks using it become annotation. Style overrides for this kind are removed.`
-            : `Delete “${editingKind ?? ""}”? Blocks using it become verse. Style overrides for this kind are removed.`
-        }
-        onConfirm={() => {
-          if (!editingKind || !onDelete) return;
-          onDelete(editingKind);
-          closeEdit();
-        }}
-      />
+      {createPortal(
+        <>
+          {editModal}
+          <ConfirmDialog
+            opened={confirmDelete && editingKind !== null && canDeleteEditing}
+            onClose={() => setConfirmDelete(false)}
+            zIndex={500}
+            withinPortal={false}
+            title="Delete kind?"
+            message={
+              editingKind === "verse"
+                ? `Delete “${editingLabel}”? Blocks using it become annotation. Style overrides for this kind are removed.`
+                : `Delete “${editingLabel}”? Blocks using it become verse. Style overrides for this kind are removed.`
+            }
+            onConfirm={() => {
+              if (!editingKind || !onDelete || isKindPreset(editingKind)) return;
+              onDelete(editingKind);
+              closeEdit();
+            }}
+          />
+        </>,
+        document.body,
+      )}
     </>
   );
 }

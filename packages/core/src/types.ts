@@ -107,7 +107,11 @@ export type IdCollision = {
   paths: string[];
 };
 
-/** Recommended kind presets for the editor (not a schema enum). */
+/**
+ * Built-in kinds for the editor (not a schema enum).
+ * JSON ids stay lowercase; the app shows {@link KIND_PRESET_LABELS}.
+ * Presets are not renameable or deletable in the UI — styles remain editable.
+ */
 export const KIND_PRESETS = [
   "heading",
   "subheading",
@@ -116,3 +120,20 @@ export const KIND_PRESETS = [
 ] as const;
 
 export type KindPreset = (typeof KIND_PRESETS)[number];
+
+/** Human-facing labels for {@link KIND_PRESETS} (ids unchanged in JSON). */
+export const KIND_PRESET_LABELS: Record<KindPreset, string> = {
+  heading: "Heading",
+  subheading: "Subheading",
+  annotation: "Annotation",
+  verse: "Verse",
+};
+
+export function isKindPreset(kind: string): kind is KindPreset {
+  return (KIND_PRESETS as readonly string[]).includes(kind);
+}
+
+/** Display label for a kind id — presets are title-cased; custom ids as-is. */
+export function kindDisplayLabel(kind: string): string {
+  return isKindPreset(kind) ? KIND_PRESET_LABELS[kind] : kind;
+}

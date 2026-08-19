@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { notifications } from "@mantine/notifications";
 import {
   DEFAULT_KIND_STYLES,
+  isKindPreset,
+  isValidKindId,
   prayerFilename,
   resolveDisplayTitle,
   resolveStyles,
@@ -171,10 +173,9 @@ export function usePrayerSession() {
     }
     return resolveStyles({
       discoveredKinds: [...discovered],
-      appDefaults: appStyles,
       libraryOverrides: library?.libraryStyles,
     });
-  }, [library, draft, appStyles]);
+  }, [library, draft]);
 
   const clearEditor = useCallback(() => {
     cancelDraftValidation();
@@ -912,7 +913,14 @@ export function usePrayerSession() {
   };
 
   const requestKindRename = async (from: string, to: string) => {
-    if (!library || from === to || !to.trim()) return;
+    if (
+      !library ||
+      from === to ||
+      !isValidKindId(to.trim()) ||
+      isKindPreset(from)
+    ) {
+      return;
+    }
     const plan = await planKindRename(api, library.root, from, to.trim(), {
       unsaved: unsavedRef.current,
       selectedPath: selectedPathRef.current,

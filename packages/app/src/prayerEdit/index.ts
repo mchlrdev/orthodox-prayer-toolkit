@@ -2,6 +2,8 @@ export {
   usesLines,
   translationEditorContent,
   kindOptions,
+  kindRenameIssue,
+  orderKinds,
   getTranslation,
   setTranslation,
   isTranslationFilled,
@@ -25,6 +27,7 @@ export {
 export {
   renameStyleKey,
   removeStyleKey,
+  ensureKindStyle,
   renameKindWithStyles,
   deleteKindWithStyles,
 } from "./styles";

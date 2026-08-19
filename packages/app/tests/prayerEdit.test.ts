@@ -1,16 +1,23 @@
 import { describe, expect, it } from "vitest";
-import type { Prayer, StyleMap } from "@orthodox-prayer-toolkit/core";
+import {
+  FALLBACK_KIND_STYLE,
+  type Prayer,
+  type StyleMap,
+} from "@orthodox-prayer-toolkit/core";
 import {
   addBlock,
   applyCommittedContent,
   committedContentUnchanged,
   editorCommitUnchanged,
   deleteKindWithStyles,
+  ensureKindStyle,
   fillPercent,
   getTranslation,
   insertBlockAfter,
   isBlockEmptyAcrossVariants,
   isTranslationFilled,
+  kindOptions,
+  kindRenameIssue,
   moveBlock,
   removeBlock,
   renameKindWithStyles,
@@ -150,25 +157,100 @@ describe("structure ops", () => {
   });
 });
 
+describe("kindOptions", () => {
+  it("includes presets, used kinds, and extra library style keys", () => {
+    const options = kindOptions(basePrayer(), ["strophe"]);
+    expect(options.slice(0, 4)).toEqual([
+      "heading",
+      "subheading",
+      "annotation",
+      "verse",
+    ]);
+    expect(options).toContain("rubric");
+    expect(options).toContain("strophe");
+  });
+});
+
+describe("kindRenameIssue", () => {
+  it("allows a unique custom name", () => {
+    expect(kindRenameIssue("rubric", "strophe", ["rubric", "verse"])).toBeNull();
+  });
+
+  it("rejects empty, reserved, and duplicate names", () => {
+    expect(kindRenameIssue("rubric", "  ", ["rubric"])).toBe("Required");
+    expect(kindRenameIssue("rubric", "verse", ["rubric", "verse"])).toBe(
+      "That name is reserved",
+    );
+    expect(kindRenameIssue("rubric", "annotation", ["rubric"])).toBe(
+      "That name is reserved",
+    );
+    expect(kindRenameIssue("rubric", "strophe", ["rubric", "strophe"])).toBe(
+      "Already exists",
+    );
+    expect(kindRenameIssue("rubric", "foo bar", ["rubric"])).toBe(
+      "Use a letter, then letters, digits, _ or -",
+    );
+    expect(kindRenameIssue("rubric", "1strophe", ["rubric"])).toBe(
+      "Use a letter, then letters, digits, _ or -",
+    );
+    expect(kindRenameIssue("verse", "strophe", ["verse"])).toBe(
+      "Built-in kinds cannot be renamed",
+    );
+  });
+
+  it("treats an unchanged name as valid", () => {
+    expect(kindRenameIssue("rubric", "rubric", ["rubric"])).toBeNull();
+  });
+});
+
 describe("kind + styles", () => {
   it("renames kind across prayer and style maps", () => {
     const appStyles: StyleMap = {
-      verse: { fontSize: "1.2rem", color: "base" },
+      rubric: { fontSize: "1.2rem", color: "base" },
     };
     const libraryStyles: StyleMap = {
-      verse: { fontSize: "1.4rem", color: "accent" },
+      rubric: { fontSize: "1.4rem", color: "accent" },
     };
     const next = renameKindWithStyles(
       basePrayer(),
       appStyles,
       libraryStyles,
+      "rubric",
+      "strophe",
+    );
+    expect(next.prayer.structure[1]?.kind).toBe("strophe");
+    expect(next.appStyles.strophe?.fontSize).toBe("1.2rem");
+    expect(next.libraryStyles.strophe?.fontSize).toBe("1.4rem");
+    expect(next.appStyles.rubric).toBeUndefined();
+  });
+
+  it("does not rename built-in preset kinds", () => {
+    const prayer = basePrayer();
+    const appStyles: StyleMap = {
+      verse: { fontSize: "1.2rem", color: "base" },
+    };
+    const next = renameKindWithStyles(
+      prayer,
+      appStyles,
+      {},
       "verse",
       "strophe",
     );
-    expect(next.prayer.structure[0]?.kind).toBe("strophe");
-    expect(next.appStyles.strophe?.fontSize).toBe("1.2rem");
-    expect(next.libraryStyles.strophe?.fontSize).toBe("1.4rem");
-    expect(next.appStyles.verse).toBeUndefined();
+    expect(next.prayer).toBe(prayer);
+    expect(next.appStyles).toBe(appStyles);
+    expect(next.prayer.structure[0]?.kind).toBe("verse");
+  });
+
+  it("does not delete built-in preset kinds", () => {
+    const prayer = basePrayer();
+    const appStyles: StyleMap = {
+      verse: { fontSize: "1.2rem", color: "base" },
+    };
+    const next = deleteKindWithStyles(prayer, appStyles, {}, "verse");
+    expect(next.prayer).toBe(prayer);
+    expect(next.appStyles).toBe(appStyles);
+    expect(next.prayer.structure[0]?.kind).toBe("verse");
+    expect(next.appStyles.verse?.fontSize).toBe("1.2rem");
   });
 
   it("deletes kind styles with the kind", () => {
@@ -181,6 +263,14 @@ describe("kind + styles", () => {
     expect(next.prayer.structure.every((b) => b.kind !== "rubric")).toBe(true);
     expect(next.appStyles.rubric).toBeUndefined();
     expect(next.libraryStyles.rubric).toBeUndefined();
+  });
+
+  it("keeps a custom kind in library styles even when unused", () => {
+    const style = { ...FALLBACK_KIND_STYLE };
+    const next = ensureKindStyle({}, "strophe", style);
+    expect(next.strophe).toEqual(style);
+    expect(ensureKindStyle(next, "strophe", FALLBACK_KIND_STYLE)).toBe(next);
+    expect(ensureKindStyle({}, "verse", style)).toEqual({});
   });
 });
 

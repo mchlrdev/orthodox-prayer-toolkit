@@ -40,7 +40,7 @@ Related: [affinity-bridge.md](affinity-bridge.md).
 | Languages | per prayer in `variants[]` |
 | Sync across variants | no enforcement; missing translation = omit entry |
 | Display title | per variant; no separate canonical English `title` field |
-| Styles | not in prayer JSON; app defaults + library override |
+| Styles | not in prayer JSON; library `styles.json` over built-in defaults |
 | Kind vocabulary | open string; UI presets are suggestions, not schema enums |
 
 ### Tech stack
@@ -67,7 +67,7 @@ examples/          Dev mini-library only
 ```
 
 - **Core** is the only business-logic seam (testable without UI).
-- **App** is thin: folder I/O, editor, preview, style panel, export UI.
+- **App** is thin: folder I/O, editor, preview, settings (including kind styles), export UI.
 - A future website loads a **foreign** library and renders with its own pipeline — outside this MVP.
 
 ---
@@ -78,7 +78,7 @@ Full field list and examples: [prayer-format.md](prayer-format.md).
 
 - **Model A:** shared `structure[]`; texts on block `translations[]` keyed by `(lang, variant)`.
 - **Variants:** objects `{ lang, variant, title, license, source }` — not slash-keys.
-- **Kinds:** open strings; recommended presets today: `heading`, `subheading`, `annotation`, `verse`.
+- **Kinds:** open strings; built-in presets `heading`, `subheading`, `annotation`, `verse` are fixed in the editor (display labels capitalized; not renameable/deletable). Custom kinds may be added; styles remain editable for all kinds.
 - **Inline notes:** optional run arrays (`text` / `note`) inside `text` / `lines`.
 
 ---
@@ -90,7 +90,7 @@ Shipped and intended behaviour includes:
 - Open library folder; list / create / open / save / delete prayers
 - Edit identity, variants, structure, translations; switch variants
 - Schema validation in the UI
-- Preview with kind styles (app + library override)
+- Preview with kind styles (library `styles.json` over built-in defaults)
 - Export: flat JSON, HTML, layout RTF/DOCX
 - Optional manifest; id collision detection; kind rename across library with confirm
 - Auto-update against GitHub Releases ([RELEASE.md](RELEASE.md))
@@ -99,7 +99,7 @@ Shipped and intended behaviour includes:
 
 ## What must not enter prayer JSON
 
-- Fonts, colours, weights (except via separate library/app style maps)
+- Fonts, colours, weights (except via library `styles.json`)
 - HTML page chrome, CMS fields, site navigation
 - Affinity frame positions
 

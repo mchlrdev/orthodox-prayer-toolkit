@@ -11,7 +11,6 @@ import {
 import {
   IconColumns2,
   IconDownload,
-  IconPalette,
   IconPlus,
   IconSettings,
   IconX,
@@ -35,8 +34,6 @@ type StyleEditing = {
   resolved: StyleMap;
   appStyles: StyleMap;
   libraryStyles: StyleMap;
-  target: "app" | "library";
-  onTargetChange: (t: "app" | "library") => void;
   libraryEnabled: boolean;
   onChangeApp: (next: StyleMap) => void;
   onChangeLibrary: (next: StyleMap) => void;
@@ -55,7 +52,6 @@ type Props = {
   onVisibleVariantsChange: (cols: ActiveVariant[]) => void;
   onSave: () => void;
   onSettings: () => void;
-  onStyles: () => void;
   onExport: () => void;
   onRenameKind: (from: string, to: string) => void;
 };
@@ -144,7 +140,6 @@ export function PrayerWorkspace({
   onVisibleVariantsChange,
   onSave,
   onSettings,
-  onStyles,
   onExport,
   onRenameKind,
 }: Props) {
@@ -219,17 +214,6 @@ export function PrayerWorkspace({
                 onClick={onSettings}
               >
                 <IconSettings size={16} />
-              </ActionIcon>
-            </Tooltip>
-            <Tooltip label="Styles" withArrow openDelay={300}>
-              <ActionIcon
-                size="sm"
-                variant="subtle"
-                color="gray"
-                aria-label="Styles"
-                onClick={onStyles}
-              >
-                <IconPalette size={16} />
               </ActionIcon>
             </Tooltip>
             <Tooltip label="Export" withArrow openDelay={300}>

@@ -69,8 +69,13 @@ you enable signing (below).
   (install prompt if a download is ready, up to date, or an error). An explicit
   menu check re-shows the install dialog even after Later in the same session.
   Startup checks stay silent on failure (offline, 404) so a launch is not blocked
-  by a dialog — use the menu item to see the error.
-- Dev / `pnpm dev:electron` never talks to the update feed.
+  by a dialog — use the menu item or **App settings** to see the error.
+- **App settings** always shows the installed version, whether an update is
+  available, and a **Check for updates** button (plus **Install and Restart**
+  when a download is ready). This is the update UI on Windows/Linux, where the
+  app has no menu bar.
+- Dev / `pnpm dev:electron` never talks to the update feed. Settings still
+  shows the version and explains that checks run only in the installed app.
 
 Update checks require a **public** GitHub repository (or a token for private
 repos — not the default OSS setup).

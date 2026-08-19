@@ -62,7 +62,7 @@ Visual tokens **per kind**, not inside prayer JSON:
 | `initialCap` | Optional liturgical initial (`"true"`) |
 | `htmlTag` | Preferred HTML element for HTML export |
 
-**Resolution order:** discovered kinds from the open library → app defaults → library overrides (library wins). Unknown kinds get a fallback preset so they appear in the style panel immediately.
+**Resolution order:** discovered kinds from the open library (and keys in `styles.json`) → built-in defaults → library `styles.json` (library wins). Unknown kinds get a fallback preset so they appear in Kind styles immediately. The editor writes styles only to this library file. Adding a custom kind (popover or Settings) writes it here, so it stays in the vocabulary until explicitly removed — even if no block currently uses it.
 
 Validate / sanitize via Core `validateStyles` / `sanitizeStyles` / `resolveStyles`.
 

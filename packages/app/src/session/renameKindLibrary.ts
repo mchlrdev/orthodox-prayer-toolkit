@@ -1,4 +1,5 @@
 import {
+  isKindPreset,
   isPrayerFilename,
   renameKind,
   validate,
@@ -30,6 +31,10 @@ export async function planKindRename(
     draft: Prayer | null;
   },
 ): Promise<KindRenamePlan> {
+  if (isKindPreset(from)) {
+    return { from, to, affectedPaths: [] };
+  }
+
   const files = (await api.listJsonFiles(libraryRoot)).filter(isPrayerFilename);
   const affectedPaths: string[] = [];
 
@@ -114,6 +119,17 @@ export async function renameKindAcrossLibrary(
   },
 ): Promise<KindRenameResult> {
   const { from, to, affectedPaths } = plan;
+  if (isKindPreset(from)) {
+    return {
+      writtenPaths: [],
+      skipped: [],
+      unsaved: opts.unsaved,
+      draft: opts.draft,
+      appStyles: opts.appStyles,
+      libraryStyles: opts.libraryStyles,
+    };
+  }
+
   const writtenPaths: string[] = [];
   const skipped: { path: string; reason: string }[] = [];
 

@@ -15,6 +15,7 @@ import {
   HTML_TAG_ALLOWLIST,
   HTML_WRAPPER_TAG_ALLOWLIST,
   isValidStylePrefixStem,
+  kindDisplayLabel,
   parseHtmlAttributes,
   resolveLibraryStylePrefixStem,
   tagMapFromStyles,
@@ -303,7 +304,7 @@ export function ExportModal({
               {kindRows.map((kind) => (
                 <Select
                   key={kind}
-                  label={kind}
+                  label={kindDisplayLabel(kind)}
                   size="xs"
                   data={HTML_TAG_ALLOWLIST.map((tag) => ({
                     value: tag,

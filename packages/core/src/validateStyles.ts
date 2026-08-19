@@ -10,7 +10,21 @@ export type StyleValidationResult =
   | { ok: true; styles: StyleMap }
   | { ok: false; errors: ValidationError[] };
 
-const KIND_KEY = /^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/;
+export const KIND_ID_PATTERN = /^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/;
+export const KIND_ID_MAX_LENGTH = 64;
+
+export function isValidKindId(kind: string): boolean {
+  return KIND_ID_PATTERN.test(kind);
+}
+
+/** Strip characters that cannot appear in a kind id; used while typing. */
+export function sanitizeKindIdInput(raw: string): string {
+  return raw
+    .replace(/[^a-zA-Z0-9_-]/g, "")
+    .replace(/^[^a-zA-Z]+/, "")
+    .slice(0, KIND_ID_MAX_LENGTH);
+}
+
 const ALLOWED_FIELDS = new Set([
   "fontSize",
   "color",
@@ -143,7 +157,7 @@ export function sanitizeStyles(data: unknown): {
   for (const [kind, rawStyle] of Object.entries(
     data as Record<string, unknown>,
   )) {
-    if (!KIND_KEY.test(kind)) {
+    if (!KIND_ID_PATTERN.test(kind)) {
       errors.push({ path: `/${kind}`, message: "invalid kind name" });
       continue;
     }

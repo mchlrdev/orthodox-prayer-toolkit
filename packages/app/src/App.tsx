@@ -5,16 +5,19 @@ import {
   IconChevronLeft,
   IconChevronRight,
 } from "@tabler/icons-react";
-import { indexVariants } from "@orthodox-prayer-toolkit/core";
+import { indexVariants, kindDisplayLabel } from "@orthodox-prayer-toolkit/core";
 import { isBrowserDev } from "./api";
 import { PrayerList } from "./components/PrayerList";
 import { PrayerWorkspace } from "./components/PrayerWorkspace";
 import { ContentOutline } from "./components/ContentOutline";
-import { PrayerSettingsModal } from "./components/PrayerSettingsModal";
+import {
+  PrayerSettingsModal,
+  type PrayerSettingsPane,
+} from "./components/PrayerSettingsModal";
+import { NewPrayerModal } from "./components/NewPrayerModal";
 import { LibrarySettingsModal } from "./components/LibrarySettingsModal";
 import { AppSettingsModal } from "./components/AppSettingsModal";
 import { ExportModal } from "./components/ExportModal";
-import { StylesModal } from "./components/StylesModal";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { InvalidPrayerScreen } from "./components/InvalidPrayerScreen";
 import { UnsavedChangesDialog } from "./components/UnsavedChangesDialog";
@@ -35,13 +38,13 @@ const OVERLAY_BREAKPOINT = "(max-width: 1099px)";
 export function App() {
   const session = usePrayerSession();
   const { setColorScheme } = useMantineColorScheme();
-  const [styleTarget, setStyleTarget] = useState<"app" | "library">("library");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsPane, setSettingsPane] =
+    useState<PrayerSettingsPane>("prayer");
   const [librarySettingsOpen, setLibrarySettingsOpen] = useState(false);
   const [appSettingsOpen, setAppSettingsOpen] = useState(false);
   const [newLibraryOpen, setNewLibraryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
-  const [stylesOpen, setStylesOpen] = useState(false);
 
   const initialPrefs = useMemo(() => loadSidebarPrefs(), []);
   const [libraryCollapsed, setLibraryCollapsed] = useState(
@@ -135,6 +138,10 @@ export function App() {
     setPendingLeave,
     leaveBusy,
   } = session;
+
+  useEffect(() => {
+    setSettingsPane("prayer");
+  }, [selectedPath]);
 
   const handleOpenFolder = useCallback(() => {
     void session.openFolder().then((cleared) => {
@@ -247,8 +254,6 @@ export function App() {
                 resolved: resolvedStyles,
                 appStyles,
                 libraryStyles: library?.libraryStyles ?? {},
-                target: styleTarget,
-                onTargetChange: setStyleTarget,
                 libraryEnabled: Boolean(library),
                 onChangeApp: (next) => void session.persistAppStyles(next),
                 onChangeLibrary: (next) =>
@@ -262,7 +267,6 @@ export function App() {
               onVisibleVariantsChange={setVisibleVariants}
               onSave={() => void session.saveDraft()}
               onSettings={() => setSettingsOpen(true)}
-              onStyles={() => setStylesOpen(true)}
               onExport={() => setExportOpen(true)}
               onRenameKind={(from, to) => {
                 void session.requestKindRename(from, to);
@@ -334,12 +338,11 @@ export function App() {
       </div>
 
       {createDraft && createVariant ? (
-        <PrayerSettingsModal
+        <NewPrayerModal
           opened
-          mode="create"
           busy={createBusy}
           onClose={session.cancelCreatePrayer}
-          onDone={() => {
+          onCreate={() => {
             void session.commitCreatePrayer().then(() => {
               setSettingsOpen(false);
             });
@@ -352,13 +355,26 @@ export function App() {
       ) : draft && activeVariant ? (
         <PrayerSettingsModal
           opened={settingsOpen}
-          mode="edit"
+          pane={settingsPane}
+          onPaneChange={setSettingsPane}
           onClose={() => setSettingsOpen(false)}
-          onDone={() => setSettingsOpen(false)}
           prayer={draft}
           activeVariant={activeVariant}
           onChange={session.updateDraft}
           onActiveVariantChange={session.setActiveVariant}
+          onRenameKind={(from, to) => {
+            void session.requestKindRename(from, to);
+          }}
+          styles={{
+            kinds: Object.keys(resolvedStyles),
+            resolved: resolvedStyles,
+            appStyles,
+            libraryStyles: library?.libraryStyles ?? {},
+            libraryEnabled: Boolean(library),
+            onChangeApp: (next) => void session.persistAppStyles(next),
+            onChangeLibrary: (next) =>
+              void session.persistLibraryStyles(next),
+          }}
         />
       ) : null}
 
@@ -422,25 +438,6 @@ export function App() {
         />
       ) : null}
 
-      <StylesModal
-        opened={stylesOpen}
-        onClose={() => setStylesOpen(false)}
-        kinds={[
-          ...new Set([
-            ...(library?.kinds ?? []),
-            ...(draft?.structure.map((b) => b.kind) ?? []),
-          ]),
-        ].sort()}
-        resolved={resolvedStyles}
-        appStyles={appStyles}
-        libraryStyles={library?.libraryStyles ?? {}}
-        target={styleTarget}
-        onTargetChange={setStyleTarget}
-        libraryEnabled={Boolean(library)}
-        onChangeApp={(next) => void session.persistAppStyles(next)}
-        onChangeLibrary={(next) => void session.persistLibraryStyles(next)}
-      />
-
       <ConfirmDialog
         opened={pendingDelete !== null}
         onClose={() => setPendingDelete(null)}
@@ -462,7 +459,7 @@ export function App() {
         title="Rename kind in library?"
         message={
           session.pendingKindRename
-            ? `Rename “${session.pendingKindRename.from}” to “${session.pendingKindRename.to}” in ${session.pendingKindRename.affectedPaths.length} prayers? This writes those files now.`
+            ? `Rename “${kindDisplayLabel(session.pendingKindRename.from)}” to “${kindDisplayLabel(session.pendingKindRename.to)}” in ${session.pendingKindRename.affectedPaths.length} prayers? This writes those files now.`
             : ""
         }
         confirmLabel="Rename"

@@ -25,6 +25,10 @@ import {
   walkJsonFiles,
 } from "../nodeFs";
 import { startMacUpdateInstall } from "./macUpdateInstall";
+import {
+  resolveUpdateCheck,
+  type AppUpdateCheckResult,
+} from "./updateCheck";
 
 const { autoUpdater } = electronUpdater;
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -98,8 +102,9 @@ function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 1280,
     height: 840,
-    minWidth: 960,
-    minHeight: 640,
+    // Match --opt-sidebar-width; overlay mode already handles narrow layouts.
+    minWidth: 280,
+    minHeight: 400,
     title: APP_NAME,
     show: false,
     ...(icon ? { icon } : {}),
@@ -371,21 +376,21 @@ function registerIpc(): void {
     win.close();
   });
 
+  ipcMain.handle("app:get-info", () => ({
+    version: app.getVersion(),
+    packaged: app.isPackaged,
+  }));
+
   ipcMain.handle("app:check-for-updates", async () => {
-    if (!app.isPackaged) {
-      return { ok: false as const, reason: "dev" as const };
-    }
-    try {
-      const result = await autoUpdater.checkForUpdates();
-      return {
-        ok: true as const,
-        version: result?.updateInfo?.version ?? null,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error("[autoUpdater] Manual check failed:", message);
-      return { ok: false as const, reason: "error" as const, message };
-    }
+    const result = await queryUpdateStatus();
+    broadcastUpdateStatus(result);
+    return result;
+  });
+
+  ipcMain.handle("app:install-update", () => {
+    if (!pendingUpdateVersion) return { ok: false as const };
+    promptInstallUpdate(pendingUpdateVersion, true);
+    return { ok: true as const };
   });
 }
 
@@ -396,6 +401,85 @@ let pendingUpdateVersion: string | null = null;
 let downloadedUpdateFile: string | null = null;
 let manualCheckInFlight = false;
 let installPromptOpen = false;
+
+function broadcastUpdateStatus(result: AppUpdateCheckResult): void {
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) {
+      win.webContents.send("app:update-status", result);
+    }
+  }
+}
+
+function readFeedResult(result: unknown): {
+  latestVersion: string | null;
+  isUpdateAvailable: boolean | null;
+} {
+  if (!result || typeof result !== "object") {
+    return { latestVersion: null, isUpdateAvailable: null };
+  }
+  const isUpdateAvailable =
+    "isUpdateAvailable" in result && typeof result.isUpdateAvailable === "boolean"
+      ? result.isUpdateAvailable
+      : null;
+  let latestVersion: string | null = null;
+  if (
+    "updateInfo" in result &&
+    result.updateInfo &&
+    typeof result.updateInfo === "object" &&
+    "version" in result.updateInfo &&
+    typeof result.updateInfo.version === "string"
+  ) {
+    latestVersion = result.updateInfo.version;
+  }
+  return { latestVersion, isUpdateAvailable };
+}
+
+async function queryUpdateStatus(): Promise<AppUpdateCheckResult> {
+  const currentVersion = app.getVersion();
+  if (!app.isPackaged) {
+    return resolveUpdateCheck({
+      packaged: false,
+      currentVersion,
+      pendingVersion: null,
+      latestVersion: null,
+      isUpdateAvailable: null,
+      errorMessage: null,
+    });
+  }
+  if (pendingUpdateVersion) {
+    return resolveUpdateCheck({
+      packaged: true,
+      currentVersion,
+      pendingVersion: pendingUpdateVersion,
+      latestVersion: pendingUpdateVersion,
+      isUpdateAvailable: true,
+      errorMessage: null,
+    });
+  }
+  try {
+    const result = await autoUpdater.checkForUpdates();
+    const feed = readFeedResult(result);
+    return resolveUpdateCheck({
+      packaged: true,
+      currentVersion,
+      pendingVersion: pendingUpdateVersion,
+      latestVersion: feed.latestVersion,
+      isUpdateAvailable: feed.isUpdateAvailable,
+      errorMessage: null,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[autoUpdater] Check failed:", message);
+    return resolveUpdateCheck({
+      packaged: true,
+      currentVersion,
+      pendingVersion: pendingUpdateVersion,
+      latestVersion: null,
+      isUpdateAvailable: null,
+      errorMessage: message,
+    });
+  }
+}
 
 function updaterParentWindow(): BrowserWindow | undefined {
   return BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
@@ -540,6 +624,16 @@ function setupAutoUpdater(): void {
   });
   autoUpdater.on("update-available", (info) => {
     console.log(`[autoUpdater] Update available: ${info.version}`);
+    broadcastUpdateStatus(
+      resolveUpdateCheck({
+        packaged: true,
+        currentVersion: app.getVersion(),
+        pendingVersion: pendingUpdateVersion,
+        latestVersion: info.version,
+        isUpdateAvailable: true,
+        errorMessage: null,
+      }),
+    );
     if (manualCheckInFlight) {
       void showUpdaterDialog({
         type: "info",
@@ -549,8 +643,18 @@ function setupAutoUpdater(): void {
       });
     }
   });
-  autoUpdater.on("update-not-available", () => {
+  autoUpdater.on("update-not-available", (info) => {
     console.log("[autoUpdater] Already up to date.");
+    broadcastUpdateStatus(
+      resolveUpdateCheck({
+        packaged: true,
+        currentVersion: app.getVersion(),
+        pendingVersion: pendingUpdateVersion,
+        latestVersion: info.version,
+        isUpdateAvailable: false,
+        errorMessage: null,
+      }),
+    );
     if (manualCheckInFlight) {
       manualCheckInFlight = false;
       void showUpdaterDialog({
@@ -572,6 +676,16 @@ function setupAutoUpdater(): void {
         ? info.downloadedFile
         : null;
     console.log(`[autoUpdater] Downloaded ${info.version}.`);
+    broadcastUpdateStatus(
+      resolveUpdateCheck({
+        packaged: true,
+        currentVersion: app.getVersion(),
+        pendingVersion: pendingUpdateVersion,
+        latestVersion: info.version,
+        isUpdateAvailable: true,
+        errorMessage: null,
+      }),
+    );
     const force = manualCheckInFlight;
     if (manualCheckInFlight) {
       manualCheckInFlight = false;

@@ -1,5 +1,7 @@
 import {
   KIND_PRESETS,
+  isKindPreset,
+  isValidKindId,
   plainText,
   type InlineContent,
   type Prayer,
@@ -27,9 +29,45 @@ export function translationEditorContent(
   return tr?.text ?? "";
 }
 
-export function kindOptions(prayer: Prayer): string[] {
-  const used = prayer.structure.map((b) => b.kind);
-  return [...new Set([...KIND_PRESETS, ...used])];
+/** Presets first (stable order), custom kinds sorted at the bottom. */
+export function orderKinds(options: Iterable<string>): string[] {
+  const unique = [...new Set(options)];
+  const presets = KIND_PRESETS.filter((k) => unique.includes(k));
+  const custom = unique
+    .filter((k) => !isKindPreset(k))
+    .sort((a, b) => a.localeCompare(b));
+  return [...presets, ...custom];
+}
+
+export function kindOptions(
+  prayer: Prayer,
+  extra: readonly string[] = [],
+): string[] {
+  return orderKinds([
+    ...KIND_PRESETS,
+    ...prayer.structure.map((b) => b.kind),
+    ...extra,
+  ]);
+}
+
+/** Why a kind rename cannot proceed, or null if it is valid. */
+export function kindRenameIssue(
+  from: string,
+  to: string,
+  existing: Iterable<string>,
+): string | null {
+  const next = to.trim();
+  if (!next) return "Required";
+  if (next === from) return null;
+  if (isKindPreset(from)) return "Built-in kinds cannot be renamed";
+  if (!isValidKindId(next)) {
+    return "Use a letter, then letters, digits, _ or -";
+  }
+  if (isKindPreset(next)) return "That name is reserved";
+  for (const kind of existing) {
+    if (kind === next) return "Already exists";
+  }
+  return null;
 }
 
 export function getTranslation(

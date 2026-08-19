@@ -16,7 +16,12 @@ export type {
   VariantMeta,
 } from "./types.js";
 
-export { KIND_PRESETS } from "./types.js";
+export {
+  KIND_PRESETS,
+  KIND_PRESET_LABELS,
+  isKindPreset,
+  kindDisplayLabel,
+} from "./types.js";
 
 export {
   isInlineContent,
@@ -32,8 +37,9 @@ export {
 } from "./textRuns.js";
 
 export { validate } from "./validate.js";
-export { sanitizeStyles, validateStyles } from "./validateStyles.js";
+export { sanitizeStyles, validateStyles, isValidKindId, sanitizeKindIdInput } from "./validateStyles.js";
 export type { StyleValidationResult } from "./validateStyles.js";
+export { KIND_ID_PATTERN, KIND_ID_MAX_LENGTH } from "./validateStyles.js";
 
 export { resolveDisplayTitle } from "./displayTitle.js";
 export type { PreferredVariant } from "./displayTitle.js";

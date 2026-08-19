@@ -12,9 +12,17 @@ type Props = {
   value: string;
   onChange: (token: string) => void;
   label?: string;
+  withinPortal?: boolean;
+  dropdownZIndex?: number;
 };
 
-export function ColorSelect({ value, onChange, label }: Props) {
+export function ColorSelect({
+  value,
+  onChange,
+  label,
+  withinPortal = true,
+  dropdownZIndex,
+}: Props) {
   const [opened, setOpened] = useState(false);
   const matched = matchColor(value);
 
@@ -30,7 +38,8 @@ export function ColorSelect({ value, onChange, label }: Props) {
         onChange={setOpened}
         position="bottom-start"
         width={200}
-        withinPortal
+        withinPortal={withinPortal}
+        zIndex={dropdownZIndex}
       >
         <Popover.Target>
           <UnstyledButton

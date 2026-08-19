@@ -6,6 +6,9 @@ import {
 } from "@orthodox-prayer-toolkit/core";
 import { ColorSelect } from "./ColorSelect";
 
+/** Above KindSelect's edit modal (400), below its confirm dialog (500). */
+export const KIND_FIELD_DROPDOWN_Z = 450;
+
 /** T-shirt sizes → CSS font-size values stored on KindStyle. */
 export const FONT_SIZE_OPTIONS = [
   { value: "0.875rem", label: "S" },
@@ -56,12 +59,26 @@ type Props = {
   onChange: (partial: Partial<KindStyle>) => void;
   /** Optional controls rendered above the shared fields (target, kind, …). */
   leading?: ReactNode;
+  /**
+   * Keep lists inside a stacked modal. KindSelect's edit dialog uses
+   * `false` so Size / Color / HTML tag aren't painted behind it.
+   */
+  portalDropdowns?: boolean;
 };
 
-export function KindStyleFields({ style, onChange, leading }: Props) {
+export function KindStyleFields({
+  style,
+  onChange,
+  leading,
+  portalDropdowns = true,
+}: Props) {
   const size = nearestFontSize(style.fontSize);
   const bold = isBoldWeight(style.fontWeight);
   const italic = style.fontStyle === "italic";
+  const comboboxProps = {
+    withinPortal: portalDropdowns,
+    zIndex: portalDropdowns ? KIND_FIELD_DROPDOWN_Z : undefined,
+  };
 
   return (
     <Stack gap="sm">
@@ -72,11 +89,14 @@ export function KindStyleFields({ style, onChange, leading }: Props) {
         value={size}
         allowDeselect={false}
         onChange={(v) => v && onChange({ fontSize: v })}
+        comboboxProps={comboboxProps}
       />
       <ColorSelect
         label="Color"
         value={style.color}
         onChange={(color) => onChange({ color })}
+        withinPortal={portalDropdowns}
+        dropdownZIndex={portalDropdowns ? KIND_FIELD_DROPDOWN_Z : undefined}
       />
       <Group gap="lg">
         <Checkbox
@@ -106,11 +126,11 @@ export function KindStyleFields({ style, onChange, leading }: Props) {
         />
       </Group>
       <Select
-        label="HTML tag"
-        description="Element used when exporting this kind as HTML"
+        label="HTML tag for export"
         data={HTML_TAG_ALLOWLIST.map((tag) => ({ value: tag, label: tag }))}
         value={style.htmlTag ?? null}
         onChange={(v) => onChange({ htmlTag: v ?? "" })}
+        comboboxProps={comboboxProps}
         clearable
         placeholder="Default (div)"
       />

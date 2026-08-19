@@ -72,29 +72,41 @@ describe("prayerUsesKind", () => {
 describe("planKindRename", () => {
   it("lists disk prayers that use the kind", async () => {
     const api = fakeApi({
-      "a.json": prayer("a", ["verse"]),
-      "b.json": prayer("b", ["rubric"]),
-      "c.json": prayer("c", ["verse", "heading"]),
+      "a.json": prayer("a", ["rubric"]),
+      "b.json": prayer("b", ["strophe"]),
+      "c.json": prayer("c", ["rubric", "heading"]),
     });
-    const plan = await planKindRename(api, "/lib", "verse", "strophe", {
+    const plan = await planKindRename(api, "/lib", "rubric", "instruction", {
       unsaved: {},
       selectedPath: null,
       draft: null,
     });
     expect(plan.affectedPaths.sort()).toEqual(["a.json", "c.json"]);
   });
+
+  it("refuses built-in preset kinds", async () => {
+    const api = fakeApi({
+      "a.json": prayer("a", ["verse"]),
+    });
+    const plan = await planKindRename(api, "/lib", "verse", "strophe", {
+      unsaved: {},
+      selectedPath: null,
+      draft: null,
+    });
+    expect(plan.affectedPaths).toEqual([]);
+  });
 });
 
 describe("renameKindAcrossLibrary", () => {
   it("rewrites all affected prayers and style keys", async () => {
     const store = {
-      "a.json": prayer("a", ["verse"]),
-      "b.json": prayer("b", ["verse"]),
+      "a.json": prayer("a", ["rubric"]),
+      "b.json": prayer("b", ["rubric"]),
     };
     const api = fakeApi(store);
     const writeSpy = vi.spyOn(api, "writeText");
 
-    const plan = await planKindRename(api, "/lib", "verse", "strophe", {
+    const plan = await planKindRename(api, "/lib", "rubric", "instruction", {
       unsaved: {},
       selectedPath: null,
       draft: null,
@@ -104,7 +116,7 @@ describe("renameKindAcrossLibrary", () => {
       selectedPath: null,
       draft: null,
       appStyles: {
-        verse: {
+        rubric: {
           fontSize: "1rem",
           color: "base",
           fontWeight: "400",
@@ -115,20 +127,22 @@ describe("renameKindAcrossLibrary", () => {
     });
 
     expect(result.writtenPaths.sort()).toEqual(["a.json", "b.json"]);
-    expect(result.appStyles.strophe?.color).toBe("base");
-    expect(result.appStyles.verse).toBeUndefined();
+    expect(result.appStyles.instruction?.color).toBe("base");
+    expect(result.appStyles.rubric).toBeUndefined();
     expect(writeSpy).toHaveBeenCalledTimes(2);
 
     const rewritten = JSON.parse(
       await api.readText("/lib", "a.json"),
     ) as Prayer;
-    expect(rewritten.structure.every((b) => b.kind === "strophe")).toBe(true);
+    expect(rewritten.structure.every((b) => b.kind === "instruction")).toBe(
+      true,
+    );
   });
 
   it("updates an open draft and unsaved map", async () => {
-    const open = prayer("open", ["verse"]);
+    const open = prayer("open", ["rubric"]);
     const api = fakeApi({ "open.json": open });
-    const plan = await planKindRename(api, "/lib", "verse", "strophe", {
+    const plan = await planKindRename(api, "/lib", "rubric", "instruction", {
       unsaved: {
         "open.json": {
           prayer: open,
@@ -153,9 +167,46 @@ describe("renameKindAcrossLibrary", () => {
       libraryStyles: {},
     });
 
-    expect(result.draft?.structure[0]?.kind).toBe("strophe");
+    expect(result.draft?.structure[0]?.kind).toBe("instruction");
     expect(result.unsaved["open.json"]?.prayer.structure[0]?.kind).toBe(
-      "strophe",
+      "instruction",
     );
+  });
+
+  it("does not rewrite built-in preset kinds", async () => {
+    const store = {
+      "a.json": prayer("a", ["verse"]),
+    };
+    const api = fakeApi(store);
+    const writeSpy = vi.spyOn(api, "writeText");
+    const appStyles = {
+      verse: {
+        fontSize: "1rem",
+        color: "base" as const,
+        fontWeight: "400" as const,
+        fontStyle: "normal" as const,
+      },
+    };
+
+    const result = await renameKindAcrossLibrary(
+      api,
+      "/lib",
+      { from: "verse", to: "strophe", affectedPaths: ["a.json"] },
+      {
+        unsaved: {},
+        selectedPath: null,
+        draft: null,
+        appStyles,
+        libraryStyles: {},
+      },
+    );
+
+    expect(result.writtenPaths).toEqual([]);
+    expect(result.appStyles).toBe(appStyles);
+    expect(writeSpy).not.toHaveBeenCalled();
+    expect(
+      (JSON.parse(await api.readText("/lib", "a.json")) as Prayer).structure[0]
+        ?.kind,
+    ).toBe("verse");
   });
 });

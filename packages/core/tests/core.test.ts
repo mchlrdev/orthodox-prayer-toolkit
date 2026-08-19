@@ -28,6 +28,11 @@ import {
   validate,
   validateStyles,
   DEFAULT_STYLE_PREFIX_STEM,
+  isKindPreset,
+  kindDisplayLabel,
+  KIND_PRESET_LABELS,
+  isValidKindId,
+  sanitizeKindIdInput,
 } from "../src/index.js";
 import type { Prayer } from "../src/index.js";
 
@@ -645,6 +650,19 @@ describe("tagMapFromStyles", () => {
   });
 });
 
+describe("kind display labels", () => {
+  it("title-cases built-in presets and leaves custom ids unchanged", () => {
+    expect(kindDisplayLabel("heading")).toBe("Heading");
+    expect(kindDisplayLabel("subheading")).toBe("Subheading");
+    expect(kindDisplayLabel("annotation")).toBe("Annotation");
+    expect(kindDisplayLabel("verse")).toBe("Verse");
+    expect(kindDisplayLabel("strophe")).toBe("strophe");
+    expect(isKindPreset("verse")).toBe(true);
+    expect(isKindPreset("strophe")).toBe(false);
+    expect(KIND_PRESET_LABELS.heading).toBe("Heading");
+  });
+});
+
 describe("indexKinds / renameKind", () => {
   it("unions kinds across prayers", () => {
     const a = validate(loadJson("valid-tropar-prokopios.json"));
@@ -886,6 +904,35 @@ describe("validateStyles", () => {
     });
     expect(resolved.verse?.color).toBe("accent");
     expect(resolved.verse?.fontSize).toBe(DEFAULT_KIND_STYLES.verse?.fontSize);
+  });
+});
+
+describe("kind ids", () => {
+  it("accepts letter-first ids of letters, digits, _ and -", () => {
+    expect(isValidKindId("Test")).toBe(true);
+    expect(isValidKindId("strophe_2")).toBe(true);
+    expect(isValidKindId("foo-bar")).toBe(true);
+    expect(isValidKindId("")).toBe(false);
+    expect(isValidKindId("Test kind")).toBe(false);
+    expect(isValidKindId("1abc")).toBe(false);
+  });
+
+  it("strips illegal characters from in-progress input", () => {
+    expect(sanitizeKindIdInput("Test kind")).toBe("Testkind");
+    expect(sanitizeKindIdInput(" Test")).toBe("Test");
+    expect(sanitizeKindIdInput("1abc")).toBe("abc");
+    expect(sanitizeKindIdInput("foo_bar-2")).toBe("foo_bar-2");
+    expect(sanitizeKindIdInput("a".repeat(80))).toHaveLength(64);
+  });
+
+  it("drops invalid kind keys instead of keeping a broken style map", () => {
+    const { styles, errors } = sanitizeStyles({
+      "Test kind": { color: "base" },
+      Test: { color: "accent" },
+    });
+    expect(styles["Test kind"]).toBeUndefined();
+    expect(styles.Test?.color).toBe("accent");
+    expect(errors.some((e) => e.message.includes("invalid kind"))).toBe(true);
   });
 });
 

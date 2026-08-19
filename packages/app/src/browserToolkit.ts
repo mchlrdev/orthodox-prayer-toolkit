@@ -152,5 +152,16 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
     onCloseRequested: () => () => {},
     confirmClose: () => {},
     setDirty: () => {},
+
+    getAppInfo: async () => ({
+      version: __APP_VERSION__,
+      packaged: false,
+    }),
+    checkForUpdates: async () => ({
+      status: "dev" as const,
+      version: __APP_VERSION__,
+    }),
+    installUpdate: async () => ({ ok: false }),
+    onUpdateStatus: () => () => {},
   };
 }

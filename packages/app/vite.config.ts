@@ -1,13 +1,20 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import electron from "vite-plugin-electron/simple";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { prayerToolkitBrowserFs } from "./vite-plugin-browser-fs";
 
 const toolkitRoot = resolve(__dirname, "../..");
 const enableElectron = process.env.ELECTRON === "1";
+const appVersion = JSON.parse(
+  readFileSync(resolve(__dirname, "package.json"), "utf8"),
+).version as string;
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+  },
   plugins: [
     react(),
     prayerToolkitBrowserFs(toolkitRoot),

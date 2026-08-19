@@ -1,4 +1,10 @@
 import { contextBridge, ipcRenderer } from "electron";
+import type {
+  AppInfo,
+  AppUpdateCheckResult,
+} from "./updateCheck";
+
+export type { AppInfo, AppUpdateCheckResult } from "./updateCheck";
 
 export type CreateLibraryOptions = {
   name: string;
@@ -43,6 +49,10 @@ export type PrayerToolkitApi = {
   confirmClose: () => void;
   /** Electron only: tell main process whether unsaved changes exist. */
   setDirty: (dirty: boolean) => void;
+  getAppInfo: () => Promise<AppInfo>;
+  checkForUpdates: () => Promise<AppUpdateCheckResult>;
+  installUpdate: () => Promise<{ ok: boolean }>;
+  onUpdateStatus: (cb: (result: AppUpdateCheckResult) => void) => () => void;
 };
 
 const api: PrayerToolkitApi = {
@@ -86,6 +96,21 @@ const api: PrayerToolkitApi = {
   },
   setDirty: (dirty) => {
     ipcRenderer.send("app:set-dirty", dirty);
+  },
+  getAppInfo: () => ipcRenderer.invoke("app:get-info"),
+  checkForUpdates: () => ipcRenderer.invoke("app:check-for-updates"),
+  installUpdate: () => ipcRenderer.invoke("app:install-update"),
+  onUpdateStatus: (cb) => {
+    const handler = (
+      _event: unknown,
+      result: AppUpdateCheckResult,
+    ) => {
+      cb(result);
+    };
+    ipcRenderer.on("app:update-status", handler);
+    return () => {
+      ipcRenderer.removeListener("app:update-status", handler);
+    };
   },
 };
 
