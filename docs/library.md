@@ -60,7 +60,9 @@ Visual tokens **per kind**, not inside prayer JSON:
 | `fontSize` | CSS size string |
 | `color` | Semantic token (`base` / `accent`) or legacy hex |
 | `fontWeight` / `fontStyle` | Weight and style |
+| `textAlign` | Optional `left`, `center`, or `justify`. Missing → left, except **verse** and **annotation** default to `justify`. |
 | `initialCap` | Optional liturgical initial (`"true"`) |
+| `indicate` | Optional editor marker (`"true"`) → `data-indicate` on blocks |
 | `htmlTag` | Preferred HTML element for HTML export |
 
 **Resolution order:** discovered kinds from the open library (and keys in `styles.json`) → built-in defaults → library `styles.json` (library wins). Unknown kinds get a fallback preset so they appear in Kind styles immediately. The editor writes styles only to this library file. Adding a custom kind (popover or Settings) writes it here, so it stays in the vocabulary until explicitly removed — even if no block currently uses it.
@@ -72,6 +74,8 @@ Validate / sanitize via Core `validateStyles` / `sanitizeStyles` / `resolveStyle
 - On save, the file is written as `{id}.json`.
 - Renaming `id` renames the file; if the target exists, save is blocked.
 - Deleting a prayer removes its file and patches the Library catalog (no full rescan).
+- **Export prayer JSON** (sidebar row menu) writes the complete `{id}.json` source file via a save dialog. Unsaved draft changes are included.
+- **Import prayer JSON** (library menu) copies a picked `.json` into the library root as `{id}.json`. The file is not rewritten. Existing ids/filenames are not overwritten.
 
 ## Dev sample
 

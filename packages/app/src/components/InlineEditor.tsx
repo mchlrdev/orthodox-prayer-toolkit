@@ -52,13 +52,14 @@ import {
   deleteKindWithStyles,
   fillPercent,
   getTranslation,
-  insertBlockAfter as insertBlockAfterInPrayer,
   isBlockEmptyAcrossVariants,
   isTranslationFilled,
   kindOptions,
   moveBlock as moveBlockInPrayer,
   removeBlock,
   setBlockKind,
+  splitBlock as splitBlockInPrayer,
+  splitEditorContent,
   translationEditorContent,
   usesLines,
 } from "../prayerEdit";
@@ -85,9 +86,11 @@ export type BlockRevealScroll = "smooth-center" | "instant-start";
 
 export type BlockRevealOptions = {
   scroll: BlockRevealScroll;
-  /** When set, focus the editable in this column and place the caret at the end. */
+  /** When set, focus the editable in this column. */
   focusCol: ActiveVariant | null;
   flash: boolean;
+  /** Caret placement when focusing. Default: end. */
+  caret?: "start" | "end";
 };
 
 export type InlineEditorHandle = {
@@ -98,11 +101,16 @@ const JUMP_FLASH_MS = 900;
 
 function styleToCss(style: KindStyle): CSSProperties {
   const color = styleColorToCss(style.color);
+  const textAlign =
+    style.textAlign === "center" || style.textAlign === "justify"
+      ? style.textAlign
+      : "left";
   return {
     fontSize: style.fontSize,
     color,
     fontWeight: style.fontWeight as CSSProperties["fontWeight"],
     fontStyle: style.fontStyle as CSSProperties["fontStyle"],
+    textAlign,
   };
 }
 
@@ -119,6 +127,16 @@ function placeCaretAtEnd(el: HTMLElement): void {
   const range = document.createRange();
   range.selectNodeContents(el);
   range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function placeCaretAtStart(el: HTMLElement): void {
+  const sel = window.getSelection();
+  if (!sel) return;
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(true);
   sel.removeAllRanges();
   sel.addRange(range);
 }
@@ -214,7 +232,10 @@ const EditableBlock = memo(function EditableBlock({
   liveCommit?: boolean;
   onCommit: (content: InlineContent | InlineContent[] | null) => void;
   onFocusChange?: (blockId: string, focused: boolean) => void;
-  onInsertBelow?: (content: InlineContent | InlineContent[] | null) => void;
+  onInsertBelow?: (
+    before: InlineContent | InlineContent[] | null,
+    after: InlineContent | InlineContent[] | null,
+  ) => void;
   /** Backspace in an empty cell — parent decides confirm vs immediate delete. */
   onDeleteAtStart?: () => void;
 }) {
@@ -415,6 +436,9 @@ const EditableBlock = memo(function EditableBlock({
     }
     if (skipBlurCommitRef.current) {
       skipBlurCommitRef.current = false;
+      setFocused(false);
+      onFocusChange?.(blockId, false);
+      setToolbar(null);
       return;
     }
     setFocused(false);
@@ -540,7 +564,23 @@ const EditableBlock = memo(function EditableBlock({
 
           e.preventDefault();
           skipBlurCommitRef.current = true;
-          onInsertBelow(readContent());
+          const content = readContent();
+          const el = ref.current;
+          const offsets = el ? getSelectionOffsets(el) : null;
+          const { before, after } = splitEditorContent(
+            content,
+            offsets?.start ?? Number.POSITIVE_INFINITY,
+            offsets?.end ?? Number.POSITIVE_INFINITY,
+            lineMode,
+          );
+          // contenteditable keeps the full text while focused; write `before`
+          // now so the remainder is not still visible in this block.
+          if (el) {
+            renderEditable(el, before ?? (lineMode ? [] : ""), lineMode);
+            setDomEmpty(isDomEmpty(el));
+            dirtyRef.current = false;
+          }
+          onInsertBelow(before, after);
         }}
         onInput={() => {
           markDirty();
@@ -686,7 +726,13 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
 
   const handlersRef = useRef({
     commit: new Map<string, (c: InlineContent | InlineContent[] | null) => void>(),
-    insert: new Map<string, (c: InlineContent | InlineContent[] | null) => void>(),
+    insert: new Map<
+      string,
+      (
+        before: InlineContent | InlineContent[] | null,
+        after: InlineContent | InlineContent[] | null,
+      ) => void
+    >(),
     delete: new Map<string, () => void>(),
   });
 
@@ -759,7 +805,8 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         if (!editable) return;
         focusedIdRef.current = blockId;
         editable.focus();
-        placeCaretAtEnd(editable);
+        if (options.caret === "start") placeCaretAtStart(editable);
+        else placeCaretAtEnd(editable);
       }
     },
     [],
@@ -768,11 +815,16 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
   useImperativeHandle(ref, () => ({ revealBlock }), [revealBlock]);
 
   const focusEditor = useCallback(
-    (blockId: string, col: ActiveVariant) => {
+    (
+      blockId: string,
+      col: ActiveVariant,
+      caret: "start" | "end" = "end",
+    ) => {
       revealBlock(blockId, {
         scroll: "smooth-center",
         focusCol: col,
         flash: true,
+        caret,
       });
     },
     [revealBlock],
@@ -835,17 +887,18 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     const key = editorKey(blockId, col);
     let fn = handlersRef.current.insert.get(key);
     if (!fn) {
-      fn = (next) => {
+      fn = (before, after) => {
         const { prayer: p, onChange: change } = ctxRef.current;
         const index = p.structure.findIndex((b) => b.id === blockId);
         if (index < 0) return;
         const current = p.structure[index];
         if (!current) return;
         const id = createBlockId(p.structure.length);
-        const updated = insertBlockAfterInPrayer(p, index, col, next, id);
+        const updated = splitBlockInPrayer(p, index, col, before, after, id);
         setLastAddedKind(current.kind);
         change(updated);
-        window.setTimeout(() => focusEditorRef.current(id, col), 0);
+        const caret = after === null ? "end" : "start";
+        window.setTimeout(() => focusEditorRef.current(id, col, caret), 0);
       };
       handlersRef.current.insert.set(key, fn);
     }
@@ -977,12 +1030,16 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
           const lineMode = usesLines(block.kind);
           const styleCss =
             cssByKind[block.kind] ?? styleToCss(FALLBACK_KIND_STYLE);
+          const blockStyle = styles[block.kind] ?? FALLBACK_KIND_STYLE;
 
           return (
             <div
               key={block.id}
               className="inline-block"
               data-block-id={block.id}
+              data-indicate={
+                blockStyle.indicate === "true" ? "true" : undefined
+              }
               data-jump-target={jumpTargetId === block.id ? "true" : undefined}
               data-menu-open={kindUiBlockId === block.id ? "true" : undefined}
               data-split={split ? "true" : undefined}
@@ -1101,13 +1158,10 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                         lineMode={lineMode}
                         editorKey={editorKey(block.id, col)}
                         blockId={block.id}
-                        placeholder="Prayer text"
+                        placeholder={kindDisplayLabel(block.kind)}
                         style={styleCss}
                         noteColor={noteColor}
-                        initialCap={
-                          (styles[block.kind] ?? FALLBACK_KIND_STYLE)
-                            .initialCap === "true"
-                        }
+                        initialCap={blockStyle.initialCap === "true"}
                         liveCommit={
                           (block.kind === "heading" ||
                             block.kind === "subheading") &&

@@ -76,6 +76,7 @@ function fakeToolkit(
     readLibraryStyles: async () => null,
     writeLibraryStyles: async () => undefined,
     saveExport: async () => null,
+    pickPrayerJson: async () => null,
     showItem: async () => undefined,
     basename: async (p) => p.split("/").pop() ?? p,
     onCloseRequested: () => () => undefined,
@@ -434,5 +435,32 @@ describe("mergeCatalogs", () => {
     expect(merged.entries.find((e) => e.path === "b.json")?.scanned).toBe(
       false,
     );
+  });
+
+  it("does not restore omitted paths from the base catalog", () => {
+    const morning = patchCatalogPrayer(
+      {
+        root: "/lib",
+        entries: [],
+        collisions: [],
+        kinds: [],
+        variants: [],
+        manifest: null,
+        libraryStyles: {},
+        styleErrors: [],
+        scanComplete: true,
+      },
+      "morning.json",
+      prayer("morning", "verse", "Morgen"),
+    );
+    const evening = patchCatalogPrayer(
+      removeCatalogPath(morning, "morning.json"),
+      "evening.json",
+      prayer("evening", "verse", "Abend"),
+    );
+    const merged = mergeCatalogs(evening, morning, {
+      omitPaths: ["morning.json"],
+    });
+    expect(merged.entries.map((e) => e.path)).toEqual(["evening.json"]);
   });
 });

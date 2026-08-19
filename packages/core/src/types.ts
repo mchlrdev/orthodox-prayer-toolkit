@@ -73,8 +73,12 @@ export type KindStyle = {
   fontStyle: string;
   /** When `"true"`, the first letter uses Accent (liturgical initial). */
   initialCap?: string;
+  /** When `"true"`, the editor marks blocks with `data-indicate`. */
+  indicate?: string;
   /** Preferred HTML element for this kind when exporting HTML. */
   htmlTag?: string;
+  /** CSS text-align: `left`, `center`, or `justify`. Missing → left. */
+  textAlign?: string;
   [extra: string]: string | undefined;
 };
 

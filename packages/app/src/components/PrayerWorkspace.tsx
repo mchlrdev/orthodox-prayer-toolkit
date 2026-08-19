@@ -1,4 +1,4 @@
-import { useMemo, type Ref } from "react";
+import { useMemo, useRef, type Ref } from "react";
 import {
   ActionIcon,
   Badge,
@@ -22,6 +22,7 @@ import {
   type VariantMeta,
 } from "@orthodox-prayer-toolkit/core";
 import { InlineEditor, type InlineEditorHandle } from "./InlineEditor";
+import { usePrayerScroll } from "../prayerScroll";
 import {
   parseVariantKey,
   sameVariant,
@@ -41,6 +42,8 @@ type StyleEditing = {
 
 type Props = {
   prayer: Prayer;
+  prayerPath: string;
+  libraryRoot: string;
   visibleVariants: ActiveVariant[];
   styles: StyleMap;
   styleEditing: StyleEditing;
@@ -55,6 +58,12 @@ type Props = {
   onExport: () => void;
   onRenameKind: (from: string, to: string) => void;
 };
+
+function assignRef<T>(ref: Ref<T> | undefined, value: T): void {
+  if (!ref) return;
+  if (typeof ref === "function") ref(value);
+  else ref.current = value;
+}
 
 function metaFor(
   prayer: Prayer,
@@ -129,6 +138,8 @@ function ColumnChip({
 
 export function PrayerWorkspace({
   prayer,
+  prayerPath,
+  libraryRoot,
   visibleVariants,
   styles,
   styleEditing,
@@ -143,6 +154,8 @@ export function PrayerWorkspace({
   onExport,
   onRenameKind,
 }: Props) {
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  usePrayerScroll(libraryRoot, prayerPath, bodyRef);
   const split = visibleVariants.length > 1;
 
   const availableToAdd = useMemo(() => {
@@ -306,7 +319,13 @@ export function PrayerWorkspace({
         ) : null}
       </div>
 
-      <div className="workspace-body" ref={scrollRootRef}>
+      <div
+        className="workspace-body"
+        ref={(el) => {
+          bodyRef.current = el;
+          assignRef(scrollRootRef, el);
+        }}
+      >
         <div className="workspace-body-inner" data-split={split ? "true" : undefined}>
           <InlineEditor
             ref={editorRef}

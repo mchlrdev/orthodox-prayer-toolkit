@@ -13,6 +13,8 @@ import {
 import {
   IconAdjustments,
   IconDots,
+  IconFileExport,
+  IconFileImport,
   IconFolderOpen,
   IconFolderPlus,
   IconPlus,
@@ -49,6 +51,8 @@ type Props = {
   onCreate: () => void;
   onLibrarySettings: () => void;
   onAppSettings: () => void;
+  onImportPrayer: () => void;
+  onExportPrayer: (entry: LibraryEntry) => void;
   onDelete: (entry: LibraryEntry) => void;
 };
 
@@ -72,6 +76,8 @@ export function PrayerList({
   onCreate,
   onLibrarySettings,
   onAppSettings,
+  onImportPrayer,
+  onExportPrayer,
   onDelete,
 }: Props) {
   const [query, setQuery] = useState("");
@@ -177,6 +183,13 @@ export function PrayerList({
                       onClick={onLibrarySettings}
                     >
                       Library settings
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<IconFileImport size={14} />}
+                      onClick={onImportPrayer}
+                      disabled={busy}
+                    >
+                      Import prayer JSON…
                     </Menu.Item>
                     <Menu.Item
                       leftSection={<IconRefresh size={14} />}
@@ -304,6 +317,13 @@ export function PrayerList({
                       </ActionIcon>
                     </Menu.Target>
                     <Menu.Dropdown>
+                      <Menu.Item
+                        leftSection={<IconFileExport size={14} />}
+                        onClick={() => onExportPrayer(entry)}
+                      >
+                        Export prayer JSON…
+                      </Menu.Item>
+                      <Menu.Divider />
                       <Menu.Item
                         color="accent"
                         leftSection={<IconTrash size={14} />}

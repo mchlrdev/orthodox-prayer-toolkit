@@ -45,6 +45,8 @@ export type PrayerToolkitApi = {
     defaultName: string,
     content: string | Uint8Array,
   ) => Promise<string | null>;
+  /** Open-file dialog; returns basename + file text, or null if cancelled. */
+  pickPrayerJson: () => Promise<{ name: string; content: string } | null>;
   showItem: (fullPath: string) => Promise<void>;
   basename: (path: string) => Promise<string>;
   /** Electron only: subscribe to window close requests. Returns unsubscribe. */
@@ -88,6 +90,7 @@ const api: PrayerToolkitApi = {
     ipcRenderer.invoke("styles:writeLibrary", libraryRoot, content),
   saveExport: (defaultName, content) =>
     ipcRenderer.invoke("dialog:saveExport", defaultName, content),
+  pickPrayerJson: () => ipcRenderer.invoke("dialog:pickPrayerJson"),
   showItem: (fullPath) => ipcRenderer.invoke("shell:showItem", fullPath),
   basename: (path) => ipcRenderer.invoke("path:basename", path),
   onCloseRequested: (cb) => {

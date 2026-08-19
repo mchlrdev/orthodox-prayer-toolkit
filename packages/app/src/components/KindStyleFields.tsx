@@ -1,5 +1,12 @@
 import type { ReactNode } from "react";
-import { Checkbox, Group, Select, Stack } from "@mantine/core";
+import {
+  Checkbox,
+  Group,
+  Input,
+  SegmentedControl,
+  Select,
+  Stack,
+} from "@mantine/core";
 import {
   HTML_TAG_ALLOWLIST,
   type KindStyle,
@@ -80,24 +87,47 @@ export function KindStyleFields({
     zIndex: portalDropdowns ? KIND_FIELD_DROPDOWN_Z : undefined,
   };
 
+  const textAlign =
+    style.textAlign === "center" || style.textAlign === "justify"
+      ? style.textAlign
+      : "left";
+
   return (
     <Stack gap="sm">
       {leading}
-      <Select
-        label="Size"
-        data={[...FONT_SIZE_OPTIONS]}
-        value={size}
-        allowDeselect={false}
-        onChange={(v) => v && onChange({ fontSize: v })}
-        comboboxProps={comboboxProps}
-      />
-      <ColorSelect
-        label="Color"
-        value={style.color}
-        onChange={(color) => onChange({ color })}
-        withinPortal={portalDropdowns}
-        dropdownZIndex={portalDropdowns ? KIND_FIELD_DROPDOWN_Z : undefined}
-      />
+      <div className="kind-style-pair">
+        <Select
+          label="Size"
+          w="100%"
+          data={[...FONT_SIZE_OPTIONS]}
+          value={size}
+          allowDeselect={false}
+          onChange={(v) => v && onChange({ fontSize: v })}
+          comboboxProps={comboboxProps}
+        />
+        <ColorSelect
+          label="Color"
+          value={style.color}
+          onChange={(color) => onChange({ color })}
+          withinPortal={portalDropdowns}
+          dropdownZIndex={portalDropdowns ? KIND_FIELD_DROPDOWN_Z : undefined}
+        />
+      </div>
+      <Stack gap={4}>
+        <Input.Label>Align</Input.Label>
+        <SegmentedControl
+          fullWidth
+          size="xs"
+          aria-label="Text align"
+          value={textAlign}
+          onChange={(v) => onChange({ textAlign: v })}
+          data={[
+            { label: "Left", value: "left" },
+            { label: "Center", value: "center" },
+            { label: "Justified", value: "justify" },
+          ]}
+        />
+      </Stack>
       <Group gap="lg">
         <Checkbox
           label="Bold"
@@ -121,6 +151,15 @@ export function KindStyleFields({
           onChange={(e) =>
             onChange({
               initialCap: e.currentTarget.checked ? "true" : "false",
+            })
+          }
+        />
+        <Checkbox
+          label="Indicate"
+          checked={style.indicate === "true"}
+          onChange={(e) =>
+            onChange({
+              indicate: e.currentTarget.checked ? "true" : "false",
             })
           }
         />

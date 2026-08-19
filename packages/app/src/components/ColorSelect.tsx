@@ -1,11 +1,12 @@
 import { useState } from "react";
 import {
+  Input,
   Popover,
   Stack,
   Text,
   UnstyledButton,
 } from "@mantine/core";
-import { IconCheck } from "@tabler/icons-react";
+import { IconCheck, IconChevronDown } from "@tabler/icons-react";
 import { BUILTIN_COLORS, matchColor } from "../colors";
 
 type Props = {
@@ -27,40 +28,34 @@ export function ColorSelect({
   const matched = matchColor(value);
 
   return (
-    <Stack gap={4}>
-      {label ? (
-        <Text size="xs" c="dimmed" fw={500}>
-          {label}
-        </Text>
-      ) : null}
+    <Input.Wrapper label={label} style={{ width: "100%", minWidth: 0 }}>
       <Popover
         opened={opened}
         onChange={setOpened}
         position="bottom-start"
-        width={200}
+        width="target"
         withinPortal={withinPortal}
         zIndex={dropdownZIndex}
       >
         <Popover.Target>
-          <UnstyledButton
+          <Input
+            component="button"
+            type="button"
+            pointer
+            w="100%"
+            classNames={{ input: "color-select-trigger" }}
             onClick={() => setOpened((o) => !o)}
-            className="option-row"
-            style={{
-              width: "100%",
-              padding: "8px 10px",
-              borderRadius: 8,
-              border: "1px solid var(--opt-border)",
-              background: "var(--opt-bg)",
-            }}
+            leftSection={
+              <span
+                className="color-swatch"
+                style={{ background: matched.css }}
+              />
+            }
+            rightSection={<IconChevronDown size={14} />}
+            rightSectionPointerEvents="none"
           >
-            <span
-              className="color-swatch"
-              style={{ background: matched.css }}
-            />
-            <Text size="sm" style={{ flex: 1 }}>
-              {matched.name}
-            </Text>
-          </UnstyledButton>
+            {matched.name}
+          </Input>
         </Popover.Target>
         <Popover.Dropdown p={6}>
           <Stack gap={2}>
@@ -97,6 +92,6 @@ export function ColorSelect({
           </Stack>
         </Popover.Dropdown>
       </Popover>
-    </Stack>
+    </Input.Wrapper>
   );
 }

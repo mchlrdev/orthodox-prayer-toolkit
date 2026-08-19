@@ -36,7 +36,13 @@
   color-scheme: dark;
 }
 
-/* Modals / menus / inputs: same cool surface as the shell (no Mantine drift). */
+/* Dialogs are white (same as settings-hub pane); the app shell stays --opt-bg. */
+.mantine-Modal-content,
+.mantine-Modal-header {
+  background: var(--opt-surface-solid);
+}
+
+/* Menus / inputs: same cool surface as the shell (no Mantine drift). */
 :root[data-mantine-color-scheme="dark"] .mantine-Modal-content,
 :root[data-mantine-color-scheme="dark"] .mantine-Modal-header,
 :root[data-mantine-color-scheme="dark"] .mantine-Popover-dropdown,
@@ -266,9 +272,9 @@ body,
   max-width: var(--opt-sidebar-width);
   padding: 12px 14px;
   pointer-events: none;
-  background: var(--opt-surface);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--opt-surface-solid);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: 0 0 24px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   transition:
@@ -1343,6 +1349,19 @@ body,
   transition: background-color 140ms ease;
 }
 
+.inline-block[data-indicate="true"]::before {
+  content: "";
+  position: absolute;
+  background: color-mix(in srgb, var(--opt-accent) 50%, transparent);
+  z-index: 1;
+
+  width: 8px;
+  height: 8px;
+  top: 18px;
+  left: -12px;
+  border-radius: 50%;
+}
+
 .inline-block:hover,
 .inline-block:focus-within,
 .inline-block[data-menu-open="true"],
@@ -1475,6 +1494,28 @@ body,
 .inline-note-toolbar .mantine-ActionIcon-root[data-active="true"] {
   background: color-mix(in srgb, var(--opt-accent) 16%, transparent);
   color: var(--opt-accent);
+}
+
+.kind-style-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--mantine-spacing-sm);
+  align-items: start;
+}
+
+.kind-style-pair > * {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Same surface as Mantine Input (white in light, --opt-bg in dark). */
+.color-select-trigger {
+  background: var(--opt-surface-solid);
+  text-align: left;
+}
+
+:root[data-mantine-color-scheme="dark"] .color-select-trigger {
+  background: var(--opt-bg);
 }
 
 .color-swatch {

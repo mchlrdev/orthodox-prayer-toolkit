@@ -4,6 +4,7 @@ import {
   normalizeRuns,
   packInline,
   plainText,
+  splitInline,
   toRuns,
   toggleNoteRange,
   unmarkNoteAt,
@@ -139,6 +140,54 @@ describe("mark / unmark / toggle", () => {
         { t: "note", v: "(zwölfmal)" },
       ]),
     ).toEqual([{ t: "note", v: "(NN) (zwölfmal)" }]);
+  });
+});
+
+describe("splitInline", () => {
+  it("splits plain text at a caret offset", () => {
+    expect(splitInline("Herr, erbarme dich.", 6)).toEqual({
+      before: "Herr, ",
+      after: "erbarme dich.",
+    });
+  });
+
+  it("yields an empty after at the end of the text", () => {
+    expect(splitInline("Amen", 4)).toEqual({
+      before: "Amen",
+      after: null,
+    });
+  });
+
+  it("yields an empty before at the start of the text", () => {
+    expect(splitInline("Amen", 0)).toEqual({
+      before: null,
+      after: "Amen",
+    });
+  });
+
+  it("drops a selected range between start and end", () => {
+    expect(splitInline("aaXXXbb", 2, 5)).toEqual({
+      before: "aa",
+      after: "bb",
+    });
+  });
+
+  it("splits a note run at the caret and keeps both sides as notes", () => {
+    const content: InlineContent = [
+      { t: "text", v: "Dann " },
+      { t: "note", v: "vierzigmal" },
+      { t: "text", v: ":" },
+    ];
+    expect(splitInline(content, 9)).toEqual({
+      before: [
+        { t: "text", v: "Dann " },
+        { t: "note", v: "vier" },
+      ],
+      after: [
+        { t: "note", v: "zigmal" },
+        { t: "text", v: ":" },
+      ],
+    });
   });
 });
 

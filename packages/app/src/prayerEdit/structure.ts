@@ -53,6 +53,21 @@ export function insertBlockAfter(
   return { ...withCommit, structure };
 }
 
+export function splitBlock(
+  prayer: Prayer,
+  index: number,
+  col: ActiveVariant,
+  before: InlineContent | InlineContent[] | null,
+  after: InlineContent | InlineContent[] | null,
+  blockId?: string,
+): Prayer {
+  const inserted = insertBlockAfter(prayer, index, col, before, blockId);
+  if (after === null) return inserted;
+  const newBlock = inserted.structure[index + 1];
+  if (!newBlock) return inserted;
+  return applyCommittedContent(inserted, newBlock.id, col, after);
+}
+
 export function moveBlock(
   prayer: Prayer,
   index: number,

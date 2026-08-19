@@ -62,14 +62,18 @@ export function patchCatalogText(
  * Combine catalogs for the same library root.
  * `overlay` wins when both entries are scanned; `base` fills stubs and extra
  * paths (e.g. a Prayer opened while a scan is still yielding).
+ * `omitPaths` are not restored from `base` (renames / deletes).
  */
 export function mergeCatalogs(
   overlay: LibraryCatalog,
   base: LibraryCatalog | null,
+  options?: { omitPaths?: Iterable<string> },
 ): LibraryCatalog {
   if (!base || base.root !== overlay.root) return overlay;
+  const omit = new Set(options?.omitPaths ?? []);
   let entries = overlay.entries;
   for (const other of base.entries) {
+    if (omit.has(other.path)) continue;
     const mine = entries.find((e) => e.path === other.path);
     if (!mine) {
       entries = upsertEntry(entries, other);

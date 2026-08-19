@@ -3,13 +3,16 @@
     "fontSize": "1rem",
     "color": "accent",
     "fontWeight": "400",
-    "fontStyle": "normal"
+    "fontStyle": "normal",
+    "textAlign": "left"
   },
   "heading": {
     "fontSize": "1.125rem",
     "color": "accent",
     "fontWeight": "400",
-    "fontStyle": "normal"
+    "fontStyle": "normal",
+    "htmlTag": "h2",
+    "textAlign": "left"
   },
   "verse": {
     "fontSize": "1rem",

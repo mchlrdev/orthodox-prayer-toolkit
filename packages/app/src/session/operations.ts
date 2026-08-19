@@ -199,6 +199,26 @@ export function applyCatalogChunk(
   };
 }
 
+/** Apply an async op result without resurrecting paths that op dropped. */
+export function mergeOpResult(
+  current: PrayerSessionState,
+  result: SessionOpResult,
+): PrayerSessionState {
+  if (
+    current.catalog &&
+    result.state.catalog &&
+    current.catalog.root === result.state.catalog.root
+  ) {
+    return {
+      ...result.state,
+      catalog: mergeCatalogs(result.state.catalog, current.catalog, {
+        omitPaths: result.dropCatalogPaths,
+      }),
+    };
+  }
+  return result.state;
+}
+
 export function editDraft(
   state: PrayerSessionState,
   next: Prayer,
@@ -418,6 +438,7 @@ export async function saveSelected(
         message: prayerFilename(draft.prayer.id),
       },
     ],
+    dropCatalogPaths: result.path !== path ? [path] : undefined,
   };
 }
 
@@ -430,6 +451,7 @@ export async function saveAllDirty(
   if (entries.length === 0) return { state, notices: [] };
 
   let next = state;
+  const dropCatalogPaths: string[] = [];
   for (const [path, draft] of entries) {
     const result = await persistPrayer(
       api,
@@ -449,6 +471,7 @@ export async function saveAllDirty(
         ],
       };
     }
+    if (result.path !== path) dropCatalogPaths.push(path);
     next = applyPersistedPath(
       next,
       path,
@@ -471,6 +494,7 @@ export async function saveAllDirty(
             : `${entries.length} prayers saved`,
       },
     ],
+    dropCatalogPaths: dropCatalogPaths.length > 0 ? dropCatalogPaths : undefined,
   };
 }
 
@@ -656,6 +680,7 @@ export async function deletePrayer(
         pendingDelete: null,
       },
       notices: [{ color: "dark", title: "Deleted", message: entry.path }],
+      dropCatalogPaths: [entry.path],
     };
   } catch (err) {
     return {

@@ -25,6 +25,11 @@ export {
 } from "./draftEdit";
 export { persistPrayer } from "./persistPrayer";
 export {
+  exportPrayerFile,
+  importPrayerFile,
+  resolveImportedPrayerPath,
+} from "./prayerFileIo";
+export {
   planKindRename,
   prayerUsesKind,
   renameKindAcrossLibrary,
@@ -50,6 +55,7 @@ export {
   evictPreviousClean,
   exportEntry,
   hasUnsaved,
+  mergeOpResult,
   openPrayer,
   persistAppStyles,
   persistLibraryStyles,

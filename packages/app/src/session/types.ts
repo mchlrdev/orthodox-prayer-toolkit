@@ -50,4 +50,6 @@ export type PrayerSessionState = {
 export type SessionOpResult = {
   state: PrayerSessionState;
   notices: SessionNotice[];
+  /** Catalog paths this op removed; merge must not resurrect them. */
+  dropCatalogPaths?: string[];
 };

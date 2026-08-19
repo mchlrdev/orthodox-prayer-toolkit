@@ -22,6 +22,8 @@ import {
   removeBlock,
   renameKindWithStyles,
   setBlockKind,
+  splitBlock,
+  splitEditorContent,
   translationEditorContent,
 } from "../src/prayerEdit";
 
@@ -149,6 +151,90 @@ describe("structure ops", () => {
     expect(getTranslation(next, "b1", col)?.lines).toEqual(["Amen"]);
     expect(next.structure.map((b) => b.id)).toEqual(["b1", "b-new", "b2"]);
     expect(next.structure[1]?.kind).toBe("verse");
+  });
+
+  it("splits a text block at the caret, keeping other variants on the original", () => {
+    const prayer: Prayer = {
+      ...basePrayer(),
+      variants: [
+        ...basePrayer().variants,
+        {
+          lang: "en",
+          variant: "standard",
+          title: "Morning",
+          license: "unknown",
+          source: "test",
+        },
+      ],
+      structure: [
+        {
+          id: "b1",
+          kind: "rubric",
+          translations: [
+            { lang: "de", variant: "standard", text: "Stehend beten." },
+            { lang: "en", variant: "standard", text: "Pray standing." },
+          ],
+        },
+      ],
+    };
+    const { before, after } = splitEditorContent("Stehend beten.", 8, 8, false);
+    expect(before).toBe("Stehend ");
+    expect(after).toBe("beten.");
+
+    const next = splitBlock(prayer, 0, col, before, after, "b-new");
+    expect(next.structure.map((b) => b.id)).toEqual(["b1", "b-new"]);
+    expect(next.structure[1]?.kind).toBe("rubric");
+    expect(getTranslation(next, "b1", col)?.text).toBe("Stehend ");
+    expect(getTranslation(next, "b-new", col)?.text).toBe("beten.");
+    expect(
+      getTranslation(next, "b1", { lang: "en", variant: "standard" })?.text,
+    ).toBe("Pray standing.");
+    expect(
+      getTranslation(next, "b-new", { lang: "en", variant: "standard" }),
+    ).toBeUndefined();
+  });
+
+  it("splits verse lines across a newline at the caret", () => {
+    const prayer = applyCommittedContent(basePrayer(), "b1", col, [
+      "Herr,",
+      "erbarme dich.",
+    ]);
+    const { before, after } = splitEditorContent(
+      ["Herr,", "erbarme dich."],
+      6,
+      6,
+      true,
+    );
+    expect(before).toEqual(["Herr,"]);
+    expect(after).toEqual(["erbarme dich."]);
+
+    const next = splitBlock(prayer, 0, col, before, after, "b-new");
+    expect(getTranslation(next, "b1", col)?.lines).toEqual(["Herr,"]);
+    expect(getTranslation(next, "b-new", col)?.lines).toEqual([
+      "erbarme dich.",
+    ]);
+  });
+
+  it("splits a verse line in the middle", () => {
+    const { before, after } = splitEditorContent(
+      ["Herr, erbarme dich."],
+      6,
+      6,
+      true,
+    );
+    expect(before).toEqual(["Herr, "]);
+    expect(after).toEqual(["erbarme dich."]);
+  });
+
+  it("inserts an empty block when splitting at the end of the text", () => {
+    const { before, after } = splitEditorContent("Amen", 4, 4, false);
+    expect(before).toBe("Amen");
+    expect(after).toBeNull();
+
+    const next = splitBlock(basePrayer(), 1, col, before, after, "b-new");
+    expect(getTranslation(next, "b2", col)?.text).toBe("Amen");
+    expect(getTranslation(next, "b-new", col)).toBeUndefined();
+    expect(next.structure.map((b) => b.id)).toEqual(["b1", "b2", "b-new"]);
   });
 
   it("changes a block kind", () => {

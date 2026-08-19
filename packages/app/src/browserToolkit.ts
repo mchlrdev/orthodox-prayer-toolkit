@@ -128,6 +128,25 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
       });
     },
 
+    pickPrayerJson: () =>
+      new Promise((resolve) => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".json,application/json";
+        input.addEventListener("change", () => {
+          const file = input.files?.[0];
+          if (!file) {
+            resolve(null);
+            return;
+          }
+          void file.text().then((content) => {
+            resolve({ name: file.name, content });
+          });
+        });
+        input.addEventListener("cancel", () => resolve(null));
+        input.click();
+      }),
+
     saveExport: async (defaultName, content) => {
       const lower = defaultName.toLowerCase();
       const mime = lower.endsWith(".html")

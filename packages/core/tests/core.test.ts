@@ -774,11 +774,36 @@ describe("resolveStyles", () => {
 
   it("includes builtin htmlTag defaults on presets", () => {
     expect(DEFAULT_KIND_STYLES.heading?.htmlTag).toBe("h2");
+    expect(DEFAULT_KIND_STYLES.heading?.indicate).toBe("true");
     expect(DEFAULT_KIND_STYLES.subheading?.htmlTag).toBe("h3");
     expect(DEFAULT_KIND_STYLES.verse?.htmlTag).toBe("p");
     expect(DEFAULT_KIND_STYLES.verse?.fontSize).toBe("1rem");
+    expect(DEFAULT_KIND_STYLES.verse?.textAlign).toBe("justify");
     expect(DEFAULT_KIND_STYLES.annotation?.htmlTag).toBe("p");
+    expect(DEFAULT_KIND_STYLES.annotation?.textAlign).toBe("justify");
     expect(FALLBACK_KIND_STYLE.htmlTag).toBeUndefined();
+  });
+
+  it("fills verse and annotation textAlign from defaults when app styles omit it", () => {
+    const styles = resolveStyles({
+      discoveredKinds: ["verse", "annotation"],
+      appDefaults: {
+        verse: {
+          fontSize: "1rem",
+          color: "base",
+          fontWeight: "400",
+          fontStyle: "normal",
+        },
+        annotation: {
+          fontSize: "1rem",
+          color: "accent",
+          fontWeight: "400",
+          fontStyle: "normal",
+        },
+      },
+    });
+    expect(styles.verse?.textAlign).toBe("justify");
+    expect(styles.annotation?.textAlign).toBe("justify");
   });
 
   it("lets library overrides win over app defaults", () => {
@@ -807,6 +832,7 @@ describe("resolveStyles", () => {
     expect(styles.verse?.fontStyle).toBe("italic");
     expect(styles.verse?.color).toBe("accent");
     expect(styles.verse?.htmlTag).toBe("blockquote");
+    expect(styles.verse?.textAlign).toBe("justify");
   });
 });
 
@@ -835,6 +861,43 @@ describe("validateStyles", () => {
   it("accepts default kind styles", () => {
     const result = validateStyles(DEFAULT_KIND_STYLES);
     expect(result.ok).toBe(true);
+  });
+
+  it("accepts textAlign left, center, justify and rejects others", () => {
+    const ok = validateStyles({
+      verse: {
+        fontSize: "1rem",
+        color: "base",
+        fontWeight: "400",
+        fontStyle: "normal",
+        textAlign: "justify",
+      },
+      heading: {
+        fontSize: "1rem",
+        color: "accent",
+        fontWeight: "400",
+        fontStyle: "normal",
+        textAlign: "Center",
+      },
+    });
+    expect(ok.ok).toBe(true);
+    if (ok.ok) {
+      expect(ok.styles.verse?.textAlign).toBe("justify");
+      expect(ok.styles.heading?.textAlign).toBe("center");
+    }
+
+    const bad = validateStyles({
+      verse: {
+        fontSize: "1rem",
+        color: "base",
+        fontWeight: "400",
+        fontStyle: "normal",
+        textAlign: "right",
+      },
+    });
+    expect(bad.ok).toBe(false);
+    if (bad.ok) return;
+    expect(bad.errors.some((e) => e.path.includes("textAlign"))).toBe(true);
   });
 
   it("accepts allowlisted htmlTag and rejects others", () => {

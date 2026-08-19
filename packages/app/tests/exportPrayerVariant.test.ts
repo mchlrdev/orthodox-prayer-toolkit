@@ -62,6 +62,7 @@ function fakeApi(
     readLibraryStyles: async () => null,
     writeLibraryStyles: async () => undefined,
     saveExport: async () => null,
+    pickPrayerJson: async () => null,
     showItem: async () => undefined,
     basename: async (p) => p.split("/").pop() ?? p,
     onCloseRequested: () => () => undefined,

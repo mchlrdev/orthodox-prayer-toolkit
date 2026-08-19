@@ -6,7 +6,7 @@ import {
   type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import { getToolkitApi, isBrowserDev } from "./api";
-import { mergeCatalogs, scanLibraryCatalog } from "./catalog";
+import { scanLibraryCatalog } from "./catalog";
 import type { LibraryEntry } from "./library";
 import {
   applyKindRename,
@@ -26,8 +26,11 @@ import {
   emptySessionState,
   errorNotice,
   exportEntry,
+  exportPrayerFile,
+  importPrayerFile,
   hasUnsaved,
   evictPreviousClean,
+  mergeOpResult,
   persistAppStyles as persistAppStylesOp,
   persistLibraryStyles as persistLibraryStylesOp,
   parseAppStyles,
@@ -60,23 +63,6 @@ import {
   type RecentLibrary,
 } from "./recentLibraries";
 import { savePrayerView } from "./viewPrefs";
-
-function mergeOpCatalog(
-  current: PrayerSessionState,
-  incoming: PrayerSessionState,
-): PrayerSessionState {
-  if (
-    current.catalog &&
-    incoming.catalog &&
-    current.catalog.root === incoming.catalog.root
-  ) {
-    return {
-      ...incoming,
-      catalog: mergeCatalogs(incoming.catalog, current.catalog),
-    };
-  }
-  return incoming;
-}
 
 export function usePrayerSession(opts?: {
   onNotice?: (n: SessionNotice) => void;
@@ -114,7 +100,7 @@ export function usePrayerSession(opts?: {
     (result: SessionOpResult, merge = false) => {
       emit(result.notices);
       const next = merge
-        ? mergeOpCatalog(stateRef.current, result.state)
+        ? mergeOpResult(stateRef.current, result)
         : result.state;
       stateRef.current = next;
       setState(next);
@@ -497,6 +483,21 @@ export function usePrayerSession(opts?: {
     return result.exportedPath;
   };
 
+  const exportPrayerFileFn = async (entry: LibraryEntry) => {
+    const result = await exportPrayerFile(stateRef.current, api, entry);
+    emit(result.notices);
+  };
+
+  const importPrayerFileFn = async () => {
+    setOpBusy(true);
+    try {
+      persistCurrentView();
+      commit(await importPrayerFile(stateRef.current, api), true);
+    } finally {
+      setOpBusy(false);
+    }
+  };
+
   const persistAppStyles = async (next: StyleMap) => {
     commit(await persistAppStylesOp(stateRef.current, api, next), true);
   };
@@ -691,6 +692,8 @@ export function usePrayerSession(opts?: {
     commitCreatePrayer: commitCreate,
     deleteEntry,
     exportEntry: exportEntryFn,
+    exportPrayerFile: exportPrayerFileFn,
+    importPrayerFile: importPrayerFileFn,
     persistAppStyles,
     persistLibraryStyles,
     handleLeaveSaveAll,

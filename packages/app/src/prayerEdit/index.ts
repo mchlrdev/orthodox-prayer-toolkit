@@ -23,7 +23,9 @@ export {
   moveBlock,
   removeBlock,
   setBlockKind,
+  splitBlock,
 } from "./structure";
+export { splitEditorContent } from "./splitContent";
 export {
   renameStyleKey,
   removeStyleKey,

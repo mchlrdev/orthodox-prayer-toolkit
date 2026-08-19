@@ -9,7 +9,12 @@ export function parseAppStyles(raw: string | null): StyleMap {
   try {
     const parsed: unknown = JSON.parse(raw);
     const { styles } = sanitizeStyles(parsed);
-    return { ...DEFAULT_KIND_STYLES, ...styles };
+    const merged: StyleMap = { ...DEFAULT_KIND_STYLES };
+    for (const [kind, style] of Object.entries(styles)) {
+      const base = DEFAULT_KIND_STYLES[kind];
+      merged[kind] = base ? { ...base, ...style } : style;
+    }
+    return merged;
   } catch {
     return { ...DEFAULT_KIND_STYLES };
   }

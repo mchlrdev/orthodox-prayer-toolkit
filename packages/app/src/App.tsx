@@ -247,6 +247,8 @@ export function App() {
               onCreate={() => void session.beginCreatePrayer()}
               onLibrarySettings={() => setLibrarySettingsOpen(true)}
               onAppSettings={() => setAppSettingsOpen(true)}
+              onImportPrayer={() => void session.importPrayerFile()}
+              onExportPrayer={(entry) => void session.exportPrayerFile(entry)}
               onDelete={(entry) => setPendingDelete(entry)}
             />
           </div>
@@ -258,6 +260,8 @@ export function App() {
           ) : draft && visibleVariants.length > 0 ? (
             <PrayerWorkspace
               prayer={draft}
+              prayerPath={selectedPath ?? ""}
+              libraryRoot={library?.root ?? ""}
               visibleVariants={visibleVariants}
               styles={resolvedStyles}
               styleEditing={{

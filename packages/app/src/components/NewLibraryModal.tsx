@@ -103,14 +103,8 @@ export function NewLibraryModal({
       size="md"
     >
       <Stack gap="sm">
-        <Text size="sm" c="dimmed">
-          Choose a folder name and defaults, then pick where to create the
-          library on disk.
-        </Text>
-
         <TextInput
           label="Folder name"
-          description="Created as a new folder in the location you choose next"
           placeholder="my-prayer-library"
           value={draft.name}
           onChange={(e) => {

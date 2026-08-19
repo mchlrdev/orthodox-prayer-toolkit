@@ -31,7 +31,9 @@ const ALLOWED_FIELDS = new Set([
   "fontWeight",
   "fontStyle",
   "initialCap",
+  "indicate",
   "htmlTag",
+  "textAlign",
 ]);
 
 const DANGEROUS = /url\s*\(|expression\s*\(|javascript:|@import|</i;
@@ -48,6 +50,10 @@ function isSafeFontWeight(value: string): boolean {
 
 function isSafeFontStyle(value: string): boolean {
   return /^(normal|italic|oblique)$/i.test(value.trim());
+}
+
+function isSafeTextAlign(value: string): boolean {
+  return /^(left|center|justify)$/i.test(value.trim());
 }
 
 function fieldError(
@@ -113,6 +119,7 @@ function validateField(
       }
       return value.trim();
     case "initialCap":
+    case "indicate":
       if (value !== "true" && value !== "false") {
         errors.push(fieldError(kind, field, 'expected "true" or "false"'));
         return undefined;
@@ -130,6 +137,14 @@ function validateField(
         return undefined;
       }
       return value.trim();
+    case "textAlign":
+      if (!isSafeTextAlign(value)) {
+        errors.push(
+          fieldError(kind, field, "expected left, center, or justify"),
+        );
+        return undefined;
+      }
+      return value.trim().toLowerCase();
     default:
       return undefined;
   }

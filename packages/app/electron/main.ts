@@ -335,7 +335,9 @@ function registerIpc(): void {
           ? "Export Layout RTF"
           : isDocx
             ? "Export Layout DOCX"
-            : "Export flat variant JSON";
+            : lower.endsWith(".flat.json")
+              ? "Export flat variant JSON"
+              : "Export prayer JSON";
       const filters = isHtml
         ? [
             { name: "HTML", extensions: ["html"] },
@@ -371,6 +373,28 @@ function registerIpc(): void {
       return saved;
     },
   );
+
+  ipcMain.handle("dialog:pickPrayerJson", async () => {
+    const result = await dialog.showOpenDialog({
+      title: "Import prayer JSON",
+      properties: ["openFile"],
+      filters: [
+        { name: "JSON", extensions: ["json"] },
+        { name: "All Files", extensions: ["*"] },
+      ],
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    const chosen = result.filePaths[0];
+    if (!chosen) return null;
+    const full = resolve(chosen);
+    if (!existsSync(full) || !statSync(full).isFile()) {
+      throw new Error("File not found");
+    }
+    return {
+      name: basename(full),
+      content: readFileSync(full, "utf8"),
+    };
+  });
 
   ipcMain.handle("shell:showItem", (_evt, fullPath: string) => {
     const allowed = assertAllowedReveal(fullPath);

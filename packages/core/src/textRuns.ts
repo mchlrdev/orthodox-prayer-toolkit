@@ -270,6 +270,43 @@ export function toggleNoteRange(
   return markRangeAsNote(content, range.start, range.end);
 }
 
+/**
+ * Split at a plain-text caret, or drop [start, end) when `end` is given.
+ * Offsets clamp to the content. Empty sides pack to null.
+ */
+export function splitInline(
+  content: InlineContent,
+  start: number,
+  end: number = start,
+): { before: InlineContent | null; after: InlineContent | null } {
+  const runs = toRuns(content);
+  const plain = plainText(runs);
+  let from = Math.max(0, Math.min(start, plain.length));
+  let to = Math.max(0, Math.min(end, plain.length));
+  if (to < from) [from, to] = [to, from];
+
+  const beforeRuns: TextRun[] = [];
+  const afterRuns: TextRun[] = [];
+  let pos = 0;
+  for (const run of runs) {
+    const next = pos + run.v.length;
+    if (pos < from) {
+      const slice = run.v.slice(0, Math.min(from, next) - pos);
+      if (slice.length > 0) beforeRuns.push({ t: run.t, v: slice });
+    }
+    if (next > to) {
+      const slice = run.v.slice(Math.max(to, pos) - pos);
+      if (slice.length > 0) afterRuns.push({ t: run.t, v: slice });
+    }
+    pos = next;
+  }
+
+  return {
+    before: packInline(beforeRuns),
+    after: packInline(afterRuns),
+  };
+}
+
 /** Convert the note run at `runIndex` to text and repack. */
 export function unmarkNoteAt(
   content: InlineContent,

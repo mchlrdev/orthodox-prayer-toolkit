@@ -7,9 +7,11 @@ import { parseAppStyles } from "../src/session/parseAppStyles";
 import {
   editDraft,
   emptySessionState,
+  mergeOpResult,
   openPrayer,
   requestLeave,
   saveSelected,
+  sidebarEntries,
 } from "../src/session/operations";
 import type { PrayerToolkitApi } from "../electron/preload";
 
@@ -64,6 +66,7 @@ function fakeApi(
     readLibraryStyles: async () => null,
     writeLibraryStyles: async () => undefined,
     saveExport: async () => null,
+    pickPrayerJson: async () => null,
     showItem: async () => undefined,
     basename: async (p) => p.split("/").pop() ?? p,
     onCloseRequested: () => () => undefined,
@@ -159,6 +162,27 @@ describe("parseAppStyles", () => {
   it("falls back to defaults on bad JSON", () => {
     const styles = parseAppStyles("{not json");
     expect(styles.verse).toBeDefined();
+  });
+
+  it("keeps verse and annotation justified when persisted app styles omit textAlign", () => {
+    const styles = parseAppStyles(
+      JSON.stringify({
+        verse: {
+          fontSize: "1rem",
+          color: "base",
+          fontWeight: "400",
+          fontStyle: "normal",
+        },
+        annotation: {
+          fontSize: "1rem",
+          color: "accent",
+          fontWeight: "400",
+          fontStyle: "normal",
+        },
+      }),
+    );
+    expect(styles.verse?.textAlign).toBe("justify");
+    expect(styles.annotation?.textAlign).toBe("justify");
   });
 });
 
@@ -302,6 +326,32 @@ describe("session operations", () => {
       "Patched A",
     );
     expect(state.drafts["a.json"]?.dirty).toBe(false);
+  });
+
+  it("drops the old catalog path when saving a new id", async () => {
+    const files: Record<string, Prayer> = {
+      "morning.json": prayerAt("morning", "Morgen"),
+    };
+    const api = fakeApi({
+      readText: async (_root, path) => JSON.stringify(files[path]),
+      exists: async () => false,
+    });
+    let state = stateWithCatalog(catalogOf(files));
+    const entry = state.catalog!.entries.find((e) => e.path === "morning.json")!;
+    state = (await openPrayer(state, api, entry)).state;
+
+    const edited = structuredClone(state.drafts["morning.json"]!.prayer);
+    edited.id = "evening";
+    state = editDraft(state, edited).state;
+    const before = state;
+    const result = await saveSelected(state, api);
+    state = mergeOpResult(before, result);
+
+    expect(state.catalog?.entries.map((e) => e.path)).toEqual(["evening.json"]);
+    expect(sidebarEntries(state).map((e) => e.id)).toEqual(["evening"]);
+    expect(state.selectedPath).toBe("evening.json");
+    expect(state.drafts["morning.json"]).toBeUndefined();
+    expect(state.drafts["evening.json"]?.dirty).toBe(false);
   });
 
   it("opens a stub with one-file read and does not wait for other files", async () => {

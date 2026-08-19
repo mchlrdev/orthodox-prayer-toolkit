@@ -30,6 +30,7 @@ export {
   normalizeRuns,
   packInline,
   plainText,
+  splitInline,
   toRuns,
   toggleNoteRange,
   unmarkNoteAt,

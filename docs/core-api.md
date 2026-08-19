@@ -141,7 +141,7 @@ resolveDisplayTitle(prayer, { lang: "de", variant: "standard" });
 
 For editors that toggle note spans:
 
-`toRuns`, `plainText`, `packInline`, `markRangeAsNote`, `toggleNoteRange`, `unmarkRange`, …
+`toRuns`, `plainText`, `packInline`, `splitInline`, `markRangeAsNote`, `toggleNoteRange`, `unmarkRange`, …
 
 ## Types to know
 

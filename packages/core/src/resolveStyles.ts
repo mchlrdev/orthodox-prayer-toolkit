@@ -16,6 +16,7 @@ export const DEFAULT_KIND_STYLES: StyleMap = {
     fontWeight: "400",
     fontStyle: "normal",
     htmlTag: "h2",
+    indicate: "true",
   },
   subheading: {
     fontSize: "1rem",
@@ -30,6 +31,7 @@ export const DEFAULT_KIND_STYLES: StyleMap = {
     fontWeight: "400",
     fontStyle: "normal",
     htmlTag: "p",
+    textAlign: "justify",
   },
   verse: {
     fontSize: "1rem",
@@ -38,6 +40,7 @@ export const DEFAULT_KIND_STYLES: StyleMap = {
     fontStyle: "normal",
     initialCap: "true",
     htmlTag: "p",
+    textAlign: "justify",
   },
 };
 
@@ -57,11 +60,9 @@ function baseForKind(
   appDefaults: StyleMap | undefined,
   defaultPreset: KindStyle,
 ): KindStyle {
-  return (
-    appDefaults?.[kind] ??
-    DEFAULT_KIND_STYLES[kind] ??
-    defaultPreset
-  );
+  const builtin = DEFAULT_KIND_STYLES[kind] ?? defaultPreset;
+  const app = appDefaults?.[kind];
+  return app ? { ...builtin, ...app } : { ...builtin };
 }
 
 /**
