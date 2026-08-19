@@ -230,6 +230,28 @@ function registerIpc(): void {
     },
   );
 
+  const MAX_READ_TEXTS = 100;
+
+  ipcMain.handle(
+    "fs:readTexts",
+    (_evt, libraryRoot: string, relativePaths: unknown) => {
+      const root = assertAllowedLibraryRoot(libraryRoot);
+      if (
+        !Array.isArray(relativePaths) ||
+        !relativePaths.every((p): p is string => typeof p === "string")
+      ) {
+        throw new Error("relativePaths must be a string array");
+      }
+      if (relativePaths.length > MAX_READ_TEXTS) {
+        throw new Error(`Too many paths (max ${MAX_READ_TEXTS})`);
+      }
+      return relativePaths.map((relativePath) => {
+        const full = resolveUnderRoot(root, relativePath);
+        return { path: relativePath, text: readFileSync(full, "utf8") };
+      });
+    },
+  );
+
   ipcMain.handle(
     "fs:writeText",
     (_evt, libraryRoot: string, relativePath: string, content: string) => {

@@ -1,9 +1,10 @@
 import {
   plainText,
+  type InlineContent,
   type Prayer,
 } from "@orthodox-prayer-toolkit/core";
 import type { ActiveVariant } from "../variant";
-import { getTranslation, usesLines } from "./translations";
+import { getTranslation, translationEditorContent } from "./translations";
 
 export type OutlineKind = "heading" | "subheading";
 
@@ -34,14 +35,9 @@ function labelForBlock(
   primary: ActiveVariant,
 ): string {
   const tr = getTranslation(prayer, blockId, primary);
-  if (!tr) return "";
-  if (usesLines(kind)) {
-    return (tr.lines ?? [])
-      .map((l) => plainText(l))
-      .join("\n")
-      .trim();
-  }
-  return tr.text !== undefined ? plainText(tr.text).trim() : "";
+  return plainText(
+    translationEditorContent(kind, tr) as InlineContent,
+  ).trim();
 }
 
 /** Build the Content outline tree from heading / subheading Blocks. */

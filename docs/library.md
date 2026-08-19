@@ -26,6 +26,7 @@ my-prayer-library/
 - Identity is the prayer `id`; filename must be `{id}.json`.
 - Duplicate ids across the library are reported on open/refresh.
 - Taxonomy is **not** encoded in folder paths — use fields on each prayer.
+- The editor’s **Library catalog** holds per-file metadata (title, validity, kinds, variants), not the full Prayer `structure`. Scan in chunks; after save, patch that entry instead of re-reading the whole Library.
 
 ## Manifest (`manifest.json`)
 
@@ -70,7 +71,7 @@ Validate / sanitize via Core `validateStyles` / `sanitizeStyles` / `resolveStyle
 
 - On save, the file is written as `{id}.json`.
 - Renaming `id` renames the file; if the target exists, save is blocked.
-- Deleting a prayer removes its file and refreshes the list.
+- Deleting a prayer removes its file and patches the Library catalog (no full rescan).
 
 ## Dev sample
 

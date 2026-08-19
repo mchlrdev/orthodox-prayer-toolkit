@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActionIcon, useMantineColorScheme } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { useMediaQuery } from "@mantine/hooks";
 import {
   IconChevronLeft,
@@ -25,6 +26,7 @@ import { LibraryWelcome } from "./components/LibraryWelcome";
 import { NewLibraryModal } from "./components/NewLibraryModal";
 import type { InlineEditorHandle } from "./components/InlineEditor";
 import { usePrayerSession } from "./usePrayerSession";
+import type { SessionNotice } from "./session";
 import { loadSidebarPrefs, saveSidebarPrefs } from "./sidebarPrefs";
 import {
   loadAppearancePrefs,
@@ -36,7 +38,15 @@ import { toMantineColorScheme } from "./mantineColorScheme";
 const OVERLAY_BREAKPOINT = "(max-width: 1099px)";
 
 export function App() {
-  const session = usePrayerSession();
+  const onNotice = useCallback((n: SessionNotice) => {
+    notifications.show({
+      color: n.color,
+      title: n.title,
+      message: n.message,
+      autoClose: n.autoClose,
+    });
+  }, []);
+  const session = usePrayerSession({ onNotice });
   const { setColorScheme } = useMantineColorScheme();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPane, setSettingsPane] =
@@ -424,6 +434,9 @@ export function App() {
                 valid: draftErrors.length === 0,
                 errors: draftErrors,
                 filenameMismatch: false,
+                kinds: [],
+                variants: [],
+                scanned: true,
               },
               payload.variant,
               payload.format,

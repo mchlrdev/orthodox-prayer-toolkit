@@ -84,6 +84,38 @@ export function prayerToolkitBrowserFs(toolkitRoot: string): Plugin {
             return;
           }
 
+          if (route === "/readTexts" && req.method === "POST") {
+            const body = JSON.parse(await readBody(req)) as {
+              root: string;
+              paths: unknown;
+            };
+            if (resolve(body.root) !== resolve(examplesRoot)) {
+              sendJson(res, 403, { error: "Only examples library allowed in browser dev" });
+              return;
+            }
+            const relativePaths = body.paths;
+            if (
+              !Array.isArray(relativePaths) ||
+              !relativePaths.every((p): p is string => typeof p === "string")
+            ) {
+              sendJson(res, 400, { error: "paths must be a string array" });
+              return;
+            }
+            const MAX_READ_TEXTS = 100;
+            if (relativePaths.length > MAX_READ_TEXTS) {
+              sendJson(res, 400, {
+                error: `Too many paths (max ${MAX_READ_TEXTS})`,
+              });
+              return;
+            }
+            const files = relativePaths.map((relativePath) => {
+              const full = resolveUnderRoot(body.root, relativePath);
+              return { path: relativePath, text: readFileSync(full, "utf8") };
+            });
+            sendJson(res, 200, { files });
+            return;
+          }
+
           if (route === "/write" && req.method === "POST") {
             const body = JSON.parse(await readBody(req)) as {
               root: string;

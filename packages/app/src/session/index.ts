@@ -1,4 +1,12 @@
-export type { SessionDraft, LeaveAction, PersistResult } from "./types";
+export type {
+  KindRenamePlan,
+  LeaveAction,
+  PersistResult,
+  PrayerSessionState,
+  SessionDraft,
+  SessionNotice,
+  SessionOpResult,
+} from "./types";
 export { parseAppStyles } from "./parseAppStyles";
 export { pickDefaultVariant, resolveVisibleVariants } from "./visibleVariants";
 export { pickExportVariant } from "./exportPick";
@@ -21,4 +29,40 @@ export {
   prayerUsesKind,
   renameKindAcrossLibrary,
 } from "./renameKindLibrary";
-export type { KindRenamePlan, KindRenameResult } from "./renameKindLibrary";
+export type { KindRenameResult } from "./renameKindLibrary";
+export {
+  applyKindRename,
+  applyCatalogChunk,
+  beginCreatePrayer,
+  cancelCreatePrayer,
+  catalogOpenNotices,
+  clearDirtyDrafts,
+  clearPendingLeave,
+  clearSelection,
+  commitCreatePrayer,
+  deletePrayer,
+  DESKTOP_REQUIRED_NOTICE,
+  dirtyDrafts,
+  discardDirty,
+  editDraft,
+  emptySessionState,
+  errorNotice,
+  evictPreviousClean,
+  exportEntry,
+  hasUnsaved,
+  openPrayer,
+  persistAppStyles,
+  persistLibraryStyles,
+  putPrayerFromText,
+  requestKindRename,
+  requestLeave,
+  resetForLibrary,
+  saveAllDirty,
+  saveLibraryManifest,
+  saveSelected,
+  selectedDraft,
+  setActiveVariant,
+  setDraftErrors,
+  setDraftVisibleVariants,
+  sidebarEntries,
+} from "./operations";

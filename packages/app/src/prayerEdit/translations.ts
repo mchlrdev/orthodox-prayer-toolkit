@@ -16,6 +16,8 @@ export function usesLines(kind: string): boolean {
 /**
  * What the editor shows for a translation. Verse is line-mode and reads
  * `lines`; if a file only has `text` on verse, treat it as one line.
+ * Text kinds read `text`, and fall back to leftover `lines` (e.g. after a
+ * kind change that was saved before payloads were reshaped).
  */
 export function translationEditorContent(
   kind: string,
@@ -26,7 +28,12 @@ export function translationEditorContent(
     if (tr?.text !== undefined) return [tr.text];
     return [];
   }
-  return tr?.text ?? "";
+  if (tr?.text !== undefined) return tr.text;
+  if (tr?.lines && tr.lines.length > 0) {
+    if (tr.lines.length === 1) return tr.lines[0]!;
+    return tr.lines.map((l) => plainText(l)).join("\n");
+  }
+  return "";
 }
 
 /** Presets first (stable order), custom kinds sorted at the bottom. */
@@ -121,7 +128,8 @@ export function isTranslationFilled(
     const lines = translationEditorContent(block.kind, tr) as InlineContent[];
     return lines.some((l) => plainText(l).trim().length > 0);
   }
-  return tr.text !== undefined && plainText(tr.text).trim().length > 0;
+  const text = translationEditorContent(block.kind, tr) as InlineContent;
+  return plainText(text).trim().length > 0;
 }
 
 /** True when every declared prayer variant has no content for this block. */

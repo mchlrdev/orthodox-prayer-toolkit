@@ -27,6 +27,7 @@ export function applyDraftEdit(
     prayer: next,
     errors: previousErrors,
     visibleVariants: nextVariants,
+    dirty: true,
   };
 }
 

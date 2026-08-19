@@ -1,73 +1,69 @@
 import {
   isKindPreset,
-  isPrayerFilename,
   renameKind,
   validate,
   type Prayer,
   type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import type { PrayerToolkitApi } from "../../electron/preload";
+import { entriesUsingKind, type LibraryCatalog } from "../catalog";
 import { renameStyleKey } from "../prayerEdit";
-import type { SessionDraft } from "./types";
+import type { KindRenamePlan, SessionDraft } from "./types";
+
+export type { KindRenamePlan } from "./types";
 
 export function prayerUsesKind(prayer: Prayer, kind: string): boolean {
   return prayer.structure.some((b) => b.kind === kind);
 }
 
-export type KindRenamePlan = {
-  from: string;
-  to: string;
-  affectedPaths: string[];
-};
-
 export async function planKindRename(
   api: PrayerToolkitApi,
-  libraryRoot: string,
+  catalog: LibraryCatalog,
   from: string,
   to: string,
-  opts: {
-    unsaved: Record<string, SessionDraft>;
-    selectedPath: string | null;
-    draft: Prayer | null;
-  },
+  opts: { drafts: Record<string, SessionDraft> },
 ): Promise<KindRenamePlan> {
   if (isKindPreset(from)) {
     return { from, to, affectedPaths: [] };
   }
 
-  const files = (await api.listJsonFiles(libraryRoot)).filter(isPrayerFilename);
-  const affectedPaths: string[] = [];
+  const affected = new Set<string>();
+  const unread: string[] = [];
 
-  for (const path of files) {
-    const session = opts.unsaved[path];
-    const open =
-      opts.selectedPath === path && opts.draft ? opts.draft : null;
-    const memory = session?.prayer ?? open;
+  for (const [path, draft] of Object.entries(opts.drafts)) {
+    if (prayerUsesKind(draft.prayer, from)) affected.add(path);
+  }
 
-    if (memory) {
-      if (prayerUsesKind(memory, from)) affectedPaths.push(path);
-      continue;
-    }
+  for (const entry of entriesUsingKind(catalog, from)) {
+    if (entry.path in opts.drafts) continue;
+    affected.add(entry.path);
+  }
 
+  for (const entry of catalog.entries) {
+    if (entry.scanned || entry.path in opts.drafts) continue;
+    unread.push(entry.path);
+  }
+
+  for (const path of unread) {
     try {
-      const raw = await api.readText(libraryRoot, path);
+      const raw = await api.readText(catalog.root, path);
       const result = validate(JSON.parse(raw) as unknown);
       if (result.ok && prayerUsesKind(result.prayer, from)) {
-        affectedPaths.push(path);
+        affected.add(path);
       }
     } catch {
       /* skip */
     }
   }
 
-  return { from, to, affectedPaths };
+  return { from, to, affectedPaths: [...affected] };
 }
 
 export type KindRenameResult = {
   writtenPaths: string[];
+  written: { path: string; prayer: Prayer }[];
   skipped: { path: string; reason: string }[];
-  unsaved: Record<string, SessionDraft>;
-  draft: Prayer | null;
+  drafts: Record<string, SessionDraft>;
   appStyles: StyleMap;
   libraryStyles: StyleMap;
 };
@@ -76,19 +72,10 @@ async function loadPrayerAtPath(
   api: PrayerToolkitApi,
   libraryRoot: string,
   path: string,
-  opts: {
-    unsaved: Record<string, SessionDraft>;
-    selectedPath: string | null;
-    draft: Prayer | null;
-  },
-): Promise<
-  { ok: true; prayer: Prayer } | { ok: false; reason: string }
-> {
-  const session = opts.unsaved[path];
+  drafts: Record<string, SessionDraft>,
+): Promise<{ ok: true; prayer: Prayer } | { ok: false; reason: string }> {
+  const session = drafts[path];
   if (session) return { ok: true, prayer: session.prayer };
-  if (opts.selectedPath === path && opts.draft) {
-    return { ok: true, prayer: opts.draft };
-  }
   try {
     const raw = await api.readText(libraryRoot, path);
     const result = validate(JSON.parse(raw) as unknown);
@@ -104,16 +91,14 @@ async function loadPrayerAtPath(
 
 /**
  * Rename a kind across the open library: every affected prayer file,
- * unsaved drafts, the open draft, and app/library style maps.
+ * session drafts, and app/library style maps.
  */
 export async function renameKindAcrossLibrary(
   api: PrayerToolkitApi,
-  libraryRoot: string,
+  catalog: LibraryCatalog,
   plan: KindRenamePlan,
   opts: {
-    unsaved: Record<string, SessionDraft>;
-    selectedPath: string | null;
-    draft: Prayer | null;
+    drafts: Record<string, SessionDraft>;
     appStyles: StyleMap;
     libraryStyles: StyleMap;
   },
@@ -122,37 +107,27 @@ export async function renameKindAcrossLibrary(
   if (isKindPreset(from)) {
     return {
       writtenPaths: [],
+      written: [],
       skipped: [],
-      unsaved: opts.unsaved,
-      draft: opts.draft,
+      drafts: opts.drafts,
       appStyles: opts.appStyles,
       libraryStyles: opts.libraryStyles,
     };
   }
 
   const writtenPaths: string[] = [];
+  const written: { path: string; prayer: Prayer }[] = [];
   const skipped: { path: string; reason: string }[] = [];
 
-  const draft =
-    opts.draft && prayerUsesKind(opts.draft, from)
-      ? renameKind(opts.draft, from, to)
-      : opts.draft;
-
-  const unsaved: Record<string, SessionDraft> = {};
-  for (const [path, session] of Object.entries(opts.unsaved)) {
-    unsaved[path] = prayerUsesKind(session.prayer, from)
+  const drafts: Record<string, SessionDraft> = {};
+  for (const [path, session] of Object.entries(opts.drafts)) {
+    drafts[path] = prayerUsesKind(session.prayer, from)
       ? { ...session, prayer: renameKind(session.prayer, from, to) }
       : session;
   }
 
-  const memoryOpts = {
-    unsaved,
-    selectedPath: opts.selectedPath,
-    draft,
-  };
-
   for (const path of affectedPaths) {
-    const loaded = await loadPrayerAtPath(api, libraryRoot, path, memoryOpts);
+    const loaded = await loadPrayerAtPath(api, catalog.root, path, drafts);
     if (!loaded.ok) {
       skipped.push({ path, reason: loaded.reason });
       continue;
@@ -164,11 +139,12 @@ export async function renameKindAcrossLibrary(
 
     try {
       await api.writeText(
-        libraryRoot,
+        catalog.root,
         path,
         `${JSON.stringify(next, null, 2)}\n`,
       );
       writtenPaths.push(path);
+      written.push({ path, prayer: next });
     } catch (err) {
       skipped.push({
         path,
@@ -179,9 +155,9 @@ export async function renameKindAcrossLibrary(
 
   return {
     writtenPaths,
+    written,
     skipped,
-    unsaved,
-    draft,
+    drafts,
     appStyles: renameStyleKey(opts.appStyles, from, to),
     libraryStyles: renameStyleKey(opts.libraryStyles, from, to),
   };

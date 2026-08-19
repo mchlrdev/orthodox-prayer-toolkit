@@ -1,6 +1,10 @@
 import type { InlineContent, Prayer } from "@orthodox-prayer-toolkit/core";
 import type { ActiveVariant } from "../variant";
 import { applyCommittedContent } from "./commitContent";
+import {
+  translationEditorContent,
+  usesLines,
+} from "./translations";
 
 export function createBlockId(
   structureLength: number,
@@ -70,15 +74,35 @@ export function removeBlock(prayer: Prayer, index: number): Prayer {
   };
 }
 
+/** Change a block kind, converting `lines` ↔ `text` when the payload shape changes. */
 export function setBlockKind(
   prayer: Prayer,
   index: number,
   kind: string,
 ): Prayer {
-  return {
+  const current = prayer.structure[index];
+  if (!current) return prayer;
+
+  const withKind: Prayer = {
     ...prayer,
     structure: prayer.structure.map((b, i) =>
       i === index ? { ...b, kind } : b,
     ),
   };
+
+  if (usesLines(current.kind) === usesLines(kind)) return withKind;
+
+  return current.translations.reduce((next, tr) => {
+    const content = translationEditorContent(current.kind, tr);
+    const empty =
+      usesLines(current.kind)
+        ? (content as InlineContent[]).length === 0
+        : content === "";
+    return applyCommittedContent(
+      next,
+      current.id,
+      { lang: tr.lang, variant: tr.variant },
+      empty ? null : content,
+    );
+  }, withKind);
 }

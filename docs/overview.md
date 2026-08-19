@@ -39,7 +39,7 @@ It is designed so a future website or print pipeline can **consume** a prayer li
 ```
 
 - **Core** is the only place that defines prayer validity and export shapes.
-- **App** opens a **library root**, keeps **session drafts** in memory, and writes files back.
+- **App** opens a **library root**, builds a **Library catalog** (metadata, not full trees), keeps **session drafts** only for the selected Prayer and unsaved paths, and writes files back.
 - **Examples** under `examples/` are for development only — not a production corpus.
 
 ## Tech stack

@@ -21,6 +21,10 @@ export type PrayerToolkitApi = {
   openLibraryPath: (libraryRoot: string) => Promise<string>;
   listJsonFiles: (libraryRoot: string) => Promise<string[]>;
   readText: (libraryRoot: string, relativePath: string) => Promise<string>;
+  readTexts: (
+    libraryRoot: string,
+    relativePaths: string[],
+  ) => Promise<{ path: string; text: string }[]>;
   writeText: (
     libraryRoot: string,
     relativePath: string,
@@ -66,6 +70,8 @@ const api: PrayerToolkitApi = {
     ipcRenderer.invoke("library:listJson", libraryRoot),
   readText: (libraryRoot, relativePath) =>
     ipcRenderer.invoke("fs:readText", libraryRoot, relativePath),
+  readTexts: (libraryRoot, relativePaths) =>
+    ipcRenderer.invoke("fs:readTexts", libraryRoot, relativePaths),
   writeText: (libraryRoot, relativePath, content) =>
     ipcRenderer.invoke("fs:writeText", libraryRoot, relativePath, content),
   deleteFile: (libraryRoot, relativePath) =>

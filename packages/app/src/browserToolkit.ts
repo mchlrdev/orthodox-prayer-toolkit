@@ -51,6 +51,18 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
       return data.content;
     },
 
+    readTexts: async (libraryRoot, relativePaths) => {
+      const data = await getJson<{ files: { path: string; text: string }[] }>(
+        `${PREFIX}/readTexts`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ root: libraryRoot, paths: relativePaths }),
+        },
+      );
+      return data.files;
+    },
+
     writeText: async (libraryRoot, relativePath, content) => {
       await getJson(`${PREFIX}/write`, {
         method: "POST",

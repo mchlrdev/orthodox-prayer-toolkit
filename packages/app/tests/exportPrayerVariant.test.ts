@@ -39,13 +39,20 @@ const samplePrayer = (): Prayer => ({
 function fakeApi(
   overrides: Partial<PrayerToolkitApi> = {},
 ): PrayerToolkitApi {
-  return {
+  const api: PrayerToolkitApi = {
     getStartupLibrary: async () => null,
     openLibraryFolder: async () => null,
     createLibraryFolder: async () => null,
     openLibraryPath: async (root) => root,
     listJsonFiles: async () => [],
     readText: async () => "",
+    readTexts: async (root, paths) =>
+      Promise.all(
+        paths.map(async (path) => ({
+          path,
+          text: await api.readText(root, path),
+        })),
+      ),
     writeText: async () => undefined,
     deleteFile: async () => undefined,
     renameFile: async () => undefined,
@@ -60,8 +67,13 @@ function fakeApi(
     onCloseRequested: () => () => undefined,
     confirmClose: () => undefined,
     setDirty: () => undefined,
+    getAppInfo: async () => ({ version: "0.0.0-test", packaged: false }),
+    checkForUpdates: async () => ({ status: "dev", version: "0.0.0-test" }),
+    installUpdate: async () => ({ ok: false }),
+    onUpdateStatus: () => () => undefined,
     ...overrides,
   };
+  return api;
 }
 
 describe("exportPrayerVariant", () => {

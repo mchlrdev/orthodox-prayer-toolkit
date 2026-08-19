@@ -1150,7 +1150,6 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
             </button>
           </Menu.Target>
           <Menu.Dropdown>
-            <Menu.Label>Block kind</Menu.Label>
             {kinds.map((kind) => (
               <Menu.Item
                 key={kind}

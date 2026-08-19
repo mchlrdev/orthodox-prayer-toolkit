@@ -155,6 +155,88 @@ describe("structure ops", () => {
     const next = setBlockKind(basePrayer(), 0, "rubric");
     expect(next.structure[0]?.kind).toBe("rubric");
   });
+
+  it("keeps verse lines as text when changing to heading, subheading, or annotation", () => {
+    const prayer = applyCommittedContent(basePrayer(), "b1", col, [
+      "Herr, erbarme dich.",
+    ]);
+
+    for (const kind of ["heading", "subheading", "annotation"] as const) {
+      const next = setBlockKind(prayer, 0, kind);
+      const tr = getTranslation(next, "b1", col);
+      expect(next.structure[0]?.kind).toBe(kind);
+      expect(tr?.text).toBe("Herr, erbarme dich.");
+      expect(tr?.lines).toBeUndefined();
+      expect(translationEditorContent(kind, tr)).toBe("Herr, erbarme dich.");
+    }
+  });
+
+  it("keeps heading text after changing to verse and back", () => {
+    let prayer = setBlockKind(basePrayer(), 1, "heading");
+    prayer = applyCommittedContent(prayer, "b2", col, "Troparion im 4. Ton");
+
+    prayer = setBlockKind(prayer, 1, "verse");
+    expect(getTranslation(prayer, "b2", col)?.lines).toEqual([
+      "Troparion im 4. Ton",
+    ]);
+    expect(getTranslation(prayer, "b2", col)?.text).toBeUndefined();
+
+    prayer = setBlockKind(prayer, 1, "heading");
+    const tr = getTranslation(prayer, "b2", col);
+    expect(tr?.text).toBe("Troparion im 4. Ton");
+    expect(tr?.lines).toBeUndefined();
+    expect(translationEditorContent("heading", tr)).toBe("Troparion im 4. Ton");
+  });
+
+  it("joins multiple verse lines into heading text", () => {
+    const prayer = applyCommittedContent(basePrayer(), "b1", col, [
+      "Herr,",
+      "erbarme dich.",
+    ]);
+    const next = setBlockKind(prayer, 0, "heading");
+    expect(getTranslation(next, "b1", col)?.text).toBe("Herr,\nerbarme dich.");
+  });
+
+  it("keeps inline note runs when changing verse to heading", () => {
+    const runs = [
+      { t: "note" as const, v: "Dann vierzigmal:" },
+      { t: "text" as const, v: " Herr, erbarme Dich!" },
+    ];
+    const prayer = applyCommittedContent(basePrayer(), "b1", col, [runs]);
+    const next = setBlockKind(prayer, 0, "heading");
+    expect(getTranslation(next, "b1", col)?.text).toEqual(runs);
+  });
+
+  it("reshapes every variant when the block kind changes", () => {
+    const prayer: Prayer = {
+      ...basePrayer(),
+      variants: [
+        ...basePrayer().variants,
+        {
+          lang: "en",
+          variant: "standard",
+          title: "Morning",
+          license: "unknown",
+          source: "test",
+        },
+      ],
+      structure: [
+        {
+          id: "b1",
+          kind: "verse",
+          translations: [
+            { lang: "de", variant: "standard", lines: ["Herr,"] },
+            { lang: "en", variant: "standard", lines: ["Lord,"] },
+          ],
+        },
+      ],
+    };
+    const next = setBlockKind(prayer, 0, "heading");
+    expect(getTranslation(next, "b1", col)?.text).toBe("Herr,");
+    expect(
+      getTranslation(next, "b1", { lang: "en", variant: "standard" })?.text,
+    ).toBe("Lord,");
+  });
 });
 
 describe("kindOptions", () => {
@@ -306,6 +388,29 @@ describe("fill helpers", () => {
     expect(translationEditorContent("verse", prayer.structure[0]?.translations[0])).toEqual([
       "Auf die Gebete unserer heiligen Väter…",
     ]);
+  });
+
+  it("treats leftover heading lines as filled when text is absent", () => {
+    const prayer: Prayer = {
+      ...basePrayer(),
+      structure: [
+        {
+          id: "h1",
+          kind: "heading",
+          translations: [
+            {
+              lang: "de",
+              variant: "standard",
+              lines: ["Troparion im 4. Ton"],
+            },
+          ],
+        },
+      ],
+    };
+    expect(isTranslationFilled(prayer, "h1", col)).toBe(true);
+    expect(
+      translationEditorContent("heading", prayer.structure[0]?.translations[0]),
+    ).toBe("Troparion im 4. Ton");
   });
 
   it("treats a block as empty across variants when no translation has content", () => {
