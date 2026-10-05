@@ -85,7 +85,7 @@ fn reassign_kind(prayer: &mut Prayer, from: &str, to: &str) -> usize {
 /// uppercase. Accents are not treated as secondary differences, so accented
 /// Latin letters sort by code point after `z`; Kind ids and language codes
 /// are ASCII, so this is not a practical gap.
-pub(crate) fn compare_locale(a: &str, b: &str) -> Ordering {
+pub fn compare_locale(a: &str, b: &str) -> Ordering {
     let primary = a
         .chars()
         .map(primary_weight)
