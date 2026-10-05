@@ -32,6 +32,7 @@ Die GPUI-App ersetzt die Electron-App auf `main`: alle Funktionen und UX-Abläuf
 - [Welche Rust-Crates den Core-Port tragen](issues/06-core-port-crates.md): `jsonschema` + `docx-rs` + `regex`, RTF und HTML von Hand; Ajv-Meldungen und DOCX-Bytes werden nicht gleich.
 - [Paritäts-Checkliste](issues/04-parity-checklist.md): 268 Punkte in 20 Bereichen; App-weite Kind-Styles sind heute wirkungslos, mehrere Lücken der Electron-App gefunden.
 - [Selbst-Update auf echten Geräten](issues/08-self-update-on-devices.md): beta.2 → beta.3 per Selbst-Update funktioniert; Velopack bleibt.
+- [Inline-Editor-Prototyp](issues/02-inline-editor-prototype.md): eigenes GPUI-Element mit Text+Runs-Modell trägt; Mark hat es auf macOS ausprobiert, Backspace-Zusammenführen und Undo über Blocks angenommen.
 - [Wo die Electron-App Kind-Styles speichert](issues/10-electron-settings-location.md): `userData/Orthodox Prayer Toolkit/kind-styles.json` pro OS; wirkt aber nicht auf die Darstellung (siehe Parität), die echten Styles liegen in der Library.
 
 ## Not yet specified
