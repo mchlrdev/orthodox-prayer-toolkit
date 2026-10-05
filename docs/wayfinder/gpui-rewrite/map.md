@@ -35,10 +35,11 @@ Die GPUI-App ersetzt die Electron-App auf `main`: alle Funktionen und UX-Abläuf
 - [Inline-Editor-Prototyp](issues/02-inline-editor-prototype.md): eigenes GPUI-Element mit Text+Runs-Modell trägt; Mark hat es auf macOS ausprobiert, Backspace-Zusammenführen und Undo über Blocks angenommen.
 - [Wie die Rust-App geschnitten ist](issues/05-app-architecture.md): `prayer-core` / `prayer-app` (UI-frei) / `prayer-ui`; Gebetsdatei bleibt eigenständig, Catalog nur Index; Undo pro Gebet über alles; Ordner wird beobachtet.
 - [Wie genau der Rust-Core dem TS-Core entspricht](issues/07-core-port-strategy.md): gleiche Ergebnisse (DOCX nur inhaltlich), idiomatisch neu geschrieben statt übersetzt; TS-Core nur Referenz bis zur Umstellung, dann weg.
-- [Kind-Styles in GPUI](issues/09-kind-styles-in-gpui.md): Werte 1:1, Blocksatz selbst gebaut, Gebetsschrift wird mitgeliefert (Auswahl offen), Theme auf heutige Palette.
+- [Kind-Styles in GPUI](issues/09-kind-styles-in-gpui.md): Werte 1:1, Blocksatz selbst gebaut, Gebetsschrift wird mitgeliefert, Theme auf heutige Palette.
 - [Menüs und Tastenkürzel](issues/11-menus-and-shortcuts.md): keine Menüleiste unter Windows/Linux, alles in der App erreichbar; Cmd+S/O/N/, neu, alte Kürzel 1:1; Kontextmenüs erwünscht.
 - [Schwächen der Electron-App](issues/13-electron-weaknesses.md): Validierung live sichtbar, Neustart fürs Update fragt nach ungespeicherten Änderungen, Gebetswechsel bleibt ohne Nachfrage.
 - [Update-Verhalten](issues/14-update-behaviour.md): Download im Hintergrund, nur Neustart fragen; nur Apple Silicon; Deltas optional.
+- [Schrift für Gebetstext](issues/12-prayer-font.md): Noto Serif wird mitgeliefert (einzige lückenlose freie Serifenschrift).
 - [Wo die Electron-App Kind-Styles speichert](issues/10-electron-settings-location.md): `userData/Orthodox Prayer Toolkit/kind-styles.json` pro OS; wirkt aber nicht auf die Darstellung (siehe Parität), die echten Styles liegen in der Library.
 
 ## Not yet specified
