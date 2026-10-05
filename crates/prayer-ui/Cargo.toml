@@ -13,5 +13,6 @@ path = "src/main.rs"
 [dependencies]
 gpui-kit.workspace = true
 prayer-core.workspace = true
+prayer-app.workspace = true
 velopack.workspace = true
 unicode-segmentation.workspace = true

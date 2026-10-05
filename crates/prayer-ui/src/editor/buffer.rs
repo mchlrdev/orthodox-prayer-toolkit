@@ -1,8 +1,14 @@
-//! PROTOTYPE — pure document model for the inline editor prototype.
+//! The text of the focused cell while it is edited: flat text (`\n` between
+//! verse lines and for line breaks) plus note spans, with caret helpers.
+//!
+//! The buffer is converted to and from [`EditorContent`] for committing into
+//! the Session draft. It may hold states the prayer never stores (empty verse
+//! lines, trailing spaces); those stay in the buffer until it is re-derived.
 
-use std::collections::VecDeque;
 use std::ops::Range;
 
+use prayer_app::edit::EditorContent;
+use prayer_core::{InlineContent, RunRole, TextRun};
 use unicode_segmentation::UnicodeSegmentation;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -17,7 +23,7 @@ pub struct Span {
     pub kind: RunKind,
 }
 
-/// Text of one Block plus its run styling.
+/// Text of one cell plus its run styling.
 /// Invariants (enforced after every mutation by `normalize`):
 /// sum of span lens == text.len(); no zero-length spans; adjacent spans of the same kind are merged.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -303,87 +309,87 @@ fn is_word_char(c: char) -> bool {
     c.is_alphanumeric() || c == '_'
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Block {
-    pub kind: String,
-    pub cell: Cell,
-}
+// ---------------------------------------------------------------------------
+// Conversion to and from editor content
+// ---------------------------------------------------------------------------
 
-/// What kind of edit was recorded, used to coalesce consecutive typing into one undo step.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum EditKind {
-    Typing,
-    Deleting,
-    Other,
-}
-
-const HISTORY_CAP: usize = 500;
-
-/// Snapshot-based undo/redo over any cloneable state (the view stores (blocks, focus, selection)).
-pub struct History<T: Clone> {
-    undo: VecDeque<T>,
-    redo: Vec<T>,
-    last: Option<EditKind>,
-}
-
-impl<T: Clone> Default for History<T> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<T: Clone> History<T> {
-    pub fn new() -> Self {
-        Self {
-            undo: VecDeque::new(),
-            redo: Vec::new(),
-            last: None,
+impl Cell {
+    fn push_inline(&mut self, content: &InlineContent) {
+        for run in content.to_runs() {
+            let kind = match run.role {
+                RunRole::Text => RunKind::Text,
+                RunRole::Note => RunKind::Note,
+            };
+            self.text.push_str(&run.text);
+            self.spans.push(Span {
+                len: run.text.len(),
+                kind,
+            });
         }
     }
 
-    /// Call BEFORE applying an edit, with the state as it was. Consecutive Typing (or Deleting)
-    /// records coalesce: only the first of a run is pushed. Other always pushes. Any record clears redo.
-    pub fn record(&mut self, before: T, kind: EditKind) {
-        self.redo.clear();
-        let coalesce = kind != EditKind::Other && self.last == Some(kind);
-        if !coalesce {
-            self.undo.push_back(before);
-            if self.undo.len() > HISTORY_CAP {
-                self.undo.pop_front();
+    /// The buffer for stored content: lines joined by `\n`.
+    pub fn from_content(content: &EditorContent) -> Self {
+        let mut cell = Cell::new();
+        match content {
+            EditorContent::Text(text) => cell.push_inline(text),
+            EditorContent::Lines(lines) => {
+                for (i, line) in lines.iter().enumerate() {
+                    if i > 0 {
+                        cell.text.push('\n');
+                        cell.spans.push(Span {
+                            len: 1,
+                            kind: RunKind::Text,
+                        });
+                    }
+                    cell.push_inline(line);
+                }
             }
         }
-        self.last = Some(kind);
+        cell.normalize();
+        cell
     }
 
-    /// Break coalescing (e.g. after caret moves by mouse/arrows).
-    pub fn break_coalescing(&mut self) {
-        self.last = None;
-    }
-
-    /// Returns the state to restore; pushes `current` onto redo.
-    pub fn undo(&mut self, current: T) -> Option<T> {
-        let prev = self.undo.pop_back()?;
-        self.redo.push(current);
-        self.last = None;
-        Some(prev)
-    }
-
-    pub fn redo(&mut self, current: T) -> Option<T> {
-        let next = self.redo.pop()?;
-        self.undo.push_back(current);
-        if self.undo.len() > HISTORY_CAP {
-            self.undo.pop_front();
+    fn inline_of(&self, range: Range<usize>) -> InlineContent {
+        let runs: Vec<TextRun> = self
+            .styled_ranges()
+            .into_iter()
+            .filter_map(|(r, kind)| {
+                let lo = r.start.max(range.start);
+                let hi = r.end.min(range.end);
+                (lo < hi).then(|| TextRun {
+                    role: match kind {
+                        RunKind::Text => RunRole::Text,
+                        RunKind::Note => RunRole::Note,
+                    },
+                    text: self.text[lo..hi].to_owned(),
+                })
+            })
+            .collect();
+        match runs.as_slice() {
+            [] => InlineContent::default(),
+            [only] if only.role == RunRole::Text => InlineContent::Plain(only.text.clone()),
+            _ => InlineContent::Runs(runs),
         }
-        self.last = None;
-        Some(next)
     }
 
-    pub fn can_undo(&self) -> bool {
-        !self.undo.is_empty()
-    }
-
-    pub fn can_redo(&self) -> bool {
-        !self.redo.is_empty()
+    /// The buffer as editor content, offsets unchanged: in line mode one
+    /// entry per `\n`-separated line, empty lines included.
+    pub fn to_content(&self, line_mode: bool) -> EditorContent {
+        if !line_mode {
+            return EditorContent::Text(self.inline_of(0..self.text.len()));
+        }
+        if self.text.is_empty() {
+            return EditorContent::Lines(Vec::new());
+        }
+        let mut lines = Vec::new();
+        let mut start = 0;
+        for (i, _) in self.text.match_indices('\n') {
+            lines.push(self.inline_of(start..i));
+            start = i + 1;
+        }
+        lines.push(self.inline_of(start..self.text.len()));
+        EditorContent::Lines(lines)
     }
 }
 
@@ -580,71 +586,34 @@ mod tests {
     }
 
     #[test]
-    fn history_coalesces_typing() {
-        let mut h: History<i32> = History::new();
-        h.record(0, EditKind::Typing);
-        h.record(1, EditKind::Typing);
-        h.record(2, EditKind::Typing);
-        assert_eq!(h.undo(3), Some(0));
-        assert!(!h.can_undo());
-        assert!(h.can_redo());
-        assert_eq!(h.undo(0), None);
-    }
-
-    #[test]
-    fn history_other_and_break_split_steps() {
-        let mut h: History<i32> = History::new();
-        h.record(0, EditKind::Typing);
-        h.record(1, EditKind::Other);
-        h.record(2, EditKind::Typing);
-        h.record(3, EditKind::Typing);
-        h.break_coalescing();
-        h.record(4, EditKind::Typing);
-        h.record(5, EditKind::Deleting);
-        h.record(6, EditKind::Deleting);
-        assert_eq!(h.undo(7), Some(5));
-        assert_eq!(h.undo(5), Some(4));
-        assert_eq!(h.undo(4), Some(2));
-        assert_eq!(h.undo(2), Some(1));
-        assert_eq!(h.undo(1), Some(0));
-        assert_eq!(h.undo(0), None);
-    }
-
-    #[test]
-    fn history_undo_redo_round_trip_and_redo_cleared() {
-        let mut h: History<String> = History::default();
-        h.record("a".into(), EditKind::Other);
-        h.record("ab".into(), EditKind::Other);
-        let back = h.undo("abc".into()).unwrap();
-        assert_eq!(back, "ab");
-        let back = h.undo(back).unwrap();
-        assert_eq!(back, "a");
-        let fwd = h.redo(back).unwrap();
-        assert_eq!(fwd, "ab");
-        let fwd = h.redo(fwd).unwrap();
-        assert_eq!(fwd, "abc");
-        assert!(!h.can_redo());
-        assert_eq!(h.redo(fwd), None);
-
-        let back = h.undo("abc".into()).unwrap();
-        assert!(h.can_redo());
-        h.record(back, EditKind::Typing);
-        assert!(!h.can_redo());
-    }
-
-    #[test]
-    fn history_is_capped() {
-        let mut h: History<usize> = History::new();
-        for i in 0..600 {
-            h.record(i, EditKind::Other);
-        }
-        let mut cur = 600;
-        let mut steps = 0;
-        while let Some(prev) = h.undo(cur) {
-            cur = prev;
-            steps += 1;
-        }
-        assert_eq!(steps, 500);
-        assert_eq!(cur, 100);
+    fn content_round_trip_keeps_offsets() {
+        let lines = EditorContent::Lines(vec![
+            InlineContent::from("Lord"),
+            InlineContent::Runs(vec![
+                TextRun::text("have "),
+                TextRun {
+                    role: RunRole::Note,
+                    text: "(x3)".into(),
+                },
+            ]),
+        ]);
+        let cell = Cell::from_content(&lines);
+        assert_eq!(cell.text(), "Lord\nhave (x3)");
+        assert_eq!(cell.to_content(true), lines);
+        // Empty lines survive in the buffer's content form.
+        let mut c = cell.clone();
+        c.replace(4..4, "\n");
+        let EditorContent::Lines(l) = c.to_content(true) else {
+            panic!("line mode gives lines")
+        };
+        assert_eq!(l.len(), 3);
+        assert_eq!(l[1], InlineContent::default());
+        assert_eq!(Cell::new().to_content(true), EditorContent::Lines(vec![]));
+        assert_eq!(
+            Cell::new().to_content(false),
+            EditorContent::Text(InlineContent::default())
+        );
+        let text = EditorContent::Text(InlineContent::from("a\nb"));
+        assert_eq!(Cell::from_content(&text).to_content(false), text);
     }
 }
