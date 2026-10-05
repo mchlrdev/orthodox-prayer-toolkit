@@ -7,6 +7,11 @@ on:
   push:
     tags:
       - "gpui-v*"
+  # Packages on every change to this workflow, without uploading, so a broken
+  # pipeline shows up in the PR rather than on the next tag.
+  pull_request:
+    paths:
+      - ".github/workflows/gpui-release.yml"
   workflow_dispatch:
     inputs:
       version:
@@ -50,8 +55,10 @@ jobs:
         run: |
           if [ -n "${{ inputs.version }}" ]; then
             version="${{ inputs.version }}"
-          else
+          elif [[ "$GITHUB_REF" == refs/tags/gpui-v* ]]; then
             version="${GITHUB_REF_NAME#gpui-v}"
+          else
+            version="0.0.0-ci.${{ github.run_number }}"
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
@@ -95,9 +102,15 @@ jobs:
             cp target/release/orthodox-prayer-toolkit pack/
           fi
 
+      # vpk targets .NET 10, which not every runner image ships.
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # Pinned to the velopack crate's version so packer and updater agree.
       - name: Install Velopack CLI
         shell: bash
-        run: dotnet tool install -g vpk && echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+        run: dotnet tool install -g vpk --version 1.2.161 && echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
       # Unsigned for now, as the Electron builds are: macOS users get the
       # Gatekeeper warning until a Developer ID certificate is configured.
@@ -130,6 +143,7 @@ jobs:
       # to create it. Skipped for a manual run, which only checks the build.
       - name: Upload to GitHub pre-release
         if: startsWith(github.ref, 'refs/tags/gpui-v')
+        shell: bash
         run: |
           vpk upload github -x -o Releases -c ${{ matrix.channel }} \
             --repoUrl https://github.com/${{ github.repository }} \

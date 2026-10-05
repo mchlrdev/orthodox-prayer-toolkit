@@ -13,4 +13,5 @@ prayer-core = { path = "crates/prayer-core" }
 # Pinned exactly: GPUI's API still moves between minor releases.
 gpui-kit = "=0.7.1"
 serde_json = "1"
-velopack = "1.2"
+# Pinned with the vpk CLI in gpui-release.yml: packer and updater must match.
+velopack = "=1.2.161"
