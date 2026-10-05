@@ -680,20 +680,26 @@ pub fn toggle_note(
     let Some(block) = prayer.structure.iter_mut().find(|b| b.id == block_id) else {
         return false;
     };
-    let range = ordered(range);
     let content = editor_content(&block.kind, block.translation(key));
-    let toggled = match &content {
-        EditorContent::Text(text) => {
-            let range = floor_boundary(&text.plain_text(), range.start)
-                ..floor_boundary(&text.plain_text(), range.end);
-            EditorContent::Text(toggle_note_range(text, range))
-        }
-        EditorContent::Lines(lines) => EditorContent::Lines(toggle_note_in_lines(lines, range)),
-    };
+    let toggled = toggle_note_in_content(&content, range);
     if toggled == content {
         return false;
     }
     commit_into_block(block, key, &toggled)
+}
+
+/// [`toggle_note`] on editor content that is not stored yet (the editor's
+/// buffer): same rule, offsets in its `\n`-joined plain text.
+pub fn toggle_note_in_content(content: &EditorContent, range: Range<usize>) -> EditorContent {
+    let range = ordered(range);
+    match content {
+        EditorContent::Text(text) => {
+            let plain = text.plain_text();
+            let range = floor_boundary(&plain, range.start)..floor_boundary(&plain, range.end);
+            EditorContent::Text(toggle_note_range(text, range))
+        }
+        EditorContent::Lines(lines) => EditorContent::Lines(toggle_note_in_lines(lines, range)),
+    }
 }
 
 fn toggle_note_in_lines(lines: &[InlineContent], range: Range<usize>) -> Vec<InlineContent> {

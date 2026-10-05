@@ -4,8 +4,10 @@
 pub mod catalog;
 pub mod draft;
 pub mod edit;
+pub mod export;
 pub mod fs;
 pub mod history;
 pub mod library;
 pub mod prefs;
+pub mod session;
 pub mod watch;
