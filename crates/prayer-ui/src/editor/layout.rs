@@ -42,7 +42,6 @@ pub struct CellLayout {
     pub ascent: Pixels,
     pub descent: Pixels,
     pub font_size: Pixels,
-    pub width: Pixels,
 }
 
 /// What to lay out.
@@ -71,7 +70,6 @@ impl CellLayout {
             ascent,
             descent,
             font_size: input.font_size,
-            width: input.width,
         };
 
         let shaped = if input.text.is_empty() {

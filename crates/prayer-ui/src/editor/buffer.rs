@@ -37,6 +37,7 @@ impl Cell {
         Self::default()
     }
 
+    #[cfg(test)]
     pub fn from_runs(runs: &[(RunKind, &str)]) -> Self {
         let mut cell = Cell::new();
         for (kind, s) in runs {
@@ -54,6 +55,7 @@ impl Cell {
         &self.text
     }
 
+    #[cfg(test)]
     pub fn spans(&self) -> &[Span] {
         &self.spans
     }
@@ -114,68 +116,14 @@ impl Cell {
         range.start..range.start + new_text.len()
     }
 
-    pub fn set_kind(&mut self, range: Range<usize>, kind: RunKind) {
-        self.check_range(&range);
-        let mut spans = self.spans_in(0..range.start);
-        spans.push(Span {
-            len: range.end - range.start,
-            kind,
-        });
-        spans.extend(self.spans_in(range.end..self.text.len()));
-        self.spans = spans;
-        self.normalize();
-    }
-
-    /// If every byte in a non-empty `range` is Note, make it Text; otherwise make it all Note.
-    /// Returns the new kind. Empty range: no-op, returns kind_at(range.start).
     /// Every character in `range` is inside a note.
     pub fn is_all_note(&self, range: Range<usize>) -> bool {
         self.check_range(&range);
         !range.is_empty() && self.spans_in(range).iter().all(|s| s.kind == RunKind::Note)
     }
 
-    pub fn toggle_note(&mut self, range: Range<usize>) -> RunKind {
-        self.check_range(&range);
-        if range.is_empty() {
-            return self.kind_at(range.start);
-        }
-        let all_note = self
-            .spans_in(range.clone())
-            .iter()
-            .all(|s| s.kind == RunKind::Note);
-        let kind = if all_note {
-            RunKind::Text
-        } else {
-            RunKind::Note
-        };
-        self.set_kind(range, kind);
-        kind
-    }
-
-    /// Split at `at`: self keeps [0, at), returns [at, len) with its styling.
-    pub fn split_off(&mut self, at: usize) -> Cell {
-        debug_assert!(at <= self.text.len() && self.text.is_char_boundary(at));
-        let tail_spans = self.spans_in(at..self.text.len());
-        let head_spans = self.spans_in(0..at);
-        let tail_text = self.text.split_off(at);
-        self.spans = head_spans;
-        self.normalize();
-        let mut tail = Cell {
-            text: tail_text,
-            spans: tail_spans,
-        };
-        tail.normalize();
-        tail
-    }
-
-    /// Append another cell's text and styling.
-    pub fn append(&mut self, other: Cell) {
-        self.text.push_str(&other.text);
-        self.spans.extend(other.spans);
-        self.normalize();
-    }
-
-    /// Runs in order, merged, for display/serialization.
+    /// Runs in order, merged (tests compare these).
+    #[cfg(test)]
     pub fn to_runs(&self) -> Vec<(RunKind, String)> {
         self.styled_ranges()
             .into_iter()
@@ -455,13 +403,9 @@ mod tests {
             let a = boundaries[next(boundaries.len())];
             let b = boundaries[next(boundaries.len())];
             let range = a.min(b)..a.max(b);
-            match next(4) {
+            match next(2) {
                 0 => {
                     c.replace(range, pieces[next(pieces.len())]);
-                }
-                1 => c.set_kind(range, if next(2) == 0 { Text } else { Note }),
-                2 => {
-                    c.toggle_note(range);
                 }
                 _ => {
                     let kind = if next(2) == 0 { Text } else { Note };
@@ -514,35 +458,6 @@ mod tests {
         d.replace_with_kind(3..8, "N", Note);
         assert_eq!(runs(&d), vec![r(Text, "hel"), r(Note, "Nrld")]);
         check_invariants(&d);
-    }
-
-    #[test]
-    fn toggle_note_mixed_and_uniform() {
-        let mut c = Cell::from_runs(&[(Text, "ab"), (Note, "cd"), (Text, "ef")]);
-        assert_eq!(c.toggle_note(1..5), Note);
-        assert_eq!(runs(&c), vec![r(Text, "a"), r(Note, "bcde"), r(Text, "f")]);
-        assert_eq!(c.toggle_note(1..5), Text);
-        assert_eq!(runs(&c), vec![r(Text, "abcdef")]);
-        assert_eq!(c.toggle_note(2..2), Text);
-        let mut n = Cell::from_runs(&[(Text, "a"), (Note, "b")]);
-        assert_eq!(n.toggle_note(2..2), Note);
-        assert_eq!(n, Cell::from_runs(&[(Text, "a"), (Note, "b")]));
-        check_invariants(&c);
-    }
-
-    #[test]
-    fn split_off_and_append_round_trip() {
-        let original = Cell::from_runs(&[(Text, "ab"), (Note, "Ѿcd"), (Text, "🙏ef")]);
-        for at in (0..=original.len()).filter(|&i| original.text().is_char_boundary(i)) {
-            let mut head = original.clone();
-            let tail = head.split_off(at);
-            check_invariants(&head);
-            check_invariants(&tail);
-            assert_eq!(head.len(), at);
-            head.append(tail);
-            assert_eq!(head.to_runs(), original.to_runs());
-            assert_eq!(head, original);
-        }
     }
 
     #[test]

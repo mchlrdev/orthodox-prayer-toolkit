@@ -200,16 +200,6 @@ impl Root {
         .detach();
     }
 
-    fn open_recent(&mut self, path: String, cx: &mut Context<Self>) {
-        self.state
-            .update(cx, |s, cx| s.open_library(PathBuf::from(path), cx));
-    }
-
-    fn refresh(&mut self, cx: &mut Context<Self>) {
-        self.state
-            .update(cx, |s, cx| s.request(PendingAction::Refresh, cx));
-    }
-
     fn select(&mut self, path: String, window: &mut Window, cx: &mut Context<Self>) {
         let outcome = self.state.update(cx, |s, cx| s.select(&path, cx));
         if self.sidebars.overlay {

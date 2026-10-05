@@ -272,21 +272,6 @@ impl PrayerEditor {
         self.rows.get(top.item_ix).cloned()
     }
 
-    /// Ids of the rows painted in the last frame with their top, relative to
-    /// the viewport top (for the outline's scrollspy).
-    pub fn row_tops(&self) -> Vec<(SharedString, Pixels)> {
-        let viewport = self.list.viewport_bounds();
-        self.rows
-            .iter()
-            .enumerate()
-            .filter_map(|(ix, id)| {
-                self.list
-                    .bounds_for_item(ix)
-                    .map(|b| (id.clone(), b.top() - viewport.top()))
-            })
-            .collect()
-    }
-
     pub fn set_highlights(&mut self, highlights: Vec<Highlight>, cx: &mut Context<Self>) {
         self.highlights = highlights;
         cx.notify();
@@ -1040,27 +1025,6 @@ impl PrayerEditor {
                 })
                 .ok();
             }));
-        }
-        cx.notify();
-    }
-
-    /// Selects `range` of a cell and scrolls it into view (find).
-    pub fn select_range(
-        &mut self,
-        block_id: &str,
-        variant: VariantRef,
-        range: Range<usize>,
-        cx: &mut Context<Self>,
-    ) {
-        self.sync(cx);
-        let Some(row) = self.row_of(block_id) else {
-            return;
-        };
-        self.list.scroll_to_reveal_item(row);
-        self.focus_cell(block_id.to_owned().into(), variant, range.start, cx);
-        if let Some(a) = self.active.as_mut() {
-            let end = clamp_to_boundary(a.buffer.text(), range.end);
-            a.selection = a.selection.start..end.max(a.selection.start);
         }
         cx.notify();
     }

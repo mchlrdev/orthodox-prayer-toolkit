@@ -1,6 +1,3 @@
-// Parts of the UI are wired up step by step; remove once all are used.
-#![allow(dead_code)]
-
 mod actions;
 mod app;
 mod app_settings;
