@@ -1,0 +1,821 @@
+[
+  {
+    "name": "annotation to instruction (core test)",
+    "prayer": {
+      "id": "tropar-prokopios",
+      "type": "troparion",
+      "book": "menaion",
+      "tone": 4,
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar des Großmärtyrers Prokopios",
+          "license": "unknown",
+          "source": "draft"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь великомученику Прокопию",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "r1",
+          "kind": "annotation",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Ton 4. Tropar des Großmärtyrers."
+            }
+          ]
+        },
+        {
+          "id": "v1",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "lines": [
+                "Dein Märtyrer Prokopius, Herr,",
+                "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "und die Dämonen kraftlos gemacht.",
+                "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+              ]
+            },
+            {
+              "lang": "cu",
+              "variant": "synodal-cyrl",
+              "lines": [
+                "Мученик Твой, Господи, Прокопий,",
+                "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+              ]
+            }
+          ]
+        }
+      ],
+      "meta": {
+        "custom": {
+          "saint_id": "prokopios-von-caesarea"
+        }
+      }
+    },
+    "from": "annotation",
+    "to": "instruction",
+    "expected": {
+      "id": "tropar-prokopios",
+      "type": "troparion",
+      "book": "menaion",
+      "tone": 4,
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar des Großmärtyrers Prokopios",
+          "license": "unknown",
+          "source": "draft"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь великомученику Прокопию",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "r1",
+          "kind": "instruction",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Ton 4. Tropar des Großmärtyrers."
+            }
+          ]
+        },
+        {
+          "id": "v1",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "lines": [
+                "Dein Märtyrer Prokopius, Herr,",
+                "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "und die Dämonen kraftlos gemacht.",
+                "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+              ]
+            },
+            {
+              "lang": "cu",
+              "variant": "synodal-cyrl",
+              "lines": [
+                "Мученик Твой, Господи, Прокопий,",
+                "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+              ]
+            }
+          ]
+        }
+      ],
+      "meta": {
+        "custom": {
+          "saint_id": "prokopios-von-caesarea"
+        }
+      }
+    }
+  },
+  {
+    "name": "same name is a no-op",
+    "prayer": {
+      "id": "tropar-prokopios",
+      "type": "troparion",
+      "book": "menaion",
+      "tone": 4,
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar des Großmärtyrers Prokopios",
+          "license": "unknown",
+          "source": "draft"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь великомученику Прокопию",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "r1",
+          "kind": "annotation",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Ton 4. Tropar des Großmärtyrers."
+            }
+          ]
+        },
+        {
+          "id": "v1",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "lines": [
+                "Dein Märtyrer Prokopius, Herr,",
+                "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "und die Dämonen kraftlos gemacht.",
+                "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+              ]
+            },
+            {
+              "lang": "cu",
+              "variant": "synodal-cyrl",
+              "lines": [
+                "Мученик Твой, Господи, Прокопий,",
+                "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+              ]
+            }
+          ]
+        }
+      ],
+      "meta": {
+        "custom": {
+          "saint_id": "prokopios-von-caesarea"
+        }
+      }
+    },
+    "from": "verse",
+    "to": "verse",
+    "expected": {
+      "id": "tropar-prokopios",
+      "type": "troparion",
+      "book": "menaion",
+      "tone": 4,
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar des Großmärtyrers Prokopios",
+          "license": "unknown",
+          "source": "draft"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь великомученику Прокопию",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "r1",
+          "kind": "annotation",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Ton 4. Tropar des Großmärtyrers."
+            }
+          ]
+        },
+        {
+          "id": "v1",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "lines": [
+                "Dein Märtyrer Prokopius, Herr,",
+                "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "und die Dämonen kraftlos gemacht.",
+                "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+              ]
+            },
+            {
+              "lang": "cu",
+              "variant": "synodal-cyrl",
+              "lines": [
+                "Мученик Твой, Господи, Прокопий,",
+                "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+              ]
+            }
+          ]
+        }
+      ],
+      "meta": {
+        "custom": {
+          "saint_id": "prokopios-von-caesarea"
+        }
+      }
+    }
+  },
+  {
+    "name": "kind not present",
+    "prayer": {
+      "id": "tropar-prokopios",
+      "type": "troparion",
+      "book": "menaion",
+      "tone": 4,
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar des Großmärtyrers Prokopios",
+          "license": "unknown",
+          "source": "draft"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь великомученику Прокопию",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "r1",
+          "kind": "annotation",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Ton 4. Tropar des Großmärtyrers."
+            }
+          ]
+        },
+        {
+          "id": "v1",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "lines": [
+                "Dein Märtyrer Prokopius, Herr,",
+                "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "und die Dämonen kraftlos gemacht.",
+                "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+              ]
+            },
+            {
+              "lang": "cu",
+              "variant": "synodal-cyrl",
+              "lines": [
+                "Мученик Твой, Господи, Прокопий,",
+                "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+              ]
+            }
+          ]
+        }
+      ],
+      "meta": {
+        "custom": {
+          "saint_id": "prokopios-von-caesarea"
+        }
+      }
+    },
+    "from": "heading",
+    "to": "title",
+    "expected": {
+      "id": "tropar-prokopios",
+      "type": "troparion",
+      "book": "menaion",
+      "tone": 4,
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar des Großmärtyrers Prokopios",
+          "license": "unknown",
+          "source": "draft"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь великомученику Прокопию",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "r1",
+          "kind": "annotation",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Ton 4. Tropar des Großmärtyrers."
+            }
+          ]
+        },
+        {
+          "id": "v1",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "lines": [
+                "Dein Märtyrer Prokopius, Herr,",
+                "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "und die Dämonen kraftlos gemacht.",
+                "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+              ]
+            },
+            {
+              "lang": "cu",
+              "variant": "synodal-cyrl",
+              "lines": [
+                "Мученик Твой, Господи, Прокопий,",
+                "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+              ]
+            }
+          ]
+        }
+      ],
+      "meta": {
+        "custom": {
+          "saint_id": "prokopios-von-caesarea"
+        }
+      }
+    }
+  },
+  {
+    "name": "rename onto an existing kind",
+    "prayer": {
+      "id": "tropar-prokopios",
+      "type": "troparion",
+      "book": "menaion",
+      "tone": 4,
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar des Großmärtyrers Prokopios",
+          "license": "unknown",
+          "source": "draft"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь великомученику Прокопию",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "r1",
+          "kind": "annotation",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Ton 4. Tropar des Großmärtyrers."
+            }
+          ]
+        },
+        {
+          "id": "v1",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "lines": [
+                "Dein Märtyrer Prokopius, Herr,",
+                "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "und die Dämonen kraftlos gemacht.",
+                "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+              ]
+            },
+            {
+              "lang": "cu",
+              "variant": "synodal-cyrl",
+              "lines": [
+                "Мученик Твой, Господи, Прокопий,",
+                "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+              ]
+            }
+          ]
+        }
+      ],
+      "meta": {
+        "custom": {
+          "saint_id": "prokopios-von-caesarea"
+        }
+      }
+    },
+    "from": "annotation",
+    "to": "verse",
+    "expected": {
+      "id": "tropar-prokopios",
+      "type": "troparion",
+      "book": "menaion",
+      "tone": 4,
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar des Großmärtyrers Prokopios",
+          "license": "unknown",
+          "source": "draft"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь великомученику Прокопию",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "r1",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Ton 4. Tropar des Großmärtyrers."
+            }
+          ]
+        },
+        {
+          "id": "v1",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "lines": [
+                "Dein Märtyrer Prokopius, Herr,",
+                "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "und die Dämonen kraftlos gemacht.",
+                "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+              ]
+            },
+            {
+              "lang": "cu",
+              "variant": "synodal-cyrl",
+              "lines": [
+                "Мученик Твой, Господи, Прокопий,",
+                "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+              ]
+            }
+          ]
+        }
+      ],
+      "meta": {
+        "custom": {
+          "saint_id": "prokopios-von-caesarea"
+        }
+      }
+    }
+  },
+  {
+    "name": "rename to custom with hyphen",
+    "prayer": {
+      "id": "p",
+      "type": "prayer",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "T",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "b1",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 1"
+            }
+          ]
+        },
+        {
+          "id": "b2",
+          "kind": "heading",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 2"
+            }
+          ]
+        },
+        {
+          "id": "b3",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 3"
+            }
+          ]
+        }
+      ]
+    },
+    "from": "verse",
+    "to": "strophe-2",
+    "expected": {
+      "id": "p",
+      "type": "prayer",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "T",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "b1",
+          "kind": "strophe-2",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 1"
+            }
+          ]
+        },
+        {
+          "id": "b2",
+          "kind": "heading",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 2"
+            }
+          ]
+        },
+        {
+          "id": "b3",
+          "kind": "strophe-2",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 3"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "empty prayer",
+    "prayer": {
+      "id": "empty",
+      "type": "prayer",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "T",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": []
+    },
+    "from": "verse",
+    "to": "x",
+    "expected": {
+      "id": "empty",
+      "type": "prayer",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "T",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": []
+    }
+  },
+  {
+    "name": "non-latin",
+    "prayer": {
+      "id": "non-latin",
+      "type": "prayer",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "T",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "b1",
+          "kind": "стих",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 1"
+            }
+          ]
+        },
+        {
+          "id": "b2",
+          "kind": "Заголовок",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 2"
+            }
+          ]
+        },
+        {
+          "id": "b3",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 3"
+            }
+          ]
+        },
+        {
+          "id": "b4",
+          "kind": "祈り",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 4"
+            }
+          ]
+        },
+        {
+          "id": "b5",
+          "kind": "heading",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 5"
+            }
+          ]
+        }
+      ]
+    },
+    "from": "стих",
+    "to": "строфа",
+    "expected": {
+      "id": "non-latin",
+      "type": "prayer",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "T",
+          "license": "unknown",
+          "source": "draft"
+        }
+      ],
+      "structure": [
+        {
+          "id": "b1",
+          "kind": "строфа",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 1"
+            }
+          ]
+        },
+        {
+          "id": "b2",
+          "kind": "Заголовок",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 2"
+            }
+          ]
+        },
+        {
+          "id": "b3",
+          "kind": "verse",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 3"
+            }
+          ]
+        },
+        {
+          "id": "b4",
+          "kind": "祈り",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 4"
+            }
+          ]
+        },
+        {
+          "id": "b5",
+          "kind": "heading",
+          "translations": [
+            {
+              "lang": "de",
+              "variant": "standard",
+              "text": "Text 5"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

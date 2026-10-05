@@ -1,0 +1,42 @@
+{
+  "defaults": {
+    "heading": {
+      "fontSize": "1.125rem",
+      "color": "accent",
+      "fontWeight": "400",
+      "fontStyle": "normal",
+      "indicate": "true",
+      "htmlTag": "h2"
+    },
+    "subheading": {
+      "fontSize": "1rem",
+      "color": "accent",
+      "fontWeight": "400",
+      "fontStyle": "normal",
+      "htmlTag": "h3"
+    },
+    "annotation": {
+      "fontSize": "1rem",
+      "color": "accent",
+      "fontWeight": "400",
+      "fontStyle": "normal",
+      "htmlTag": "p",
+      "textAlign": "justify"
+    },
+    "verse": {
+      "fontSize": "1rem",
+      "color": "base",
+      "fontWeight": "400",
+      "fontStyle": "normal",
+      "initialCap": "true",
+      "htmlTag": "p",
+      "textAlign": "justify"
+    }
+  },
+  "fallback": {
+    "fontSize": "1rem",
+    "color": "base",
+    "fontWeight": "400",
+    "fontStyle": "normal"
+  }
+}

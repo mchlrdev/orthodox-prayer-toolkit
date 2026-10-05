@@ -1,0 +1,294 @@
+[
+  {
+    "name": "full manifest (core test)",
+    "input": {
+      "description": "Examples",
+      "defaultVariant": {
+        "lang": "de",
+        "variant": "standard"
+      }
+    },
+    "valid": true,
+    "expected": {
+      "description": "Examples",
+      "defaultVariant": {
+        "lang": "de",
+        "variant": "standard"
+      }
+    }
+  },
+  {
+    "name": "empty object",
+    "input": {},
+    "valid": true,
+    "expected": {}
+  },
+  {
+    "name": "description only",
+    "input": {
+      "description": "notes only"
+    },
+    "valid": true,
+    "expected": {
+      "description": "notes only"
+    }
+  },
+  {
+    "name": "empty description is kept",
+    "input": {
+      "description": ""
+    },
+    "valid": true,
+    "expected": {
+      "description": ""
+    }
+  },
+  {
+    "name": "description is a number",
+    "input": {
+      "description": 1
+    },
+    "valid": false
+  },
+  {
+    "name": "description is null",
+    "input": {
+      "description": null
+    },
+    "valid": false
+  },
+  {
+    "name": "null manifest",
+    "input": null,
+    "valid": false
+  },
+  {
+    "name": "array manifest",
+    "input": [],
+    "valid": false
+  },
+  {
+    "name": "string manifest",
+    "input": "manifest",
+    "valid": false
+  },
+  {
+    "name": "number manifest",
+    "input": 3,
+    "valid": false
+  },
+  {
+    "name": "stem lit",
+    "input": {
+      "stylePrefixStem": "lit"
+    },
+    "valid": true,
+    "expected": {
+      "stylePrefixStem": "lit"
+    }
+  },
+  {
+    "name": "stem empty is dropped",
+    "input": {
+      "stylePrefixStem": ""
+    },
+    "valid": true,
+    "expected": {}
+  },
+  {
+    "name": "stem starts with digit",
+    "input": {
+      "stylePrefixStem": "1bad"
+    },
+    "valid": false
+  },
+  {
+    "name": "stem has underscore",
+    "input": {
+      "stylePrefixStem": "bad_stem"
+    },
+    "valid": false
+  },
+  {
+    "name": "stem non-ascii letter",
+    "input": {
+      "stylePrefixStem": "büd"
+    },
+    "valid": false
+  },
+  {
+    "name": "stem with trailing newline",
+    "input": {
+      "stylePrefixStem": "opt\n"
+    },
+    "valid": false
+  },
+  {
+    "name": "stem is a number",
+    "input": {
+      "stylePrefixStem": 4
+    },
+    "valid": false
+  },
+  {
+    "name": "stem is null",
+    "input": {
+      "stylePrefixStem": null
+    },
+    "valid": false
+  },
+  {
+    "name": "stem alphanumeric",
+    "input": {
+      "stylePrefixStem": "Lit2x"
+    },
+    "valid": true,
+    "expected": {
+      "stylePrefixStem": "Lit2x"
+    }
+  },
+  {
+    "name": "legacy keys stripped (core test)",
+    "input": {
+      "description": "Examples",
+      "defaultVariant": {
+        "lang": "de",
+        "variant": "standard"
+      },
+      "name": "Old Title",
+      "version": "0.1.0"
+    },
+    "valid": true,
+    "expected": {
+      "description": "Examples",
+      "defaultVariant": {
+        "lang": "de",
+        "variant": "standard"
+      }
+    }
+  },
+  {
+    "name": "stem and description",
+    "input": {
+      "description": "x",
+      "stylePrefixStem": "opt"
+    },
+    "valid": true,
+    "expected": {
+      "description": "x",
+      "stylePrefixStem": "opt"
+    }
+  },
+  {
+    "name": "key order is normalized",
+    "input": {
+      "stylePrefixStem": "liturgy",
+      "defaultVariant": {
+        "variant": "standard",
+        "lang": "de"
+      },
+      "description": "d"
+    },
+    "valid": true,
+    "expected": {
+      "description": "d",
+      "defaultVariant": {
+        "lang": "de",
+        "variant": "standard"
+      },
+      "stylePrefixStem": "liturgy"
+    }
+  },
+  {
+    "name": "defaultVariant extra keys dropped",
+    "input": {
+      "defaultVariant": {
+        "lang": "de",
+        "variant": "standard",
+        "note": "x"
+      }
+    },
+    "valid": true,
+    "expected": {
+      "defaultVariant": {
+        "lang": "de",
+        "variant": "standard"
+      }
+    }
+  },
+  {
+    "name": "defaultVariant missing variant",
+    "input": {
+      "defaultVariant": {
+        "lang": "de"
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "defaultVariant missing lang",
+    "input": {
+      "defaultVariant": {
+        "variant": "standard"
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "defaultVariant lang not a string",
+    "input": {
+      "defaultVariant": {
+        "lang": 1,
+        "variant": "standard"
+      }
+    },
+    "valid": false
+  },
+  {
+    "name": "defaultVariant null",
+    "input": {
+      "defaultVariant": null
+    },
+    "valid": false
+  },
+  {
+    "name": "defaultVariant is an array",
+    "input": {
+      "defaultVariant": []
+    },
+    "valid": false
+  },
+  {
+    "name": "defaultVariant is a string",
+    "input": {
+      "defaultVariant": "de"
+    },
+    "valid": false
+  },
+  {
+    "name": "defaultVariant empty strings",
+    "input": {
+      "defaultVariant": {
+        "lang": "",
+        "variant": ""
+      }
+    },
+    "valid": true,
+    "expected": {
+      "defaultVariant": {
+        "lang": "",
+        "variant": ""
+      }
+    }
+  },
+  {
+    "name": "non-ASCII description",
+    "input": {
+      "description": "Тропарь 🙏 祈り"
+    },
+    "valid": true,
+    "expected": {
+      "description": "Тропарь 🙏 祈り"
+    }
+  }
+]

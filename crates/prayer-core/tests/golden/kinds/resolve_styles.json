@@ -1,0 +1,664 @@
+[
+  {
+    "name": "defaults for presets, fallback for unknown (core test)",
+    "discoveredKinds": [
+      "annotation",
+      "custom-kind"
+    ],
+    "expected": {
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      },
+      "custom-kind": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal"
+      },
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "true",
+        "htmlTag": "h2"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    }
+  },
+  {
+    "name": "no kinds at all",
+    "discoveredKinds": [],
+    "expected": {
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "true",
+        "htmlTag": "h2"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      },
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    }
+  },
+  {
+    "name": "duplicate discovered kinds",
+    "discoveredKinds": [
+      "verse",
+      "verse",
+      "x",
+      "x"
+    ],
+    "expected": {
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      },
+      "x": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal"
+      },
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "true",
+        "htmlTag": "h2"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    }
+  },
+  {
+    "name": "app defaults without textAlign (core test)",
+    "discoveredKinds": [
+      "verse",
+      "annotation"
+    ],
+    "appDefaults": {
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal"
+      }
+    },
+    "expected": {
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      },
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "true",
+        "htmlTag": "h2"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      }
+    }
+  },
+  {
+    "name": "library overrides win over app defaults (core test)",
+    "discoveredKinds": [
+      "verse"
+    ],
+    "appDefaults": {
+      "verse": {
+        "fontSize": "2rem",
+        "color": "base",
+        "fontWeight": "700",
+        "fontStyle": "normal",
+        "htmlTag": "div"
+      }
+    },
+    "libraryOverrides": {
+      "verse": {
+        "fontSize": "1.5rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "italic",
+        "htmlTag": "blockquote"
+      }
+    },
+    "expected": {
+      "verse": {
+        "fontSize": "1.5rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "italic",
+        "initialCap": "true",
+        "htmlTag": "blockquote",
+        "textAlign": "justify"
+      },
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "true",
+        "htmlTag": "h2"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    }
+  },
+  {
+    "name": "partial library override (core test)",
+    "discoveredKinds": [
+      "verse"
+    ],
+    "libraryOverrides": {
+      "verse": {
+        "color": "#8b2942"
+      }
+    },
+    "expected": {
+      "verse": {
+        "fontSize": "1rem",
+        "color": "#8b2942",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      },
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "true",
+        "htmlTag": "h2"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    }
+  },
+  {
+    "name": "partial app and library layers combine",
+    "discoveredKinds": [
+      "verse",
+      "heading"
+    ],
+    "appDefaults": {
+      "verse": {
+        "fontSize": "2rem",
+        "textAlign": "left"
+      },
+      "heading": {
+        "indicate": "false"
+      }
+    },
+    "libraryOverrides": {
+      "verse": {
+        "fontWeight": "700"
+      },
+      "heading": {
+        "htmlTag": "h1"
+      }
+    },
+    "expected": {
+      "verse": {
+        "fontSize": "2rem",
+        "color": "base",
+        "fontWeight": "700",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "left"
+      },
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "false",
+        "htmlTag": "h1"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    }
+  },
+  {
+    "name": "kinds only named in styles get entries, order of first mention",
+    "discoveredKinds": [
+      "zeta"
+    ],
+    "appDefaults": {
+      "alpha": {
+        "fontStyle": "italic"
+      }
+    },
+    "libraryOverrides": {
+      "beta": {
+        "fontSize": "3rem",
+        "color": "accent",
+        "fontWeight": "700",
+        "fontStyle": "normal"
+      },
+      "zeta": {
+        "color": "accent"
+      }
+    },
+    "expected": {
+      "zeta": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal"
+      },
+      "alpha": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "italic"
+      },
+      "beta": {
+        "fontSize": "3rem",
+        "color": "accent",
+        "fontWeight": "700",
+        "fontStyle": "normal"
+      },
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "true",
+        "htmlTag": "h2"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      },
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    }
+  },
+  {
+    "name": "custom default preset",
+    "discoveredKinds": [
+      "unknown",
+      "verse"
+    ],
+    "libraryOverrides": {
+      "other": {
+        "fontWeight": "300"
+      }
+    },
+    "defaultPreset": {
+      "fontSize": "2rem",
+      "color": "accent",
+      "fontWeight": "300",
+      "fontStyle": "italic",
+      "textAlign": "center"
+    },
+    "expected": {
+      "unknown": {
+        "fontSize": "2rem",
+        "color": "accent",
+        "fontWeight": "300",
+        "fontStyle": "italic",
+        "textAlign": "center"
+      },
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      },
+      "other": {
+        "fontSize": "2rem",
+        "color": "accent",
+        "fontWeight": "300",
+        "fontStyle": "italic",
+        "textAlign": "center"
+      },
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "true",
+        "htmlTag": "h2"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    }
+  },
+  {
+    "name": "unknown extra tokens are merged",
+    "discoveredKinds": [
+      "verse",
+      "note"
+    ],
+    "appDefaults": {
+      "verse": {
+        "letterSpacing": "1px",
+        "wordSpacing": "2px"
+      }
+    },
+    "libraryOverrides": {
+      "verse": {
+        "letterSpacing": "2px",
+        "lineHeight": "1.5"
+      },
+      "note": {
+        "lineHeight": "2"
+      }
+    },
+    "expected": {
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "justify",
+        "letterSpacing": "2px",
+        "wordSpacing": "2px",
+        "lineHeight": "1.5"
+      },
+      "note": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "lineHeight": "2"
+      },
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "true",
+        "htmlTag": "h2"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    }
+  },
+  {
+    "name": "non-ASCII kind ids",
+    "discoveredKinds": [
+      "стих",
+      "祈り"
+    ],
+    "libraryOverrides": {
+      "стих": {
+        "fontStyle": "italic"
+      }
+    },
+    "expected": {
+      "стих": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "italic"
+      },
+      "祈り": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal"
+      },
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "true",
+        "htmlTag": "h2"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      },
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    }
+  },
+  {
+    "name": "empty override objects change nothing",
+    "discoveredKinds": [
+      "verse"
+    ],
+    "appDefaults": {
+      "verse": {}
+    },
+    "libraryOverrides": {
+      "verse": {},
+      "heading": {}
+    },
+    "expected": {
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      },
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "indicate": "true",
+        "htmlTag": "h2"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    }
+  }
+]

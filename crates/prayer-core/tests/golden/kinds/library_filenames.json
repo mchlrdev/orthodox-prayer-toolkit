@@ -1,0 +1,542 @@
+{
+  "isPrayerFilename": [
+    {
+      "path": "trisagion.json",
+      "expected": true
+    },
+    {
+      "path": "manifest.json",
+      "expected": false
+    },
+    {
+      "path": "styles.json",
+      "expected": false
+    },
+    {
+      "path": ".orthodox-prayer-toolkit/styles.json",
+      "expected": false
+    },
+    {
+      "path": ".orthodox-prayer-toolkit/other.json",
+      "expected": false
+    },
+    {
+      "path": "sub/.orthodox-prayer-toolkit/styles.json",
+      "expected": false
+    },
+    {
+      "path": "sub\\.orthodox-prayer-toolkit\\styles.json",
+      "expected": false
+    },
+    {
+      "path": ".orthodox-prayer-toolkit\\styles.json",
+      "expected": false
+    },
+    {
+      "path": "sub/manifest.json",
+      "expected": false
+    },
+    {
+      "path": "sub\\manifest.json",
+      "expected": false
+    },
+    {
+      "path": "sub/styles.json",
+      "expected": false
+    },
+    {
+      "path": "a/b/c/prayer.json",
+      "expected": true
+    },
+    {
+      "path": "a\\b\\prayer.json",
+      "expected": true
+    },
+    {
+      "path": "notes.txt",
+      "expected": false
+    },
+    {
+      "path": "prayer.JSON",
+      "expected": false
+    },
+    {
+      "path": "prayer.json.bak",
+      "expected": false
+    },
+    {
+      "path": "prayer.jsonl",
+      "expected": false
+    },
+    {
+      "path": ".json",
+      "expected": true
+    },
+    {
+      "path": "dir.json/",
+      "expected": false
+    },
+    {
+      "path": "dir.json\\",
+      "expected": false
+    },
+    {
+      "path": "",
+      "expected": false
+    },
+    {
+      "path": "/",
+      "expected": false
+    },
+    {
+      "path": "/abs/path/x.json",
+      "expected": true
+    },
+    {
+      "path": "C:\\lib\\x.json",
+      "expected": true
+    },
+    {
+      "path": "./x.json",
+      "expected": true
+    },
+    {
+      "path": "../x.json",
+      "expected": true
+    },
+    {
+      "path": "x.json ",
+      "expected": false
+    },
+    {
+      "path": "Manifest.json",
+      "expected": true
+    },
+    {
+      "path": "my-manifest.json",
+      "expected": true
+    },
+    {
+      "path": "styles.json.json",
+      "expected": true
+    },
+    {
+      "path": ".orthodox-prayer-toolkit",
+      "expected": false
+    },
+    {
+      "path": "x/.orthodox-prayer-toolkit",
+      "expected": false
+    },
+    {
+      "path": ".orthodox-prayer-toolkit.json",
+      "expected": true
+    },
+    {
+      "path": "a/.orthodox-prayer-toolkitx/y.json",
+      "expected": true
+    },
+    {
+      "path": "тропарь.json",
+      "expected": true
+    },
+    {
+      "path": "祈り/祈り.json",
+      "expected": true
+    }
+  ],
+  "prayerFilename": [
+    {
+      "id": "trisagion",
+      "expected": "trisagion.json"
+    },
+    {
+      "id": "tropar-prokopios",
+      "expected": "tropar-prokopios.json"
+    },
+    {
+      "id": "",
+      "expected": ".json"
+    },
+    {
+      "id": "Ünï",
+      "expected": "Ünï.json"
+    },
+    {
+      "id": "тропарь",
+      "expected": "тропарь.json"
+    },
+    {
+      "id": "a.b",
+      "expected": "a.b.json"
+    },
+    {
+      "id": "a/b",
+      "expected": "a/b.json"
+    }
+  ],
+  "filenameMatchesId": [
+    {
+      "path": "tropar-prokopios.json",
+      "id": "tropar-prokopios",
+      "expected": true
+    },
+    {
+      "path": "wrong.json",
+      "id": "tropar-prokopios",
+      "expected": false
+    },
+    {
+      "path": "sub/trisagion.json",
+      "id": "trisagion",
+      "expected": true
+    },
+    {
+      "path": "sub\\trisagion.json",
+      "id": "trisagion",
+      "expected": true
+    },
+    {
+      "path": "trisagion.json",
+      "id": "Trisagion",
+      "expected": false
+    },
+    {
+      "path": "trisagion.json.json",
+      "id": "trisagion",
+      "expected": false
+    },
+    {
+      "path": "тропарь.json",
+      "id": "тропарь",
+      "expected": true
+    },
+    {
+      "path": ".json",
+      "id": "",
+      "expected": true
+    },
+    {
+      "path": "",
+      "id": "",
+      "expected": false
+    },
+    {
+      "path": "dir/",
+      "id": "",
+      "expected": false
+    },
+    {
+      "path": "a/b.json",
+      "id": "a/b",
+      "expected": false
+    },
+    {
+      "path": "a.b.json",
+      "id": "a.b",
+      "expected": true
+    },
+    {
+      "path": "x/Ünï.json",
+      "id": "Ünï",
+      "expected": true
+    }
+  ],
+  "findIdCollisions": [
+    {
+      "name": "duplicate ids (core test)",
+      "entries": [
+        {
+          "path": "a/foo.json",
+          "id": "foo"
+        },
+        {
+          "path": "b/foo.json",
+          "id": "foo"
+        },
+        {
+          "path": "bar.json",
+          "id": "bar"
+        }
+      ],
+      "expected": [
+        {
+          "id": "foo",
+          "paths": [
+            "a/foo.json",
+            "b/foo.json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "no entries",
+      "entries": [],
+      "expected": []
+    },
+    {
+      "name": "unparseable files never collide",
+      "entries": [
+        {
+          "path": "a.json",
+          "id": null
+        },
+        {
+          "path": "b.json",
+          "id": null
+        }
+      ],
+      "expected": []
+    },
+    {
+      "name": "paths and ids sorted",
+      "entries": [
+        {
+          "path": "z/b.json",
+          "id": "b"
+        },
+        {
+          "path": "b.json",
+          "id": "b"
+        },
+        {
+          "path": "y.json",
+          "id": "A"
+        },
+        {
+          "path": "x.json",
+          "id": "A"
+        },
+        {
+          "path": "Z.json",
+          "id": "a"
+        },
+        {
+          "path": "z.json",
+          "id": "a"
+        },
+        {
+          "path": "k.json",
+          "id": "k"
+        }
+      ],
+      "expected": [
+        {
+          "id": "a",
+          "paths": [
+            "Z.json",
+            "z.json"
+          ]
+        },
+        {
+          "id": "A",
+          "paths": [
+            "x.json",
+            "y.json"
+          ]
+        },
+        {
+          "id": "b",
+          "paths": [
+            "b.json",
+            "z/b.json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "three-way collision with null mixed in",
+      "entries": [
+        {
+          "path": "c.json",
+          "id": "dup"
+        },
+        {
+          "path": "a.json",
+          "id": "dup"
+        },
+        {
+          "path": "x.json",
+          "id": null
+        },
+        {
+          "path": "b.json",
+          "id": "dup"
+        }
+      ],
+      "expected": [
+        {
+          "id": "dup",
+          "paths": [
+            "a.json",
+            "b.json",
+            "c.json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "id ordering like localeCompare",
+      "entries": [
+        {
+          "path": "1.json",
+          "id": "b"
+        },
+        {
+          "path": "2.json",
+          "id": "b"
+        },
+        {
+          "path": "3.json",
+          "id": "a-b"
+        },
+        {
+          "path": "4.json",
+          "id": "a-b"
+        },
+        {
+          "path": "5.json",
+          "id": "ab"
+        },
+        {
+          "path": "6.json",
+          "id": "ab"
+        },
+        {
+          "path": "7.json",
+          "id": "a_b"
+        },
+        {
+          "path": "8.json",
+          "id": "a_b"
+        },
+        {
+          "path": "9.json",
+          "id": "B"
+        },
+        {
+          "path": "10.json",
+          "id": "B"
+        }
+      ],
+      "expected": [
+        {
+          "id": "a_b",
+          "paths": [
+            "7.json",
+            "8.json"
+          ]
+        },
+        {
+          "id": "a-b",
+          "paths": [
+            "3.json",
+            "4.json"
+          ]
+        },
+        {
+          "id": "ab",
+          "paths": [
+            "5.json",
+            "6.json"
+          ]
+        },
+        {
+          "id": "b",
+          "paths": [
+            "1.json",
+            "2.json"
+          ]
+        },
+        {
+          "id": "B",
+          "paths": [
+            "10.json",
+            "9.json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "same path twice with the same id",
+      "entries": [
+        {
+          "path": "a.json",
+          "id": "x"
+        },
+        {
+          "path": "a.json",
+          "id": "x"
+        }
+      ],
+      "expected": [
+        {
+          "id": "x",
+          "paths": [
+            "a.json",
+            "a.json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "non-latin ids and paths, astral vs BMP path order",
+      "entries": [
+        {
+          "path": "🙏.json",
+          "id": "тропарь"
+        },
+        {
+          "path": "Ａ.json",
+          "id": "тропарь"
+        },
+        {
+          "path": "я.json",
+          "id": "я"
+        },
+        {
+          "path": "а.json",
+          "id": "я"
+        }
+      ],
+      "expected": [
+        {
+          "id": "тропарь",
+          "paths": [
+            "🙏.json",
+            "Ａ.json"
+          ]
+        },
+        {
+          "id": "я",
+          "paths": [
+            "а.json",
+            "я.json"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "empty id string is a real id",
+      "entries": [
+        {
+          "path": "a.json",
+          "id": ""
+        },
+        {
+          "path": "b.json",
+          "id": ""
+        }
+      ],
+      "expected": [
+        {
+          "id": "",
+          "paths": [
+            "a.json",
+            "b.json"
+          ]
+        }
+      ]
+    }
+  ]
+}
