@@ -33,13 +33,14 @@ Die GPUI-App ersetzt die Electron-App auf `main`: alle Funktionen und UX-Abläuf
 - [Paritäts-Checkliste](issues/04-parity-checklist.md): 268 Punkte in 20 Bereichen; App-weite Kind-Styles sind heute wirkungslos, mehrere Lücken der Electron-App gefunden.
 - [Selbst-Update auf echten Geräten](issues/08-self-update-on-devices.md): beta.2 → beta.3 per Selbst-Update funktioniert; Velopack bleibt.
 - [Inline-Editor-Prototyp](issues/02-inline-editor-prototype.md): eigenes GPUI-Element mit Text+Runs-Modell trägt; Mark hat es auf macOS ausprobiert, Backspace-Zusammenführen und Undo über Blocks angenommen.
+- [Wie die Rust-App geschnitten ist](issues/05-app-architecture.md): `prayer-core` / `prayer-app` (UI-frei) / `prayer-ui`; Gebetsdatei bleibt eigenständig, Catalog nur Index; Undo pro Gebet über alles; Ordner wird beobachtet.
 - [Wo die Electron-App Kind-Styles speichert](issues/10-electron-settings-location.md): `userData/Orthodox Prayer Toolkit/kind-styles.json` pro OS; wirkt aber nicht auf die Darstellung (siehe Parität), die echten Styles liegen in der Library.
 
 ## Not yet specified
 
 - **Export-Abläufe in der neuen UI** (Export-Dialog, Vorschau, Dateiauswahl): hängt an Core-Port und App-Architektur.
 - **Find & Replace im neuen Editor**: hängt an der Editor-Entscheidung; Hervorhebungen und Ersetzen über mehrere Blocks.
-- **Bekannte Schwächen der Electron-App**: gleich nachbauen oder beheben? (kein Speichern-Kürzel, keine Nachfrage beim Gebetswechsel, Validierungsfehler unsichtbar, „Install and Restart“ ohne Nachfrage, wirkungslose App-Kind-Styles). Liste in der Paritäts-Checkliste.
+- **Bekannte Schwächen der Electron-App**: gleich nachbauen oder beheben? (kein Speichern-Kürzel, Validierungsfehler unsichtbar, „Install and Restart“ ohne Nachfrage, wirkungslose App-Kind-Styles). Liste in der Paritäts-Checkliste.
 - **Gebetsliste und Katalog bei großen Libraries**: virtuelle Liste, Einlesen im Hintergrund; vermutlich unkritisch, wird nach der Architektur klar.
 - **Umstellung selbst**: Reihenfolge von Merge, Entfernen von `packages/app`, App-Name/Bundle-ID/Update-Kanal von Beta auf stabil; Signierung dann neu bewerten.
 - **Update-Verhalten wie Electron**: Download im Hintergrund statt per Klick, macOS-Build auch für Intel, Delta-Pakete.
