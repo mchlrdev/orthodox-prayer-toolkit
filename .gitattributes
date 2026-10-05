@@ -1,0 +1,3 @@
+# Byte-equal golden tests: never convert line endings on checkout (Windows CI).
+crates/prayer-core/tests/golden/** text eol=lf
+packages/core/tests/fixtures/** text eol=lf
