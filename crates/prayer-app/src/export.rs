@@ -336,6 +336,8 @@ pub struct ExportDefaults {
     /// `None`: the prayer has no Variant (hint "Add a language in prayer
     /// settings before exporting."; Export stays disabled).
     pub variant: Option<VariantRef>,
+    /// The Language select's options, see [`language_options`].
+    pub languages: Vec<VariantRef>,
     pub format: ExportFormat,
     pub include_blocks_without_translation: bool,
     pub html: HtmlExportOptions,
@@ -363,6 +365,7 @@ impl ExportDefaults {
         let html = saved.and_then(|s| s.html.clone()).unwrap_or(default_html);
         Self {
             variant: pick_export_variant(prayer, library_default.as_ref()),
+            languages: language_options(prayer),
             format: ExportFormat::FlatJson,
             include_blocks_without_translation: saved
                 .and_then(|s| s.include_blocks_without_translation)
@@ -508,6 +511,13 @@ mod tests {
         let m = manifest(Some("lit"), Some(("en", "standard")));
         let d = ExportDefaults::new(&p, Some(&m), &s, None);
         assert_eq!(d.variant, Some(VariantRef::new("en", "standard")));
+        assert_eq!(
+            d.languages,
+            vec![
+                VariantRef::new("de", "standard"),
+                VariantRef::new("en", "standard")
+            ]
+        );
         assert_eq!(d.format, ExportFormat::FlatJson);
         assert!(!d.include_blocks_without_translation);
         assert_eq!(d.layout.format, LayoutFormat::Docx);

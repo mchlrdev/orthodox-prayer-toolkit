@@ -98,15 +98,9 @@ impl AppState {
     /// Recomputes what is derived from the Session (styles, Kinds, columns).
     pub fn refresh_derived(&mut self) {
         self.styles = self.session.resolved_styles();
-        let mut kinds: Vec<String> = self
-            .session
-            .catalog()
-            .map(|c| c.kinds().to_vec())
-            .unwrap_or_default();
-        kinds.extend(self.styles.keys().cloned());
-        kinds.sort();
-        kinds.dedup();
-        self.extra_kinds = kinds;
+        // Open drafts count with their current Kinds (the catalog only
+        // knows what is on disk).
+        self.extra_kinds = crate::dialogs::kind::known_kinds(self);
         self.columns = self.session.visible_variants();
     }
 
@@ -361,7 +355,7 @@ impl DraftHost for PrayerHost {
             if let Some(draft) = state.session.draft_mut(&path) {
                 f(draft);
             }
-            state.styles = state.session.resolved_styles();
+            state.refresh_derived();
             cx.notify();
         });
     }

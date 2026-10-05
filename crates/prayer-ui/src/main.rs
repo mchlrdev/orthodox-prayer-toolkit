@@ -80,7 +80,9 @@ fn main() {
             actions::bind_keys(cx);
             editor::bind_keys(cx);
             apply_appearance(Prefs::load().color_scheme, None, cx);
-            cx.on_action(|_: &actions::Quit, cx| cx.quit());
+            actions::register_global(cx);
+            #[cfg(target_os = "macos")]
+            actions::set_menus(cx);
 
             let options = WindowOptions {
                 titlebar: Some(TitlebarOptions {

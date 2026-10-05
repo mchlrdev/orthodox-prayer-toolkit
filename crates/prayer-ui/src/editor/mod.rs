@@ -144,6 +144,8 @@ pub enum EditorEvent {
     EditKind(String),
     /// "New kind…" for a Block.
     NewKind { block_id: String },
+    /// The Block at the top of the viewport changed (outline scrollspy).
+    Scrolled,
 }
 
 impl EventEmitter<EditorEvent> for PrayerEditor {}
@@ -220,6 +222,8 @@ pub struct PrayerEditor {
     flash: Option<SharedString>,
     flash_task: Option<Task<()>>,
     last_added_kind: String,
+    /// `top_block` as of the last render, to report scrolling.
+    reported_top: Option<SharedString>,
     highlights: Vec<Highlight>,
 }
 
@@ -247,6 +251,7 @@ impl PrayerEditor {
             flash: None,
             flash_task: None,
             last_added_kind,
+            reported_top: None,
             highlights: Vec::new(),
         }
     }
@@ -1388,6 +1393,8 @@ impl PrayerEditor {
         let last = ix + 1 == self.rows.len();
         let split = self.columns.len() > 1;
         let indicate = cell_style.indicate;
+        let problems = block_errors(self.draft(cx).map_or(&[], |d| d.errors()), ix);
+        let danger = <App as gpui_kit::component::ActiveTheme>::theme(cx).danger;
 
         let row_id = block_id.clone();
         let chrome = self.render_chrome(&block_id, &kind, ix == 0, last, &p, cx);
@@ -1419,6 +1426,29 @@ impl PrayerEditor {
                         move |menu, _, _| {
                             block_menu(menu, &editor, &block_id, &kind, &kinds, ix == 0, last)
                         }
+                    })
+                    .when(!problems.is_empty(), |d| {
+                        d.border_1().border_color(Palette::fade(danger, 0.6)).child(
+                            div()
+                                .id("problems")
+                                .absolute()
+                                .top(px(12.))
+                                .left(px(-17.))
+                                .size(px(14.))
+                                .rounded_full()
+                                .bg(danger)
+                                .text_color(p.on_accent)
+                                .text_size(px(10.))
+                                .font_weight(FontWeight::BOLD)
+                                .flex()
+                                .items_center()
+                                .justify_center()
+                                .child("!")
+                                .tooltip(move |window, cx| {
+                                    gpui_kit::component::tooltip::Tooltip::new(problems.join("\n"))
+                                        .build(window, cx)
+                                }),
+                        )
                     })
                     .when(indicate, |d| {
                         d.child(
@@ -1855,6 +1885,11 @@ impl Render for PrayerEditor {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         self.sync(cx);
         self.layouts.clear();
+        let top = self.top_block();
+        if top != self.reported_top {
+            self.reported_top = top;
+            cx.emit(EditorEvent::Scrolled);
+        }
         let split = self.columns.len() > 1;
         let rows = list(
             self.list.clone(),
@@ -1904,6 +1939,24 @@ impl Render for PrayerEditor {
             .when(split, |d| d.child(self.render_column_labels(cx)))
             .child(rows)
     }
+}
+
+/// Validation messages for the Block at `ix` (live, from the draft), with
+/// the part of the path below the Block so the field is named.
+fn block_errors(errors: &[prayer_core::ValidationError], ix: usize) -> Vec<String> {
+    let prefix = format!("/structure/{ix}");
+    errors
+        .iter()
+        .filter_map(|e| {
+            let rest = e.path.strip_prefix(&prefix)?;
+            if rest.is_empty() {
+                Some(e.message.clone())
+            } else {
+                let field = rest.strip_prefix('/')?;
+                Some(format!("{field}: {}", e.message))
+            }
+        })
+        .collect()
 }
 
 #[cfg(test)]

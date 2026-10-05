@@ -25,6 +25,19 @@ use crate::updates::Updates;
 
 const SIDEBAR_WIDTH: f32 = 280.;
 const OUTLINE_WIDTH: f32 = 260.;
+/// Below this window width the sidebars float over the editor.
+const OVERLAY_BREAKPOINT: f32 = 1100.;
+
+/// Which sidebars show, worked out once per frame.
+#[derive(Clone, Copy, Default)]
+struct Sidebars {
+    /// Narrow window: sidebars are overlays, one at a time.
+    overlay: bool,
+    /// Overlay mode with nothing to edit: the Library stays open.
+    pinned: bool,
+    library: bool,
+    content: bool,
+}
 
 pub struct Root {
     state: Entity<AppState>,
@@ -35,6 +48,10 @@ pub struct Root {
     focus_handle: FocusHandle,
     /// The window may close (the unsaved-changes decision was made).
     closing: bool,
+    sidebars: Sidebars,
+    /// Overlay-mode sidebars; the wide-window state lives in the prefs.
+    overlay_library: bool,
+    overlay_content: bool,
     _subscriptions: Vec<Subscription>,
 }
 
@@ -53,6 +70,19 @@ impl Root {
                 }
             }),
             cx.subscribe_in(&state, window, Self::on_app_event),
+            // "System" appearance follows the OS while the app runs.
+            cx.observe_window_appearance(window, |this, window, cx| {
+                let scheme = this.state.read(cx).session.prefs().color_scheme;
+                if scheme == prayer_app::prefs::ColorScheme::System {
+                    crate::apply_appearance(scheme, Some(window), cx);
+                }
+            }),
+            cx.subscribe(&outline, |this, _, _: &crate::outline::Jumped, cx| {
+                if this.sidebars.overlay {
+                    this.overlay_content = false;
+                    cx.notify();
+                }
+            }),
         ];
         // Ask before the window closes with unsaved changes.
         let root = cx.entity().downgrade();
@@ -60,6 +90,22 @@ impl Root {
             root.update(cx, |this, cx| this.should_close(window, cx))
                 .unwrap_or(true)
         });
+        // Development aid: OPT_OPEN_DIALOG opens a dialog right away (for
+        // screenshots under Xvfb).
+        if let Ok(name) = std::env::var("OPT_OPEN_DIALOG") {
+            let find = find.clone();
+            let state = state.clone();
+            let updates = updates.clone();
+            window.defer(cx, move |window, cx| {
+                // "find:<text>" / "replace:<text>" open the find bar.
+                if let Some((mode, text)) = name.split_once(':') {
+                    let text = Some(text.to_owned());
+                    find.update(cx, |f, cx| f.open(mode == "replace", text, window, cx));
+                } else {
+                    open_dev_dialog(&name, state, updates, window, cx)
+                }
+            });
+        }
         Self {
             state,
             updates,
@@ -68,6 +114,9 @@ impl Root {
             outline,
             focus_handle: cx.focus_handle(),
             closing: false,
+            sidebars: Sidebars::default(),
+            overlay_library: false,
+            overlay_content: false,
             _subscriptions: subscriptions,
         }
     }
@@ -145,6 +194,9 @@ impl Root {
 
     fn select(&mut self, path: String, window: &mut Window, cx: &mut Context<Self>) {
         let outcome = self.state.update(cx, |s, cx| s.select(&path, cx));
+        if self.sidebars.overlay {
+            self.overlay_library = false;
+        }
         if let Some(SelectOutcome::Opened) = outcome {
             self.focus_editor(window, cx);
         }
@@ -176,6 +228,7 @@ impl Root {
                 EditorEvent::NewKind { block_id } => {
                     dialogs::kind::open_new(state.clone(), block_id.clone(), window, cx)
                 }
+                EditorEvent::Scrolled => {}
             },
         );
         self._subscriptions.push(sub);
@@ -261,6 +314,14 @@ impl Root {
     }
 
     fn toggle_library_sidebar(&mut self, cx: &mut Context<Self>) {
+        if self.sidebars.overlay {
+            if !self.sidebars.pinned {
+                self.overlay_library = !self.sidebars.library;
+                self.overlay_content &= !self.overlay_library;
+            }
+            cx.notify();
+            return;
+        }
         self.state.update(cx, |s, cx| {
             s.session
                 .update_prefs(|p| p.sidebar.library_collapsed = !p.sidebar.library_collapsed);
@@ -269,6 +330,12 @@ impl Root {
     }
 
     fn toggle_content_sidebar(&mut self, cx: &mut Context<Self>) {
+        if self.sidebars.overlay {
+            self.overlay_content = !self.sidebars.content;
+            self.overlay_library &= !self.overlay_content;
+            cx.notify();
+            return;
+        }
         self.state.update(cx, |s, cx| {
             s.session
                 .update_prefs(|p| p.sidebar.content_collapsed = !p.sidebar.content_collapsed);
@@ -533,8 +600,8 @@ impl Root {
 
     fn render_header(&mut self, p: &Palette, cx: &mut Context<Self>) -> AnyElement {
         let state = self.state.read(cx);
-        let library_collapsed = state.session.prefs().sidebar.library_collapsed;
-        let content_collapsed = state.session.prefs().sidebar.content_collapsed;
+        let library_collapsed = !self.sidebars.library;
+        let content_collapsed = !self.sidebars.content;
         let draft = state.session.selected_draft();
         let path = state.session.selected_path().map(str::to_owned);
         let columns = state.columns().to_vec();
@@ -941,6 +1008,41 @@ thread_local! {
         Default::default();
 }
 
+fn open_dev_dialog(
+    name: &str,
+    state: Entity<AppState>,
+    updates: Entity<Updates>,
+    window: &mut Window,
+    cx: &mut App,
+) {
+    let path = state
+        .read(cx)
+        .session
+        .selected_path()
+        .unwrap_or_default()
+        .to_owned();
+    match name {
+        "new-prayer" => dialogs::new_prayer::open(state, window, cx),
+        "new-library" => dialogs::new_library::open(state, window, cx),
+        "prayer-settings" => dialogs::prayer_settings::open(state, window, cx),
+        "library-settings" => dialogs::library_settings::open(state, window, cx),
+        "export" => dialogs::export::open(state, path, window, cx),
+        "edit-kind" => dialogs::kind::open_edit(state, "verse".into(), window, cx),
+        "new-kind" => {
+            let block = state
+                .read(cx)
+                .session
+                .selected_draft()
+                .and_then(|d| d.prayer().structure.first().map(|b| b.id.clone()))
+                .unwrap_or_default();
+            dialogs::kind::open_new(state, block, window, cx)
+        }
+        "app-settings" => crate::app_settings::open(state, updates, window, cx),
+        "unsaved" => dialogs::unsaved::open(state, window, cx),
+        _ => {}
+    }
+}
+
 fn badge(label: impl Into<SharedString>, fg: Hsla, bg: Hsla) -> Div {
     div()
         .px(px(7.))
@@ -1158,20 +1260,64 @@ impl Focusable for Root {
     }
 }
 
+impl Root {
+    /// Which sidebars show this frame (see `Sidebars`).
+    fn update_sidebars(&mut self, window: &Window, cx: &App) -> Sidebars {
+        let overlay = window.viewport_size().width < px(OVERLAY_BREAKPOINT);
+        let s = self.state.read(cx);
+        let library = s.session.library().is_some();
+        let editing = s.session.selected_invalid().is_none()
+            && s.session.selected_draft().is_some()
+            && !s.columns().is_empty();
+        let pinned = overlay && library && s.session.selected_invalid().is_none() && !editing;
+        if overlay && !self.sidebars.overlay {
+            // Entering overlay mode starts with both closed.
+            self.overlay_library = false;
+            self.overlay_content = false;
+        }
+        let prefs = &s.session.prefs().sidebar;
+        self.sidebars = if overlay {
+            Sidebars {
+                overlay,
+                pinned,
+                library: pinned || self.overlay_library,
+                content: !pinned && self.overlay_content,
+            }
+        } else {
+            Sidebars {
+                overlay,
+                pinned,
+                library: !prefs.library_collapsed,
+                content: !prefs.content_collapsed,
+            }
+        };
+        self.sidebars
+    }
+}
+
 impl Render for Root {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let p = palette(cx).clone();
-        let (library_collapsed, content_collapsed, has_draft) = {
-            let s = self.state.read(cx);
-            (
-                s.session.prefs().sidebar.library_collapsed,
-                s.session.prefs().sidebar.content_collapsed,
-                s.session.selected_draft().is_some(),
-            )
-        };
-        let sidebar = (!library_collapsed).then(|| self.render_sidebar(&p, window, cx));
+        let sidebars = self.update_sidebars(window, cx);
+        let has_draft = self.state.read(cx).session.selected_draft().is_some();
+        let overlay = sidebars.overlay;
+        let sidebar = sidebars.library.then(|| {
+            let panel = self.render_sidebar(&p, window, cx);
+            if overlay {
+                div()
+                    .absolute()
+                    .top_0()
+                    .bottom_0()
+                    .left_0()
+                    .shadow_lg()
+                    .child(panel)
+                    .into_any_element()
+            } else {
+                panel
+            }
+        });
         let workspace = self.render_workspace(&p, window, cx);
-        let outline = (!content_collapsed && has_draft).then(|| {
+        let outline = (sidebars.content && has_draft).then(|| {
             div()
                 .w(px(OUTLINE_WIDTH))
                 .flex_none()
@@ -1179,8 +1325,24 @@ impl Render for Root {
                 .border_l_1()
                 .border_color(p.border)
                 .bg(p.surface)
+                .when(overlay, |d| {
+                    d.absolute().top_0().bottom_0().right_0().shadow_lg()
+                })
                 .child(self.outline.clone())
         });
+        let backdrop = (overlay && !sidebars.pinned && (sidebars.library || sidebars.content))
+            .then(|| {
+                div()
+                    .id("sidebar-backdrop")
+                    .absolute()
+                    .inset_0()
+                    .bg(Palette::fade(gpui_kit::black(), 0.12))
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.overlay_library = false;
+                        this.overlay_content = false;
+                        cx.notify();
+                    }))
+            });
 
         div()
             .id("root")
@@ -1209,17 +1371,37 @@ impl Render for Root {
                     this.toggle_content_sidebar(cx)
                 }),
             )
+            .on_action(|_: &ToggleFullScreen, window, _| window.toggle_fullscreen())
+            .on_action(cx.listener(|this, _: &About, window, cx| {
+                let version = this.updates.read(cx).version();
+                let answer = window.prompt(
+                    PromptLevel::Info,
+                    prayer_app::prefs::APP_NAME,
+                    Some(&format!("Version {version}")),
+                    &["OK"],
+                    cx,
+                );
+                cx.spawn(async move |_, _| answer.await.ok()).detach();
+            }))
             .on_action(cx.listener(|this, _: &CheckForUpdates, _, cx| {
                 this.updates.update(cx, |u, cx| u.check(cx))
             }))
+            .relative()
             .size_full()
             .flex()
             .flex_row()
             .bg(p.bg)
             .text_color(p.text)
-            .children(sidebar)
-            .child(workspace)
-            .children(outline)
+            .map(|d| {
+                if overlay {
+                    d.child(workspace)
+                        .children(backdrop)
+                        .children(sidebar)
+                        .children(outline)
+                } else {
+                    d.children(sidebar).child(workspace).children(outline)
+                }
+            })
     }
 }
 

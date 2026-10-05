@@ -2,6 +2,7 @@
 
 pub mod confirm;
 pub mod export;
+pub mod fields;
 pub mod kind;
 pub mod library_settings;
 pub mod new_library;
