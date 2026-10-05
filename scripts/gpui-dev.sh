@@ -39,7 +39,7 @@ if [[ "$(uname)" == "Darwin" ]] && ! xcode-select -p >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Fetching $BRANCH…"
+echo "Fetching ${BRANCH}..."
 git -C "$repo_root" fetch --quiet origin "$BRANCH"
 
 if [[ ! -e "$worktree/.git" ]]; then
@@ -51,7 +51,7 @@ if [[ ! -e "$worktree/.git" ]]; then
   fi
 fi
 
-echo "Updating $worktree…"
+echo "Updating ${worktree}..."
 if ! git -C "$worktree" pull --ff-only --quiet origin "$BRANCH"; then
   echo "Could not fast-forward $worktree (local changes?). Starting the version that is there."
 fi
