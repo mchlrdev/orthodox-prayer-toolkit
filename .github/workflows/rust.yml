@@ -83,4 +83,10 @@ jobs:
         run: scripts/core-golden.sh
 
       - name: Goldens unchanged
-        run: git diff --exit-code crates/prayer-core/tests/golden
+        run: |
+          changes=$(git status --porcelain -- crates/prayer-core/tests/golden)
+          if [ -n "$changes" ]; then
+            echo "$changes"
+            git diff -- crates/prayer-core/tests/golden | head -200
+            exit 1
+          fi
