@@ -27,10 +27,17 @@ Die GPUI-App ersetzt die Electron-App auf `main`: alle Funktionen und UX-Abläuf
 
 <!-- eine Zeile pro gelöstem Ticket: Name als Link, Kernaussage -->
 
+- [Was GPUI für editierbaren formatierten Text bietet](issues/01-gpui-rich-text.md): Layout mit farbigen Runs ja, Editier-Logik nur für Plain Text; wir bauen Dokumentmodell und Editier-Element selbst, Größe pro Run wird nicht gebraucht.
+- [Wie sich der heutige Inline-Editor verhält](issues/03-current-editor-behaviour.md): Browser liefert Cursor/IME/Undo, App fängt nur Enter, Shift+Enter, Backspace, Einfügen, Notiz-Kürzel ab; kein App-Undo, Übernahme beim Verlassen der Zelle.
+- [Welche Rust-Crates den Core-Port tragen](issues/06-core-port-crates.md): `jsonschema` + `docx-rs` + `regex`, RTF und HTML von Hand; Ajv-Meldungen und DOCX-Bytes werden nicht gleich.
+- [Paritäts-Checkliste](issues/04-parity-checklist.md): 268 Punkte in 20 Bereichen; App-weite Kind-Styles sind heute wirkungslos, mehrere Lücken der Electron-App gefunden.
+- [Wo die Electron-App Kind-Styles speichert](issues/10-electron-settings-location.md): `userData/Orthodox Prayer Toolkit/kind-styles.json` pro OS; wirkt aber nicht auf die Darstellung (siehe Parität), die echten Styles liegen in der Library.
+
 ## Not yet specified
 
 - **Export-Abläufe in der neuen UI** (Export-Dialog, Vorschau, Dateiauswahl): hängt an Core-Port und App-Architektur.
 - **Find & Replace im neuen Editor**: hängt an der Editor-Entscheidung; Hervorhebungen und Ersetzen über mehrere Blocks.
+- **Bekannte Schwächen der Electron-App**: gleich nachbauen oder beheben? (kein Speichern-Kürzel, keine Nachfrage beim Gebetswechsel, Validierungsfehler unsichtbar, „Install and Restart“ ohne Nachfrage, wirkungslose App-Kind-Styles). Liste in der Paritäts-Checkliste.
 - **Gebetsliste und Katalog bei großen Libraries**: virtuelle Liste, Einlesen im Hintergrund; vermutlich unkritisch, wird nach der Architektur klar.
 - **Umstellung selbst**: Reihenfolge von Merge, Entfernen von `packages/app`, App-Name/Bundle-ID/Update-Kanal von Beta auf stabil; Signierung dann neu bewerten.
 - **UI-Tests**: wie viel über `gpui-kit`-Test-Support (headless Fenster, Snapshots) abgesichert wird.
