@@ -1,9 +1,12 @@
+mod prototype_editor;
 mod update;
 
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 
 use gpui_kit::*;
+use prototype_editor::editor::{self, EditorProto};
+use prototype_editor::model::RunKind;
 use update::{Channel, UpdateState, Updater};
 
 const APP_NAME: &str = "Orthodox Prayer Toolkit Beta";
@@ -12,17 +15,23 @@ const APP_NAME: &str = "Orthodox Prayer Toolkit Beta";
 type UpdateAction = (&'static str, fn(&mut Root, &mut Context<Root>));
 
 struct Root {
+    editor: Entity<EditorProto>,
     updater: Arc<Mutex<Updater>>,
     state: UpdateState,
     busy: bool,
 }
 
 impl Root {
-    fn new(updater: Arc<Mutex<Updater>>, cx: &mut Context<Self>) -> Self {
+    fn new(updater: Arc<Mutex<Updater>>, window: &mut Window, cx: &mut Context<Self>) -> Self {
+        let editor = cx.new(EditorProto::new);
+        // The state panel mirrors the editor, so re-render whenever it changes.
+        cx.observe(&editor, |_, _, cx| cx.notify()).detach();
+        editor.read(cx).focus_handle().clone().focus(window, cx);
         let state = UpdateState::Dev {
             version: updater.lock().unwrap().current_version().into(),
         };
         let mut root = Self {
+            editor,
             updater,
             state,
             busy: false,
@@ -94,29 +103,29 @@ impl Render for Root {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let version = self.updater.lock().unwrap().current_version().to_string();
 
-        // Placeholder shell: the editor UI follows in a later phase. What is real
-        // here is the update path, so a tagged release can be installed end to end.
         let action: Option<UpdateAction> = match &self.state {
             _ if self.busy => None,
             UpdateState::Available { .. } => Some(("Download update", Root::download)),
             UpdateState::Ready { .. } => Some(("Install and Restart", Root::install)),
             _ => Some(("Check for updates", Root::check)),
         };
+        let status = if self.busy {
+            "Checking…".to_string()
+        } else {
+            self.state.message()
+        };
 
-        div()
-            .size_full()
+        let header = div()
             .flex()
-            .flex_col()
             .items_center()
-            .justify_center()
-            .gap_2()
-            .child(APP_NAME)
-            .child(format!("Version {version}"))
-            .child(if self.busy {
-                "Checking…".to_string()
-            } else {
-                self.state.message()
-            })
+            .gap_3()
+            .px_4()
+            .py_2()
+            .border_b_1()
+            .border_color(rgb(0xdddddd))
+            .text_sm()
+            .child(format!("{APP_NAME} {version}"))
+            .child(div().flex_1().child(status))
             .children(action.map(|(label, handler)| {
                 div()
                     .id("update-action")
@@ -127,7 +136,45 @@ impl Render for Root {
                     .cursor_pointer()
                     .child(label)
                     .on_click(cx.listener(move |this, _, _, cx| handler(this, cx)))
-            }))
+            }));
+
+        // PROTOTYPE: surface the active Block's runs so edits are visible as data.
+        let runs = self.editor.read(cx).active_runs();
+        let state_panel = div()
+            .flex()
+            .flex_col()
+            .gap_1()
+            .px_4()
+            .py_2()
+            .border_t_1()
+            .border_color(rgb(0xdddddd))
+            .bg(rgb(0xf6f6f6))
+            .text_xs()
+            .font_family("monospace")
+            .child("Active Block runs (prototype state):")
+            .children(runs.into_iter().map(|(kind, text)| {
+                let tag = match kind {
+                    RunKind::Text => "text",
+                    RunKind::Note => "note",
+                };
+                format!("{tag}: {text:?}")
+            }));
+
+        div()
+            .size_full()
+            .flex()
+            .flex_col()
+            .bg(rgb(0xffffff))
+            .text_color(rgb(0x1f1f1f))
+            .child(header)
+            .child(
+                div()
+                    .id("editor-scroll")
+                    .flex_1()
+                    .overflow_y_scroll()
+                    .child(self.editor.clone()),
+            )
+            .child(state_panel)
     }
 }
 
@@ -141,6 +188,7 @@ fn main() {
 
     gpui_kit::application().run(move |cx| {
         gpui_kit::init(cx);
+        editor::bind_keys(cx);
         let options = WindowOptions {
             titlebar: Some(TitlebarOptions {
                 title: Some(APP_NAME.into()),
@@ -148,8 +196,8 @@ fn main() {
             }),
             ..Default::default()
         };
-        gpui_kit::open_window(options, cx, |_, cx| {
-            cx.new(|cx| Root::new(updater.clone(), cx))
+        gpui_kit::open_window(options, cx, |window, cx| {
+            cx.new(|cx| Root::new(updater.clone(), window, cx))
         })
         .expect("failed to open window");
         cx.activate(true);
