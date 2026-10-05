@@ -1,0 +1,15 @@
+[package]
+name = "prayer-ui"
+description = "Orthodox Prayer Toolkit desktop editor (GPUI)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "orthodox-prayer-toolkit"
+path = "src/main.rs"
+
+[dependencies]
+gpui-kit.workspace = true
+prayer-core.workspace = true

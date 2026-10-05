@@ -47,3 +47,5 @@ training
 
 # Output
 encode
+# Rust
+/target
