@@ -1,9 +1,32 @@
-//! Rust port of `@orthodox-prayer-toolkit/core`.
+//! Prayer JSON core: types, validation, text runs, Kinds and styles, Library
+//! helpers and exports. Rewrite of `@orthodox-prayer-toolkit/core`: same
+//! results, Rust-shaped API.
 //!
-//! The JSON Schema stays the single source of truth and is shared with the
-//! TypeScript core, so both validate against the same file.
+//! The JSON Schema is the single source of truth, embedded from
+//! `packages/core/schema` until the TypeScript core is removed.
 
-/// `packages/core/schema/prayer.schema.json`, embedded at compile time.
+pub mod display_title;
+pub mod export_docx;
+pub mod export_html;
+pub mod export_rtf;
+pub mod export_variant;
+pub mod html_tags;
+pub mod kinds;
+pub mod layout;
+pub mod library;
+pub mod model;
+pub mod parse_html_attributes;
+pub mod resolve_styles;
+pub mod style_color;
+pub mod style_prefix;
+pub mod tag_map;
+pub mod text_runs;
+pub mod validate;
+pub mod validate_styles;
+
+pub use model::*;
+
+/// `prayer.schema.json`, embedded at compile time.
 pub const PRAYER_SCHEMA: &str = include_str!("../../../packages/core/schema/prayer.schema.json");
 
 #[cfg(test)]

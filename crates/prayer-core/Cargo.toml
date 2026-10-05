@@ -8,3 +8,8 @@ repository.workspace = true
 
 [dependencies]
 serde_json.workspace = true
+serde.workspace = true
+indexmap.workspace = true
+regex.workspace = true
+jsonschema.workspace = true
+docx-rs.workspace = true

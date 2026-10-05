@@ -1,0 +1,11 @@
+[package]
+name = "prayer-app"
+description = "Library, Session drafts, undo and file I/O for the prayer editor (no UI)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+prayer-core.workspace = true
+serde_json.workspace = true

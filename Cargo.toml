@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/prayer-core", "crates/prayer-ui"]
+members = ["crates/prayer-core", "crates/prayer-app", "crates/prayer-ui"]
 
 [workspace.package]
 version = "0.2.0-beta.0"
@@ -10,9 +10,17 @@ repository = "https://github.com/mchlrdev/orthodox-prayer-toolkit"
 
 [workspace.dependencies]
 prayer-core = { path = "crates/prayer-core" }
+prayer-app = { path = "crates/prayer-app" }
 # Pinned exactly: GPUI's API still moves between minor releases.
 gpui-kit = "=0.7.1"
-serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+# preserve_order: written JSON keeps key order, like JSON.stringify.
+serde_json = { version = "1", features = ["preserve_order"] }
+indexmap = { version = "2", features = ["serde"] }
+regex = "1"
+# 0.x crates pinned exactly (ticket 06): output must not drift silently.
+jsonschema = { version = "=0.58.5", default-features = false }
+docx-rs = "=0.4.22"
 unicode-segmentation = "1"
 # Pinned with the vpk CLI in gpui-release.yml: packer and updater must match.
 velopack = "=1.2.161"
