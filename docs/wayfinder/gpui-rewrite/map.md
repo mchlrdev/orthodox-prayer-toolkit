@@ -4,7 +4,7 @@ Wayfinder-Karte für den Umbau der Electron-App auf Rust + GPUI. Tickets liegen 
 
 ## Destination
 
-Die GPUI-App ersetzt die Electron-App auf `main`: alle Funktionen und UX-Abläufe gleich oder besser, Auto-Update aus GitHub-Releases auf macOS, Windows und Linux, `packages/app` entfernt.
+Die GPUI-App ersetzt die Electron-App auf `main`: alle Funktionen und UX-Abläufe gleich oder besser, Auto-Update aus GitHub-Releases auf macOS, Windows und Linux, `packages/` (Electron-App und TS-Core) entfernt.
 
 ## Notes
 
@@ -34,6 +34,7 @@ Die GPUI-App ersetzt die Electron-App auf `main`: alle Funktionen und UX-Abläuf
 - [Selbst-Update auf echten Geräten](issues/08-self-update-on-devices.md): beta.2 → beta.3 per Selbst-Update funktioniert; Velopack bleibt.
 - [Inline-Editor-Prototyp](issues/02-inline-editor-prototype.md): eigenes GPUI-Element mit Text+Runs-Modell trägt; Mark hat es auf macOS ausprobiert, Backspace-Zusammenführen und Undo über Blocks angenommen.
 - [Wie die Rust-App geschnitten ist](issues/05-app-architecture.md): `prayer-core` / `prayer-app` (UI-frei) / `prayer-ui`; Gebetsdatei bleibt eigenständig, Catalog nur Index; Undo pro Gebet über alles; Ordner wird beobachtet.
+- [Wie genau der Rust-Core dem TS-Core entspricht](issues/07-core-port-strategy.md): gleiche Ergebnisse (DOCX nur inhaltlich), idiomatisch neu geschrieben statt übersetzt; TS-Core nur Referenz bis zur Umstellung, dann weg.
 - [Wo die Electron-App Kind-Styles speichert](issues/10-electron-settings-location.md): `userData/Orthodox Prayer Toolkit/kind-styles.json` pro OS; wirkt aber nicht auf die Darstellung (siehe Parität), die echten Styles liegen in der Library.
 
 ## Not yet specified
@@ -42,13 +43,13 @@ Die GPUI-App ersetzt die Electron-App auf `main`: alle Funktionen und UX-Abläuf
 - **Find & Replace im neuen Editor**: hängt an der Editor-Entscheidung; Hervorhebungen und Ersetzen über mehrere Blocks.
 - **Bekannte Schwächen der Electron-App**: gleich nachbauen oder beheben? (kein Speichern-Kürzel, Validierungsfehler unsichtbar, „Install and Restart“ ohne Nachfrage, wirkungslose App-Kind-Styles). Liste in der Paritäts-Checkliste.
 - **Gebetsliste und Katalog bei großen Libraries**: virtuelle Liste, Einlesen im Hintergrund; vermutlich unkritisch, wird nach der Architektur klar.
-- **Umstellung selbst**: Reihenfolge von Merge, Entfernen von `packages/app`, App-Name/Bundle-ID/Update-Kanal von Beta auf stabil; Signierung dann neu bewerten.
+- **Umstellung selbst**: Reihenfolge von Merge, Entfernen von `packages/` (Schema und Fixtures ziehen vorher an einen neuen Ort, Docs und AGENTS.md werden umgeschrieben), App-Name/Bundle-ID/Update-Kanal von Beta auf stabil; Signierung dann neu bewerten.
 - **Update-Verhalten wie Electron**: Download im Hintergrund statt per Klick, macOS-Build auch für Intel, Delta-Pakete.
 - **UI-Tests**: wie viel über `gpui-kit`-Test-Support (headless Fenster, Snapshots) abgesichert wird.
 
 ## Out of scope
 
-- Library-Leser / HTML-Rendering für Ortho Wiki, Rust-Core als WASM (Mark, 5. Okt.).
+- Library-Leser / HTML-Rendering für Ortho Wiki, Rust-Core als WASM (Mark, 5. Okt.). Der TS-Core wird dafür nicht aufgehoben.
 - Browser-Modus (`pnpm dev` im Browser) entfällt.
 - Mehrsprachige Oberfläche.
 - Automatische Migration installierter Electron-Apps.
