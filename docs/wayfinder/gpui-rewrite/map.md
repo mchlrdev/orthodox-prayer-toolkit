@@ -31,6 +31,7 @@ Die GPUI-App ersetzt die Electron-App auf `main`: alle Funktionen und UX-Abläuf
 - [Wie sich der heutige Inline-Editor verhält](issues/03-current-editor-behaviour.md): Browser liefert Cursor/IME/Undo, App fängt nur Enter, Shift+Enter, Backspace, Einfügen, Notiz-Kürzel ab; kein App-Undo, Übernahme beim Verlassen der Zelle.
 - [Welche Rust-Crates den Core-Port tragen](issues/06-core-port-crates.md): `jsonschema` + `docx-rs` + `regex`, RTF und HTML von Hand; Ajv-Meldungen und DOCX-Bytes werden nicht gleich.
 - [Paritäts-Checkliste](issues/04-parity-checklist.md): 268 Punkte in 20 Bereichen; App-weite Kind-Styles sind heute wirkungslos, mehrere Lücken der Electron-App gefunden.
+- [Selbst-Update auf echten Geräten](issues/08-self-update-on-devices.md): beta.2 → beta.3 per Selbst-Update funktioniert; Velopack bleibt.
 - [Wo die Electron-App Kind-Styles speichert](issues/10-electron-settings-location.md): `userData/Orthodox Prayer Toolkit/kind-styles.json` pro OS; wirkt aber nicht auf die Darstellung (siehe Parität), die echten Styles liegen in der Library.
 
 ## Not yet specified
@@ -40,6 +41,7 @@ Die GPUI-App ersetzt die Electron-App auf `main`: alle Funktionen und UX-Abläuf
 - **Bekannte Schwächen der Electron-App**: gleich nachbauen oder beheben? (kein Speichern-Kürzel, keine Nachfrage beim Gebetswechsel, Validierungsfehler unsichtbar, „Install and Restart“ ohne Nachfrage, wirkungslose App-Kind-Styles). Liste in der Paritäts-Checkliste.
 - **Gebetsliste und Katalog bei großen Libraries**: virtuelle Liste, Einlesen im Hintergrund; vermutlich unkritisch, wird nach der Architektur klar.
 - **Umstellung selbst**: Reihenfolge von Merge, Entfernen von `packages/app`, App-Name/Bundle-ID/Update-Kanal von Beta auf stabil; Signierung dann neu bewerten.
+- **Update-Verhalten wie Electron**: Download im Hintergrund statt per Klick, macOS-Build auch für Intel, Delta-Pakete.
 - **UI-Tests**: wie viel über `gpui-kit`-Test-Support (headless Fenster, Snapshots) abgesichert wird.
 
 ## Out of scope
