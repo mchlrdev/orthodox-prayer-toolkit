@@ -219,6 +219,8 @@ pub struct EditorProto {
     history: History<Snapshot>,
     layouts: Vec<Option<BlockLayout>>,
     selecting: bool,
+    /// Word a double-click selected; dragging then extends word by word.
+    word_anchor: Option<Range<usize>>,
     /// Column kept while moving up/down, like text editors do.
     goal_x: Option<Pixels>,
 }
@@ -237,6 +239,7 @@ impl EditorProto {
             history: History::new(),
             layouts,
             selecting: false,
+            word_anchor: None,
             goal_x: None,
         }
     }
@@ -608,17 +611,24 @@ impl EditorProto {
         if event.modifiers.shift && ix == self.active {
             self.select_to(offset, cx);
         } else if event.click_count >= 2 && ix == self.active {
-            let cell = self.cell();
-            let start = cell.prev_word_boundary(cell.next_boundary(offset).min(cell.len()));
-            let end = cell.next_word_boundary(start);
-            self.selection = start..end;
+            let word = self.word_at(offset);
+            self.selection = word.clone();
             self.reversed = false;
+            self.word_anchor = Some(word);
+            self.selecting = true;
             cx.notify();
             return;
         } else {
             self.focus_block(ix, offset, cx);
         }
+        self.word_anchor = None;
         self.selecting = true;
+    }
+
+    fn word_at(&self, offset: usize) -> Range<usize> {
+        let cell = self.cell();
+        let start = cell.prev_word_boundary(cell.next_boundary(offset).min(cell.len()));
+        start..cell.next_word_boundary(start)
     }
 
     fn on_mouse_move(&mut self, event: &MouseMoveEvent, _: &mut Window, cx: &mut Context<Self>) {
@@ -628,12 +638,21 @@ impl EditorProto {
         // Selection stays inside the focused Block, as in the Electron editor.
         if let Some(layout) = self.layouts[self.active].as_ref() {
             let offset = layout.offset_for_position(event.position - layout.bounds.origin);
-            self.select_to(offset, cx);
+            if let Some(anchor) = self.word_anchor.clone() {
+                // After a double-click, grow the selection in whole words.
+                let word = self.word_at(offset);
+                self.reversed = word.start < anchor.start;
+                self.selection = anchor.start.min(word.start)..anchor.end.max(word.end);
+                cx.notify();
+            } else {
+                self.select_to(offset, cx);
+            }
         }
     }
 
     fn on_mouse_up(&mut self, _: &MouseUpEvent, _: &mut Window, _: &mut Context<Self>) {
         self.selecting = false;
+        self.word_anchor = None;
     }
 
     // ---- UTF-16 helpers for the platform input handler -----------------
