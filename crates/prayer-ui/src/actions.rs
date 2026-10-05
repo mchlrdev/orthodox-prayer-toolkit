@@ -108,6 +108,7 @@ pub fn set_menus(cx: &mut App) {
             MenuItem::os_action("Copy", editor::Copy, OsAction::Copy),
             MenuItem::os_action("Paste", editor::Paste, OsAction::Paste),
             MenuItem::os_action("Select All", editor::SelectAll, OsAction::SelectAll),
+            MenuItem::action("Toggle Inline Note", editor::ToggleNote),
             MenuItem::separator(),
             MenuItem::action("Find…", Find),
             MenuItem::action("Find and Replace…", FindReplace),

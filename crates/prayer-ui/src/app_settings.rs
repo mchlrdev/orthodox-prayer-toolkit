@@ -14,6 +14,8 @@ use crate::updates::Updates;
 const RELEASES_URL: &str = "https://github.com/mchlrdev/orthodox-prayer-toolkit/releases";
 
 pub fn open(state: Entity<AppState>, updates: Entity<Updates>, window: &mut Window, cx: &mut App) {
+    // Like Electron: opening the settings checks for updates.
+    updates.update(cx, |u, cx| u.check(cx));
     let view = cx.new(|cx| SettingsView::new(state, updates, cx));
     window.open_dialog(cx, move |dialog, _, _| {
         dialog.title("App settings").w(px(480.)).child(view.clone())

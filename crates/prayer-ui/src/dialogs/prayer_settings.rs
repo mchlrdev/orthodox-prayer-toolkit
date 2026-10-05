@@ -242,7 +242,13 @@ impl PrayerSettingsForm {
                     cx.notify();
                 }
                 Edited::Enter => this.commit_add_kind(window, cx),
-                Edited::Blur => {}
+                // Leaving the empty field cancels adding.
+                Edited::Blur => {
+                    if this.new_kind_text.is_empty() {
+                        this.adding_kind = false;
+                        cx.notify();
+                    }
+                }
             },
         );
 

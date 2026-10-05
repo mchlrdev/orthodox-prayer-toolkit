@@ -66,39 +66,77 @@ fn main() {
     // Must run before any UI: Velopack uses the first run after an update to
     // finish installing, then exits.
     velopack::VelopackApp::build().run();
+    install_crash_log();
 
     let channel = Channel::of_version(env!("CARGO_PKG_VERSION"));
     let updater = Arc::new(Mutex::new(Updater::new(channel)));
 
-    gpui_kit::application()
-        .with_assets(gpui_kit::assets::Assets)
-        .run(move |cx| {
-            gpui_kit::init(cx);
-            cx.text_system()
-                .add_fonts(FONTS.iter().map(|f| Cow::Borrowed(*f)).collect())
-                .expect("bundled fonts load");
-            actions::bind_keys(cx);
-            editor::bind_keys(cx);
-            apply_appearance(Prefs::load().color_scheme, None, cx);
-            actions::register_global(cx);
-            #[cfg(target_os = "macos")]
-            actions::set_menus(cx);
+    let app = gpui_kit::application().with_assets(gpui_kit::assets::Assets);
+    // macOS keeps running without windows; a Dock click opens one again.
+    let reopen_updater = updater.clone();
+    app.on_reopen(move |cx| {
+        if cx.windows().is_empty() {
+            open_main_window(reopen_updater.clone(), cx);
+        }
+    });
+    app.run(move |cx| {
+        gpui_kit::init(cx);
+        cx.text_system()
+            .add_fonts(FONTS.iter().map(|f| Cow::Borrowed(*f)).collect())
+            .expect("bundled fonts load");
+        actions::bind_keys(cx);
+        editor::bind_keys(cx);
+        apply_appearance(Prefs::load().color_scheme, None, cx);
+        actions::register_global(cx);
+        #[cfg(target_os = "macos")]
+        actions::set_menus(cx);
+        open_main_window(updater.clone(), cx);
+        cx.activate(true);
+    });
+}
 
-            let options = WindowOptions {
-                titlebar: Some(TitlebarOptions {
-                    title: Some(APP_NAME.into()),
-                    ..Default::default()
-                }),
-                window_bounds: Some(WindowBounds::centered(size(px(1280.), px(840.)), cx)),
-                window_min_size: Some(size(px(400.), px(400.))),
-                ..Default::default()
-            };
-            let updater = updater.clone();
-            gpui_kit::open_window(options, cx, move |window, cx| {
-                let updates = cx.new(|cx| Updates::new(updater.clone(), cx));
-                cx.new(|cx| Root::new(updates, window, cx))
-            })
-            .expect("failed to open window");
-            cx.activate(true);
-        });
+/// Where a panic leaves its report for the next start.
+pub fn crash_log_path() -> Option<std::path::PathBuf> {
+    Some(Prefs::default_path()?.parent()?.join("last-crash.txt"))
+}
+
+/// A crash can't show a screen in a GPUI app the way Electron's error
+/// boundary did, so the report is kept and shown on the next start.
+fn install_crash_log() {
+    let Some(path) = crash_log_path() else {
+        return;
+    };
+    let default_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        let backtrace = std::backtrace::Backtrace::force_capture();
+        if let Some(dir) = path.parent() {
+            let _ = std::fs::create_dir_all(dir);
+        }
+        let _ = std::fs::write(
+            &path,
+            format!(
+                "{} {}\n\n{info}\n\n{backtrace}",
+                APP_NAME,
+                env!("CARGO_PKG_VERSION")
+            ),
+        );
+        default_hook(info);
+    }));
+}
+
+fn open_main_window(updater: Arc<Mutex<Updater>>, cx: &mut App) {
+    let options = WindowOptions {
+        titlebar: Some(TitlebarOptions {
+            title: Some(APP_NAME.into()),
+            ..Default::default()
+        }),
+        window_bounds: Some(WindowBounds::centered(size(px(1280.), px(840.)), cx)),
+        window_min_size: Some(size(px(400.), px(400.))),
+        ..Default::default()
+    };
+    gpui_kit::open_window(options, cx, move |window, cx| {
+        let updates = cx.new(|cx| Updates::new(updater, cx));
+        cx.new(|cx| Root::new(updates, window, cx))
+    })
+    .expect("failed to open window");
 }

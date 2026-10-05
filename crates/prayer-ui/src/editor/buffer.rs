@@ -128,6 +128,12 @@ impl Cell {
 
     /// If every byte in a non-empty `range` is Note, make it Text; otherwise make it all Note.
     /// Returns the new kind. Empty range: no-op, returns kind_at(range.start).
+    /// Every character in `range` is inside a note.
+    pub fn is_all_note(&self, range: Range<usize>) -> bool {
+        self.check_range(&range);
+        !range.is_empty() && self.spans_in(range).iter().all(|s| s.kind == RunKind::Note)
+    }
+
     pub fn toggle_note(&mut self, range: Range<usize>) -> RunKind {
         self.check_range(&range);
         if range.is_empty() {

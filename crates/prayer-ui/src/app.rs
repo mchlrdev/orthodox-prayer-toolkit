@@ -90,6 +90,24 @@ impl Root {
             root.update(cx, |this, cx| this.should_close(window, cx))
                 .unwrap_or(true)
         });
+        // A crash on the last run left a report: say so once.
+        if let Some(path) = crate::crash_log_path()
+            && let Ok(report) = std::fs::read_to_string(&path)
+        {
+            let _ = std::fs::remove_file(&path);
+            // "panicked at <location>:" and the panic message.
+            let message = report.lines().skip(2).take(2).collect::<Vec<_>>().join(" ");
+            window.defer(cx, move |window, cx| {
+                window.push_notification(
+                    Notification::new()
+                        .with_type(NotificationType::Error)
+                        .title("The app crashed last time")
+                        .message(message)
+                        .autohide(false),
+                    cx,
+                );
+            });
+        }
         // Development aid: OPT_OPEN_DIALOG opens a dialog right away (for
         // screenshots under Xvfb).
         if let Ok(name) = std::env::var("OPT_OPEN_DIALOG") {
@@ -1383,8 +1401,9 @@ impl Render for Root {
                 );
                 cx.spawn(async move |_, _| answer.await.ok()).detach();
             }))
-            .on_action(cx.listener(|this, _: &CheckForUpdates, _, cx| {
-                this.updates.update(cx, |u, cx| u.check(cx))
+            // The settings show the check's progress and result.
+            .on_action(cx.listener(|this, _: &CheckForUpdates, window, cx| {
+                crate::app_settings::open(this.state.clone(), this.updates.clone(), window, cx)
             }))
             .relative()
             .size_full()

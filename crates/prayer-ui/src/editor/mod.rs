@@ -893,6 +893,18 @@ impl PrayerEditor {
     }
 
     fn toggle_note(&mut self, _: &ToggleNote, _: &mut Window, cx: &mut Context<Self>) {
+        self.toggle_note_in_selection(cx);
+    }
+
+    /// For the block menu: `Some(all_note)` when Block `block_id` has a
+    /// selection.
+    fn note_selection(&self, block_id: &str) -> Option<bool> {
+        let a = self.active.as_ref()?;
+        (a.block_id.as_ref() == block_id && !a.selection.is_empty())
+            .then(|| a.buffer.is_all_note(a.selection.clone()))
+    }
+
+    fn toggle_note_in_selection(&mut self, cx: &mut Context<Self>) {
         let Some(a) = self.active.as_mut() else {
             return;
         };
@@ -1423,7 +1435,28 @@ impl PrayerEditor {
                         let block_id = block_id.clone();
                         let kinds = self.kind_options(cx);
                         let kind = kind.clone();
+                        let note = self.note_selection(&block_id);
                         move |menu, _, _| {
+                            let menu =
+                                match note {
+                                    Some(all_note) => {
+                                        let editor = editor.clone();
+                                        menu.item(
+                                            PopupMenuItem::new(if all_note {
+                                                "Remove inline note"
+                                            } else {
+                                                "Mark as inline note"
+                                            })
+                                            .on_click(move |_, _, cx| {
+                                                editor.update(cx, |this, cx| {
+                                                    this.toggle_note_in_selection(cx)
+                                                })
+                                            }),
+                                        )
+                                        .separator()
+                                    }
+                                    None => menu,
+                                };
                             block_menu(menu, &editor, &block_id, &kind, &kinds, ix == 0, last)
                         }
                     })
