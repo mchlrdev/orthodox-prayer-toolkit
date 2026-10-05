@@ -1,0 +1,38 @@
+{
+  "id": "layout-astral",
+  "type": "prayer",
+  "variants": [
+    {
+      "lang": "en",
+      "variant": "standard",
+      "title": "Dove",
+      "license": "CC0",
+      "source": "golden"
+    }
+  ],
+  "structure": [
+    {
+      "id": "a1",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "Dove 🕊 and 𝔄",
+            [
+              {
+                "t": "text",
+                "v": "x"
+              },
+              {
+                "t": "note",
+                "v": "😀"
+              }
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

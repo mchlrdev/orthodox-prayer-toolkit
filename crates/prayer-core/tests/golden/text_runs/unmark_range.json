@@ -1,0 +1,10359 @@
+[
+  {
+    "name": "latin plain 0..0",
+    "content": "Amen (x) y",
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 0..1",
+    "content": "Amen (x) y",
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 0..2",
+    "content": "Amen (x) y",
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 0..3",
+    "content": "Amen (x) y",
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 0..5",
+    "content": "Amen (x) y",
+    "start_utf16": 0,
+    "end_utf16": 5,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 0..9",
+    "content": "Amen (x) y",
+    "start_utf16": 0,
+    "end_utf16": 9,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 0..10",
+    "content": "Amen (x) y",
+    "start_utf16": 0,
+    "end_utf16": 10,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 1..1",
+    "content": "Amen (x) y",
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 1..2",
+    "content": "Amen (x) y",
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 1..3",
+    "content": "Amen (x) y",
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 1..5",
+    "content": "Amen (x) y",
+    "start_utf16": 1,
+    "end_utf16": 5,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 1..9",
+    "content": "Amen (x) y",
+    "start_utf16": 1,
+    "end_utf16": 9,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 1..10",
+    "content": "Amen (x) y",
+    "start_utf16": 1,
+    "end_utf16": 10,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 2..2",
+    "content": "Amen (x) y",
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 2..3",
+    "content": "Amen (x) y",
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 2..5",
+    "content": "Amen (x) y",
+    "start_utf16": 2,
+    "end_utf16": 5,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 2..9",
+    "content": "Amen (x) y",
+    "start_utf16": 2,
+    "end_utf16": 9,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 2..10",
+    "content": "Amen (x) y",
+    "start_utf16": 2,
+    "end_utf16": 10,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 3..3",
+    "content": "Amen (x) y",
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 3..5",
+    "content": "Amen (x) y",
+    "start_utf16": 3,
+    "end_utf16": 5,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 3..9",
+    "content": "Amen (x) y",
+    "start_utf16": 3,
+    "end_utf16": 9,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 3..10",
+    "content": "Amen (x) y",
+    "start_utf16": 3,
+    "end_utf16": 10,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 5..5",
+    "content": "Amen (x) y",
+    "start_utf16": 5,
+    "end_utf16": 5,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 5..9",
+    "content": "Amen (x) y",
+    "start_utf16": 5,
+    "end_utf16": 9,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 5..10",
+    "content": "Amen (x) y",
+    "start_utf16": 5,
+    "end_utf16": 10,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 9..9",
+    "content": "Amen (x) y",
+    "start_utf16": 9,
+    "end_utf16": 9,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 9..10",
+    "content": "Amen (x) y",
+    "start_utf16": 9,
+    "end_utf16": 10,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 10..10",
+    "content": "Amen (x) y",
+    "start_utf16": 10,
+    "end_utf16": 10,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 10..1",
+    "content": "Amen (x) y",
+    "start_utf16": 10,
+    "end_utf16": 1,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 1..999",
+    "content": "Amen (x) y",
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain 999..1000",
+    "content": "Amen (x) y",
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "cyrillic plain 0..0",
+    "content": "Господи, помилуй",
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 0..1",
+    "content": "Господи, помилуй",
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 0..2",
+    "content": "Господи, помилуй",
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 0..3",
+    "content": "Господи, помилуй",
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 0..8",
+    "content": "Господи, помилуй",
+    "start_utf16": 0,
+    "end_utf16": 8,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 0..15",
+    "content": "Господи, помилуй",
+    "start_utf16": 0,
+    "end_utf16": 15,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 0..16",
+    "content": "Господи, помилуй",
+    "start_utf16": 0,
+    "end_utf16": 16,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 1..1",
+    "content": "Господи, помилуй",
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 1..2",
+    "content": "Господи, помилуй",
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 1..3",
+    "content": "Господи, помилуй",
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 1..8",
+    "content": "Господи, помилуй",
+    "start_utf16": 1,
+    "end_utf16": 8,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 1..15",
+    "content": "Господи, помилуй",
+    "start_utf16": 1,
+    "end_utf16": 15,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 1..16",
+    "content": "Господи, помилуй",
+    "start_utf16": 1,
+    "end_utf16": 16,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 2..2",
+    "content": "Господи, помилуй",
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 2..3",
+    "content": "Господи, помилуй",
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 2..8",
+    "content": "Господи, помилуй",
+    "start_utf16": 2,
+    "end_utf16": 8,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 2..15",
+    "content": "Господи, помилуй",
+    "start_utf16": 2,
+    "end_utf16": 15,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 2..16",
+    "content": "Господи, помилуй",
+    "start_utf16": 2,
+    "end_utf16": 16,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 3..3",
+    "content": "Господи, помилуй",
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 3..8",
+    "content": "Господи, помилуй",
+    "start_utf16": 3,
+    "end_utf16": 8,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 3..15",
+    "content": "Господи, помилуй",
+    "start_utf16": 3,
+    "end_utf16": 15,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 3..16",
+    "content": "Господи, помилуй",
+    "start_utf16": 3,
+    "end_utf16": 16,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 8..8",
+    "content": "Господи, помилуй",
+    "start_utf16": 8,
+    "end_utf16": 8,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 8..15",
+    "content": "Господи, помилуй",
+    "start_utf16": 8,
+    "end_utf16": 15,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 8..16",
+    "content": "Господи, помилуй",
+    "start_utf16": 8,
+    "end_utf16": 16,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 15..15",
+    "content": "Господи, помилуй",
+    "start_utf16": 15,
+    "end_utf16": 15,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 15..16",
+    "content": "Господи, помилуй",
+    "start_utf16": 15,
+    "end_utf16": 16,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 16..16",
+    "content": "Господи, помилуй",
+    "start_utf16": 16,
+    "end_utf16": 16,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 16..1",
+    "content": "Господи, помилуй",
+    "start_utf16": 16,
+    "end_utf16": 1,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 1..999",
+    "content": "Господи, помилуй",
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain 999..1000",
+    "content": "Господи, помилуй",
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "greek plain 0..0",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 0..1",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 0..2",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 0..3",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 0..7",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 0,
+    "end_utf16": 7,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 0..12",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 0,
+    "end_utf16": 12,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 0..13",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 0,
+    "end_utf16": 13,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 1..1",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 1..2",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 1..3",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 1..7",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 1,
+    "end_utf16": 7,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 1..12",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 1,
+    "end_utf16": 12,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 1..13",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 1,
+    "end_utf16": 13,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 2..2",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 2..3",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 2..7",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 2,
+    "end_utf16": 7,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 2..12",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 2,
+    "end_utf16": 12,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 2..13",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 2,
+    "end_utf16": 13,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 3..3",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 3..7",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 3,
+    "end_utf16": 7,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 3..12",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 3,
+    "end_utf16": 12,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 3..13",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 3,
+    "end_utf16": 13,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 7..7",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 7,
+    "end_utf16": 7,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 7..12",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 7,
+    "end_utf16": 12,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 7..13",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 7,
+    "end_utf16": 13,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 12..12",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 12,
+    "end_utf16": 12,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 12..13",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 12,
+    "end_utf16": 13,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 13..13",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 13,
+    "end_utf16": 13,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 13..1",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 13,
+    "end_utf16": 1,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 1..999",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain 999..1000",
+    "content": "Κύριε ἐλέησον",
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "combining marks 0..0",
+    "content": "Го́споди",
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 0..1",
+    "content": "Го́споди",
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 0..2",
+    "content": "Го́споди",
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 0..3",
+    "content": "Го́споди",
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 0..4",
+    "content": "Го́споди",
+    "start_utf16": 0,
+    "end_utf16": 4,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 0..7",
+    "content": "Го́споди",
+    "start_utf16": 0,
+    "end_utf16": 7,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 0..8",
+    "content": "Го́споди",
+    "start_utf16": 0,
+    "end_utf16": 8,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 1..1",
+    "content": "Го́споди",
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 1..2",
+    "content": "Го́споди",
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 1..3",
+    "content": "Го́споди",
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 1..4",
+    "content": "Го́споди",
+    "start_utf16": 1,
+    "end_utf16": 4,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 1..7",
+    "content": "Го́споди",
+    "start_utf16": 1,
+    "end_utf16": 7,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 1..8",
+    "content": "Го́споди",
+    "start_utf16": 1,
+    "end_utf16": 8,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 2..2",
+    "content": "Го́споди",
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 2..3",
+    "content": "Го́споди",
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 2..4",
+    "content": "Го́споди",
+    "start_utf16": 2,
+    "end_utf16": 4,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 2..7",
+    "content": "Го́споди",
+    "start_utf16": 2,
+    "end_utf16": 7,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 2..8",
+    "content": "Го́споди",
+    "start_utf16": 2,
+    "end_utf16": 8,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 3..3",
+    "content": "Го́споди",
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 3..4",
+    "content": "Го́споди",
+    "start_utf16": 3,
+    "end_utf16": 4,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 3..7",
+    "content": "Го́споди",
+    "start_utf16": 3,
+    "end_utf16": 7,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 3..8",
+    "content": "Го́споди",
+    "start_utf16": 3,
+    "end_utf16": 8,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 4..4",
+    "content": "Го́споди",
+    "start_utf16": 4,
+    "end_utf16": 4,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 4..7",
+    "content": "Го́споди",
+    "start_utf16": 4,
+    "end_utf16": 7,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 4..8",
+    "content": "Го́споди",
+    "start_utf16": 4,
+    "end_utf16": 8,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 7..7",
+    "content": "Го́споди",
+    "start_utf16": 7,
+    "end_utf16": 7,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 7..8",
+    "content": "Го́споди",
+    "start_utf16": 7,
+    "end_utf16": 8,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 8..8",
+    "content": "Го́споди",
+    "start_utf16": 8,
+    "end_utf16": 8,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 8..1",
+    "content": "Го́споди",
+    "start_utf16": 8,
+    "end_utf16": 1,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 1..999",
+    "content": "Го́споди",
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks 999..1000",
+    "content": "Го́споди",
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "greek combining 0..0",
+    "content": "έλε̈ησον",
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 0..1",
+    "content": "έλε̈ησον",
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 0..2",
+    "content": "έλε̈ησον",
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 0..3",
+    "content": "έλε̈ησον",
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 0..5",
+    "content": "έλε̈ησον",
+    "start_utf16": 0,
+    "end_utf16": 5,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 0..8",
+    "content": "έλε̈ησον",
+    "start_utf16": 0,
+    "end_utf16": 8,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 0..9",
+    "content": "έλε̈ησον",
+    "start_utf16": 0,
+    "end_utf16": 9,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 1..1",
+    "content": "έλε̈ησον",
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 1..2",
+    "content": "έλε̈ησον",
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 1..3",
+    "content": "έλε̈ησον",
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 1..5",
+    "content": "έλε̈ησον",
+    "start_utf16": 1,
+    "end_utf16": 5,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 1..8",
+    "content": "έλε̈ησον",
+    "start_utf16": 1,
+    "end_utf16": 8,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 1..9",
+    "content": "έλε̈ησον",
+    "start_utf16": 1,
+    "end_utf16": 9,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 2..2",
+    "content": "έλε̈ησον",
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 2..3",
+    "content": "έλε̈ησον",
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 2..5",
+    "content": "έλε̈ησον",
+    "start_utf16": 2,
+    "end_utf16": 5,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 2..8",
+    "content": "έλε̈ησον",
+    "start_utf16": 2,
+    "end_utf16": 8,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 2..9",
+    "content": "έλε̈ησον",
+    "start_utf16": 2,
+    "end_utf16": 9,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 3..3",
+    "content": "έλε̈ησον",
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 3..5",
+    "content": "έλε̈ησον",
+    "start_utf16": 3,
+    "end_utf16": 5,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 3..8",
+    "content": "έλε̈ησον",
+    "start_utf16": 3,
+    "end_utf16": 8,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 3..9",
+    "content": "έλε̈ησον",
+    "start_utf16": 3,
+    "end_utf16": 9,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 5..5",
+    "content": "έλε̈ησον",
+    "start_utf16": 5,
+    "end_utf16": 5,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 5..8",
+    "content": "έλε̈ησον",
+    "start_utf16": 5,
+    "end_utf16": 8,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 5..9",
+    "content": "έλε̈ησον",
+    "start_utf16": 5,
+    "end_utf16": 9,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 8..8",
+    "content": "έλε̈ησον",
+    "start_utf16": 8,
+    "end_utf16": 8,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 8..9",
+    "content": "έλε̈ησον",
+    "start_utf16": 8,
+    "end_utf16": 9,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 9..9",
+    "content": "έλε̈ησον",
+    "start_utf16": 9,
+    "end_utf16": 9,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 9..1",
+    "content": "έλε̈ησον",
+    "start_utf16": 9,
+    "end_utf16": 1,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 1..999",
+    "content": "έλε̈ησον",
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining 999..1000",
+    "content": "έλε̈ησον",
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "astral 0..0",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 0..1",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 0..3",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 0..4",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 0,
+    "end_utf16": 4,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 0..5",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 0,
+    "end_utf16": 5,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 0..7",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 0,
+    "end_utf16": 7,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 0..8",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 0,
+    "end_utf16": 8,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 1..1",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 1..3",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 1..4",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 1,
+    "end_utf16": 4,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 1..5",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 1,
+    "end_utf16": 5,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 1..7",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 1,
+    "end_utf16": 7,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 1..8",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 1,
+    "end_utf16": 8,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 3..3",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 3..4",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 3,
+    "end_utf16": 4,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 3..5",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 3,
+    "end_utf16": 5,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 3..7",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 3,
+    "end_utf16": 7,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 3..8",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 3,
+    "end_utf16": 8,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 4..4",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 4,
+    "end_utf16": 4,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 4..5",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 4,
+    "end_utf16": 5,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 4..7",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 4,
+    "end_utf16": 7,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 4..8",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 4,
+    "end_utf16": 8,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 5..5",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 5,
+    "end_utf16": 5,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 5..7",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 5,
+    "end_utf16": 7,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 5..8",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 5,
+    "end_utf16": 8,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 7..7",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 7,
+    "end_utf16": 7,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 7..8",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 7,
+    "end_utf16": 8,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 8..8",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 8,
+    "end_utf16": 8,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 8..1",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 8,
+    "end_utf16": 1,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 1..999",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral 999..1000",
+    "content": "a😀b 𝔄c",
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "whitespace edges 0..0",
+    "content": " a  b ",
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 0..1",
+    "content": " a  b ",
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 0..2",
+    "content": " a  b ",
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 0..3",
+    "content": " a  b ",
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 0..4",
+    "content": " a  b ",
+    "start_utf16": 0,
+    "end_utf16": 4,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 0..5",
+    "content": " a  b ",
+    "start_utf16": 0,
+    "end_utf16": 5,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 0..6",
+    "content": " a  b ",
+    "start_utf16": 0,
+    "end_utf16": 6,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 1..1",
+    "content": " a  b ",
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 1..2",
+    "content": " a  b ",
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 1..3",
+    "content": " a  b ",
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 1..4",
+    "content": " a  b ",
+    "start_utf16": 1,
+    "end_utf16": 4,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 1..5",
+    "content": " a  b ",
+    "start_utf16": 1,
+    "end_utf16": 5,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 1..6",
+    "content": " a  b ",
+    "start_utf16": 1,
+    "end_utf16": 6,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 2..2",
+    "content": " a  b ",
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 2..3",
+    "content": " a  b ",
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 2..4",
+    "content": " a  b ",
+    "start_utf16": 2,
+    "end_utf16": 4,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 2..5",
+    "content": " a  b ",
+    "start_utf16": 2,
+    "end_utf16": 5,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 2..6",
+    "content": " a  b ",
+    "start_utf16": 2,
+    "end_utf16": 6,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 3..3",
+    "content": " a  b ",
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 3..4",
+    "content": " a  b ",
+    "start_utf16": 3,
+    "end_utf16": 4,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 3..5",
+    "content": " a  b ",
+    "start_utf16": 3,
+    "end_utf16": 5,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 3..6",
+    "content": " a  b ",
+    "start_utf16": 3,
+    "end_utf16": 6,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 4..4",
+    "content": " a  b ",
+    "start_utf16": 4,
+    "end_utf16": 4,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 4..5",
+    "content": " a  b ",
+    "start_utf16": 4,
+    "end_utf16": 5,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 4..6",
+    "content": " a  b ",
+    "start_utf16": 4,
+    "end_utf16": 6,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 5..5",
+    "content": " a  b ",
+    "start_utf16": 5,
+    "end_utf16": 5,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 5..6",
+    "content": " a  b ",
+    "start_utf16": 5,
+    "end_utf16": 6,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 6..6",
+    "content": " a  b ",
+    "start_utf16": 6,
+    "end_utf16": 6,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 6..1",
+    "content": " a  b ",
+    "start_utf16": 6,
+    "end_utf16": 1,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 1..999",
+    "content": " a  b ",
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges 999..1000",
+    "content": " a  b ",
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": " a  b "
+  },
+  {
+    "name": "note mid 0..0",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 0..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 0..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 0..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 0..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann vi"
+      },
+      {
+        "t": "note",
+        "v": "erzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 0..12",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 12,
+    "expected": "Dann vierzig:"
+  },
+  {
+    "name": "note mid 0..13",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 13,
+    "expected": "Dann vierzig:"
+  },
+  {
+    "name": "note mid 1..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 1..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 1..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 1..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann vi"
+      },
+      {
+        "t": "note",
+        "v": "erzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 1..12",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 12,
+    "expected": "Dann vierzig:"
+  },
+  {
+    "name": "note mid 1..13",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 13,
+    "expected": "Dann vierzig:"
+  },
+  {
+    "name": "note mid 2..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 2..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 2..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann vi"
+      },
+      {
+        "t": "note",
+        "v": "erzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 2..12",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 12,
+    "expected": "Dann vierzig:"
+  },
+  {
+    "name": "note mid 2..13",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 13,
+    "expected": "Dann vierzig:"
+  },
+  {
+    "name": "note mid 3..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 3..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann vi"
+      },
+      {
+        "t": "note",
+        "v": "erzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 3..12",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 12,
+    "expected": "Dann vierzig:"
+  },
+  {
+    "name": "note mid 3..13",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 13,
+    "expected": "Dann vierzig:"
+  },
+  {
+    "name": "note mid 7..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 7..12",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vi"
+      },
+      {
+        "t": "text",
+        "v": "erzig:"
+      }
+    ]
+  },
+  {
+    "name": "note mid 7..13",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 13,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vi"
+      },
+      {
+        "t": "text",
+        "v": "erzig:"
+      }
+    ]
+  },
+  {
+    "name": "note mid 12..12",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 12,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 12..13",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 12,
+    "end_utf16": 13,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 13..13",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 13,
+    "end_utf16": 13,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid 13..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 13,
+    "end_utf16": 1,
+    "expected": "Dann vierzig:"
+  },
+  {
+    "name": "note mid 1..999",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "Dann vierzig:"
+  },
+  {
+    "name": "note mid 999..1000",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 0..0",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 0..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 0..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 0..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 0..12",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди (тр"
+      },
+      {
+        "t": "note",
+        "v": "ижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 0..22",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 22,
+    "expected": "Го́споди (трижды) Амінь"
+  },
+  {
+    "name": "note cyrillic 0..23",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 23,
+    "expected": "Го́споди (трижды) Амінь"
+  },
+  {
+    "name": "note cyrillic 1..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 1..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 1..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 1..12",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди (тр"
+      },
+      {
+        "t": "note",
+        "v": "ижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 1..22",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 22,
+    "expected": "Го́споди (трижды) Амінь"
+  },
+  {
+    "name": "note cyrillic 1..23",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 23,
+    "expected": "Го́споди (трижды) Амінь"
+  },
+  {
+    "name": "note cyrillic 2..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 2..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 2..12",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди (тр"
+      },
+      {
+        "t": "note",
+        "v": "ижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 2..22",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 22,
+    "expected": "Го́споди (трижды) Амінь"
+  },
+  {
+    "name": "note cyrillic 2..23",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 23,
+    "expected": "Го́споди (трижды) Амінь"
+  },
+  {
+    "name": "note cyrillic 3..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 3..12",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди (тр"
+      },
+      {
+        "t": "note",
+        "v": "ижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 3..22",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 22,
+    "expected": "Го́споди (трижды) Амінь"
+  },
+  {
+    "name": "note cyrillic 3..23",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 23,
+    "expected": "Го́споди (трижды) Амінь"
+  },
+  {
+    "name": "note cyrillic 12..12",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 12,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 12..22",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 12,
+    "end_utf16": 22,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(тр"
+      },
+      {
+        "t": "text",
+        "v": "ижды) Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 12..23",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 12,
+    "end_utf16": 23,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(тр"
+      },
+      {
+        "t": "text",
+        "v": "ижды) Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 22..22",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 22,
+    "end_utf16": 22,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 22..23",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 22,
+    "end_utf16": 23,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 23..23",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 23,
+    "end_utf16": 23,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic 23..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 23,
+    "end_utf16": 1,
+    "expected": "Го́споди (трижды) Амінь"
+  },
+  {
+    "name": "note cyrillic 1..999",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "Го́споди (трижды) Амінь"
+  },
+  {
+    "name": "note cyrillic 999..1000",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "two notes 0..0",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 0..1",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "b"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 0..2",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "ab c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 0..3",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "ab c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 0..4",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "ab c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 0..5",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "ab c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 0..6",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 6,
+    "expected": [
+      {
+        "t": "text",
+        "v": "ab c d"
+      },
+      {
+        "t": "note",
+        "v": "e"
+      }
+    ]
+  },
+  {
+    "name": "two notes 0..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 7,
+    "expected": "ab c de"
+  },
+  {
+    "name": "two notes 1..1",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 1..2",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "note",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": "b c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 1..3",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "note",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": "b c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 1..4",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "note",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": "b c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 1..5",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "note",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": "b c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 1..6",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 6,
+    "expected": [
+      {
+        "t": "note",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": "b c d"
+      },
+      {
+        "t": "note",
+        "v": "e"
+      }
+    ]
+  },
+  {
+    "name": "two notes 1..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "note",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": "b c de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 2..2",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 2..3",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 2..4",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 2..5",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 2..6",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 6,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c d"
+      },
+      {
+        "t": "note",
+        "v": "e"
+      }
+    ]
+  },
+  {
+    "name": "two notes 2..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 3..3",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 3..4",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 3..5",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 3..6",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 6,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c d"
+      },
+      {
+        "t": "note",
+        "v": "e"
+      }
+    ]
+  },
+  {
+    "name": "two notes 3..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 4..4",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 4..5",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 4..6",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 6,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c d"
+      },
+      {
+        "t": "note",
+        "v": "e"
+      }
+    ]
+  },
+  {
+    "name": "two notes 4..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 5..5",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 5..6",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 6,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c d"
+      },
+      {
+        "t": "note",
+        "v": "e"
+      }
+    ]
+  },
+  {
+    "name": "two notes 5..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 6..6",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 6,
+    "end_utf16": 6,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 6..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 6,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "d"
+      },
+      {
+        "t": "text",
+        "v": "e"
+      }
+    ]
+  },
+  {
+    "name": "two notes 7..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 7..1",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "note",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": "b c de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 1..999",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": [
+      {
+        "t": "note",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": "b c de"
+      }
+    ]
+  },
+  {
+    "name": "two notes 999..1000",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "note start 0..0",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 0..1",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "K"
+      },
+      {
+        "t": "note",
+        "v": "yrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 0..2",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Ky"
+      },
+      {
+        "t": "note",
+        "v": "rie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 0..3",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Kyr"
+      },
+      {
+        "t": "note",
+        "v": "ie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 0..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 7,
+    "expected": "Kyrie eleison"
+  },
+  {
+    "name": "note start 0..12",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 12,
+    "expected": "Kyrie eleison"
+  },
+  {
+    "name": "note start 0..13",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 13,
+    "expected": "Kyrie eleison"
+  },
+  {
+    "name": "note start 1..1",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 1..2",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "note",
+        "v": "K"
+      },
+      {
+        "t": "text",
+        "v": "y"
+      },
+      {
+        "t": "note",
+        "v": "rie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 1..3",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "note",
+        "v": "K"
+      },
+      {
+        "t": "text",
+        "v": "yr"
+      },
+      {
+        "t": "note",
+        "v": "ie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 1..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "note",
+        "v": "K"
+      },
+      {
+        "t": "text",
+        "v": "yrie eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 1..12",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "note",
+        "v": "K"
+      },
+      {
+        "t": "text",
+        "v": "yrie eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 1..13",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 13,
+    "expected": [
+      {
+        "t": "note",
+        "v": "K"
+      },
+      {
+        "t": "text",
+        "v": "yrie eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 2..2",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 2..3",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Ky"
+      },
+      {
+        "t": "text",
+        "v": "r"
+      },
+      {
+        "t": "note",
+        "v": "ie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 2..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Ky"
+      },
+      {
+        "t": "text",
+        "v": "rie eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 2..12",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Ky"
+      },
+      {
+        "t": "text",
+        "v": "rie eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 2..13",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 13,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Ky"
+      },
+      {
+        "t": "text",
+        "v": "rie eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 3..3",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 3..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyr"
+      },
+      {
+        "t": "text",
+        "v": "ie eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 3..12",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyr"
+      },
+      {
+        "t": "text",
+        "v": "ie eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 3..13",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 13,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyr"
+      },
+      {
+        "t": "text",
+        "v": "ie eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 7..7",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 7..12",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 7..13",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 13,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 12..12",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 12,
+    "end_utf16": 12,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 12..13",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 12,
+    "end_utf16": 13,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 13..13",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 13,
+    "end_utf16": 13,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 13..1",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 13,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "note",
+        "v": "K"
+      },
+      {
+        "t": "text",
+        "v": "yrie eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 1..999",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": [
+      {
+        "t": "note",
+        "v": "K"
+      },
+      {
+        "t": "text",
+        "v": "yrie eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start 999..1000",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 0..0",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 0..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 0..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 0..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A ("
+      },
+      {
+        "t": "note",
+        "v": "x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 0..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A (x"
+      },
+      {
+        "t": "note",
+        "v": ")"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 0..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 5,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces 0..6",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 6,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces 0..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 7,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces 1..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 1..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 1..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A ("
+      },
+      {
+        "t": "note",
+        "v": "x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 1..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A (x"
+      },
+      {
+        "t": "note",
+        "v": ")"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 1..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 5,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces 1..6",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 6,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces 1..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 7,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces 2..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 2..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A ("
+      },
+      {
+        "t": "note",
+        "v": "x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 2..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A (x"
+      },
+      {
+        "t": "note",
+        "v": ")"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 2..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 5,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces 2..6",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 6,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces 2..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 7,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces 3..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 3..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "("
+      },
+      {
+        "t": "text",
+        "v": "x"
+      },
+      {
+        "t": "note",
+        "v": ")"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 3..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "("
+      },
+      {
+        "t": "text",
+        "v": "x) B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 3..6",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 6,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "("
+      },
+      {
+        "t": "text",
+        "v": "x) B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 3..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "("
+      },
+      {
+        "t": "text",
+        "v": "x) B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 4..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 4..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x"
+      },
+      {
+        "t": "text",
+        "v": ") B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 4..6",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 6,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x"
+      },
+      {
+        "t": "text",
+        "v": ") B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 4..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x"
+      },
+      {
+        "t": "text",
+        "v": ") B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 5..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 5..6",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 6,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 5..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 6..6",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 6,
+    "end_utf16": 6,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 6..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 6,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 7..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces 7..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 1,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces 1..999",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces 999..1000",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "empty string 0..0",
+    "content": "",
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": ""
+  },
+  {
+    "name": "empty runs 0..0",
+    "content": [],
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": ""
+  },
+  {
+    "name": "marked latin plain 0..0",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 0..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 0..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Am"
+      },
+      {
+        "t": "note",
+        "v": "en (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 0..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Ame"
+      },
+      {
+        "t": "note",
+        "v": "n (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 0..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Amen "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 0..9",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 9,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "marked latin plain 0..10",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 10,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "marked latin plain 1..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 1..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Am"
+      },
+      {
+        "t": "note",
+        "v": "en (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 1..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Ame"
+      },
+      {
+        "t": "note",
+        "v": "n (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 1..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Amen "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 1..9",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 9,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "marked latin plain 1..10",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 10,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "marked latin plain 2..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 2..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "m"
+      },
+      {
+        "t": "text",
+        "v": "e"
+      },
+      {
+        "t": "note",
+        "v": "n (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 2..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "m"
+      },
+      {
+        "t": "text",
+        "v": "en "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 2..9",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 9,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "m"
+      },
+      {
+        "t": "text",
+        "v": "en (x) y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 2..10",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 10,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "m"
+      },
+      {
+        "t": "text",
+        "v": "en (x) y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 3..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 3..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "me"
+      },
+      {
+        "t": "text",
+        "v": "n "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 3..9",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 9,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "me"
+      },
+      {
+        "t": "text",
+        "v": "n (x) y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 3..10",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 10,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "me"
+      },
+      {
+        "t": "text",
+        "v": "n (x) y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 5..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 5..9",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 9,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men"
+      },
+      {
+        "t": "text",
+        "v": " (x) y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 5..10",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 10,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men"
+      },
+      {
+        "t": "text",
+        "v": " (x) y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 9..9",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 9,
+    "end_utf16": 9,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 9..10",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 9,
+    "end_utf16": 10,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 10..10",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 10,
+    "end_utf16": 10,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked latin plain 10..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 10,
+    "end_utf16": 1,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "marked latin plain 1..999",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "marked latin plain 999..1000",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ],
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": "men (x)"
+      },
+      {
+        "t": "text",
+        "v": " y"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 0..0",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 0..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 0..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го"
+      },
+      {
+        "t": "note",
+        "v": "споди, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 0..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Гос"
+      },
+      {
+        "t": "note",
+        "v": "поди, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 0..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Господи, "
+      },
+      {
+        "t": "note",
+        "v": "помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 0..15",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 15,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "marked cyrillic plain 0..16",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 16,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "marked cyrillic plain 1..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 1..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го"
+      },
+      {
+        "t": "note",
+        "v": "споди, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 1..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Гос"
+      },
+      {
+        "t": "note",
+        "v": "поди, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 1..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Господи, "
+      },
+      {
+        "t": "note",
+        "v": "помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 1..15",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 15,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "marked cyrillic plain 1..16",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 16,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "marked cyrillic plain 2..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 2..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о"
+      },
+      {
+        "t": "text",
+        "v": "с"
+      },
+      {
+        "t": "note",
+        "v": "поди, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 2..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о"
+      },
+      {
+        "t": "text",
+        "v": "споди, "
+      },
+      {
+        "t": "note",
+        "v": "помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 2..15",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 15,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о"
+      },
+      {
+        "t": "text",
+        "v": "споди, помилуй"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 2..16",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 16,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о"
+      },
+      {
+        "t": "text",
+        "v": "споди, помилуй"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 3..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 3..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "ос"
+      },
+      {
+        "t": "text",
+        "v": "поди, "
+      },
+      {
+        "t": "note",
+        "v": "помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 3..15",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 15,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "ос"
+      },
+      {
+        "t": "text",
+        "v": "поди, помилуй"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 3..16",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 16,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "ос"
+      },
+      {
+        "t": "text",
+        "v": "поди, помилуй"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 8..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 8,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 8..15",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 8,
+    "end_utf16": 15,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи,"
+      },
+      {
+        "t": "text",
+        "v": " помилуй"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 8..16",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 8,
+    "end_utf16": 16,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи,"
+      },
+      {
+        "t": "text",
+        "v": " помилуй"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 15..15",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 15,
+    "end_utf16": 15,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 15..16",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 15,
+    "end_utf16": 16,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 16..16",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 16,
+    "end_utf16": 16,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked cyrillic plain 16..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 16,
+    "end_utf16": 1,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "marked cyrillic plain 1..999",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "marked cyrillic plain 999..1000",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ],
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "осподи, помилу"
+      },
+      {
+        "t": "text",
+        "v": "й"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 0..0",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 0..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 0..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го"
+      },
+      {
+        "t": "note",
+        "v": "́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 0..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́"
+      },
+      {
+        "t": "note",
+        "v": "спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 0..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́с"
+      },
+      {
+        "t": "note",
+        "v": "под"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 0..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 7,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "marked combining marks 0..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 8,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "marked combining marks 1..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 1..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го"
+      },
+      {
+        "t": "note",
+        "v": "́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 1..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́"
+      },
+      {
+        "t": "note",
+        "v": "спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 1..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́с"
+      },
+      {
+        "t": "note",
+        "v": "под"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 1..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 7,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "marked combining marks 1..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 8,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "marked combining marks 2..2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 2..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о"
+      },
+      {
+        "t": "text",
+        "v": "́"
+      },
+      {
+        "t": "note",
+        "v": "спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 2..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о"
+      },
+      {
+        "t": "text",
+        "v": "́с"
+      },
+      {
+        "t": "note",
+        "v": "под"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 2..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о"
+      },
+      {
+        "t": "text",
+        "v": "́споди"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 2..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 2,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о"
+      },
+      {
+        "t": "text",
+        "v": "́споди"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 3..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 3..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́"
+      },
+      {
+        "t": "text",
+        "v": "с"
+      },
+      {
+        "t": "note",
+        "v": "под"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 3..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́"
+      },
+      {
+        "t": "text",
+        "v": "споди"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 3..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́"
+      },
+      {
+        "t": "text",
+        "v": "споди"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 4..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 4..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́с"
+      },
+      {
+        "t": "text",
+        "v": "поди"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 4..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́с"
+      },
+      {
+        "t": "text",
+        "v": "поди"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 7..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 7..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 8..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 8,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked combining marks 8..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 8,
+    "end_utf16": 1,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "marked combining marks 1..999",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "marked combining marks 999..1000",
+    "content": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ],
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Г"
+      },
+      {
+        "t": "note",
+        "v": "о́спод"
+      },
+      {
+        "t": "text",
+        "v": "и"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 0..0",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 0,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 0..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 0..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a😀"
+      },
+      {
+        "t": "note",
+        "v": "b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 0..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a😀b "
+      },
+      {
+        "t": "note",
+        "v": "𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 0..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a😀b "
+      },
+      {
+        "t": "note",
+        "v": "𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 0..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 7,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "marked astral 0..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 0,
+    "end_utf16": 8,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "marked astral 1..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 1,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 1..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a😀"
+      },
+      {
+        "t": "note",
+        "v": "b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 1..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a😀b "
+      },
+      {
+        "t": "note",
+        "v": "𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 1..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a😀b "
+      },
+      {
+        "t": "note",
+        "v": "𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 1..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 7,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "marked astral 1..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 8,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "marked astral 3..3",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 3..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀"
+      },
+      {
+        "t": "text",
+        "v": "b "
+      },
+      {
+        "t": "note",
+        "v": "𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 3..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀"
+      },
+      {
+        "t": "text",
+        "v": "b "
+      },
+      {
+        "t": "note",
+        "v": "𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 3..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀"
+      },
+      {
+        "t": "text",
+        "v": "b 𝔄c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 3..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 3,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀"
+      },
+      {
+        "t": "text",
+        "v": "b 𝔄c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 4..4",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 4,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 4..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 4..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b"
+      },
+      {
+        "t": "text",
+        "v": " 𝔄c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 4..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 4,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b"
+      },
+      {
+        "t": "text",
+        "v": " 𝔄c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 5..5",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 5,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 5..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b"
+      },
+      {
+        "t": "text",
+        "v": " 𝔄c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 5..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 5,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b"
+      },
+      {
+        "t": "text",
+        "v": " 𝔄c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 7..7",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 7,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 7..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 7,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 8..8",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 8,
+    "end_utf16": 8,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  },
+  {
+    "name": "marked astral 8..1",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 8,
+    "end_utf16": 1,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "marked astral 1..999",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 1,
+    "end_utf16": 999,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "marked astral 999..1000",
+    "content": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "start_utf16": 999,
+    "end_utf16": 1000,
+    "expected": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": "😀b 𝔄"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ]
+  }
+]

@@ -1,0 +1,300 @@
+[
+  {
+    "name": "empty",
+    "runs": [],
+    "expected": null
+  },
+  {
+    "name": "empty values",
+    "runs": [
+      {
+        "t": "text",
+        "v": ""
+      },
+      {
+        "t": "note",
+        "v": ""
+      }
+    ],
+    "expected": null
+  },
+  {
+    "name": "text only",
+    "runs": [
+      {
+        "t": "text",
+        "v": "Hello"
+      },
+      {
+        "t": "text",
+        "v": "!"
+      }
+    ],
+    "expected": "Hello!"
+  },
+  {
+    "name": "zero width only",
+    "runs": [
+      {
+        "t": "text",
+        "v": "​﻿"
+      }
+    ],
+    "expected": null
+  },
+  {
+    "name": "zero width inside",
+    "runs": [
+      {
+        "t": "text",
+        "v": "A​b"
+      },
+      {
+        "t": "note",
+        "v": "‍(x)‌"
+      }
+    ],
+    "expected": [
+      {
+        "t": "text",
+        "v": "Ab"
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      }
+    ]
+  },
+  {
+    "name": "note peeled",
+    "runs": [
+      {
+        "t": "text",
+        "v": "Amen"
+      },
+      {
+        "t": "note",
+        "v": " (zwölfmal) "
+      },
+      {
+        "t": "text",
+        "v": "."
+      }
+    ],
+    "expected": [
+      {
+        "t": "text",
+        "v": "Amen "
+      },
+      {
+        "t": "note",
+        "v": "(zwölfmal)"
+      },
+      {
+        "t": "text",
+        "v": " ."
+      }
+    ]
+  },
+  {
+    "name": "adjacent merge",
+    "runs": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": "b"
+      },
+      {
+        "t": "note",
+        "v": ""
+      },
+      {
+        "t": "note",
+        "v": "(NN)"
+      }
+    ],
+    "expected": [
+      {
+        "t": "text",
+        "v": "ab"
+      },
+      {
+        "t": "note",
+        "v": "(NN)"
+      }
+    ]
+  },
+  {
+    "name": "coalesce notes",
+    "runs": [
+      {
+        "t": "note",
+        "v": "(NN)"
+      },
+      {
+        "t": "text",
+        "v": " "
+      },
+      {
+        "t": "note",
+        "v": "(zwölfmal)"
+      }
+    ],
+    "expected": [
+      {
+        "t": "note",
+        "v": "(NN) (zwölfmal)"
+      }
+    ]
+  },
+  {
+    "name": "coalesce three",
+    "runs": [
+      {
+        "t": "note",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": " "
+      },
+      {
+        "t": "note",
+        "v": "b"
+      },
+      {
+        "t": "text",
+        "v": "\t"
+      },
+      {
+        "t": "note",
+        "v": "c"
+      }
+    ],
+    "expected": [
+      {
+        "t": "note",
+        "v": "a b\tc"
+      }
+    ]
+  },
+  {
+    "name": "no coalesce on text gap",
+    "runs": [
+      {
+        "t": "note",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": " x "
+      },
+      {
+        "t": "note",
+        "v": "b"
+      }
+    ],
+    "expected": [
+      {
+        "t": "note",
+        "v": "a"
+      },
+      {
+        "t": "text",
+        "v": " x "
+      },
+      {
+        "t": "note",
+        "v": "b"
+      }
+    ]
+  },
+  {
+    "name": "note then space",
+    "runs": [
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " "
+      }
+    ],
+    "expected": [
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " "
+      }
+    ]
+  },
+  {
+    "name": "cyrillic",
+    "runs": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": " (трижды) "
+      },
+      {
+        "t": "text",
+        "v": "Амінь"
+      }
+    ],
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди  "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "nbsp and ideographic space",
+    "runs": [
+      {
+        "t": "text",
+        "v": "a"
+      },
+      {
+        "t": "note",
+        "v": " b　"
+      },
+      {
+        "t": "text",
+        "v": "c"
+      }
+    ],
+    "expected": [
+      {
+        "t": "text",
+        "v": "a "
+      },
+      {
+        "t": "note",
+        "v": "b"
+      },
+      {
+        "t": "text",
+        "v": "　c"
+      }
+    ]
+  }
+]

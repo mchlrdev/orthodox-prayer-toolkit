@@ -5235,6 +5235,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "zip",
 ]
 
 [[package]]

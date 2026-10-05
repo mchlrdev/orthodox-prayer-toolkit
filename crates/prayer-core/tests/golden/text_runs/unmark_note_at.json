@@ -1,0 +1,632 @@
+[
+  {
+    "name": "latin plain #0",
+    "content": "Amen (x) y",
+    "run_index": 0,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "latin plain #1",
+    "content": "Amen (x) y",
+    "run_index": 1,
+    "expected": "Amen (x) y"
+  },
+  {
+    "name": "cyrillic plain #0",
+    "content": "Господи, помилуй",
+    "run_index": 0,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "cyrillic plain #1",
+    "content": "Господи, помилуй",
+    "run_index": 1,
+    "expected": "Господи, помилуй"
+  },
+  {
+    "name": "greek plain #0",
+    "content": "Κύριε ἐλέησον",
+    "run_index": 0,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "greek plain #1",
+    "content": "Κύριε ἐλέησον",
+    "run_index": 1,
+    "expected": "Κύριε ἐλέησον"
+  },
+  {
+    "name": "combining marks #0",
+    "content": "Го́споди",
+    "run_index": 0,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "combining marks #1",
+    "content": "Го́споди",
+    "run_index": 1,
+    "expected": "Го́споди"
+  },
+  {
+    "name": "greek combining #0",
+    "content": "έλε̈ησον",
+    "run_index": 0,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "greek combining #1",
+    "content": "έλε̈ησον",
+    "run_index": 1,
+    "expected": "έλε̈ησον"
+  },
+  {
+    "name": "astral #0",
+    "content": "a😀b 𝔄c",
+    "run_index": 0,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "astral #1",
+    "content": "a😀b 𝔄c",
+    "run_index": 1,
+    "expected": "a😀b 𝔄c"
+  },
+  {
+    "name": "whitespace edges #0",
+    "content": " a  b ",
+    "run_index": 0,
+    "expected": " a  b "
+  },
+  {
+    "name": "whitespace edges #1",
+    "content": " a  b ",
+    "run_index": 1,
+    "expected": " a  b "
+  },
+  {
+    "name": "note mid #0",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "run_index": 0,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid #1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "run_index": 1,
+    "expected": "Dann vierzig:"
+  },
+  {
+    "name": "note mid #2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "run_index": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note mid #3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ],
+    "run_index": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Dann "
+      },
+      {
+        "t": "note",
+        "v": "vierzig"
+      },
+      {
+        "t": "text",
+        "v": ":"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic #0",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "run_index": 0,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic #1",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "run_index": 1,
+    "expected": "Го́споди (трижды) Амінь"
+  },
+  {
+    "name": "note cyrillic #2",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "run_index": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "note cyrillic #3",
+    "content": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ],
+    "run_index": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "Го́споди "
+      },
+      {
+        "t": "note",
+        "v": "(трижды)"
+      },
+      {
+        "t": "text",
+        "v": " Амінь"
+      }
+    ]
+  },
+  {
+    "name": "two notes #0",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "run_index": 0,
+    "expected": [
+      {
+        "t": "text",
+        "v": "ab c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes #1",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "run_index": 1,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "two notes #2",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "run_index": 2,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c de"
+      }
+    ]
+  },
+  {
+    "name": "two notes #3",
+    "content": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ],
+    "run_index": 3,
+    "expected": [
+      {
+        "t": "note",
+        "v": "ab"
+      },
+      {
+        "t": "text",
+        "v": " c "
+      },
+      {
+        "t": "note",
+        "v": "de"
+      }
+    ]
+  },
+  {
+    "name": "note start #0",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "run_index": 0,
+    "expected": "Kyrie eleison"
+  },
+  {
+    "name": "note start #1",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "run_index": 1,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note start #2",
+    "content": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ],
+    "run_index": 2,
+    "expected": [
+      {
+        "t": "note",
+        "v": "Kyrie"
+      },
+      {
+        "t": "text",
+        "v": " eleison"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces #0",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "run_index": 0,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces #1",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "run_index": 1,
+    "expected": "A (x) B"
+  },
+  {
+    "name": "note with edge spaces #2",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "run_index": 2,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "note with edge spaces #3",
+    "content": [
+      {
+        "t": "text",
+        "v": "A"
+      },
+      {
+        "t": "note",
+        "v": " (x) "
+      },
+      {
+        "t": "text",
+        "v": "B"
+      }
+    ],
+    "run_index": 3,
+    "expected": [
+      {
+        "t": "text",
+        "v": "A "
+      },
+      {
+        "t": "note",
+        "v": "(x)"
+      },
+      {
+        "t": "text",
+        "v": " B"
+      }
+    ]
+  },
+  {
+    "name": "empty string #0",
+    "content": "",
+    "run_index": 0,
+    "expected": ""
+  },
+  {
+    "name": "empty string #1",
+    "content": "",
+    "run_index": 1,
+    "expected": ""
+  },
+  {
+    "name": "empty runs #0",
+    "content": [],
+    "run_index": 0,
+    "expected": ""
+  }
+]

@@ -1,0 +1,549 @@
+{
+  "prayer": "inputs/layout-astral.json",
+  "cases": [
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dove 🕊 and 𝔄"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "x"
+                },
+                {
+                  "t": "note",
+                  "v": "😀"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": null,
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Dove 🕊 and 𝔄",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "x",
+                "style": null
+              },
+              {
+                "text": "😀",
+                "style": "note"
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dove 🕊 and 𝔄"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "x"
+                },
+                {
+                  "t": "note",
+                  "v": "😀"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": null,
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Dove 🕊 and 𝔄",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "x",
+                "style": null
+              },
+              {
+                "text": "😀",
+                "style": "note"
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dove 🕊 and 𝔄"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "x"
+                },
+                {
+                  "t": "note",
+                  "v": "😀"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": null,
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Dove 🕊 and 𝔄",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "x",
+                "style": null
+              },
+              {
+                "text": "😀",
+                "style": "opt_note"
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dove 🕊 and 𝔄"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "x"
+                },
+                {
+                  "t": "note",
+                  "v": "😀"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": null,
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Dove 🕊 and 𝔄",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "x",
+                "style": null
+              },
+              {
+                "text": "😀",
+                "style": "opt_note"
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dove 🕊 and 𝔄"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "x"
+                },
+                {
+                  "t": "note",
+                  "v": "😀"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": null,
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Dove 🕊 and 𝔄",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "x",
+                "style": null
+              },
+              {
+                "text": "😀",
+                "style": "Place2_note"
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dove 🕊 and 𝔄"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "x"
+                },
+                {
+                  "t": "note",
+                  "v": "😀"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": null,
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Dove 🕊 and 𝔄",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "x",
+                "style": null
+              },
+              {
+                "text": "😀",
+                "style": "Place2_note"
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard"
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dove 🕊 and 𝔄"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "x"
+                },
+                {
+                  "t": "note",
+                  "v": "😀"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": null,
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Dove 🕊 and 𝔄",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "x",
+                "style": null
+              },
+              {
+                "text": "😀",
+                "style": "note"
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    }
+  ]
+}

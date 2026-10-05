@@ -1,0 +1,193 @@
+{
+  "id": "layout-edge",
+  "type": "prayer",
+  "variants": [
+    {
+      "lang": "de",
+      "variant": "standard",
+      "title": "Rand",
+      "license": "CC0",
+      "source": "golden"
+    },
+    {
+      "lang": "ru",
+      "variant": "cu",
+      "title": "Край",
+      "license": "CC0",
+      "source": "golden"
+    },
+    {
+      "lang": "el",
+      "variant": "poly",
+      "title": "Άκρο",
+      "license": "CC0",
+      "source": "golden"
+    }
+  ],
+  "structure": [
+    {
+      "id": "b1",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "ru",
+          "variant": "cu",
+          "text": "Господи, помилуй {трижды} \\ & <b>"
+        },
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Größe & \"Maß\" <ok>"
+        }
+      ]
+    },
+    {
+      "id": "b2",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "ru",
+          "variant": "cu",
+          "lines": [
+            "Слава Отцу и Сыну,",
+            "",
+            [
+              {
+                "t": "text",
+                "v": "и Святому "
+              },
+              {
+                "t": "note",
+                "v": "(поклон)"
+              },
+              {
+                "t": "text",
+                "v": " Духу"
+              }
+            ],
+            [
+              {
+                "t": "note",
+                "v": "только заметка"
+              }
+            ]
+          ]
+        },
+        {
+          "lang": "el",
+          "variant": "poly",
+          "lines": [
+            "Κύριε ἐλέησον",
+            [
+              {
+                "t": "text",
+                "v": "Δόξα "
+              },
+              {
+                "t": "note",
+                "v": "ἀμήν"
+              },
+              {
+                "t": "text",
+                "v": " Πατρί"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b3",
+      "kind": "note",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": [
+            {
+              "t": "note",
+              "v": "Kind namens note"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b4",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "id": "b5",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard"
+        }
+      ]
+    },
+    {
+      "id": "b6",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": []
+        },
+        {
+          "lang": "ru",
+          "variant": "cu",
+          "text": []
+        },
+        {
+          "lang": "el",
+          "variant": "poly",
+          "lines": [
+            [
+              {
+                "t": "text",
+                "v": ""
+              }
+            ],
+            [
+              {
+                "t": "note",
+                "v": ""
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b7",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "el",
+          "variant": "poly",
+          "text": "ὁ Θεός  mit  Spaces "
+        }
+      ]
+    },
+    {
+      "id": "b8",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Ж ǆ ﬁ"
+        }
+      ]
+    }
+  ]
+}

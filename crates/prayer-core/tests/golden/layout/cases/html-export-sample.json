@@ -1,0 +1,1558 @@
+{
+  "prayer": "inputs/html-export-sample.json",
+  "cases": [
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Trisagion"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dreimal:"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Heiliger Gott,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger "
+                },
+                {
+                  "t": "note",
+                  "v": "Starker"
+                },
+                {
+                  "t": "text",
+                  "v": ","
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger Unsterblicher, erbarme dich unser."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 heading;}\n{\\s2 annotation;}\n{\\s3 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 Trisagion\\par}\n{\\pard\\s2 Dreimal:\\par}\n{\\pard\\s3 Heiliger Gott,\\line heiliger {\\cs10 Starker},\\line heiliger Unsterblicher, erbarme dich unser.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "heading",
+            "runs": [
+              {
+                "text": "Trisagion",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "annotation",
+            "runs": [
+              {
+                "text": "Dreimal:",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Heiliger Gott,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger ",
+                "style": null
+              },
+              {
+                "text": "Starker",
+                "style": "note"
+              },
+              {
+                "text": ",",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger Unsterblicher, erbarme dich unser.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "heading",
+            "name": "heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Trisagion"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dreimal:"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Heiliger Gott,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger "
+                },
+                {
+                  "t": "note",
+                  "v": "Starker"
+                },
+                {
+                  "t": "text",
+                  "v": ","
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger Unsterblicher, erbarme dich unser."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 heading;}\n{\\s2 annotation;}\n{\\s3 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 Trisagion\\par}\n{\\pard\\s2 Dreimal:\\par}\n{\\pard\\s3 Heiliger Gott,\\line heiliger {\\cs10 Starker},\\line heiliger Unsterblicher, erbarme dich unser.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "heading",
+            "runs": [
+              {
+                "text": "Trisagion",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "annotation",
+            "runs": [
+              {
+                "text": "Dreimal:",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Heiliger Gott,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger ",
+                "style": null
+              },
+              {
+                "text": "Starker",
+                "style": "note"
+              },
+              {
+                "text": ",",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger Unsterblicher, erbarme dich unser.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "heading",
+            "name": "heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Trisagion"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dreimal:"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Heiliger Gott,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger "
+                },
+                {
+                  "t": "note",
+                  "v": "Starker"
+                },
+                {
+                  "t": "text",
+                  "v": ","
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger Unsterblicher, erbarme dich unser."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_heading;}\n{\\s2 opt_annotation;}\n{\\s3 opt_verse;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 Trisagion\\par}\n{\\pard\\s2 Dreimal:\\par}\n{\\pard\\s3 Heiliger Gott,\\line heiliger {\\cs10 Starker},\\line heiliger Unsterblicher, erbarme dich unser.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_heading",
+            "runs": [
+              {
+                "text": "Trisagion",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_annotation",
+            "runs": [
+              {
+                "text": "Dreimal:",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Heiliger Gott,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger ",
+                "style": null
+              },
+              {
+                "text": "Starker",
+                "style": "opt_note"
+              },
+              {
+                "text": ",",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger Unsterblicher, erbarme dich unser.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_heading",
+            "name": "opt_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_annotation",
+            "name": "opt_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Trisagion"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dreimal:"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Heiliger Gott,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger "
+                },
+                {
+                  "t": "note",
+                  "v": "Starker"
+                },
+                {
+                  "t": "text",
+                  "v": ","
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger Unsterblicher, erbarme dich unser."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_heading;}\n{\\s2 opt_annotation;}\n{\\s3 opt_verse;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 Trisagion\\par}\n{\\pard\\s2 Dreimal:\\par}\n{\\pard\\s3 Heiliger Gott,\\line heiliger {\\cs10 Starker},\\line heiliger Unsterblicher, erbarme dich unser.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_heading",
+            "runs": [
+              {
+                "text": "Trisagion",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_annotation",
+            "runs": [
+              {
+                "text": "Dreimal:",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Heiliger Gott,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger ",
+                "style": null
+              },
+              {
+                "text": "Starker",
+                "style": "opt_note"
+              },
+              {
+                "text": ",",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger Unsterblicher, erbarme dich unser.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_heading",
+            "name": "opt_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_annotation",
+            "name": "opt_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Trisagion"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dreimal:"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Heiliger Gott,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger "
+                },
+                {
+                  "t": "note",
+                  "v": "Starker"
+                },
+                {
+                  "t": "text",
+                  "v": ","
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger Unsterblicher, erbarme dich unser."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_heading;}\n{\\s2 Place2_annotation;}\n{\\s3 Place2_verse;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 Trisagion\\par}\n{\\pard\\s2 Dreimal:\\par}\n{\\pard\\s3 Heiliger Gott,\\line heiliger {\\cs10 Starker},\\line heiliger Unsterblicher, erbarme dich unser.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_heading",
+            "runs": [
+              {
+                "text": "Trisagion",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_annotation",
+            "runs": [
+              {
+                "text": "Dreimal:",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Heiliger Gott,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger ",
+                "style": null
+              },
+              {
+                "text": "Starker",
+                "style": "Place2_note"
+              },
+              {
+                "text": ",",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger Unsterblicher, erbarme dich unser.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_heading",
+            "name": "Place2_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_annotation",
+            "name": "Place2_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Trisagion"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dreimal:"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Heiliger Gott,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger "
+                },
+                {
+                  "t": "note",
+                  "v": "Starker"
+                },
+                {
+                  "t": "text",
+                  "v": ","
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger Unsterblicher, erbarme dich unser."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_heading;}\n{\\s2 Place2_annotation;}\n{\\s3 Place2_verse;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 Trisagion\\par}\n{\\pard\\s2 Dreimal:\\par}\n{\\pard\\s3 Heiliger Gott,\\line heiliger {\\cs10 Starker},\\line heiliger Unsterblicher, erbarme dich unser.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_heading",
+            "runs": [
+              {
+                "text": "Trisagion",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_annotation",
+            "runs": [
+              {
+                "text": "Dreimal:",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Heiliger Gott,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger ",
+                "style": null
+              },
+              {
+                "text": "Starker",
+                "style": "Place2_note"
+              },
+              {
+                "text": ",",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger Unsterblicher, erbarme dich unser.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_heading",
+            "name": "Place2_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_annotation",
+            "name": "Place2_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Holy God, Holy Mighty, Holy Immortal, have mercy on us."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 Holy God, Holy Mighty, Holy Immortal, have mercy on us.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Holy God, Holy Mighty, Holy Immortal, have mercy on us.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Holy God, Holy Mighty, Holy Immortal, have mercy on us."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 heading;}\n{\\s2 annotation;}\n{\\s3 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s3 Holy God, Holy Mighty, Holy Immortal, have mercy on us.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "heading",
+            "runs": []
+          },
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Holy God, Holy Mighty, Holy Immortal, have mercy on us.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "heading",
+            "name": "heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Holy God, Holy Mighty, Holy Immortal, have mercy on us."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_verse;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 Holy God, Holy Mighty, Holy Immortal, have mercy on us.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Holy God, Holy Mighty, Holy Immortal, have mercy on us.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Holy God, Holy Mighty, Holy Immortal, have mercy on us."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_heading;}\n{\\s2 opt_annotation;}\n{\\s3 opt_verse;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s3 Holy God, Holy Mighty, Holy Immortal, have mercy on us.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_heading",
+            "runs": []
+          },
+          {
+            "style": "opt_annotation",
+            "runs": []
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Holy God, Holy Mighty, Holy Immortal, have mercy on us.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_heading",
+            "name": "opt_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_annotation",
+            "name": "opt_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Holy God, Holy Mighty, Holy Immortal, have mercy on us."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_verse;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 Holy God, Holy Mighty, Holy Immortal, have mercy on us.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Holy God, Holy Mighty, Holy Immortal, have mercy on us.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "en",
+        "variant": "standard",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Holy God, Holy Mighty, Holy Immortal, have mercy on us."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_heading;}\n{\\s2 Place2_annotation;}\n{\\s3 Place2_verse;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s3 Holy God, Holy Mighty, Holy Immortal, have mercy on us.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_heading",
+            "runs": []
+          },
+          {
+            "style": "Place2_annotation",
+            "runs": []
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Holy God, Holy Mighty, Holy Immortal, have mercy on us.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_heading",
+            "name": "Place2_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_annotation",
+            "name": "Place2_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard"
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Trisagion"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dreimal:"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Heiliger Gott,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger "
+                },
+                {
+                  "t": "note",
+                  "v": "Starker"
+                },
+                {
+                  "t": "text",
+                  "v": ","
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "heiliger Unsterblicher, erbarme dich unser."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 heading;}\n{\\s2 annotation;}\n{\\s3 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 Trisagion\\par}\n{\\pard\\s2 Dreimal:\\par}\n{\\pard\\s3 Heiliger Gott,\\line heiliger {\\cs10 Starker},\\line heiliger Unsterblicher, erbarme dich unser.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "heading",
+            "runs": [
+              {
+                "text": "Trisagion",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "annotation",
+            "runs": [
+              {
+                "text": "Dreimal:",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Heiliger Gott,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger ",
+                "style": null
+              },
+              {
+                "text": "Starker",
+                "style": "note"
+              },
+              {
+                "text": ",",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "heiliger Unsterblicher, erbarme dich unser.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "heading",
+            "name": "heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    }
+  ]
+}

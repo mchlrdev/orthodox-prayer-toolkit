@@ -13,3 +13,6 @@ indexmap.workspace = true
 regex.workspace = true
 jsonschema.workspace = true
 docx-rs.workspace = true
+
+[dev-dependencies]
+zip = { version = "8.6.0", default-features = false, features = ["deflate"] }

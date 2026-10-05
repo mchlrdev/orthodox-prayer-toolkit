@@ -1,0 +1,1446 @@
+{
+  "prayer": "inputs/valid-tropar-prokopios.json",
+  "cases": [
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ton 4. Tropar des Großmärtyrers."
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dein Märtyrer Prokopius, Herr,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "denn mit seiner Kraft hat er die Tyrannen besiegt"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "und die Dämonen kraftlos gemacht."
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 annotation;}\n{\\s2 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 Ton 4. Tropar des Gro\\u223?m\\u228?rtyrers.\\par}\n{\\pard\\s2 Dein M\\u228?rtyrer Prokopius, Herr,\\line hat in seinem Leidenskampf den Kranz der Unverg\\u228?nglichkeit erworben;\\line denn mit seiner Kraft hat er die Tyrannen besiegt\\line und die D\\u228?monen kraftlos gemacht.\\line Durch seine F\\u252?rbitten, Christus Gott, rette unsere Seelen.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "annotation",
+            "runs": [
+              {
+                "text": "Ton 4. Tropar des Großmärtyrers.",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Dein Märtyrer Prokopius, Herr,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "und die Dämonen kraftlos gemacht.",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ton 4. Tropar des Großmärtyrers."
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dein Märtyrer Prokopius, Herr,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "denn mit seiner Kraft hat er die Tyrannen besiegt"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "und die Dämonen kraftlos gemacht."
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 annotation;}\n{\\s2 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 Ton 4. Tropar des Gro\\u223?m\\u228?rtyrers.\\par}\n{\\pard\\s2 Dein M\\u228?rtyrer Prokopius, Herr,\\line hat in seinem Leidenskampf den Kranz der Unverg\\u228?nglichkeit erworben;\\line denn mit seiner Kraft hat er die Tyrannen besiegt\\line und die D\\u228?monen kraftlos gemacht.\\line Durch seine F\\u252?rbitten, Christus Gott, rette unsere Seelen.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "annotation",
+            "runs": [
+              {
+                "text": "Ton 4. Tropar des Großmärtyrers.",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Dein Märtyrer Prokopius, Herr,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "und die Dämonen kraftlos gemacht.",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ton 4. Tropar des Großmärtyrers."
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dein Märtyrer Prokopius, Herr,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "denn mit seiner Kraft hat er die Tyrannen besiegt"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "und die Dämonen kraftlos gemacht."
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_annotation;}\n{\\s2 opt_verse;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 Ton 4. Tropar des Gro\\u223?m\\u228?rtyrers.\\par}\n{\\pard\\s2 Dein M\\u228?rtyrer Prokopius, Herr,\\line hat in seinem Leidenskampf den Kranz der Unverg\\u228?nglichkeit erworben;\\line denn mit seiner Kraft hat er die Tyrannen besiegt\\line und die D\\u228?monen kraftlos gemacht.\\line Durch seine F\\u252?rbitten, Christus Gott, rette unsere Seelen.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_annotation",
+            "runs": [
+              {
+                "text": "Ton 4. Tropar des Großmärtyrers.",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Dein Märtyrer Prokopius, Herr,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "und die Dämonen kraftlos gemacht.",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_annotation",
+            "name": "opt_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ton 4. Tropar des Großmärtyrers."
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dein Märtyrer Prokopius, Herr,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "denn mit seiner Kraft hat er die Tyrannen besiegt"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "und die Dämonen kraftlos gemacht."
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_annotation;}\n{\\s2 opt_verse;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 Ton 4. Tropar des Gro\\u223?m\\u228?rtyrers.\\par}\n{\\pard\\s2 Dein M\\u228?rtyrer Prokopius, Herr,\\line hat in seinem Leidenskampf den Kranz der Unverg\\u228?nglichkeit erworben;\\line denn mit seiner Kraft hat er die Tyrannen besiegt\\line und die D\\u228?monen kraftlos gemacht.\\line Durch seine F\\u252?rbitten, Christus Gott, rette unsere Seelen.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_annotation",
+            "runs": [
+              {
+                "text": "Ton 4. Tropar des Großmärtyrers.",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Dein Märtyrer Prokopius, Herr,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "und die Dämonen kraftlos gemacht.",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_annotation",
+            "name": "opt_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ton 4. Tropar des Großmärtyrers."
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dein Märtyrer Prokopius, Herr,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "denn mit seiner Kraft hat er die Tyrannen besiegt"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "und die Dämonen kraftlos gemacht."
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_annotation;}\n{\\s2 Place2_verse;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 Ton 4. Tropar des Gro\\u223?m\\u228?rtyrers.\\par}\n{\\pard\\s2 Dein M\\u228?rtyrer Prokopius, Herr,\\line hat in seinem Leidenskampf den Kranz der Unverg\\u228?nglichkeit erworben;\\line denn mit seiner Kraft hat er die Tyrannen besiegt\\line und die D\\u228?monen kraftlos gemacht.\\line Durch seine F\\u252?rbitten, Christus Gott, rette unsere Seelen.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_annotation",
+            "runs": [
+              {
+                "text": "Ton 4. Tropar des Großmärtyrers.",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Dein Märtyrer Prokopius, Herr,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "und die Dämonen kraftlos gemacht.",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_annotation",
+            "name": "Place2_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ton 4. Tropar des Großmärtyrers."
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dein Märtyrer Prokopius, Herr,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "denn mit seiner Kraft hat er die Tyrannen besiegt"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "und die Dämonen kraftlos gemacht."
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_annotation;}\n{\\s2 Place2_verse;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 Ton 4. Tropar des Gro\\u223?m\\u228?rtyrers.\\par}\n{\\pard\\s2 Dein M\\u228?rtyrer Prokopius, Herr,\\line hat in seinem Leidenskampf den Kranz der Unverg\\u228?nglichkeit erworben;\\line denn mit seiner Kraft hat er die Tyrannen besiegt\\line und die D\\u228?monen kraftlos gemacht.\\line Durch seine F\\u252?rbitten, Christus Gott, rette unsere Seelen.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_annotation",
+            "runs": [
+              {
+                "text": "Ton 4. Tropar des Großmärtyrers.",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Dein Märtyrer Prokopius, Herr,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "und die Dämonen kraftlos gemacht.",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_annotation",
+            "name": "Place2_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "cu",
+        "variant": "synodal-cyrl",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Мученик Твой, Господи, Прокопий,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 \\u1052?\\u1091?\\u1095?\\u1077?\\u1085?\\u1080?\\u1082? \\u1058?\\u1074?\\u1086?\\u1081?, \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1055?\\u1088?\\u1086?\\u1082?\\u1086?\\u1087?\\u1080?\\u1081?,\\line \\u1074?\\u1086? \\u1089?\\u1090?\\u1088?\\u1072?\\u1076?\\u1072?\\u1085?\\u1080?\\u1080? \\u1089?\\u1074?\\u1086?\\u1077?\\u1084? \\u1074?\\u1077?\\u1085?\\u1077?\\u1094? \\u1085?\\u1077?\\u1090?\\u1083?\\u1077?\\u1085?\\u1080?\\u1103? \\u1087?\\u1088?\\u1080?\\u1103?\\u1090? \\u1086?\\u1090? \\u1058?\\u1077?\\u1073?\\u1077?, \\u1041?\\u1086?\\u1075?\\u1072? \\u1085?\\u1072?\\u1096?\\u1077?\\u1075?\\u1086?\\u8230?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Мученик Твой, Господи, Прокопий,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "во страдании своем венец нетления прият от Тебе, Бога нашего…",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "cu",
+        "variant": "synodal-cyrl",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Мученик Твой, Господи, Прокопий,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 annotation;}\n{\\s2 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 \\par}\n{\\pard\\s2 \\u1052?\\u1091?\\u1095?\\u1077?\\u1085?\\u1080?\\u1082? \\u1058?\\u1074?\\u1086?\\u1081?, \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1055?\\u1088?\\u1086?\\u1082?\\u1086?\\u1087?\\u1080?\\u1081?,\\line \\u1074?\\u1086? \\u1089?\\u1090?\\u1088?\\u1072?\\u1076?\\u1072?\\u1085?\\u1080?\\u1080? \\u1089?\\u1074?\\u1086?\\u1077?\\u1084? \\u1074?\\u1077?\\u1085?\\u1077?\\u1094? \\u1085?\\u1077?\\u1090?\\u1083?\\u1077?\\u1085?\\u1080?\\u1103? \\u1087?\\u1088?\\u1080?\\u1103?\\u1090? \\u1086?\\u1090? \\u1058?\\u1077?\\u1073?\\u1077?, \\u1041?\\u1086?\\u1075?\\u1072? \\u1085?\\u1072?\\u1096?\\u1077?\\u1075?\\u1086?\\u8230?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Мученик Твой, Господи, Прокопий,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "во страдании своем венец нетления прият от Тебе, Бога нашего…",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "cu",
+        "variant": "synodal-cyrl",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Мученик Твой, Господи, Прокопий,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_verse;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 \\u1052?\\u1091?\\u1095?\\u1077?\\u1085?\\u1080?\\u1082? \\u1058?\\u1074?\\u1086?\\u1081?, \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1055?\\u1088?\\u1086?\\u1082?\\u1086?\\u1087?\\u1080?\\u1081?,\\line \\u1074?\\u1086? \\u1089?\\u1090?\\u1088?\\u1072?\\u1076?\\u1072?\\u1085?\\u1080?\\u1080? \\u1089?\\u1074?\\u1086?\\u1077?\\u1084? \\u1074?\\u1077?\\u1085?\\u1077?\\u1094? \\u1085?\\u1077?\\u1090?\\u1083?\\u1077?\\u1085?\\u1080?\\u1103? \\u1087?\\u1088?\\u1080?\\u1103?\\u1090? \\u1086?\\u1090? \\u1058?\\u1077?\\u1073?\\u1077?, \\u1041?\\u1086?\\u1075?\\u1072? \\u1085?\\u1072?\\u1096?\\u1077?\\u1075?\\u1086?\\u8230?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Мученик Твой, Господи, Прокопий,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "во страдании своем венец нетления прият от Тебе, Бога нашего…",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "cu",
+        "variant": "synodal-cyrl",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Мученик Твой, Господи, Прокопий,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_annotation;}\n{\\s2 opt_verse;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 \\par}\n{\\pard\\s2 \\u1052?\\u1091?\\u1095?\\u1077?\\u1085?\\u1080?\\u1082? \\u1058?\\u1074?\\u1086?\\u1081?, \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1055?\\u1088?\\u1086?\\u1082?\\u1086?\\u1087?\\u1080?\\u1081?,\\line \\u1074?\\u1086? \\u1089?\\u1090?\\u1088?\\u1072?\\u1076?\\u1072?\\u1085?\\u1080?\\u1080? \\u1089?\\u1074?\\u1086?\\u1077?\\u1084? \\u1074?\\u1077?\\u1085?\\u1077?\\u1094? \\u1085?\\u1077?\\u1090?\\u1083?\\u1077?\\u1085?\\u1080?\\u1103? \\u1087?\\u1088?\\u1080?\\u1103?\\u1090? \\u1086?\\u1090? \\u1058?\\u1077?\\u1073?\\u1077?, \\u1041?\\u1086?\\u1075?\\u1072? \\u1085?\\u1072?\\u1096?\\u1077?\\u1075?\\u1086?\\u8230?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_annotation",
+            "runs": []
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Мученик Твой, Господи, Прокопий,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "во страдании своем венец нетления прият от Тебе, Бога нашего…",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_annotation",
+            "name": "opt_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "cu",
+        "variant": "synodal-cyrl",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Мученик Твой, Господи, Прокопий,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_verse;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 \\u1052?\\u1091?\\u1095?\\u1077?\\u1085?\\u1080?\\u1082? \\u1058?\\u1074?\\u1086?\\u1081?, \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1055?\\u1088?\\u1086?\\u1082?\\u1086?\\u1087?\\u1080?\\u1081?,\\line \\u1074?\\u1086? \\u1089?\\u1090?\\u1088?\\u1072?\\u1076?\\u1072?\\u1085?\\u1080?\\u1080? \\u1089?\\u1074?\\u1086?\\u1077?\\u1084? \\u1074?\\u1077?\\u1085?\\u1077?\\u1094? \\u1085?\\u1077?\\u1090?\\u1083?\\u1077?\\u1085?\\u1080?\\u1103? \\u1087?\\u1088?\\u1080?\\u1103?\\u1090? \\u1086?\\u1090? \\u1058?\\u1077?\\u1073?\\u1077?, \\u1041?\\u1086?\\u1075?\\u1072? \\u1085?\\u1072?\\u1096?\\u1077?\\u1075?\\u1086?\\u8230?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Мученик Твой, Господи, Прокопий,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "во страдании своем венец нетления прият от Тебе, Бога нашего…",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "cu",
+        "variant": "synodal-cyrl",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Мученик Твой, Господи, Прокопий,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "во страдании своем венец нетления прият от Тебе, Бога нашего…"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_annotation;}\n{\\s2 Place2_verse;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 \\par}\n{\\pard\\s2 \\u1052?\\u1091?\\u1095?\\u1077?\\u1085?\\u1080?\\u1082? \\u1058?\\u1074?\\u1086?\\u1081?, \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1055?\\u1088?\\u1086?\\u1082?\\u1086?\\u1087?\\u1080?\\u1081?,\\line \\u1074?\\u1086? \\u1089?\\u1090?\\u1088?\\u1072?\\u1076?\\u1072?\\u1085?\\u1080?\\u1080? \\u1089?\\u1074?\\u1086?\\u1077?\\u1084? \\u1074?\\u1077?\\u1085?\\u1077?\\u1094? \\u1085?\\u1077?\\u1090?\\u1083?\\u1077?\\u1085?\\u1080?\\u1103? \\u1087?\\u1088?\\u1080?\\u1103?\\u1090? \\u1086?\\u1090? \\u1058?\\u1077?\\u1073?\\u1077?, \\u1041?\\u1086?\\u1075?\\u1072? \\u1085?\\u1072?\\u1096?\\u1077?\\u1075?\\u1086?\\u8230?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_annotation",
+            "runs": []
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Мученик Твой, Господи, Прокопий,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "во страдании своем венец нетления прият от Тебе, Бога нашего…",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_annotation",
+            "name": "Place2_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard"
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ton 4. Tropar des Großmärtyrers."
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Dein Märtyrer Prokopius, Herr,"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "denn mit seiner Kraft hat er die Tyrannen besiegt"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "und die Dämonen kraftlos gemacht."
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 annotation;}\n{\\s2 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 Ton 4. Tropar des Gro\\u223?m\\u228?rtyrers.\\par}\n{\\pard\\s2 Dein M\\u228?rtyrer Prokopius, Herr,\\line hat in seinem Leidenskampf den Kranz der Unverg\\u228?nglichkeit erworben;\\line denn mit seiner Kraft hat er die Tyrannen besiegt\\line und die D\\u228?monen kraftlos gemacht.\\line Durch seine F\\u252?rbitten, Christus Gott, rette unsere Seelen.\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "annotation",
+            "runs": [
+              {
+                "text": "Ton 4. Tropar des Großmärtyrers.",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Dein Märtyrer Prokopius, Herr,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "denn mit seiner Kraft hat er die Tyrannen besiegt",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "und die Dämonen kraftlos gemacht.",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Durch seine Fürbitten, Christus Gott, rette unsere Seelen.",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,3301 @@
+{
+  "prayer": "inputs/layout-edge.json",
+  "cases": [
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Größe & \"Maß\" <ok>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "note",
+            "lines": [
+              [
+                {
+                  "t": "note",
+                  "v": "Kind namens note"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": []
+          },
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ж ǆ ﬁ"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 heading;}\n{\\s2 note;}\n{\\s3 annotation;}\n{\\s4 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 Gr\\u246?\\u223?e & \"Ma\\u223?\" <ok>\\par}\n{\\pard\\s2 {\\cs10 Kind namens note}\\par}\n{\\pard\\s3 \\par}\n{\\pard\\s3 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s1 \\u1046? \\u454? \\u-1279?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "heading",
+            "runs": [
+              {
+                "text": "Größe & \"Maß\" <ok>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "note",
+            "runs": [
+              {
+                "text": "Kind namens note",
+                "style": "note"
+              }
+            ]
+          },
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "verse",
+            "runs": []
+          },
+          {
+            "style": "heading",
+            "runs": [
+              {
+                "text": "Ж ǆ ﬁ",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "heading",
+            "name": "heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Größe & \"Maß\" <ok>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "note",
+            "lines": [
+              [
+                {
+                  "t": "note",
+                  "v": "Kind namens note"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": []
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ж ǆ ﬁ"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 heading;}\n{\\s2 verse;}\n{\\s3 note;}\n{\\s4 annotation;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 Gr\\u246?\\u223?e & \"Ma\\u223?\" <ok>\\par}\n{\\pard\\s2 \\par}\n{\\pard\\s3 {\\cs10 Kind namens note}\\par}\n{\\pard\\s4 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s1 \\u1046? \\u454? \\u-1279?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "heading",
+            "runs": [
+              {
+                "text": "Größe & \"Maß\" <ok>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": []
+          },
+          {
+            "style": "note",
+            "runs": [
+              {
+                "text": "Kind namens note",
+                "style": "note"
+              }
+            ]
+          },
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "verse",
+            "runs": []
+          },
+          {
+            "style": "verse",
+            "runs": []
+          },
+          {
+            "style": "heading",
+            "runs": [
+              {
+                "text": "Ж ǆ ﬁ",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "heading",
+            "name": "heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Größe & \"Maß\" <ok>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "opt_note",
+            "lines": [
+              [
+                {
+                  "t": "note",
+                  "v": "Kind namens note"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": []
+          },
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ж ǆ ﬁ"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_heading;}\n{\\s2 opt_note;}\n{\\s3 opt_annotation;}\n{\\s4 opt_verse;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 Gr\\u246?\\u223?e & \"Ma\\u223?\" <ok>\\par}\n{\\pard\\s2 {\\cs10 Kind namens note}\\par}\n{\\pard\\s3 \\par}\n{\\pard\\s3 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s1 \\u1046? \\u454? \\u-1279?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_heading",
+            "runs": [
+              {
+                "text": "Größe & \"Maß\" <ok>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_note",
+            "runs": [
+              {
+                "text": "Kind namens note",
+                "style": "opt_note"
+              }
+            ]
+          },
+          {
+            "style": "opt_annotation",
+            "runs": []
+          },
+          {
+            "style": "opt_annotation",
+            "runs": []
+          },
+          {
+            "style": "opt_verse",
+            "runs": []
+          },
+          {
+            "style": "opt_heading",
+            "runs": [
+              {
+                "text": "Ж ǆ ﬁ",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_heading",
+            "name": "opt_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_annotation",
+            "name": "opt_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Größe & \"Maß\" <ok>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "opt_note",
+            "lines": [
+              [
+                {
+                  "t": "note",
+                  "v": "Kind namens note"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": []
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ж ǆ ﬁ"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_heading;}\n{\\s2 opt_verse;}\n{\\s3 opt_note;}\n{\\s4 opt_annotation;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 Gr\\u246?\\u223?e & \"Ma\\u223?\" <ok>\\par}\n{\\pard\\s2 \\par}\n{\\pard\\s3 {\\cs10 Kind namens note}\\par}\n{\\pard\\s4 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s1 \\u1046? \\u454? \\u-1279?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_heading",
+            "runs": [
+              {
+                "text": "Größe & \"Maß\" <ok>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_verse",
+            "runs": []
+          },
+          {
+            "style": "opt_note",
+            "runs": [
+              {
+                "text": "Kind namens note",
+                "style": "opt_note"
+              }
+            ]
+          },
+          {
+            "style": "opt_annotation",
+            "runs": []
+          },
+          {
+            "style": "opt_annotation",
+            "runs": []
+          },
+          {
+            "style": "opt_verse",
+            "runs": []
+          },
+          {
+            "style": "opt_verse",
+            "runs": []
+          },
+          {
+            "style": "opt_heading",
+            "runs": [
+              {
+                "text": "Ж ǆ ﬁ",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_heading",
+            "name": "opt_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_annotation",
+            "name": "opt_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Größe & \"Maß\" <ok>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "Place2_note",
+            "lines": [
+              [
+                {
+                  "t": "note",
+                  "v": "Kind namens note"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": []
+          },
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ж ǆ ﬁ"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_heading;}\n{\\s2 Place2_note;}\n{\\s3 Place2_annotation;}\n{\\s4 Place2_verse;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 Gr\\u246?\\u223?e & \"Ma\\u223?\" <ok>\\par}\n{\\pard\\s2 {\\cs10 Kind namens note}\\par}\n{\\pard\\s3 \\par}\n{\\pard\\s3 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s1 \\u1046? \\u454? \\u-1279?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_heading",
+            "runs": [
+              {
+                "text": "Größe & \"Maß\" <ok>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_note",
+            "runs": [
+              {
+                "text": "Kind namens note",
+                "style": "Place2_note"
+              }
+            ]
+          },
+          {
+            "style": "Place2_annotation",
+            "runs": []
+          },
+          {
+            "style": "Place2_annotation",
+            "runs": []
+          },
+          {
+            "style": "Place2_verse",
+            "runs": []
+          },
+          {
+            "style": "Place2_heading",
+            "runs": [
+              {
+                "text": "Ж ǆ ﬁ",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_heading",
+            "name": "Place2_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_annotation",
+            "name": "Place2_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Größe & \"Maß\" <ok>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "Place2_note",
+            "lines": [
+              [
+                {
+                  "t": "note",
+                  "v": "Kind namens note"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": []
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ж ǆ ﬁ"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_heading;}\n{\\s2 Place2_verse;}\n{\\s3 Place2_note;}\n{\\s4 Place2_annotation;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 Gr\\u246?\\u223?e & \"Ma\\u223?\" <ok>\\par}\n{\\pard\\s2 \\par}\n{\\pard\\s3 {\\cs10 Kind namens note}\\par}\n{\\pard\\s4 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s1 \\u1046? \\u454? \\u-1279?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_heading",
+            "runs": [
+              {
+                "text": "Größe & \"Maß\" <ok>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_verse",
+            "runs": []
+          },
+          {
+            "style": "Place2_note",
+            "runs": [
+              {
+                "text": "Kind namens note",
+                "style": "Place2_note"
+              }
+            ]
+          },
+          {
+            "style": "Place2_annotation",
+            "runs": []
+          },
+          {
+            "style": "Place2_annotation",
+            "runs": []
+          },
+          {
+            "style": "Place2_verse",
+            "runs": []
+          },
+          {
+            "style": "Place2_verse",
+            "runs": []
+          },
+          {
+            "style": "Place2_heading",
+            "runs": [
+              {
+                "text": "Ж ǆ ﬁ",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_heading",
+            "name": "Place2_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_annotation",
+            "name": "Place2_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "ru",
+        "variant": "cu",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Господи, помилуй {трижды} \\ & <b>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Слава Отцу и Сыну,"
+                }
+              ],
+              [],
+              [
+                {
+                  "t": "text",
+                  "v": "и Святому "
+                },
+                {
+                  "t": "note",
+                  "v": "(поклон)"
+                },
+                {
+                  "t": "text",
+                  "v": " Духу"
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": "только заметка"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              []
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 heading;}\n{\\s2 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1087?\\u1086?\\u1084?\\u1080?\\u1083?\\u1091?\\u1081? \\{\\u1090?\\u1088?\\u1080?\\u1078?\\u1076?\\u1099?\\} \\\\ & <b>\\par}\n{\\pard\\s2 \\u1057?\\u1083?\\u1072?\\u1074?\\u1072? \\u1054?\\u1090?\\u1094?\\u1091? \\u1080? \\u1057?\\u1099?\\u1085?\\u1091?,\\line \\line \\u1080? \\u1057?\\u1074?\\u1103?\\u1090?\\u1086?\\u1084?\\u1091? {\\cs10 (\\u1087?\\u1086?\\u1082?\\u1083?\\u1086?\\u1085?)} \\u1044?\\u1091?\\u1093?\\u1091?\\line {\\cs10 \\u1090?\\u1086?\\u1083?\\u1100?\\u1082?\\u1086? \\u1079?\\u1072?\\u1084?\\u1077?\\u1090?\\u1082?\\u1072?}\\par}\n{\\pard\\s2 \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "heading",
+            "runs": [
+              {
+                "text": "Господи, помилуй {трижды} \\ & <b>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Слава Отцу и Сыну,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "и Святому ",
+                "style": null
+              },
+              {
+                "text": "(поклон)",
+                "style": "note"
+              },
+              {
+                "text": " Духу",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "только заметка",
+                "style": "note"
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": []
+          }
+        ],
+        "styles": [
+          {
+            "id": "heading",
+            "name": "heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "ru",
+        "variant": "cu",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Господи, помилуй {трижды} \\ & <b>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Слава Отцу и Сыну,"
+                }
+              ],
+              [],
+              [
+                {
+                  "t": "text",
+                  "v": "и Святому "
+                },
+                {
+                  "t": "note",
+                  "v": "(поклон)"
+                },
+                {
+                  "t": "text",
+                  "v": " Духу"
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": "только заметка"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "note",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              []
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 heading;}\n{\\s2 verse;}\n{\\s3 note;}\n{\\s4 annotation;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1087?\\u1086?\\u1084?\\u1080?\\u1083?\\u1091?\\u1081? \\{\\u1090?\\u1088?\\u1080?\\u1078?\\u1076?\\u1099?\\} \\\\ & <b>\\par}\n{\\pard\\s2 \\u1057?\\u1083?\\u1072?\\u1074?\\u1072? \\u1054?\\u1090?\\u1094?\\u1091? \\u1080? \\u1057?\\u1099?\\u1085?\\u1091?,\\line \\line \\u1080? \\u1057?\\u1074?\\u1103?\\u1090?\\u1086?\\u1084?\\u1091? {\\cs10 (\\u1087?\\u1086?\\u1082?\\u1083?\\u1086?\\u1085?)} \\u1044?\\u1091?\\u1093?\\u1091?\\line {\\cs10 \\u1090?\\u1086?\\u1083?\\u1100?\\u1082?\\u1086? \\u1079?\\u1072?\\u1084?\\u1077?\\u1090?\\u1082?\\u1072?}\\par}\n{\\pard\\s3 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s1 \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "heading",
+            "runs": [
+              {
+                "text": "Господи, помилуй {трижды} \\ & <b>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Слава Отцу и Сыну,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "и Святому ",
+                "style": null
+              },
+              {
+                "text": "(поклон)",
+                "style": "note"
+              },
+              {
+                "text": " Духу",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "только заметка",
+                "style": "note"
+              }
+            ]
+          },
+          {
+            "style": "note",
+            "runs": []
+          },
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "verse",
+            "runs": []
+          },
+          {
+            "style": "verse",
+            "runs": []
+          },
+          {
+            "style": "heading",
+            "runs": []
+          }
+        ],
+        "styles": [
+          {
+            "id": "heading",
+            "name": "heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "ru",
+        "variant": "cu",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Господи, помилуй {трижды} \\ & <b>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Слава Отцу и Сыну,"
+                }
+              ],
+              [],
+              [
+                {
+                  "t": "text",
+                  "v": "и Святому "
+                },
+                {
+                  "t": "note",
+                  "v": "(поклон)"
+                },
+                {
+                  "t": "text",
+                  "v": " Духу"
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": "только заметка"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              []
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_heading;}\n{\\s2 opt_verse;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1087?\\u1086?\\u1084?\\u1080?\\u1083?\\u1091?\\u1081? \\{\\u1090?\\u1088?\\u1080?\\u1078?\\u1076?\\u1099?\\} \\\\ & <b>\\par}\n{\\pard\\s2 \\u1057?\\u1083?\\u1072?\\u1074?\\u1072? \\u1054?\\u1090?\\u1094?\\u1091? \\u1080? \\u1057?\\u1099?\\u1085?\\u1091?,\\line \\line \\u1080? \\u1057?\\u1074?\\u1103?\\u1090?\\u1086?\\u1084?\\u1091? {\\cs10 (\\u1087?\\u1086?\\u1082?\\u1083?\\u1086?\\u1085?)} \\u1044?\\u1091?\\u1093?\\u1091?\\line {\\cs10 \\u1090?\\u1086?\\u1083?\\u1100?\\u1082?\\u1086? \\u1079?\\u1072?\\u1084?\\u1077?\\u1090?\\u1082?\\u1072?}\\par}\n{\\pard\\s2 \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_heading",
+            "runs": [
+              {
+                "text": "Господи, помилуй {трижды} \\ & <b>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Слава Отцу и Сыну,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "и Святому ",
+                "style": null
+              },
+              {
+                "text": "(поклон)",
+                "style": "opt_note"
+              },
+              {
+                "text": " Духу",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "только заметка",
+                "style": "opt_note"
+              }
+            ]
+          },
+          {
+            "style": "opt_verse",
+            "runs": []
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_heading",
+            "name": "opt_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "ru",
+        "variant": "cu",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Господи, помилуй {трижды} \\ & <b>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Слава Отцу и Сыну,"
+                }
+              ],
+              [],
+              [
+                {
+                  "t": "text",
+                  "v": "и Святому "
+                },
+                {
+                  "t": "note",
+                  "v": "(поклон)"
+                },
+                {
+                  "t": "text",
+                  "v": " Духу"
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": "только заметка"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "opt_note",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              []
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_heading;}\n{\\s2 opt_verse;}\n{\\s3 opt_note;}\n{\\s4 opt_annotation;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1087?\\u1086?\\u1084?\\u1080?\\u1083?\\u1091?\\u1081? \\{\\u1090?\\u1088?\\u1080?\\u1078?\\u1076?\\u1099?\\} \\\\ & <b>\\par}\n{\\pard\\s2 \\u1057?\\u1083?\\u1072?\\u1074?\\u1072? \\u1054?\\u1090?\\u1094?\\u1091? \\u1080? \\u1057?\\u1099?\\u1085?\\u1091?,\\line \\line \\u1080? \\u1057?\\u1074?\\u1103?\\u1090?\\u1086?\\u1084?\\u1091? {\\cs10 (\\u1087?\\u1086?\\u1082?\\u1083?\\u1086?\\u1085?)} \\u1044?\\u1091?\\u1093?\\u1091?\\line {\\cs10 \\u1090?\\u1086?\\u1083?\\u1100?\\u1082?\\u1086? \\u1079?\\u1072?\\u1084?\\u1077?\\u1090?\\u1082?\\u1072?}\\par}\n{\\pard\\s3 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s1 \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_heading",
+            "runs": [
+              {
+                "text": "Господи, помилуй {трижды} \\ & <b>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Слава Отцу и Сыну,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "и Святому ",
+                "style": null
+              },
+              {
+                "text": "(поклон)",
+                "style": "opt_note"
+              },
+              {
+                "text": " Духу",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "только заметка",
+                "style": "opt_note"
+              }
+            ]
+          },
+          {
+            "style": "opt_note",
+            "runs": []
+          },
+          {
+            "style": "opt_annotation",
+            "runs": []
+          },
+          {
+            "style": "opt_annotation",
+            "runs": []
+          },
+          {
+            "style": "opt_verse",
+            "runs": []
+          },
+          {
+            "style": "opt_verse",
+            "runs": []
+          },
+          {
+            "style": "opt_heading",
+            "runs": []
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_heading",
+            "name": "opt_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_annotation",
+            "name": "opt_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "ru",
+        "variant": "cu",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Господи, помилуй {трижды} \\ & <b>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Слава Отцу и Сыну,"
+                }
+              ],
+              [],
+              [
+                {
+                  "t": "text",
+                  "v": "и Святому "
+                },
+                {
+                  "t": "note",
+                  "v": "(поклон)"
+                },
+                {
+                  "t": "text",
+                  "v": " Духу"
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": "только заметка"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              []
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_heading;}\n{\\s2 Place2_verse;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1087?\\u1086?\\u1084?\\u1080?\\u1083?\\u1091?\\u1081? \\{\\u1090?\\u1088?\\u1080?\\u1078?\\u1076?\\u1099?\\} \\\\ & <b>\\par}\n{\\pard\\s2 \\u1057?\\u1083?\\u1072?\\u1074?\\u1072? \\u1054?\\u1090?\\u1094?\\u1091? \\u1080? \\u1057?\\u1099?\\u1085?\\u1091?,\\line \\line \\u1080? \\u1057?\\u1074?\\u1103?\\u1090?\\u1086?\\u1084?\\u1091? {\\cs10 (\\u1087?\\u1086?\\u1082?\\u1083?\\u1086?\\u1085?)} \\u1044?\\u1091?\\u1093?\\u1091?\\line {\\cs10 \\u1090?\\u1086?\\u1083?\\u1100?\\u1082?\\u1086? \\u1079?\\u1072?\\u1084?\\u1077?\\u1090?\\u1082?\\u1072?}\\par}\n{\\pard\\s2 \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_heading",
+            "runs": [
+              {
+                "text": "Господи, помилуй {трижды} \\ & <b>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Слава Отцу и Сыну,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "и Святому ",
+                "style": null
+              },
+              {
+                "text": "(поклон)",
+                "style": "Place2_note"
+              },
+              {
+                "text": " Духу",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "только заметка",
+                "style": "Place2_note"
+              }
+            ]
+          },
+          {
+            "style": "Place2_verse",
+            "runs": []
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_heading",
+            "name": "Place2_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "ru",
+        "variant": "cu",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Господи, помилуй {трижды} \\ & <b>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Слава Отцу и Сыну,"
+                }
+              ],
+              [],
+              [
+                {
+                  "t": "text",
+                  "v": "и Святому "
+                },
+                {
+                  "t": "note",
+                  "v": "(поклон)"
+                },
+                {
+                  "t": "text",
+                  "v": " Духу"
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": "только заметка"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "Place2_note",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              []
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_heading;}\n{\\s2 Place2_verse;}\n{\\s3 Place2_note;}\n{\\s4 Place2_annotation;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 \\u1043?\\u1086?\\u1089?\\u1087?\\u1086?\\u1076?\\u1080?, \\u1087?\\u1086?\\u1084?\\u1080?\\u1083?\\u1091?\\u1081? \\{\\u1090?\\u1088?\\u1080?\\u1078?\\u1076?\\u1099?\\} \\\\ & <b>\\par}\n{\\pard\\s2 \\u1057?\\u1083?\\u1072?\\u1074?\\u1072? \\u1054?\\u1090?\\u1094?\\u1091? \\u1080? \\u1057?\\u1099?\\u1085?\\u1091?,\\line \\line \\u1080? \\u1057?\\u1074?\\u1103?\\u1090?\\u1086?\\u1084?\\u1091? {\\cs10 (\\u1087?\\u1086?\\u1082?\\u1083?\\u1086?\\u1085?)} \\u1044?\\u1091?\\u1093?\\u1091?\\line {\\cs10 \\u1090?\\u1086?\\u1083?\\u1100?\\u1082?\\u1086? \\u1079?\\u1072?\\u1084?\\u1077?\\u1090?\\u1082?\\u1072?}\\par}\n{\\pard\\s3 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s2 \\par}\n{\\pard\\s1 \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_heading",
+            "runs": [
+              {
+                "text": "Господи, помилуй {трижды} \\ & <b>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Слава Отцу и Сыну,",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "и Святому ",
+                "style": null
+              },
+              {
+                "text": "(поклон)",
+                "style": "Place2_note"
+              },
+              {
+                "text": " Духу",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "только заметка",
+                "style": "Place2_note"
+              }
+            ]
+          },
+          {
+            "style": "Place2_note",
+            "runs": []
+          },
+          {
+            "style": "Place2_annotation",
+            "runs": []
+          },
+          {
+            "style": "Place2_annotation",
+            "runs": []
+          },
+          {
+            "style": "Place2_verse",
+            "runs": []
+          },
+          {
+            "style": "Place2_verse",
+            "runs": []
+          },
+          {
+            "style": "Place2_heading",
+            "runs": []
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_heading",
+            "name": "Place2_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_annotation",
+            "name": "Place2_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "el",
+        "variant": "poly",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Κύριε ἐλέησον"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Δόξα "
+                },
+                {
+                  "t": "note",
+                  "v": "ἀμήν"
+                },
+                {
+                  "t": "text",
+                  "v": " Πατρί"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": ""
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": ""
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "ὁ Θεός  mit  Spaces "
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 \\u922?\\u973?\\u961?\\u953?\\u949? \\u7952?\\u955?\\u941?\\u951?\\u963?\\u959?\\u957?\\line \\u916?\\u972?\\u958?\\u945? {\\cs10 \\u7936?\\u956?\\u942?\\u957?} \\u928?\\u945?\\u964?\\u961?\\u943?\\par}\n{\\pard\\s1 \\line {\\cs10 }\\par}\n{\\pard\\s1 \\u8001? \\u920?\\u949?\\u972?\\u962?  mit  Spaces \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Κύριε ἐλέησον",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Δόξα ",
+                "style": null
+              },
+              {
+                "text": "ἀμήν",
+                "style": "note"
+              },
+              {
+                "text": " Πατρί",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "",
+                "style": "note"
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "ὁ Θεός  mit  Spaces ",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "el",
+        "variant": "poly",
+        "prefixStem": "",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Κύριε ἐλέησον"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Δόξα "
+                },
+                {
+                  "t": "note",
+                  "v": "ἀμήν"
+                },
+                {
+                  "t": "text",
+                  "v": " Πατρί"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "note",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": ""
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": ""
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "ὁ Θεός  mit  Spaces "
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              []
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 heading;}\n{\\s2 verse;}\n{\\s3 note;}\n{\\s4 annotation;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 \\par}\n{\\pard\\s2 \\u922?\\u973?\\u961?\\u953?\\u949? \\u7952?\\u955?\\u941?\\u951?\\u963?\\u959?\\u957?\\line \\u916?\\u972?\\u958?\\u945? {\\cs10 \\u7936?\\u956?\\u942?\\u957?} \\u928?\\u945?\\u964?\\u961?\\u943?\\par}\n{\\pard\\s3 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s2 \\line {\\cs10 }\\par}\n{\\pard\\s2 \\u8001? \\u920?\\u949?\\u972?\\u962?  mit  Spaces \\par}\n{\\pard\\s1 \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "heading",
+            "runs": []
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "Κύριε ἐλέησον",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Δόξα ",
+                "style": null
+              },
+              {
+                "text": "ἀμήν",
+                "style": "note"
+              },
+              {
+                "text": " Πατρί",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "note",
+            "runs": []
+          },
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "",
+                "style": "note"
+              }
+            ]
+          },
+          {
+            "style": "verse",
+            "runs": [
+              {
+                "text": "ὁ Θεός  mit  Spaces ",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "heading",
+            "runs": []
+          }
+        ],
+        "styles": [
+          {
+            "id": "heading",
+            "name": "heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "el",
+        "variant": "poly",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Κύριε ἐλέησον"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Δόξα "
+                },
+                {
+                  "t": "note",
+                  "v": "ἀμήν"
+                },
+                {
+                  "t": "text",
+                  "v": " Πατρί"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": ""
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": ""
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "ὁ Θεός  mit  Spaces "
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_verse;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 \\u922?\\u973?\\u961?\\u953?\\u949? \\u7952?\\u955?\\u941?\\u951?\\u963?\\u959?\\u957?\\line \\u916?\\u972?\\u958?\\u945? {\\cs10 \\u7936?\\u956?\\u942?\\u957?} \\u928?\\u945?\\u964?\\u961?\\u943?\\par}\n{\\pard\\s1 \\line {\\cs10 }\\par}\n{\\pard\\s1 \\u8001? \\u920?\\u949?\\u972?\\u962?  mit  Spaces \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Κύριε ἐλέησον",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Δόξα ",
+                "style": null
+              },
+              {
+                "text": "ἀμήν",
+                "style": "opt_note"
+              },
+              {
+                "text": " Πατρί",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "",
+                "style": "opt_note"
+              }
+            ]
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "ὁ Θεός  mit  Spaces ",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "el",
+        "variant": "poly",
+        "prefixStem": "opt",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "opt_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Κύριε ἐλέησον"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Δόξα "
+                },
+                {
+                  "t": "note",
+                  "v": "ἀμήν"
+                },
+                {
+                  "t": "text",
+                  "v": " Πατρί"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "opt_note",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "opt_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": ""
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": ""
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "opt_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "ὁ Θεός  mit  Spaces "
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "heading",
+            "styleName": "opt_heading",
+            "lines": [
+              []
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 opt_heading;}\n{\\s2 opt_verse;}\n{\\s3 opt_note;}\n{\\s4 opt_annotation;}\n{\\*\\cs10 opt_note;}\n}\n{\\pard\\s1 \\par}\n{\\pard\\s2 \\u922?\\u973?\\u961?\\u953?\\u949? \\u7952?\\u955?\\u941?\\u951?\\u963?\\u959?\\u957?\\line \\u916?\\u972?\\u958?\\u945? {\\cs10 \\u7936?\\u956?\\u942?\\u957?} \\u928?\\u945?\\u964?\\u961?\\u943?\\par}\n{\\pard\\s3 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s2 \\line {\\cs10 }\\par}\n{\\pard\\s2 \\u8001? \\u920?\\u949?\\u972?\\u962?  mit  Spaces \\par}\n{\\pard\\s1 \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "opt_heading",
+            "runs": []
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "Κύριε ἐλέησον",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Δόξα ",
+                "style": null
+              },
+              {
+                "text": "ἀμήν",
+                "style": "opt_note"
+              },
+              {
+                "text": " Πατρί",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_note",
+            "runs": []
+          },
+          {
+            "style": "opt_annotation",
+            "runs": []
+          },
+          {
+            "style": "opt_annotation",
+            "runs": []
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "",
+                "style": "opt_note"
+              }
+            ]
+          },
+          {
+            "style": "opt_verse",
+            "runs": [
+              {
+                "text": "ὁ Θεός  mit  Spaces ",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "opt_heading",
+            "runs": []
+          }
+        ],
+        "styles": [
+          {
+            "id": "opt_heading",
+            "name": "opt_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_verse",
+            "name": "opt_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_annotation",
+            "name": "opt_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "opt_note",
+            "name": "opt_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "el",
+        "variant": "poly",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": false
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Κύριε ἐλέησον"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Δόξα "
+                },
+                {
+                  "t": "note",
+                  "v": "ἀμήν"
+                },
+                {
+                  "t": "text",
+                  "v": " Πατρί"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": ""
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": ""
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "ὁ Θεός  mit  Spaces "
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_verse;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 \\u922?\\u973?\\u961?\\u953?\\u949? \\u7952?\\u955?\\u941?\\u951?\\u963?\\u959?\\u957?\\line \\u916?\\u972?\\u958?\\u945? {\\cs10 \\u7936?\\u956?\\u942?\\u957?} \\u928?\\u945?\\u964?\\u961?\\u943?\\par}\n{\\pard\\s1 \\line {\\cs10 }\\par}\n{\\pard\\s1 \\u8001? \\u920?\\u949?\\u972?\\u962?  mit  Spaces \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Κύριε ἐλέησον",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Δόξα ",
+                "style": null
+              },
+              {
+                "text": "ἀμήν",
+                "style": "Place2_note"
+              },
+              {
+                "text": " Πατρί",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "",
+                "style": "Place2_note"
+              }
+            ]
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "ὁ Θεός  mit  Spaces ",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "el",
+        "variant": "poly",
+        "prefixStem": "Place2",
+        "includeBlocksWithoutTranslation": true
+      },
+      "layout": {
+        "noteStyleName": "Place2_note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Κύριε ἐλέησον"
+                }
+              ],
+              [
+                {
+                  "t": "text",
+                  "v": "Δόξα "
+                },
+                {
+                  "t": "note",
+                  "v": "ἀμήν"
+                },
+                {
+                  "t": "text",
+                  "v": " Πατρί"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "Place2_note",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "Place2_annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": ""
+                }
+              ],
+              [
+                {
+                  "t": "note",
+                  "v": ""
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "Place2_verse",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "ὁ Θεός  mit  Spaces "
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "heading",
+            "styleName": "Place2_heading",
+            "lines": [
+              []
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 Place2_heading;}\n{\\s2 Place2_verse;}\n{\\s3 Place2_note;}\n{\\s4 Place2_annotation;}\n{\\*\\cs10 Place2_note;}\n}\n{\\pard\\s1 \\par}\n{\\pard\\s2 \\u922?\\u973?\\u961?\\u953?\\u949? \\u7952?\\u955?\\u941?\\u951?\\u963?\\u959?\\u957?\\line \\u916?\\u972?\\u958?\\u945? {\\cs10 \\u7936?\\u956?\\u942?\\u957?} \\u928?\\u945?\\u964?\\u961?\\u943?\\par}\n{\\pard\\s3 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s2 \\line {\\cs10 }\\par}\n{\\pard\\s2 \\u8001? \\u920?\\u949?\\u972?\\u962?  mit  Spaces \\par}\n{\\pard\\s1 \\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "Place2_heading",
+            "runs": []
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "Κύριε ἐλέησον",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "Δόξα ",
+                "style": null
+              },
+              {
+                "text": "ἀμήν",
+                "style": "Place2_note"
+              },
+              {
+                "text": " Πατρί",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_note",
+            "runs": []
+          },
+          {
+            "style": "Place2_annotation",
+            "runs": []
+          },
+          {
+            "style": "Place2_annotation",
+            "runs": []
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "",
+                "style": null
+              },
+              {
+                "break": true
+              },
+              {
+                "text": "",
+                "style": "Place2_note"
+              }
+            ]
+          },
+          {
+            "style": "Place2_verse",
+            "runs": [
+              {
+                "text": "ὁ Θεός  mit  Spaces ",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "Place2_heading",
+            "runs": []
+          }
+        ],
+        "styles": [
+          {
+            "id": "Place2_heading",
+            "name": "Place2_heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_verse",
+            "name": "Place2_verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_annotation",
+            "name": "Place2_annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "Place2_note",
+            "name": "Place2_note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    },
+    {
+      "options": {
+        "lang": "de",
+        "variant": "standard"
+      },
+      "layout": {
+        "noteStyleName": "note",
+        "paragraphs": [
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Größe & \"Maß\" <ok>"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "note",
+            "styleName": "note",
+            "lines": [
+              [
+                {
+                  "t": "note",
+                  "v": "Kind namens note"
+                }
+              ]
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "annotation",
+            "styleName": "annotation",
+            "lines": [
+              []
+            ]
+          },
+          {
+            "kind": "verse",
+            "styleName": "verse",
+            "lines": []
+          },
+          {
+            "kind": "heading",
+            "styleName": "heading",
+            "lines": [
+              [
+                {
+                  "t": "text",
+                  "v": "Ж ǆ ﬁ"
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "rtf": "{\\rtf1\\ansi\\uc1\\deff0\n{\\fonttbl{\\f0\\fnil;}}\n{\\stylesheet\n{\\s1 heading;}\n{\\s2 note;}\n{\\s3 annotation;}\n{\\s4 verse;}\n{\\*\\cs10 note;}\n}\n{\\pard\\s1 Gr\\u246?\\u223?e & \"Ma\\u223?\" <ok>\\par}\n{\\pard\\s2 {\\cs10 Kind namens note}\\par}\n{\\pard\\s3 \\par}\n{\\pard\\s3 \\par}\n{\\pard\\s4 \\par}\n{\\pard\\s1 \\u1046? \\u454? \\u-1279?\\par}\n}\n",
+      "docx": {
+        "paragraphs": [
+          {
+            "style": "heading",
+            "runs": [
+              {
+                "text": "Größe & \"Maß\" <ok>",
+                "style": null
+              }
+            ]
+          },
+          {
+            "style": "note",
+            "runs": [
+              {
+                "text": "Kind namens note",
+                "style": "note"
+              }
+            ]
+          },
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "annotation",
+            "runs": []
+          },
+          {
+            "style": "verse",
+            "runs": []
+          },
+          {
+            "style": "heading",
+            "runs": [
+              {
+                "text": "Ж ǆ ﬁ",
+                "style": null
+              }
+            ]
+          }
+        ],
+        "styles": [
+          {
+            "id": "heading",
+            "name": "heading",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "annotation",
+            "name": "annotation",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "verse",
+            "name": "verse",
+            "type": "paragraph",
+            "basedOn": "Normal",
+            "next": "Normal",
+            "runProps": {}
+          },
+          {
+            "id": "note",
+            "name": "note",
+            "type": "character",
+            "basedOn": "DefaultParagraphFont",
+            "next": null,
+            "runProps": {}
+          }
+        ]
+      }
+    }
+  ]
+}

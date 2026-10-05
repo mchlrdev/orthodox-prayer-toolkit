@@ -1,0 +1,12 @@
+{
+  "prayer": "inputs/html-export-sample.json",
+  "cases": [
+    {
+      "options": {
+        "lang": "fr",
+        "variant": "standard"
+      },
+      "error": "Variant not found: lang=\"fr\" variant=\"standard\""
+    }
+  ]
+}
