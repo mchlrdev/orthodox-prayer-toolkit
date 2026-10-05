@@ -3,7 +3,8 @@
 
 use indexmap::IndexMap;
 
-use crate::layout::{LayoutOptions, LayoutRun, LayoutStory, VariantNotFound, build_layout_story};
+use crate::layout::{LayoutOptions, LayoutRun, LayoutStory, build_layout_story};
+use crate::model::VariantNotFound;
 use crate::model::{Prayer, RunRole};
 
 /// RTF character style number of the note style.

@@ -1,11 +1,9 @@
 //! Layout story: the blank-styled Place model shared by the RTF and DOCX
 //! serializers. One Block becomes one paragraph; `lines` become soft breaks.
 
-use std::fmt;
-
 use serde::Serialize;
 
-use crate::model::{Prayer, TextRun, Translation, VariantKey};
+use crate::model::{Prayer, TextRun, Translation, VariantKey, VariantNotFound};
 use crate::style_prefix::style_name_with_prefix;
 
 /// One inline run of a layout line (text or note).
@@ -68,25 +66,6 @@ pub struct LayoutStory {
     pub note_style_name: String,
     pub paragraphs: Vec<LayoutParagraph>,
 }
-
-/// The prayer has no entry for the requested Variant.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct VariantNotFound {
-    pub lang: String,
-    pub variant: String,
-}
-
-impl fmt::Display for VariantNotFound {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Variant not found: lang=\"{}\" variant=\"{}\"",
-            self.lang, self.variant
-        )
-    }
-}
-
-impl std::error::Error for VariantNotFound {}
 
 /// Lines of one translation; a missing translation is one empty line.
 fn lines_from_translation(translation: Option<&Translation>) -> Vec<Vec<LayoutRun>> {

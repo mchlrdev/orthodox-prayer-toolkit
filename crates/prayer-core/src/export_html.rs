@@ -2,8 +2,8 @@
 
 use indexmap::IndexMap;
 
-use crate::export_variant::VariantNotFound;
 use crate::html_tags::{resolve_html_tag, resolve_wrapper_tag};
+use crate::model::VariantNotFound;
 use crate::model::{InlineContent, Prayer, RunRole, Translation, VariantKey, VariantMeta};
 use crate::tag_map::TagMap;
 

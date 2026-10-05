@@ -1,38 +1,8 @@
 //! Single-Variant flat export.
 
-use std::fmt;
-
-use serde_json::{Map, Value};
-
-use crate::model::{Block, FlatBlock, FlatPrayer, InlineContent, Prayer, Translation, VariantKey};
-
-/// Export of a Variant the prayer does not have.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct VariantNotFound {
-    pub lang: String,
-    pub variant: String,
-}
-
-impl VariantNotFound {
-    pub(crate) fn new(key: VariantKey<'_>) -> Self {
-        Self {
-            lang: key.lang.to_owned(),
-            variant: key.variant.to_owned(),
-        }
-    }
-}
-
-impl fmt::Display for VariantNotFound {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Variant not found: lang=\"{}\" variant=\"{}\"",
-            self.lang, self.variant
-        )
-    }
-}
-
-impl std::error::Error for VariantNotFound {}
+use crate::model::{
+    Block, FlatBlock, FlatPrayer, InlineContent, Prayer, Translation, VariantKey, VariantNotFound,
+};
 
 /// Flat export of one Variant.
 ///
@@ -81,37 +51,7 @@ pub fn export_variant(
 /// 2-space pretty JSON, trailing newline, keys in the order the TypeScript
 /// core wrote them (the `FlatPrayer` struct order differs).
 pub fn flat_prayer_json(flat: &FlatPrayer) -> String {
-    let mut doc = Map::new();
-    doc.insert("id".into(), flat.id.clone().into());
-    doc.insert("title".into(), flat.title.clone().into());
-    doc.insert("type".into(), flat.prayer_type.clone().into());
-    doc.insert("lang".into(), flat.lang.clone().into());
-    doc.insert("variant".into(), flat.variant.clone().into());
-    doc.insert("license".into(), flat.license.clone().into());
-    doc.insert("source".into(), flat.source.clone().into());
-    doc.insert(
-        "structure".into(),
-        serde_json::to_value(&flat.structure).expect("flat blocks serialize"),
-    );
-    if let Some(book) = &flat.book {
-        doc.insert("book".into(), book.clone().into());
-    }
-    if let Some(occasion) = &flat.occasion {
-        doc.insert("occasion".into(), occasion.clone().into());
-    }
-    if let Some(tone) = flat.tone {
-        doc.insert("tone".into(), tone.into());
-    }
-    if let Some(description) = &flat.description {
-        doc.insert("description".into(), description.clone().into());
-    }
-    if let Some(meta) = &flat.meta {
-        doc.insert(
-            "meta".into(),
-            serde_json::to_value(meta).expect("meta serializes"),
-        );
-    }
-    let mut text = serde_json::to_string_pretty(&Value::Object(doc)).expect("JSON value");
+    let mut text = serde_json::to_string_pretty(flat).expect("flat prayer serializes");
     text.push('\n');
     text
 }

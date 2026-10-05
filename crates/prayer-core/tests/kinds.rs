@@ -14,9 +14,9 @@ use prayer_core::library::{
     prayer_filename,
 };
 use prayer_core::resolve_styles::{
-    DEFAULT_KIND_STYLES, FALLBACK_KIND_STYLE, ResolveStylesOptions, StyleOverrides, resolve_styles,
+    DEFAULT_KIND_STYLES, FALLBACK_KIND_STYLE, ResolveStylesOptions, resolve_styles,
 };
-use prayer_core::{KindStyle, Prayer};
+use prayer_core::{KindStyle, Prayer, StyleOverrides};
 use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
 

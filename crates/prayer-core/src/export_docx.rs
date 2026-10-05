@@ -8,7 +8,8 @@ use std::io::Cursor;
 use docx_rs::{BreakType, Docx, Paragraph, Run, Style, StyleType};
 use indexmap::IndexSet;
 
-use crate::layout::{LayoutOptions, LayoutRun, LayoutStory, VariantNotFound, build_layout_story};
+use crate::layout::{LayoutOptions, LayoutRun, LayoutStory, build_layout_story};
+use crate::model::VariantNotFound;
 use crate::model::{Prayer, RunRole};
 
 /// Why a DOCX export failed.

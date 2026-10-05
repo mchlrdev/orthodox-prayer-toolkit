@@ -1,0 +1,2 @@
+# Cases where the Rust message is allowed to differ from the TypeScript core.
+# Columns (tab separated): case name, error path, reason.

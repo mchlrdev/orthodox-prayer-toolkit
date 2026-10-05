@@ -1,0 +1,5745 @@
+[
+  {
+    "name": "default-kind-styles",
+    "input": {
+      "heading": {
+        "fontSize": "1.125rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h2",
+        "indicate": "true"
+      },
+      "subheading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "h3"
+      },
+      "annotation": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      },
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "initialCap": "true",
+        "htmlTag": "p",
+        "textAlign": "justify"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "heading": {
+          "fontSize": "1.125rem",
+          "color": "accent",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "htmlTag": "h2",
+          "indicate": "true"
+        },
+        "subheading": {
+          "fontSize": "1rem",
+          "color": "accent",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "htmlTag": "h3"
+        },
+        "annotation": {
+          "fontSize": "1rem",
+          "color": "accent",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "htmlTag": "p",
+          "textAlign": "justify"
+        },
+        "verse": {
+          "fontSize": "1rem",
+          "color": "base",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "initialCap": "true",
+          "htmlTag": "p",
+          "textAlign": "justify"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "heading": {
+          "fontSize": "1.125rem",
+          "color": "accent",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "htmlTag": "h2",
+          "indicate": "true"
+        },
+        "subheading": {
+          "fontSize": "1rem",
+          "color": "accent",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "htmlTag": "h3"
+        },
+        "annotation": {
+          "fontSize": "1rem",
+          "color": "accent",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "htmlTag": "p",
+          "textAlign": "justify"
+        },
+        "verse": {
+          "fontSize": "1rem",
+          "color": "base",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "initialCap": "true",
+          "htmlTag": "p",
+          "textAlign": "justify"
+        }
+      }
+    }
+  },
+  {
+    "name": "empty-object",
+    "input": {},
+    "sanitize": {
+      "styles": {},
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {}
+    }
+  },
+  {
+    "name": "root-null",
+    "input": null,
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/",
+          "message": "styles must be a JSON object"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/",
+          "message": "styles must be a JSON object"
+        }
+      ]
+    }
+  },
+  {
+    "name": "root-array",
+    "input": [],
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/",
+          "message": "styles must be a JSON object"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/",
+          "message": "styles must be a JSON object"
+        }
+      ]
+    }
+  },
+  {
+    "name": "root-string",
+    "input": "s",
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/",
+          "message": "styles must be a JSON object"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/",
+          "message": "styles must be a JSON object"
+        }
+      ]
+    }
+  },
+  {
+    "name": "root-number",
+    "input": 1,
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/",
+          "message": "styles must be a JSON object"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/",
+          "message": "styles must be a JSON object"
+        }
+      ]
+    }
+  },
+  {
+    "name": "root-true",
+    "input": true,
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/",
+          "message": "styles must be a JSON object"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/",
+          "message": "styles must be a JSON object"
+        }
+      ]
+    }
+  },
+  {
+    "name": "test-text-align",
+    "input": {
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "textAlign": "justify"
+      },
+      "heading": {
+        "fontSize": "1rem",
+        "color": "accent",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "textAlign": "Center"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "verse": {
+          "fontSize": "1rem",
+          "color": "base",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "textAlign": "justify"
+        },
+        "heading": {
+          "fontSize": "1rem",
+          "color": "accent",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "textAlign": "center"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "verse": {
+          "fontSize": "1rem",
+          "color": "base",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "textAlign": "justify"
+        },
+        "heading": {
+          "fontSize": "1rem",
+          "color": "accent",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "textAlign": "center"
+        }
+      }
+    }
+  },
+  {
+    "name": "test-text-align-bad",
+    "input": {
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "textAlign": "right"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "verse": {
+          "fontSize": "1rem",
+          "color": "base",
+          "fontWeight": "400",
+          "fontStyle": "normal"
+        }
+      },
+      "errors": [
+        {
+          "path": "/verse/textAlign",
+          "message": "expected left, center, or justify"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/verse/textAlign",
+          "message": "expected left, center, or justify"
+        }
+      ]
+    }
+  },
+  {
+    "name": "test-html-tag",
+    "input": {
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "blockquote"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "verse": {
+          "fontSize": "1rem",
+          "color": "base",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "htmlTag": "blockquote"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "verse": {
+          "fontSize": "1rem",
+          "color": "base",
+          "fontWeight": "400",
+          "fontStyle": "normal",
+          "htmlTag": "blockquote"
+        }
+      }
+    }
+  },
+  {
+    "name": "test-html-tag-bad",
+    "input": {
+      "verse": {
+        "fontSize": "1rem",
+        "color": "base",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "htmlTag": "script"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "verse": {
+          "fontSize": "1rem",
+          "color": "base",
+          "fontWeight": "400",
+          "fontStyle": "normal"
+        }
+      },
+      "errors": [
+        {
+          "path": "/verse/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/verse/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        }
+      ]
+    }
+  },
+  {
+    "name": "test-url-and-unknown",
+    "input": {
+      "verse": {
+        "fontSize": "1rem",
+        "color": "url(javascript:alert(1))",
+        "fontWeight": "400",
+        "fontStyle": "normal",
+        "evil": "x"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "verse": {
+          "fontSize": "1rem",
+          "fontWeight": "400",
+          "fontStyle": "normal"
+        }
+      },
+      "errors": [
+        {
+          "path": "/verse/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/verse/evil",
+          "message": "unknown style field"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/verse/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/verse/evil",
+          "message": "unknown style field"
+        }
+      ]
+    }
+  },
+  {
+    "name": "test-legacy-hex",
+    "input": {
+      "verse": {
+        "color": "#1a1a1a"
+      },
+      "heading": {
+        "color": "#8b2942"
+      },
+      "other": {
+        "color": "#112233"
+      },
+      "bad": {
+        "color": "url(http://x)"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "verse": {
+          "color": "base"
+        },
+        "heading": {
+          "color": "accent"
+        },
+        "other": {
+          "color": "base"
+        }
+      },
+      "errors": [
+        {
+          "path": "/bad/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/bad",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/bad/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/bad",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "test-partial-override",
+    "input": {
+      "verse": {
+        "color": "#8b2942"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "verse": {
+          "color": "accent"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "verse": {
+          "color": "accent"
+        }
+      }
+    }
+  },
+  {
+    "name": "test-bad-kind-names",
+    "input": {
+      "Test kind": {
+        "color": "base"
+      },
+      "Test": {
+        "color": "accent"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "Test": {
+          "color": "accent"
+        }
+      },
+      "errors": [
+        {
+          "path": "/Test kind",
+          "message": "invalid kind name"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/Test kind",
+          "message": "invalid kind name"
+        }
+      ]
+    }
+  },
+  {
+    "name": "kind-names",
+    "input": {
+      "1abc": {
+        "color": "base"
+      },
+      "": {
+        "color": "base"
+      },
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": {
+        "color": "base"
+      },
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": {
+        "color": "base"
+      },
+      "foo-bar_2": {
+        "color": "base"
+      },
+      "_x": {
+        "color": "base"
+      },
+      "-x": {
+        "color": "base"
+      },
+      "é": {
+        "color": "base"
+      },
+      "Ab": {
+        "color": "ACCENT"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": {
+          "color": "base"
+        },
+        "foo-bar_2": {
+          "color": "base"
+        },
+        "Ab": {
+          "color": "accent"
+        }
+      },
+      "errors": [
+        {
+          "path": "/1abc",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/_x",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/-x",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/é",
+          "message": "invalid kind name"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/1abc",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/_x",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/-x",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/é",
+          "message": "invalid kind name"
+        }
+      ]
+    }
+  },
+  {
+    "name": "integer-like-keys",
+    "input": {
+      "1": null,
+      "2": {
+        "color": "base"
+      },
+      "b": {
+        "color": "base"
+      },
+      "a": 5,
+      "01": []
+    },
+    "sanitize": {
+      "styles": {
+        "b": {
+          "color": "base"
+        }
+      },
+      "errors": [
+        {
+          "path": "/1",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/2",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/a",
+          "message": "kind style must be an object"
+        },
+        {
+          "path": "/01",
+          "message": "invalid kind name"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/1",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/2",
+          "message": "invalid kind name"
+        },
+        {
+          "path": "/a",
+          "message": "kind style must be an object"
+        },
+        {
+          "path": "/01",
+          "message": "invalid kind name"
+        }
+      ]
+    }
+  },
+  {
+    "name": "kind-not-object",
+    "input": {
+      "a": null,
+      "b": [],
+      "c": "s",
+      "d": 1,
+      "e": {
+        "color": "base"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "e": {
+          "color": "base"
+        }
+      },
+      "errors": [
+        {
+          "path": "/a",
+          "message": "kind style must be an object"
+        },
+        {
+          "path": "/b",
+          "message": "kind style must be an object"
+        },
+        {
+          "path": "/c",
+          "message": "kind style must be an object"
+        },
+        {
+          "path": "/d",
+          "message": "kind style must be an object"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/a",
+          "message": "kind style must be an object"
+        },
+        {
+          "path": "/b",
+          "message": "kind style must be an object"
+        },
+        {
+          "path": "/c",
+          "message": "kind style must be an object"
+        },
+        {
+          "path": "/d",
+          "message": "kind style must be an object"
+        }
+      ]
+    }
+  },
+  {
+    "name": "kind-empty-object",
+    "input": {
+      "a": {}
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/a",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/a",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "kind-all-invalid",
+    "input": {
+      "a": {
+        "color": 1,
+        "fontSize": "big",
+        "zzz": "q"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/a/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/a/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/a/zzz",
+          "message": "unknown style field"
+        },
+        {
+          "path": "/a",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/a/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/a/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/a/zzz",
+          "message": "unknown style field"
+        },
+        {
+          "path": "/a",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-0",
+    "input": {
+      "k": {
+        "fontSize": "1rem"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontSize": "1rem"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontSize": "1rem"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontSize-1",
+    "input": {
+      "k": {
+        "fontSize": "16px"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontSize": "16px"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontSize": "16px"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontSize-2",
+    "input": {
+      "k": {
+        "fontSize": "0"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontSize": "0"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontSize": "0"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontSize-3",
+    "input": {
+      "k": {
+        "fontSize": " 0 "
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontSize": "0"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontSize": "0"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontSize-4",
+    "input": {
+      "k": {
+        "fontSize": "1.5em"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontSize": "1.5em"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontSize": "1.5em"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontSize-5",
+    "input": {
+      "k": {
+        "fontSize": "-2px"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontSize": "-2px"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontSize": "-2px"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontSize-6",
+    "input": {
+      "k": {
+        "fontSize": "10%"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontSize": "10%"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontSize": "10%"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontSize-7",
+    "input": {
+      "k": {
+        "fontSize": "1REM"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontSize": "1REM"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontSize": "1REM"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontSize-8",
+    "input": {
+      "k": {
+        "fontSize": "PX"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-9",
+    "input": {
+      "k": {
+        "fontSize": "1"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-10",
+    "input": {
+      "k": {
+        "fontSize": "1.rem"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-11",
+    "input": {
+      "k": {
+        "fontSize": ".5rem"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-12",
+    "input": {
+      "k": {
+        "fontSize": "1 rem"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-13",
+    "input": {
+      "k": {
+        "fontSize": "1pt"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-14",
+    "input": {
+      "k": {
+        "fontSize": " 1rem "
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontSize": "1rem"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontSize": "1rem"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontSize-15",
+    "input": {
+      "k": {
+        "fontSize": "1rem\n"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontSize": "1rem"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontSize": "1rem"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontSize-16",
+    "input": {
+      "k": {
+        "fontSize": "١rem"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-17",
+    "input": {
+      "k": {
+        "fontSize": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "value too long"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "value too long"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-18",
+    "input": {
+      "k": {
+        "fontSize": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-19",
+    "input": {
+      "k": {
+        "fontSize": "0.0"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-20",
+    "input": {
+      "k": {
+        "fontSize": "calc(1rem)"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-21",
+    "input": {
+      "k": {
+        "fontSize": "url(x)"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-22",
+    "input": {
+      "k": {
+        "fontSize": "URL (x)"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-23",
+    "input": {
+      "k": {
+        "fontSize": "ExPrEsSiOn\t(1)"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-24",
+    "input": {
+      "k": {
+        "fontSize": "a@import"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-25",
+    "input": {
+      "k": {
+        "fontSize": "javascript:x"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-26",
+    "input": {
+      "k": {
+        "fontSize": "1<2"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-27",
+    "input": {
+      "k": {
+        "fontSize": ""
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-28",
+    "input": {
+      "k": {
+        "fontSize": " "
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-type-1",
+    "input": {
+      "k": {
+        "fontSize": 1
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-type-null",
+    "input": {
+      "k": {
+        "fontSize": null
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-type-true",
+    "input": {
+      "k": {
+        "fontSize": true
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-type-[]",
+    "input": {
+      "k": {
+        "fontSize": []
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-type-{}",
+    "input": {
+      "k": {
+        "fontSize": {}
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontSize-type-[\"a\"]",
+    "input": {
+      "k": {
+        "fontSize": [
+          "a"
+        ]
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-0",
+    "input": {
+      "k": {
+        "color": "base"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-color-1",
+    "input": {
+      "k": {
+        "color": "accent"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "accent"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "color": "accent"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-color-2",
+    "input": {
+      "k": {
+        "color": " Base "
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-color-3",
+    "input": {
+      "k": {
+        "color": "ACCENT"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "accent"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "color": "accent"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-color-4",
+    "input": {
+      "k": {
+        "color": "#8b2942"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "accent"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "color": "accent"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-color-5",
+    "input": {
+      "k": {
+        "color": "#8B2942"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "accent"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "color": "accent"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-color-6",
+    "input": {
+      "k": {
+        "color": "#abc"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-color-7",
+    "input": {
+      "k": {
+        "color": "abc"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-color-8",
+    "input": {
+      "k": {
+        "color": "#ABCDEF"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-color-9",
+    "input": {
+      "k": {
+        "color": "#12"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-10",
+    "input": {
+      "k": {
+        "color": "red"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-11",
+    "input": {
+      "k": {
+        "color": "rgb(0,0,0)"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-12",
+    "input": {
+      "k": {
+        "color": ""
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-13",
+    "input": {
+      "k": {
+        "color": "#8b2942 "
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "accent"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "color": "accent"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-color-14",
+    "input": {
+      "k": {
+        "color": "#ggg"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-15",
+    "input": {
+      "k": {
+        "color": "url(#a)"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-type-1",
+    "input": {
+      "k": {
+        "color": 1
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-type-null",
+    "input": {
+      "k": {
+        "color": null
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-type-true",
+    "input": {
+      "k": {
+        "color": true
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-type-[]",
+    "input": {
+      "k": {
+        "color": []
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-type-{}",
+    "input": {
+      "k": {
+        "color": {}
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-color-type-[\"a\"]",
+    "input": {
+      "k": {
+        "color": [
+          "a"
+        ]
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontWeight-0",
+    "input": {
+      "k": {
+        "fontWeight": "normal"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontWeight": "normal"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontWeight": "normal"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontWeight-1",
+    "input": {
+      "k": {
+        "fontWeight": "BOLD"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontWeight": "BOLD"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontWeight": "BOLD"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontWeight-2",
+    "input": {
+      "k": {
+        "fontWeight": "bolder"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontWeight": "bolder"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontWeight": "bolder"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontWeight-3",
+    "input": {
+      "k": {
+        "fontWeight": "lighter"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontWeight": "lighter"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontWeight": "lighter"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontWeight-4",
+    "input": {
+      "k": {
+        "fontWeight": "100"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontWeight": "100"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontWeight": "100"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontWeight-5",
+    "input": {
+      "k": {
+        "fontWeight": "900"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontWeight": "900"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontWeight": "900"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontWeight-6",
+    "input": {
+      "k": {
+        "fontWeight": "000"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "expected normal, bold, or 100–900"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "expected normal, bold, or 100–900"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontWeight-7",
+    "input": {
+      "k": {
+        "fontWeight": "1000"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "expected normal, bold, or 100–900"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "expected normal, bold, or 100–900"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontWeight-8",
+    "input": {
+      "k": {
+        "fontWeight": "450"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "expected normal, bold, or 100–900"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "expected normal, bold, or 100–900"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontWeight-9",
+    "input": {
+      "k": {
+        "fontWeight": " 400 "
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontWeight": "400"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontWeight": "400"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontWeight-10",
+    "input": {
+      "k": {
+        "fontWeight": "bold "
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontWeight": "bold"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontWeight": "bold"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontWeight-11",
+    "input": {
+      "k": {
+        "fontWeight": "heavy"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "expected normal, bold, or 100–900"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "expected normal, bold, or 100–900"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontWeight-12",
+    "input": {
+      "k": {
+        "fontWeight": ""
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "expected normal, bold, or 100–900"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "expected normal, bold, or 100–900"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontWeight-13",
+    "input": {
+      "k": {
+        "fontWeight": " bold"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontWeight": "bold"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontWeight": "bold"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontWeight-type-1",
+    "input": {
+      "k": {
+        "fontWeight": 1
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontWeight-type-null",
+    "input": {
+      "k": {
+        "fontWeight": null
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontWeight-type-true",
+    "input": {
+      "k": {
+        "fontWeight": true
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontWeight-type-[]",
+    "input": {
+      "k": {
+        "fontWeight": []
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontWeight-type-{}",
+    "input": {
+      "k": {
+        "fontWeight": {}
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontWeight-type-[\"a\"]",
+    "input": {
+      "k": {
+        "fontWeight": [
+          "a"
+        ]
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontWeight",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontStyle-0",
+    "input": {
+      "k": {
+        "fontStyle": "normal"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontStyle": "normal"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontStyle": "normal"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontStyle-1",
+    "input": {
+      "k": {
+        "fontStyle": "Italic"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontStyle": "Italic"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontStyle": "Italic"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontStyle-2",
+    "input": {
+      "k": {
+        "fontStyle": "oblique"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontStyle": "oblique"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontStyle": "oblique"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontStyle-3",
+    "input": {
+      "k": {
+        "fontStyle": " italic "
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontStyle": "italic"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontStyle": "italic"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontStyle-4",
+    "input": {
+      "k": {
+        "fontStyle": "slanted"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "expected normal, italic, or oblique"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "expected normal, italic, or oblique"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontStyle-5",
+    "input": {
+      "k": {
+        "fontStyle": ""
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "expected normal, italic, or oblique"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "expected normal, italic, or oblique"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontStyle-6",
+    "input": {
+      "k": {
+        "fontStyle": "italic\n"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontStyle": "italic"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontStyle": "italic"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-fontStyle-type-1",
+    "input": {
+      "k": {
+        "fontStyle": 1
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontStyle-type-null",
+    "input": {
+      "k": {
+        "fontStyle": null
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontStyle-type-true",
+    "input": {
+      "k": {
+        "fontStyle": true
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontStyle-type-[]",
+    "input": {
+      "k": {
+        "fontStyle": []
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontStyle-type-{}",
+    "input": {
+      "k": {
+        "fontStyle": {}
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-fontStyle-type-[\"a\"]",
+    "input": {
+      "k": {
+        "fontStyle": [
+          "a"
+        ]
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontStyle",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-initialCap-0",
+    "input": {
+      "k": {
+        "initialCap": "true"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "initialCap": "true"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "initialCap": "true"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-initialCap-1",
+    "input": {
+      "k": {
+        "initialCap": "false"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "initialCap": "false"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "initialCap": "false"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-initialCap-2",
+    "input": {
+      "k": {
+        "initialCap": "TRUE"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-initialCap-3",
+    "input": {
+      "k": {
+        "initialCap": " true"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-initialCap-4",
+    "input": {
+      "k": {
+        "initialCap": "yes"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-initialCap-5",
+    "input": {
+      "k": {
+        "initialCap": ""
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-initialCap-6",
+    "input": {
+      "k": {
+        "initialCap": "true "
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-initialCap-type-1",
+    "input": {
+      "k": {
+        "initialCap": 1
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-initialCap-type-null",
+    "input": {
+      "k": {
+        "initialCap": null
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-initialCap-type-true",
+    "input": {
+      "k": {
+        "initialCap": true
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-initialCap-type-[]",
+    "input": {
+      "k": {
+        "initialCap": []
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-initialCap-type-{}",
+    "input": {
+      "k": {
+        "initialCap": {}
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-initialCap-type-[\"a\"]",
+    "input": {
+      "k": {
+        "initialCap": [
+          "a"
+        ]
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/initialCap",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-indicate-0",
+    "input": {
+      "k": {
+        "indicate": "true"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "indicate": "true"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "indicate": "true"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-indicate-1",
+    "input": {
+      "k": {
+        "indicate": "false"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "indicate": "false"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "indicate": "false"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-indicate-2",
+    "input": {
+      "k": {
+        "indicate": "True"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-indicate-3",
+    "input": {
+      "k": {
+        "indicate": "1"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-indicate-4",
+    "input": {
+      "k": {
+        "indicate": ""
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "expected \"true\" or \"false\""
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-indicate-type-1",
+    "input": {
+      "k": {
+        "indicate": 1
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-indicate-type-null",
+    "input": {
+      "k": {
+        "indicate": null
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-indicate-type-true",
+    "input": {
+      "k": {
+        "indicate": true
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-indicate-type-[]",
+    "input": {
+      "k": {
+        "indicate": []
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-indicate-type-{}",
+    "input": {
+      "k": {
+        "indicate": {}
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-indicate-type-[\"a\"]",
+    "input": {
+      "k": {
+        "indicate": [
+          "a"
+        ]
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/indicate",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-htmlTag-0",
+    "input": {
+      "k": {
+        "htmlTag": "h1"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "htmlTag": "h1"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "htmlTag": "h1"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-htmlTag-1",
+    "input": {
+      "k": {
+        "htmlTag": "h6"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "htmlTag": "h6"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "htmlTag": "h6"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-htmlTag-2",
+    "input": {
+      "k": {
+        "htmlTag": "p"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "htmlTag": "p"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "htmlTag": "p"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-htmlTag-3",
+    "input": {
+      "k": {
+        "htmlTag": "div"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "htmlTag": "div"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "htmlTag": "div"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-htmlTag-4",
+    "input": {
+      "k": {
+        "htmlTag": "aside"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "htmlTag": "aside"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "htmlTag": "aside"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-htmlTag-5",
+    "input": {
+      "k": {
+        "htmlTag": "section"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "htmlTag": "section"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "htmlTag": "section"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-htmlTag-6",
+    "input": {
+      "k": {
+        "htmlTag": "blockquote"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "htmlTag": "blockquote"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "htmlTag": "blockquote"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-htmlTag-7",
+    "input": {
+      "k": {
+        "htmlTag": "span"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "htmlTag": "span"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "htmlTag": "span"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-htmlTag-8",
+    "input": {
+      "k": {
+        "htmlTag": " p "
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "htmlTag": "p"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "htmlTag": "p"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-htmlTag-9",
+    "input": {
+      "k": {
+        "htmlTag": "P"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-htmlTag-10",
+    "input": {
+      "k": {
+        "htmlTag": "article"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-htmlTag-11",
+    "input": {
+      "k": {
+        "htmlTag": "script"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-htmlTag-12",
+    "input": {
+      "k": {
+        "htmlTag": "h7"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-htmlTag-13",
+    "input": {
+      "k": {
+        "htmlTag": ""
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "expected an allowlisted HTML tag (h1–h6, p, div, aside, section, blockquote, span)"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-htmlTag-14",
+    "input": {
+      "k": {
+        "htmlTag": "p\t"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "htmlTag": "p"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "htmlTag": "p"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-htmlTag-type-1",
+    "input": {
+      "k": {
+        "htmlTag": 1
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-htmlTag-type-null",
+    "input": {
+      "k": {
+        "htmlTag": null
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-htmlTag-type-true",
+    "input": {
+      "k": {
+        "htmlTag": true
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-htmlTag-type-[]",
+    "input": {
+      "k": {
+        "htmlTag": []
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-htmlTag-type-{}",
+    "input": {
+      "k": {
+        "htmlTag": {}
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-htmlTag-type-[\"a\"]",
+    "input": {
+      "k": {
+        "htmlTag": [
+          "a"
+        ]
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/htmlTag",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-textAlign-0",
+    "input": {
+      "k": {
+        "textAlign": "left"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "textAlign": "left"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "textAlign": "left"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-textAlign-1",
+    "input": {
+      "k": {
+        "textAlign": "center"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "textAlign": "center"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "textAlign": "center"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-textAlign-2",
+    "input": {
+      "k": {
+        "textAlign": "justify"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "textAlign": "justify"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "textAlign": "justify"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-textAlign-3",
+    "input": {
+      "k": {
+        "textAlign": "RIGHT"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "expected left, center, or justify"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "expected left, center, or justify"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-textAlign-4",
+    "input": {
+      "k": {
+        "textAlign": " Left "
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "textAlign": "left"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "textAlign": "left"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-textAlign-5",
+    "input": {
+      "k": {
+        "textAlign": "CENTER"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "textAlign": "center"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "textAlign": "center"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-textAlign-6",
+    "input": {
+      "k": {
+        "textAlign": "start"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "expected left, center, or justify"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "expected left, center, or justify"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-textAlign-7",
+    "input": {
+      "k": {
+        "textAlign": ""
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "expected left, center, or justify"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "expected left, center, or justify"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-textAlign-8",
+    "input": {
+      "k": {
+        "textAlign": "justify\n"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "textAlign": "justify"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "textAlign": "justify"
+        }
+      }
+    }
+  },
+  {
+    "name": "field-textAlign-type-1",
+    "input": {
+      "k": {
+        "textAlign": 1
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-textAlign-type-null",
+    "input": {
+      "k": {
+        "textAlign": null
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-textAlign-type-true",
+    "input": {
+      "k": {
+        "textAlign": true
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-textAlign-type-[]",
+    "input": {
+      "k": {
+        "textAlign": []
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-textAlign-type-{}",
+    "input": {
+      "k": {
+        "textAlign": {}
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-textAlign-type-[\"a\"]",
+    "input": {
+      "k": {
+        "textAlign": [
+          "a"
+        ]
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/textAlign",
+          "message": "must be a string"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-unknown",
+    "input": {
+      "k": {
+        "fontFamily": "serif",
+        "color": "base",
+        "": "x"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      },
+      "errors": [
+        {
+          "path": "/k/fontFamily",
+          "message": "unknown style field"
+        },
+        {
+          "path": "/k/",
+          "message": "unknown style field"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontFamily",
+          "message": "unknown style field"
+        },
+        {
+          "path": "/k/",
+          "message": "unknown style field"
+        }
+      ]
+    }
+  },
+  {
+    "name": "field-order",
+    "input": {
+      "k": {
+        "textAlign": "left",
+        "color": "base",
+        "fontSize": "1rem",
+        "bogus": 1,
+        "htmlTag": "p"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "textAlign": "left",
+          "color": "base",
+          "fontSize": "1rem",
+          "htmlTag": "p"
+        }
+      },
+      "errors": [
+        {
+          "path": "/k/bogus",
+          "message": "unknown style field"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/bogus",
+          "message": "unknown style field"
+        }
+      ]
+    }
+  },
+  {
+    "name": "non-latin-values",
+    "input": {
+      "k": {
+        "fontSize": "Ж",
+        "color": "base"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "color": "base"
+        }
+      },
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        }
+      ]
+    }
+  },
+  {
+    "name": "long-astral-value",
+    "input": {
+      "k": {
+        "fontSize": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "value too long"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "value too long"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "astral-at-limit",
+    "input": {
+      "k": {
+        "fontSize": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/fontSize",
+          "message": "expected a length like 1rem or 16px"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "unicode-trim",
+    "input": {
+      "k": {
+        "fontSize": "﻿1rem﻿"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "k": {
+          "fontSize": "1rem"
+        }
+      },
+      "errors": []
+    },
+    "validate": {
+      "ok": true,
+      "styles": {
+        "k": {
+          "fontSize": "1rem"
+        }
+      }
+    }
+  },
+  {
+    "name": "color-bom-and-nbsp",
+    "input": {
+      "a": {
+        "color": "﻿base"
+      },
+      "b": {
+        "color": " accent "
+      },
+      "c": {
+        "color": "​base"
+      }
+    },
+    "sanitize": {
+      "styles": {
+        "a": {
+          "color": "base"
+        },
+        "b": {
+          "color": "accent"
+        }
+      },
+      "errors": [
+        {
+          "path": "/c/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/c",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/c/color",
+          "message": "expected \"base\", \"accent\", or a legacy hex"
+        },
+        {
+          "path": "/c",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  },
+  {
+    "name": "dangerous-case",
+    "input": {
+      "k": {
+        "color": "JavaScript:void"
+      },
+      "j": {
+        "color": "@IMPORT"
+      },
+      "l": {
+        "color": "a<b"
+      }
+    },
+    "sanitize": {
+      "styles": {},
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        },
+        {
+          "path": "/j/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/j",
+          "message": "kind style has no valid fields"
+        },
+        {
+          "path": "/l/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/l",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    },
+    "validate": {
+      "ok": false,
+      "errors": [
+        {
+          "path": "/k/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/k",
+          "message": "kind style has no valid fields"
+        },
+        {
+          "path": "/j/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/j",
+          "message": "kind style has no valid fields"
+        },
+        {
+          "path": "/l/color",
+          "message": "disallowed CSS value"
+        },
+        {
+          "path": "/l",
+          "message": "kind style has no valid fields"
+        }
+      ]
+    }
+  }
+]

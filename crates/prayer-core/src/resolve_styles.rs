@@ -4,9 +4,8 @@
 use std::sync::LazyLock;
 
 use indexmap::{IndexMap, IndexSet};
-use serde::{Deserialize, Serialize};
 
-use crate::model::{KindStyle, StyleMap};
+use crate::model::{KindStyle, KindStyleOverride, StyleMap, StyleOverrides};
 
 fn style(font_size: &str, color: &str) -> KindStyle {
     KindStyle {
@@ -56,31 +55,6 @@ pub static DEFAULT_KIND_STYLES: LazyLock<StyleMap> = LazyLock::new(|| {
     .collect()
 });
 
-/// A possibly partial style, as read from a Library's `styles.json` or the
-/// app's persisted defaults: only the tokens that are set override anything.
-#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct KindStyleOverride {
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub font_size: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub color: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub font_weight: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub font_style: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub initial_cap: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub indicate: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub html_tag: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub text_align: Option<String>,
-    #[serde(flatten)]
-    pub extra: IndexMap<String, String>,
-}
-
 impl KindStyleOverride {
     /// Writes every token set here over `style`.
     fn apply_to(&self, style: &mut KindStyle) {
@@ -107,25 +81,6 @@ impl KindStyleOverride {
         }
     }
 }
-
-impl From<&KindStyle> for KindStyleOverride {
-    fn from(style: &KindStyle) -> Self {
-        Self {
-            font_size: Some(style.font_size.clone()),
-            color: Some(style.color.clone()),
-            font_weight: Some(style.font_weight.clone()),
-            font_style: Some(style.font_style.clone()),
-            initial_cap: style.initial_cap.clone(),
-            indicate: style.indicate.clone(),
-            html_tag: style.html_tag.clone(),
-            text_align: style.text_align.clone(),
-            extra: style.extra.clone(),
-        }
-    }
-}
-
-/// Kind id to partial style.
-pub type StyleOverrides = IndexMap<String, KindStyleOverride>;
 
 /// Inputs of [`resolve_styles`] besides the discovered Kinds.
 #[derive(Clone, Copy, Debug, Default)]

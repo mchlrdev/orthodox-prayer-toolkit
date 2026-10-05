@@ -5,6 +5,8 @@
 //! absent rather than written as `null` (schema: no empty translation keys).
 
 use indexmap::IndexMap;
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 
 /// Canonical prayer document: shared structure, per-block translations.
@@ -58,6 +60,34 @@ impl VariantMeta {
         }
     }
 }
+
+/// Export of a Variant the prayer does not have.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct VariantNotFound {
+    pub lang: String,
+    pub variant: String,
+}
+
+impl VariantNotFound {
+    pub fn new(key: VariantKey<'_>) -> Self {
+        Self {
+            lang: key.lang.to_owned(),
+            variant: key.variant.to_owned(),
+        }
+    }
+}
+
+impl fmt::Display for VariantNotFound {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Variant not found: lang=\"{}\" variant=\"{}\"",
+            self.lang, self.variant
+        )
+    }
+}
+
+impl std::error::Error for VariantNotFound {}
 
 /// Borrowed `lang` + `variant` pair identifying a Variant.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -172,7 +202,8 @@ pub enum RunRole {
     Note,
 }
 
-/// Flat single-variant export for downstream consumers.
+/// Flat single-variant export for downstream consumers. Fields are in the
+/// order the export writes them: required keys first, then the optional ones.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct FlatPrayer {
     pub id: String,
@@ -181,6 +212,9 @@ pub struct FlatPrayer {
     pub prayer_type: String,
     pub lang: String,
     pub variant: String,
+    pub license: String,
+    pub source: String,
+    pub structure: Vec<FlatBlock>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub book: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -193,9 +227,6 @@ pub struct FlatPrayer {
     pub tone: Option<Option<u8>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    pub license: String,
-    pub source: String,
-    pub structure: Vec<FlatBlock>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub meta: Option<Meta>,
 }
@@ -237,6 +268,50 @@ pub struct KindStyle {
 
 /// Kind id to style, in insertion order.
 pub type StyleMap = IndexMap<String, KindStyle>;
+
+/// A possibly partial style, as read from a Library's `styles.json` or the
+/// app's persisted defaults: only the tokens that are set override anything.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KindStyleOverride {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub font_size: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub color: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub font_weight: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub font_style: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub initial_cap: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub indicate: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub html_tag: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text_align: Option<String>,
+    #[serde(flatten)]
+    pub extra: IndexMap<String, String>,
+}
+
+impl From<&KindStyle> for KindStyleOverride {
+    fn from(style: &KindStyle) -> Self {
+        Self {
+            font_size: Some(style.font_size.clone()),
+            color: Some(style.color.clone()),
+            font_weight: Some(style.font_weight.clone()),
+            font_style: Some(style.font_style.clone()),
+            initial_cap: style.initial_cap.clone(),
+            indicate: style.indicate.clone(),
+            html_tag: style.html_tag.clone(),
+            text_align: style.text_align.clone(),
+            extra: style.extra.clone(),
+        }
+    }
+}
+
+/// Kind id to partial style.
+pub type StyleOverrides = IndexMap<String, KindStyleOverride>;
 
 /// One schema or rule violation: JSON-pointer-like `path` plus a message.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

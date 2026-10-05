@@ -1,0 +1,180 @@
+{
+  "maxLength": 64,
+  "cases": [
+    {
+      "input": "Test",
+      "valid": true,
+      "sanitized": "Test"
+    },
+    {
+      "input": "strophe_2",
+      "valid": true,
+      "sanitized": "strophe_2"
+    },
+    {
+      "input": "foo-bar",
+      "valid": true,
+      "sanitized": "foo-bar"
+    },
+    {
+      "input": "",
+      "valid": false,
+      "sanitized": ""
+    },
+    {
+      "input": "Test kind",
+      "valid": false,
+      "sanitized": "Testkind"
+    },
+    {
+      "input": "1abc",
+      "valid": false,
+      "sanitized": "abc"
+    },
+    {
+      "input": "a",
+      "valid": true,
+      "sanitized": "a"
+    },
+    {
+      "input": "A",
+      "valid": true,
+      "sanitized": "A"
+    },
+    {
+      "input": "_a",
+      "valid": false,
+      "sanitized": "a"
+    },
+    {
+      "input": "-a",
+      "valid": false,
+      "sanitized": "a"
+    },
+    {
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "valid": true,
+      "sanitized": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "valid": false,
+      "sanitized": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "valid": false,
+      "sanitized": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "input": "é",
+      "valid": false,
+      "sanitized": ""
+    },
+    {
+      "input": "aé",
+      "valid": false,
+      "sanitized": "a"
+    },
+    {
+      "input": "a b",
+      "valid": false,
+      "sanitized": "ab"
+    },
+    {
+      "input": "a\n",
+      "valid": false,
+      "sanitized": "a"
+    },
+    {
+      "input": " a",
+      "valid": false,
+      "sanitized": "a"
+    },
+    {
+      "input": "\n",
+      "valid": false,
+      "sanitized": ""
+    },
+    {
+      "input": "9",
+      "valid": false,
+      "sanitized": ""
+    },
+    {
+      "input": "Ж",
+      "valid": false,
+      "sanitized": ""
+    },
+    {
+      "input": "foo_bar-2",
+      "valid": true,
+      "sanitized": "foo_bar-2"
+    },
+    {
+      "input": "a-",
+      "valid": true,
+      "sanitized": "a-"
+    },
+    {
+      "input": "a_",
+      "valid": true,
+      "sanitized": "a_"
+    },
+    {
+      "input": "1_-a",
+      "valid": false,
+      "sanitized": "a"
+    },
+    {
+      "input": "__x",
+      "valid": false,
+      "sanitized": "x"
+    },
+    {
+      "input": "x😀y",
+      "valid": false,
+      "sanitized": "xy"
+    },
+    {
+      "input": "😀",
+      "valid": false,
+      "sanitized": ""
+    },
+    {
+      "input": "12345a67",
+      "valid": false,
+      "sanitized": "a67"
+    },
+    {
+      "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-",
+      "valid": true,
+      "sanitized": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-"
+    },
+    {
+      "input": "-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "valid": false,
+      "sanitized": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "input": " Test",
+      "valid": false,
+      "sanitized": "Test"
+    },
+    {
+      "input": "Test\tkind",
+      "valid": false,
+      "sanitized": "Testkind"
+    },
+    {
+      "input": "abc.def",
+      "valid": false,
+      "sanitized": "abcdef"
+    },
+    {
+      "input": "ab/c",
+      "valid": false,
+      "sanitized": "abc"
+    }
+  ]
+}

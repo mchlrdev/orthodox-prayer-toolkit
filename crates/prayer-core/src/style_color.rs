@@ -1,6 +1,8 @@
 //! Kind text colours are semantic tokens; hex values only survive as legacy
 //! input that gets migrated.
 
+use crate::text_runs::is_js_whitespace;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum StyleColor {
     Base,
@@ -45,7 +47,7 @@ fn canonical_hex(value: &str) -> Option<String> {
 /// legacy Accent hex becomes `accent`, any other hex becomes `base`,
 /// anything else is invalid.
 pub fn normalize_style_color(value: &str) -> Option<StyleColor> {
-    let value = value.trim().to_lowercase();
+    let value = value.trim_matches(is_js_whitespace).to_lowercase();
     match value.as_str() {
         "base" => return Some(StyleColor::Base),
         "accent" => return Some(StyleColor::Accent),
