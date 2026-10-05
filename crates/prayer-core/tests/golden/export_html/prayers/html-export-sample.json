@@ -1,0 +1,73 @@
+{
+  "id": "html-sample",
+  "type": "prayer",
+  "book": "horologion",
+  "occasion": "morning",
+  "tone": 5,
+  "variants": [
+    {
+      "lang": "de",
+      "variant": "standard",
+      "title": "Probegebet",
+      "license": "CC0",
+      "source": "test fixture"
+    },
+    {
+      "lang": "en",
+      "variant": "standard",
+      "title": "Sample prayer",
+      "license": "CC0",
+      "source": "test fixture"
+    }
+  ],
+  "structure": [
+    {
+      "id": "h1",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Trisagion"
+        }
+      ]
+    },
+    {
+      "id": "a1",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Dreimal:"
+        }
+      ]
+    },
+    {
+      "id": "v1",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Heiliger Gott,",
+            [
+              { "t": "text", "v": "heiliger " },
+              { "t": "note", "v": "Starker" },
+              { "t": "text", "v": "," }
+            ],
+            "heiliger Unsterblicher, erbarme dich unser."
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "Holy God, Holy Mighty, Holy Immortal, have mercy on us."
+          ]
+        }
+      ]
+    }
+  ]
+}

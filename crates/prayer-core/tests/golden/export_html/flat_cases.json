@@ -1,0 +1,314 @@
+[
+  {
+    "name": "valid-tropar-prokopios.json de/standard empty=false",
+    "prayer": "valid-tropar-prokopios.json",
+    "options": {
+      "lang": "de",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"tropar-prokopios\",\n  \"title\": \"Tropar des Großmärtyrers Prokopios\",\n  \"type\": \"troparion\",\n  \"lang\": \"de\",\n  \"variant\": \"standard\",\n  \"license\": \"unknown\",\n  \"source\": \"draft\",\n  \"structure\": [\n    {\n      \"id\": \"r1\",\n      \"kind\": \"annotation\",\n      \"text\": \"Ton 4. Tropar des Großmärtyrers.\"\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"Dein Märtyrer Prokopius, Herr,\",\n        \"hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;\",\n        \"denn mit seiner Kraft hat er die Tyrannen besiegt\",\n        \"und die Dämonen kraftlos gemacht.\",\n        \"Durch seine Fürbitten, Christus Gott, rette unsere Seelen.\"\n      ]\n    }\n  ],\n  \"book\": \"menaion\",\n  \"tone\": 4,\n  \"meta\": {\n    \"custom\": {\n      \"saint_id\": \"prokopios-von-caesarea\"\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "valid-tropar-prokopios.json de/standard empty=true",
+    "prayer": "valid-tropar-prokopios.json",
+    "options": {
+      "lang": "de",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"tropar-prokopios\",\n  \"title\": \"Tropar des Großmärtyrers Prokopios\",\n  \"type\": \"troparion\",\n  \"lang\": \"de\",\n  \"variant\": \"standard\",\n  \"license\": \"unknown\",\n  \"source\": \"draft\",\n  \"structure\": [\n    {\n      \"id\": \"r1\",\n      \"kind\": \"annotation\",\n      \"text\": \"Ton 4. Tropar des Großmärtyrers.\"\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"Dein Märtyrer Prokopius, Herr,\",\n        \"hat in seinem Leidenskampf den Kranz der Unvergänglichkeit erworben;\",\n        \"denn mit seiner Kraft hat er die Tyrannen besiegt\",\n        \"und die Dämonen kraftlos gemacht.\",\n        \"Durch seine Fürbitten, Christus Gott, rette unsere Seelen.\"\n      ]\n    }\n  ],\n  \"book\": \"menaion\",\n  \"tone\": 4,\n  \"meta\": {\n    \"custom\": {\n      \"saint_id\": \"prokopios-von-caesarea\"\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "valid-tropar-prokopios.json cu/synodal-cyrl empty=false",
+    "prayer": "valid-tropar-prokopios.json",
+    "options": {
+      "lang": "cu",
+      "variant": "synodal-cyrl",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"tropar-prokopios\",\n  \"title\": \"Тропарь великомученику Прокопию\",\n  \"type\": \"troparion\",\n  \"lang\": \"cu\",\n  \"variant\": \"synodal-cyrl\",\n  \"license\": \"unknown\",\n  \"source\": \"draft\",\n  \"structure\": [\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"Мученик Твой, Господи, Прокопий,\",\n        \"во страдании своем венец нетления прият от Тебе, Бога нашего…\"\n      ]\n    }\n  ],\n  \"book\": \"menaion\",\n  \"tone\": 4,\n  \"meta\": {\n    \"custom\": {\n      \"saint_id\": \"prokopios-von-caesarea\"\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "valid-tropar-prokopios.json cu/synodal-cyrl empty=true",
+    "prayer": "valid-tropar-prokopios.json",
+    "options": {
+      "lang": "cu",
+      "variant": "synodal-cyrl",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"tropar-prokopios\",\n  \"title\": \"Тропарь великомученику Прокопию\",\n  \"type\": \"troparion\",\n  \"lang\": \"cu\",\n  \"variant\": \"synodal-cyrl\",\n  \"license\": \"unknown\",\n  \"source\": \"draft\",\n  \"structure\": [\n    {\n      \"id\": \"r1\",\n      \"kind\": \"annotation\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"Мученик Твой, Господи, Прокопий,\",\n        \"во страдании своем венец нетления прият от Тебе, Бога нашего…\"\n      ]\n    }\n  ],\n  \"book\": \"menaion\",\n  \"tone\": 4,\n  \"meta\": {\n    \"custom\": {\n      \"saint_id\": \"prokopios-von-caesarea\"\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "valid-tropar-prokopios.json fr/missing empty=false",
+    "prayer": "valid-tropar-prokopios.json",
+    "options": {
+      "lang": "fr",
+      "variant": "missing",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "error": "Variant not found: lang=\"fr\" variant=\"missing\""
+    }
+  },
+  {
+    "name": "valid-tropar-prokopios.json fr/missing empty=true",
+    "prayer": "valid-tropar-prokopios.json",
+    "options": {
+      "lang": "fr",
+      "variant": "missing",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "error": "Variant not found: lang=\"fr\" variant=\"missing\""
+    }
+  },
+  {
+    "name": "html-export-sample.json de/standard empty=false",
+    "prayer": "html-export-sample.json",
+    "options": {
+      "lang": "de",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"html-sample\",\n  \"title\": \"Probegebet\",\n  \"type\": \"prayer\",\n  \"lang\": \"de\",\n  \"variant\": \"standard\",\n  \"license\": \"CC0\",\n  \"source\": \"test fixture\",\n  \"structure\": [\n    {\n      \"id\": \"h1\",\n      \"kind\": \"heading\",\n      \"text\": \"Trisagion\"\n    },\n    {\n      \"id\": \"a1\",\n      \"kind\": \"annotation\",\n      \"text\": \"Dreimal:\"\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"Heiliger Gott,\",\n        [\n          {\n            \"t\": \"text\",\n            \"v\": \"heiliger \"\n          },\n          {\n            \"t\": \"note\",\n            \"v\": \"Starker\"\n          },\n          {\n            \"t\": \"text\",\n            \"v\": \",\"\n          }\n        ],\n        \"heiliger Unsterblicher, erbarme dich unser.\"\n      ]\n    }\n  ],\n  \"book\": \"horologion\",\n  \"occasion\": \"morning\",\n  \"tone\": 5\n}\n"
+    }
+  },
+  {
+    "name": "html-export-sample.json de/standard empty=true",
+    "prayer": "html-export-sample.json",
+    "options": {
+      "lang": "de",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"html-sample\",\n  \"title\": \"Probegebet\",\n  \"type\": \"prayer\",\n  \"lang\": \"de\",\n  \"variant\": \"standard\",\n  \"license\": \"CC0\",\n  \"source\": \"test fixture\",\n  \"structure\": [\n    {\n      \"id\": \"h1\",\n      \"kind\": \"heading\",\n      \"text\": \"Trisagion\"\n    },\n    {\n      \"id\": \"a1\",\n      \"kind\": \"annotation\",\n      \"text\": \"Dreimal:\"\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"Heiliger Gott,\",\n        [\n          {\n            \"t\": \"text\",\n            \"v\": \"heiliger \"\n          },\n          {\n            \"t\": \"note\",\n            \"v\": \"Starker\"\n          },\n          {\n            \"t\": \"text\",\n            \"v\": \",\"\n          }\n        ],\n        \"heiliger Unsterblicher, erbarme dich unser.\"\n      ]\n    }\n  ],\n  \"book\": \"horologion\",\n  \"occasion\": \"morning\",\n  \"tone\": 5\n}\n"
+    }
+  },
+  {
+    "name": "html-export-sample.json en/standard empty=false",
+    "prayer": "html-export-sample.json",
+    "options": {
+      "lang": "en",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"html-sample\",\n  \"title\": \"Sample prayer\",\n  \"type\": \"prayer\",\n  \"lang\": \"en\",\n  \"variant\": \"standard\",\n  \"license\": \"CC0\",\n  \"source\": \"test fixture\",\n  \"structure\": [\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"Holy God, Holy Mighty, Holy Immortal, have mercy on us.\"\n      ]\n    }\n  ],\n  \"book\": \"horologion\",\n  \"occasion\": \"morning\",\n  \"tone\": 5\n}\n"
+    }
+  },
+  {
+    "name": "html-export-sample.json en/standard empty=true",
+    "prayer": "html-export-sample.json",
+    "options": {
+      "lang": "en",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"html-sample\",\n  \"title\": \"Sample prayer\",\n  \"type\": \"prayer\",\n  \"lang\": \"en\",\n  \"variant\": \"standard\",\n  \"license\": \"CC0\",\n  \"source\": \"test fixture\",\n  \"structure\": [\n    {\n      \"id\": \"h1\",\n      \"kind\": \"heading\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"a1\",\n      \"kind\": \"annotation\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"Holy God, Holy Mighty, Holy Immortal, have mercy on us.\"\n      ]\n    }\n  ],\n  \"book\": \"horologion\",\n  \"occasion\": \"morning\",\n  \"tone\": 5\n}\n"
+    }
+  },
+  {
+    "name": "html-export-sample.json fr/missing empty=false",
+    "prayer": "html-export-sample.json",
+    "options": {
+      "lang": "fr",
+      "variant": "missing",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "error": "Variant not found: lang=\"fr\" variant=\"missing\""
+    }
+  },
+  {
+    "name": "html-export-sample.json fr/missing empty=true",
+    "prayer": "html-export-sample.json",
+    "options": {
+      "lang": "fr",
+      "variant": "missing",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "error": "Variant not found: lang=\"fr\" variant=\"missing\""
+    }
+  },
+  {
+    "name": "edge-cases.json de/standard empty=false",
+    "prayer": "edge-cases.json",
+    "options": {
+      "lang": "de",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"edge-cases\",\n  \"title\": \"Ü <Titel> & \\\"Quote\\\" 'apos'\",\n  \"type\": \"prayer\",\n  \"lang\": \"de\",\n  \"variant\": \"standard\",\n  \"license\": \"L&L\",\n  \"source\": \"src \\\"x\\\"\",\n  \"structure\": [\n    {\n      \"id\": \"h1\",\n      \"kind\": \"heading\",\n      \"text\": \"A <B> & \\\"C\\\" 'D'\"\n    },\n    {\n      \"id\": \"n1\",\n      \"kind\": \"annotation\",\n      \"text\": [\n        {\n          \"t\": \"text\",\n          \"v\": \"Vor \"\n        },\n        {\n          \"t\": \"note\",\n          \"v\": \"<Rubrik> & \\\"x\\\"\"\n        },\n        {\n          \"t\": \"text\",\n          \"v\": \" nach\"\n        }\n      ]\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"a & b\",\n        \"\",\n        [\n          {\n            \"t\": \"note\",\n            \"v\": \"n\"\n          }\n        ],\n        []\n      ]\n    },\n    {\n      \"id\": \"c1\",\n      \"kind\": \"my-custom-kind\",\n      \"text\": \"custom\"\n    },\n    {\n      \"id\": \"both\",\n      \"kind\": \"verse\",\n      \"text\": \"text and\",\n      \"lines\": [\n        \"lines\"\n      ]\n    }\n  ],\n  \"book\": \"a&b <book>\",\n  \"occasion\": \"it's \\\"quoted\\\"\",\n  \"tone\": null,\n  \"description\": \"Edge cases\",\n  \"meta\": {\n    \"custom\": {\n      \"saint\": \"x\",\n      \"n\": 3,\n      \"flag\": true,\n      \"nothing\": null\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "edge-cases.json de/standard empty=true",
+    "prayer": "edge-cases.json",
+    "options": {
+      "lang": "de",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"edge-cases\",\n  \"title\": \"Ü <Titel> & \\\"Quote\\\" 'apos'\",\n  \"type\": \"prayer\",\n  \"lang\": \"de\",\n  \"variant\": \"standard\",\n  \"license\": \"L&L\",\n  \"source\": \"src \\\"x\\\"\",\n  \"structure\": [\n    {\n      \"id\": \"h1\",\n      \"kind\": \"heading\",\n      \"text\": \"A <B> & \\\"C\\\" 'D'\"\n    },\n    {\n      \"id\": \"n1\",\n      \"kind\": \"annotation\",\n      \"text\": [\n        {\n          \"t\": \"text\",\n          \"v\": \"Vor \"\n        },\n        {\n          \"t\": \"note\",\n          \"v\": \"<Rubrik> & \\\"x\\\"\"\n        },\n        {\n          \"t\": \"text\",\n          \"v\": \" nach\"\n        }\n      ]\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"a & b\",\n        \"\",\n        [\n          {\n            \"t\": \"note\",\n            \"v\": \"n\"\n          }\n        ],\n        []\n      ]\n    },\n    {\n      \"id\": \"c1\",\n      \"kind\": \"my-custom-kind\",\n      \"text\": \"custom\"\n    },\n    {\n      \"id\": \"both\",\n      \"kind\": \"verse\",\n      \"text\": \"text and\",\n      \"lines\": [\n        \"lines\"\n      ]\n    },\n    {\n      \"id\": \"none\",\n      \"kind\": \"verse\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"nokeys\",\n      \"kind\": \"annotation\",\n      \"text\": \"\"\n    }\n  ],\n  \"book\": \"a&b <book>\",\n  \"occasion\": \"it's \\\"quoted\\\"\",\n  \"tone\": null,\n  \"description\": \"Edge cases\",\n  \"meta\": {\n    \"custom\": {\n      \"saint\": \"x\",\n      \"n\": 3,\n      \"flag\": true,\n      \"nothing\": null\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "edge-cases.json cu/synodal-cyrl empty=false",
+    "prayer": "edge-cases.json",
+    "options": {
+      "lang": "cu",
+      "variant": "synodal-cyrl",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"edge-cases\",\n  \"title\": \"Тропарь\",\n  \"type\": \"prayer\",\n  \"lang\": \"cu\",\n  \"variant\": \"synodal-cyrl\",\n  \"license\": \"CC0\",\n  \"source\": \"test\",\n  \"structure\": [\n    {\n      \"id\": \"h1\",\n      \"kind\": \"heading\",\n      \"text\": \"Слава Отцу и Сыну\"\n    },\n    {\n      \"id\": \"n1\",\n      \"kind\": \"annotation\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": []\n    }\n  ],\n  \"book\": \"a&b <book>\",\n  \"occasion\": \"it's \\\"quoted\\\"\",\n  \"tone\": null,\n  \"description\": \"Edge cases\",\n  \"meta\": {\n    \"custom\": {\n      \"saint\": \"x\",\n      \"n\": 3,\n      \"flag\": true,\n      \"nothing\": null\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "edge-cases.json cu/synodal-cyrl empty=true",
+    "prayer": "edge-cases.json",
+    "options": {
+      "lang": "cu",
+      "variant": "synodal-cyrl",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"edge-cases\",\n  \"title\": \"Тропарь\",\n  \"type\": \"prayer\",\n  \"lang\": \"cu\",\n  \"variant\": \"synodal-cyrl\",\n  \"license\": \"CC0\",\n  \"source\": \"test\",\n  \"structure\": [\n    {\n      \"id\": \"h1\",\n      \"kind\": \"heading\",\n      \"text\": \"Слава Отцу и Сыну\"\n    },\n    {\n      \"id\": \"n1\",\n      \"kind\": \"annotation\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": []\n    },\n    {\n      \"id\": \"c1\",\n      \"kind\": \"my-custom-kind\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"both\",\n      \"kind\": \"verse\",\n      \"lines\": []\n    },\n    {\n      \"id\": \"none\",\n      \"kind\": \"verse\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"nokeys\",\n      \"kind\": \"annotation\",\n      \"text\": \"\"\n    }\n  ],\n  \"book\": \"a&b <book>\",\n  \"occasion\": \"it's \\\"quoted\\\"\",\n  \"tone\": null,\n  \"description\": \"Edge cases\",\n  \"meta\": {\n    \"custom\": {\n      \"saint\": \"x\",\n      \"n\": 3,\n      \"flag\": true,\n      \"nothing\": null\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "edge-cases.json en/standard empty=false",
+    "prayer": "edge-cases.json",
+    "options": {
+      "lang": "en",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"edge-cases\",\n  \"title\": \"\",\n  \"type\": \"prayer\",\n  \"lang\": \"en\",\n  \"variant\": \"standard\",\n  \"license\": \"\",\n  \"source\": \"\",\n  \"structure\": [\n    {\n      \"id\": \"c1\",\n      \"kind\": \"my-custom-kind\",\n      \"text\": [\n        {\n          \"t\": \"note\",\n          \"v\": \"only note\"\n        }\n      ]\n    }\n  ],\n  \"book\": \"a&b <book>\",\n  \"occasion\": \"it's \\\"quoted\\\"\",\n  \"tone\": null,\n  \"description\": \"Edge cases\",\n  \"meta\": {\n    \"custom\": {\n      \"saint\": \"x\",\n      \"n\": 3,\n      \"flag\": true,\n      \"nothing\": null\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "edge-cases.json en/standard empty=true",
+    "prayer": "edge-cases.json",
+    "options": {
+      "lang": "en",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"edge-cases\",\n  \"title\": \"\",\n  \"type\": \"prayer\",\n  \"lang\": \"en\",\n  \"variant\": \"standard\",\n  \"license\": \"\",\n  \"source\": \"\",\n  \"structure\": [\n    {\n      \"id\": \"h1\",\n      \"kind\": \"heading\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"n1\",\n      \"kind\": \"annotation\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": []\n    },\n    {\n      \"id\": \"c1\",\n      \"kind\": \"my-custom-kind\",\n      \"text\": [\n        {\n          \"t\": \"note\",\n          \"v\": \"only note\"\n        }\n      ]\n    },\n    {\n      \"id\": \"both\",\n      \"kind\": \"verse\",\n      \"lines\": []\n    },\n    {\n      \"id\": \"none\",\n      \"kind\": \"verse\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"nokeys\",\n      \"kind\": \"annotation\",\n      \"text\": \"\"\n    }\n  ],\n  \"book\": \"a&b <book>\",\n  \"occasion\": \"it's \\\"quoted\\\"\",\n  \"tone\": null,\n  \"description\": \"Edge cases\",\n  \"meta\": {\n    \"custom\": {\n      \"saint\": \"x\",\n      \"n\": 3,\n      \"flag\": true,\n      \"nothing\": null\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "edge-cases.json ja/standard empty=false",
+    "prayer": "edge-cases.json",
+    "options": {
+      "lang": "ja",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"edge-cases\",\n  \"title\": \"祈り 🙏\",\n  \"type\": \"prayer\",\n  \"lang\": \"ja\",\n  \"variant\": \"standard\",\n  \"license\": \"CC0\",\n  \"source\": \"test\",\n  \"structure\": [\n    {\n      \"id\": \"h1\",\n      \"kind\": \"heading\",\n      \"text\": \"栄光 🙏\"\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"一\",\n        \"二\"\n      ]\n    },\n    {\n      \"id\": \"nokeys\",\n      \"kind\": \"annotation\"\n    }\n  ],\n  \"book\": \"a&b <book>\",\n  \"occasion\": \"it's \\\"quoted\\\"\",\n  \"tone\": null,\n  \"description\": \"Edge cases\",\n  \"meta\": {\n    \"custom\": {\n      \"saint\": \"x\",\n      \"n\": 3,\n      \"flag\": true,\n      \"nothing\": null\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "edge-cases.json ja/standard empty=true",
+    "prayer": "edge-cases.json",
+    "options": {
+      "lang": "ja",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"edge-cases\",\n  \"title\": \"祈り 🙏\",\n  \"type\": \"prayer\",\n  \"lang\": \"ja\",\n  \"variant\": \"standard\",\n  \"license\": \"CC0\",\n  \"source\": \"test\",\n  \"structure\": [\n    {\n      \"id\": \"h1\",\n      \"kind\": \"heading\",\n      \"text\": \"栄光 🙏\"\n    },\n    {\n      \"id\": \"n1\",\n      \"kind\": \"annotation\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"v1\",\n      \"kind\": \"verse\",\n      \"lines\": [\n        \"一\",\n        \"二\"\n      ]\n    },\n    {\n      \"id\": \"c1\",\n      \"kind\": \"my-custom-kind\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"both\",\n      \"kind\": \"verse\",\n      \"lines\": []\n    },\n    {\n      \"id\": \"none\",\n      \"kind\": \"verse\",\n      \"text\": \"\"\n    },\n    {\n      \"id\": \"nokeys\",\n      \"kind\": \"annotation\"\n    }\n  ],\n  \"book\": \"a&b <book>\",\n  \"occasion\": \"it's \\\"quoted\\\"\",\n  \"tone\": null,\n  \"description\": \"Edge cases\",\n  \"meta\": {\n    \"custom\": {\n      \"saint\": \"x\",\n      \"n\": 3,\n      \"flag\": true,\n      \"nothing\": null\n    }\n  }\n}\n"
+    }
+  },
+  {
+    "name": "edge-cases.json fr/missing empty=false",
+    "prayer": "edge-cases.json",
+    "options": {
+      "lang": "fr",
+      "variant": "missing",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "error": "Variant not found: lang=\"fr\" variant=\"missing\""
+    }
+  },
+  {
+    "name": "edge-cases.json fr/missing empty=true",
+    "prayer": "edge-cases.json",
+    "options": {
+      "lang": "fr",
+      "variant": "missing",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "error": "Variant not found: lang=\"fr\" variant=\"missing\""
+    }
+  },
+  {
+    "name": "empty-structure.json de/standard empty=false",
+    "prayer": "empty-structure.json",
+    "options": {
+      "lang": "de",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"plain\",\n  \"title\": \"Plain\",\n  \"type\": \"troparion\",\n  \"lang\": \"de\",\n  \"variant\": \"standard\",\n  \"license\": \"CC0\",\n  \"source\": \"test\",\n  \"structure\": []\n}\n"
+    }
+  },
+  {
+    "name": "empty-structure.json de/standard empty=true",
+    "prayer": "empty-structure.json",
+    "options": {
+      "lang": "de",
+      "variant": "standard",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "json": "{\n  \"id\": \"plain\",\n  \"title\": \"Plain\",\n  \"type\": \"troparion\",\n  \"lang\": \"de\",\n  \"variant\": \"standard\",\n  \"license\": \"CC0\",\n  \"source\": \"test\",\n  \"structure\": []\n}\n"
+    }
+  },
+  {
+    "name": "empty-structure.json fr/missing empty=false",
+    "prayer": "empty-structure.json",
+    "options": {
+      "lang": "fr",
+      "variant": "missing",
+      "includeBlocksWithoutTranslation": false
+    },
+    "expected": {
+      "error": "Variant not found: lang=\"fr\" variant=\"missing\""
+    }
+  },
+  {
+    "name": "empty-structure.json fr/missing empty=true",
+    "prayer": "empty-structure.json",
+    "options": {
+      "lang": "fr",
+      "variant": "missing",
+      "includeBlocksWithoutTranslation": true
+    },
+    "expected": {
+      "error": "Variant not found: lang=\"fr\" variant=\"missing\""
+    }
+  }
+]

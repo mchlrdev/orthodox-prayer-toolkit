@@ -1,0 +1,182 @@
+{
+  "id": "edge-cases",
+  "type": "prayer",
+  "book": "a&b <book>",
+  "occasion": "it's \"quoted\"",
+  "tone": null,
+  "description": "Edge cases",
+  "variants": [
+    {
+      "lang": "de",
+      "variant": "standard",
+      "title": "Ü <Titel> & \"Quote\" 'apos'",
+      "license": "L&L",
+      "source": "src \"x\""
+    },
+    {
+      "lang": "cu",
+      "variant": "synodal-cyrl",
+      "title": "Тропарь",
+      "license": "CC0",
+      "source": "test"
+    },
+    {
+      "lang": "en",
+      "variant": "standard",
+      "title": "",
+      "license": "",
+      "source": ""
+    },
+    {
+      "lang": "ja",
+      "variant": "standard",
+      "title": "祈り 🙏",
+      "license": "CC0",
+      "source": "test"
+    }
+  ],
+  "structure": [
+    {
+      "id": "h1",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "A <B> & \"C\" 'D'"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "text": "Слава Отцу и Сыну"
+        },
+        {
+          "lang": "ja",
+          "variant": "standard",
+          "text": "栄光 🙏"
+        }
+      ]
+    },
+    {
+      "id": "n1",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": [
+            {
+              "t": "text",
+              "v": "Vor "
+            },
+            {
+              "t": "note",
+              "v": "<Rubrik> & \"x\""
+            },
+            {
+              "t": "text",
+              "v": " nach"
+            }
+          ]
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "id": "v1",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "a & b",
+            "",
+            [
+              {
+                "t": "note",
+                "v": "n"
+              }
+            ],
+            []
+          ]
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "lines": []
+        },
+        {
+          "lang": "ja",
+          "variant": "standard",
+          "lines": [
+            "一",
+            "二"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "c1",
+      "kind": "my-custom-kind",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "custom"
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "text": [
+            {
+              "t": "note",
+              "v": "only note"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "both",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "text and",
+          "lines": [
+            "lines"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "none",
+      "kind": "verse",
+      "translations": []
+    },
+    {
+      "id": "nokeys",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "ja",
+          "variant": "standard"
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "custom": {
+      "saint": "x",
+      "n": 3,
+      "flag": true,
+      "nothing": null
+    }
+  }
+}

@@ -1,0 +1,64 @@
+[
+  {
+    "styles": {
+      "heading": {
+        "fontSize": "12pt",
+        "color": "#000000",
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "htmlTag": "h2"
+      },
+      "verse": {
+        "fontSize": "12pt",
+        "color": "#000000",
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "htmlTag": "script"
+      },
+      "custom": {
+        "fontSize": "12pt",
+        "color": "#000000",
+        "fontWeight": "normal",
+        "fontStyle": "normal"
+      },
+      "annotation": {
+        "fontSize": "12pt",
+        "color": "#000000",
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "htmlTag": "p"
+      },
+      "empty": {
+        "fontSize": "12pt",
+        "color": "#000000",
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "htmlTag": ""
+      },
+      "article": {
+        "fontSize": "12pt",
+        "color": "#000000",
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "htmlTag": "article"
+      },
+      "zed": {
+        "fontSize": "12pt",
+        "color": "#000000",
+        "fontWeight": "normal",
+        "fontStyle": "normal",
+        "htmlTag": "span",
+        "textAlign": "center"
+      }
+    },
+    "expected": {
+      "heading": "h2",
+      "annotation": "p",
+      "zed": "span"
+    }
+  },
+  {
+    "styles": {},
+    "expected": {}
+  }
+]

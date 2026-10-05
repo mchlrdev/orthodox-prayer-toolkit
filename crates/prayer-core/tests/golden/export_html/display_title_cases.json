@@ -1,0 +1,334 @@
+[
+  {
+    "prayer": {
+      "id": "tropar",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "title": "",
+          "license": "CC0",
+          "source": "test"
+        }
+      ]
+    },
+    "preferred": null,
+    "expected": "Tropar"
+  },
+  {
+    "prayer": {
+      "id": "tropar",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "title": "",
+          "license": "CC0",
+          "source": "test"
+        }
+      ]
+    },
+    "preferred": null,
+    "expected": "Tropar"
+  },
+  {
+    "prayer": {
+      "id": "tropar",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "title": "",
+          "license": "CC0",
+          "source": "test"
+        }
+      ]
+    },
+    "preferred": {
+      "lang": "cu",
+      "variant": "synodal-cyrl"
+    },
+    "expected": "Тропарь"
+  },
+  {
+    "prayer": {
+      "id": "tropar",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "title": "",
+          "license": "CC0",
+          "source": "test"
+        }
+      ]
+    },
+    "preferred": {
+      "lang": "en",
+      "variant": "standard"
+    },
+    "expected": "Tropar"
+  },
+  {
+    "prayer": {
+      "id": "tropar",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "Tropar",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "cu",
+          "variant": "synodal-cyrl",
+          "title": "Тропарь",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "title": "",
+          "license": "CC0",
+          "source": "test"
+        }
+      ]
+    },
+    "preferred": {
+      "lang": "fr",
+      "variant": "standard"
+    },
+    "expected": "Tropar"
+  },
+  {
+    "prayer": {
+      "id": "emptyfirst",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "cu",
+          "variant": "x",
+          "title": "Second",
+          "license": "CC0",
+          "source": "test"
+        }
+      ]
+    },
+    "preferred": null,
+    "expected": "emptyfirst"
+  },
+  {
+    "prayer": {
+      "id": "emptyfirst",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "cu",
+          "variant": "x",
+          "title": "Second",
+          "license": "CC0",
+          "source": "test"
+        }
+      ]
+    },
+    "preferred": null,
+    "expected": "emptyfirst"
+  },
+  {
+    "prayer": {
+      "id": "emptyfirst",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "cu",
+          "variant": "x",
+          "title": "Second",
+          "license": "CC0",
+          "source": "test"
+        }
+      ]
+    },
+    "preferred": {
+      "lang": "cu",
+      "variant": "synodal-cyrl"
+    },
+    "expected": "emptyfirst"
+  },
+  {
+    "prayer": {
+      "id": "emptyfirst",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "cu",
+          "variant": "x",
+          "title": "Second",
+          "license": "CC0",
+          "source": "test"
+        }
+      ]
+    },
+    "preferred": {
+      "lang": "en",
+      "variant": "standard"
+    },
+    "expected": "emptyfirst"
+  },
+  {
+    "prayer": {
+      "id": "emptyfirst",
+      "variants": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "title": "",
+          "license": "CC0",
+          "source": "test"
+        },
+        {
+          "lang": "cu",
+          "variant": "x",
+          "title": "Second",
+          "license": "CC0",
+          "source": "test"
+        }
+      ]
+    },
+    "preferred": {
+      "lang": "fr",
+      "variant": "standard"
+    },
+    "expected": "emptyfirst"
+  },
+  {
+    "prayer": {
+      "id": "orphan",
+      "variants": []
+    },
+    "preferred": null,
+    "expected": "orphan"
+  },
+  {
+    "prayer": {
+      "id": "orphan",
+      "variants": []
+    },
+    "preferred": null,
+    "expected": "orphan"
+  },
+  {
+    "prayer": {
+      "id": "orphan",
+      "variants": []
+    },
+    "preferred": {
+      "lang": "cu",
+      "variant": "synodal-cyrl"
+    },
+    "expected": "orphan"
+  },
+  {
+    "prayer": {
+      "id": "orphan",
+      "variants": []
+    },
+    "preferred": {
+      "lang": "en",
+      "variant": "standard"
+    },
+    "expected": "orphan"
+  },
+  {
+    "prayer": {
+      "id": "orphan",
+      "variants": []
+    },
+    "preferred": {
+      "lang": "fr",
+      "variant": "standard"
+    },
+    "expected": "orphan"
+  }
+]

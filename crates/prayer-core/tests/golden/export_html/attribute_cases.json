@@ -1,0 +1,313 @@
+[
+  {
+    "input": "",
+    "expected": {
+      "ok": true,
+      "attributes": {}
+    }
+  },
+  {
+    "input": "  ",
+    "expected": {
+      "ok": true,
+      "attributes": {}
+    }
+  },
+  {
+    "input": "class=\"prayer\" data-x=\"1\"",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "class": "prayer",
+        "data-x": "1"
+      }
+    }
+  },
+  {
+    "input": "a='x y' b=z hidden",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "a": "x y",
+        "b": "z",
+        "hidden": ""
+      }
+    }
+  },
+  {
+    "input": "c = \"\" d= \"e\"",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "c": "",
+        "d": "e"
+      }
+    }
+  },
+  {
+    "input": "onclick=\"x\" style=\"color:red\" class=\"ok\"",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "event handler attribute \"onclick\" is not allowed",
+        "attribute \"style\" is not allowed"
+      ]
+    }
+  },
+  {
+    "input": "ONCLICK=1 Style=2",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "event handler attribute \"ONCLICK\" is not allowed",
+        "attribute \"style\" is not allowed"
+      ]
+    }
+  },
+  {
+    "input": "one=1 only",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "event handler attribute \"one\" is not allowed",
+        "event handler attribute \"only\" is not allowed"
+      ]
+    }
+  },
+  {
+    "input": "data-on=1",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "data-on": "1"
+      }
+    }
+  },
+  {
+    "input": "1x a=\"b\"",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"1\""
+      ]
+    }
+  },
+  {
+    "input": "a=\"b",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"=\"\""
+      ]
+    }
+  },
+  {
+    "input": "a=",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"=\""
+      ]
+    }
+  },
+  {
+    "input": "a==b",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"==\""
+      ]
+    }
+  },
+  {
+    "input": "a=<b>",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"=<\"",
+        "unexpected token \">\""
+      ]
+    }
+  },
+  {
+    "input": "a=b=c",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"=\""
+      ]
+    }
+  },
+  {
+    "input": "a=\"b\"c=\"d\"",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "a": "b",
+        "c": "d"
+      }
+    }
+  },
+  {
+    "input": "a=\"b\"\"c\"",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"\"\"",
+        "unexpected token \"\"\""
+      ]
+    }
+  },
+  {
+    "input": "a=1 b=2 a=3",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "a": "3",
+        "b": "2"
+      }
+    }
+  },
+  {
+    "input": "x:y.z-w_v=1",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "x:y.z-w_v": "1"
+      }
+    }
+  },
+  {
+    "input": "-bad ok",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"-\""
+      ]
+    }
+  },
+  {
+    "input": "a b c=1",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "a": "",
+        "b": "",
+        "c": "1"
+      }
+    }
+  },
+  {
+    "input": "ab",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"\""
+      ]
+    }
+  },
+  {
+    "input": "﻿a=1﻿",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "a": "1"
+      }
+    }
+  },
+  {
+    "input": "α=1",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"α=1\""
+      ]
+    }
+  },
+  {
+    "input": "a=ü b='日本'",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "a": "ü",
+        "b": "日本"
+      }
+    }
+  },
+  {
+    "input": "a=\"x\ny\"",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "a": "x\ny"
+      }
+    }
+  },
+  {
+    "input": "a =b",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "a": "b"
+      }
+    }
+  },
+  {
+    "input": "a= 'b' c",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "a": "b",
+        "c": ""
+      }
+    }
+  },
+  {
+    "input": "a=`b`",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"=`\"",
+        "unexpected token \"`\""
+      ]
+    }
+  },
+  {
+    "input": "a='b\"c'",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "a": "b\"c"
+      }
+    }
+  },
+  {
+    "input": "= a",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \"=\""
+      ]
+    }
+  },
+  {
+    "input": "a b c",
+    "expected": {
+      "ok": true,
+      "attributes": {
+        "a": "",
+        "b": "",
+        "c": ""
+      }
+    }
+  },
+  {
+    "input": "a=\"1\" , b",
+    "expected": {
+      "ok": false,
+      "errors": [
+        "unexpected token \",\""
+      ]
+    }
+  }
+]

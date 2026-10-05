@@ -1,0 +1,14 @@
+{
+  "id": "plain",
+  "type": "troparion",
+  "variants": [
+    {
+      "lang": "de",
+      "variant": "standard",
+      "title": "Plain",
+      "license": "CC0",
+      "source": "test"
+    }
+  ],
+  "structure": []
+}
