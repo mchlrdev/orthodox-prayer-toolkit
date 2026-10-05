@@ -36,16 +36,16 @@ Die GPUI-App ersetzt die Electron-App auf `main`: alle Funktionen und UX-Abläuf
 - [Wie die Rust-App geschnitten ist](issues/05-app-architecture.md): `prayer-core` / `prayer-app` (UI-frei) / `prayer-ui`; Gebetsdatei bleibt eigenständig, Catalog nur Index; Undo pro Gebet über alles; Ordner wird beobachtet.
 - [Wie genau der Rust-Core dem TS-Core entspricht](issues/07-core-port-strategy.md): gleiche Ergebnisse (DOCX nur inhaltlich), idiomatisch neu geschrieben statt übersetzt; TS-Core nur Referenz bis zur Umstellung, dann weg.
 - [Kind-Styles in GPUI](issues/09-kind-styles-in-gpui.md): Werte 1:1, Blocksatz selbst gebaut, Gebetsschrift wird mitgeliefert (Auswahl offen), Theme auf heutige Palette.
+- [Menüs und Tastenkürzel](issues/11-menus-and-shortcuts.md): keine Menüleiste unter Windows/Linux, alles in der App erreichbar; Cmd+S/O/N/, neu, alte Kürzel 1:1; Kontextmenüs erwünscht.
 - [Wo die Electron-App Kind-Styles speichert](issues/10-electron-settings-location.md): `userData/Orthodox Prayer Toolkit/kind-styles.json` pro OS; wirkt aber nicht auf die Darstellung (siehe Parität), die echten Styles liegen in der Library.
 
 ## Not yet specified
 
 - **Export-Abläufe in der neuen UI** (Export-Dialog, Vorschau, Dateiauswahl): hängt an Core-Port und App-Architektur.
 - **Find & Replace im neuen Editor**: hängt an der Editor-Entscheidung; Hervorhebungen und Ersetzen über mehrere Blocks.
-- **Bekannte Schwächen der Electron-App**: gleich nachbauen oder beheben? (kein Speichern-Kürzel, Validierungsfehler unsichtbar, „Install and Restart“ ohne Nachfrage, wirkungslose App-Kind-Styles). Liste in der Paritäts-Checkliste.
 - **Gebetsliste und Katalog bei großen Libraries**: virtuelle Liste, Einlesen im Hintergrund; vermutlich unkritisch, wird nach der Architektur klar.
 - **Umstellung selbst**: Reihenfolge von Merge, Entfernen von `packages/` (Schema und Fixtures ziehen vorher an einen neuen Ort, Docs und AGENTS.md werden umgeschrieben), App-Name/Bundle-ID/Update-Kanal von Beta auf stabil; Signierung dann neu bewerten.
-- **Update-Verhalten wie Electron**: Download im Hintergrund statt per Klick, macOS-Build auch für Intel, Delta-Pakete.
+- **Bedienkonzept mit Kontextmenüs**: welche heutigen Drei-Punkte-Menüs und Knöpfe durch Rechtsklick-Menüs ersetzt oder ergänzt werden (Gebetsliste, Blocks, Kinds); wird beim Bau der jeweiligen Bereiche entschieden.
 - **UI-Tests**: wie viel über `gpui-kit`-Test-Support (headless Fenster, Snapshots) abgesichert wird.
 
 ## Out of scope
