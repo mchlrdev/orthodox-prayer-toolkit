@@ -18,6 +18,9 @@ serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 indexmap = { version = "2", features = ["serde"] }
 regex = "1"
+thiserror = "2"
+directories = "6"
+tempfile = "3"
 # 0.x crates pinned exactly (ticket 06): output must not drift silently.
 jsonschema = { version = "=0.58.5", default-features = false }
 docx-rs = "=0.4.22"
