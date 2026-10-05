@@ -317,8 +317,10 @@ impl Prefs {
 
     /// Default preferences file: `<OS config dir>/<APP_NAME>/preferences.json`.
     pub fn default_path() -> Option<PathBuf> {
-        let dirs = directories::ProjectDirs::from("", "", APP_NAME)?;
-        Some(dirs.config_dir().join(FILE_NAME))
+        // Like Electron's `userData`: the app name as is, on every platform
+        // (`ProjectDirs` would rewrite it per OS).
+        let dirs = directories::BaseDirs::new()?;
+        Some(dirs.config_dir().join(APP_NAME).join(FILE_NAME))
     }
 
     /// Loads from `path`; missing or corrupt file gives defaults.
@@ -734,7 +736,7 @@ mod tests {
     fn default_path_uses_app_name() {
         if let Some(path) = Prefs::default_path() {
             assert!(path.ends_with(FILE_NAME));
-            assert!(path.to_string_lossy().contains(APP_NAME) || cfg!(target_os = "linux"));
+            assert!(path.parent().unwrap().ends_with(APP_NAME));
         }
     }
 

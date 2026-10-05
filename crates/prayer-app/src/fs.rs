@@ -475,7 +475,8 @@ mod tests {
         for p in [
             "b.json",
             "a.json",
-            "B.json",
+            // Not "B.json": macOS and Windows file systems ignore case.
+            "Z.json",
             "sub/c.json",
             "node_modules/x/y.json",
             ".git/z.json",
@@ -489,7 +490,7 @@ mod tests {
             root.list_json_files(),
             [
                 ".orthodox-prayer-toolkit/styles.json",
-                "B.json",
+                "Z.json",
                 "a.json",
                 "b.json",
                 "manifest.json",
