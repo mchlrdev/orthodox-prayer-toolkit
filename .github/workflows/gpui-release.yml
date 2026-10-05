@@ -1,0 +1,146 @@
+name: GPUI Release
+
+# Beta releases of the Rust rewrite. Separate from release.yml (tags v*),
+# which builds and publishes the Electron app. These are GitHub pre-releases,
+# so the Electron app's updater never offers them.
+on:
+  push:
+    tags:
+      - "gpui-v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (e.g. 0.2.0-beta.1). Packages only, no upload."
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gpui-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  PACK_ID: OrthodoxPrayerToolkitBeta
+  PACK_TITLE: Orthodox Prayer Toolkit Beta
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            channel: beta-osx
+          - os: windows-latest
+            channel: beta-win
+          - os: ubuntu-latest
+            channel: beta-linux
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version from tag
+        id: version
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#gpui-v}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # The binary reports this version and picks its channel from it, so it has
+      # to match the tag before the build.
+      - name: Stamp workspace version
+        shell: bash
+        run: |
+          python3 - "${{ steps.version.outputs.version }}" <<'PY'
+          import re, sys, pathlib
+          version = sys.argv[1]
+          path = pathlib.Path("Cargo.toml")
+          text = path.read_text()
+          text, count = re.subn(r'(?m)^version = ".*"$', f'version = "{version}"', text, count=1)
+          assert count == 1, "workspace version not found"
+          path.write_text(text)
+          PY
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Linux system libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-dev libxkbcommon-x11-dev \
+            libwayland-dev libvulkan-dev libx11-xcb-dev libxcb1-dev \
+            libfontconfig-dev squashfs-tools
+
+      - name: Build
+        run: cargo build --release -p prayer-ui
+
+      - name: Collect binary
+        shell: bash
+        run: |
+          mkdir -p pack
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp target/release/orthodox-prayer-toolkit.exe pack/
+          else
+            cp target/release/orthodox-prayer-toolkit pack/
+          fi
+
+      - name: Install Velopack CLI
+        shell: bash
+        run: dotnet tool install -g vpk && echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      # Unsigned for now, as the Electron builds are: macOS users get the
+      # Gatekeeper warning until a Developer ID certificate is configured.
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          vpk pack -x -u "$PACK_ID" -v "${{ steps.version.outputs.version }}" \
+            -p pack -e orthodox-prayer-toolkit --packTitle "$PACK_TITLE" \
+            --icon packages/app/resources/icon.icns \
+            --bundleId org.orthodox.prayer-toolkit.beta \
+            -c ${{ matrix.channel }} -o Releases
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          vpk pack -x -u "$env:PACK_ID" -v "${{ steps.version.outputs.version }}" `
+            -p pack -e orthodox-prayer-toolkit.exe --packTitle "$env:PACK_TITLE" `
+            --icon packages/app/resources/icon.ico `
+            -c ${{ matrix.channel }} -o Releases
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          vpk pack -x -u "$PACK_ID" -v "${{ steps.version.outputs.version }}" \
+            -p pack -e orthodox-prayer-toolkit --packTitle "$PACK_TITLE" \
+            --icon packages/app/resources/icon.png \
+            -c ${{ matrix.channel }} -o Releases
+
+      # --merge lets the three jobs add to the same pre-release without racing
+      # to create it. Skipped for a manual run, which only checks the build.
+      - name: Upload to GitHub pre-release
+        if: startsWith(github.ref, 'refs/tags/gpui-v')
+        run: |
+          vpk upload github -x -o Releases -c ${{ matrix.channel }} \
+            --repoUrl https://github.com/${{ github.repository }} \
+            --token ${{ secrets.GITHUB_TOKEN }} \
+            --tag ${{ github.ref_name }} \
+            --releaseName "${{ github.ref_name }}" \
+            --publish --pre --merge
+
+      - name: Upload packages as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: gpui-${{ matrix.channel }}
+          path: Releases/*
+          if-no-files-found: error

@@ -13,3 +13,4 @@ path = "src/main.rs"
 [dependencies]
 gpui-kit.workspace = true
 prayer-core.workspace = true
+velopack.workspace = true
