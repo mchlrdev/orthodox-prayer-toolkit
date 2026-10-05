@@ -58,7 +58,7 @@ jobs:
           elif [[ "$GITHUB_REF" == refs/tags/gpui-v* ]]; then
             version="${GITHUB_REF_NAME#gpui-v}"
           else
-            version="0.0.0-ci.${{ github.run_number }}"
+            version="0.0.1-ci.${{ github.run_number }}"
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
