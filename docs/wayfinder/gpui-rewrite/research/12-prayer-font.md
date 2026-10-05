@@ -44,3 +44,28 @@ Weitere geprüft, nicht gerendert:
 ## Empfehlung
 
 Als Hauptschrift **Noto Serif** (OFL, variabel, Upright + Italic): als einzige der geprüften Kandidaten deckt sie sämtliche geforderten Zeichen ab – Latein mit Umlauten, vollständiges Kirchenslawisch einschließlich Titlo, U+0484–0487 und U+2DED, sowie polytonisches Griechisch – und rendert die Kombinationszeichen im Test fehlerfrei; Regular, Italic und Bold sind über die Variable-Font-Achsen abgedeckt (bei GPUI prüfen, ob Variable-Font-Instanzen unterstützt werden, sonst statische Instanzen mit fontTools `instancer` erzeugen). Gentium Book Plus oder Libertinus Serif wirken als Buchschrift schöner, haben aber Lücken im Kirchenslawischen (ѡ ѧ ѫ ѿ ꙋ ꙗ, Combining-Marks), die man nur mit einer zweiten Schrift (z. B. Noto Serif als Fallback oder Ponomar für Slawisch) füllen könnte. Libron kommt als Hauptschrift nicht in Frage, da Kyrillisch und Griechisch gänzlich fehlen.
+
+## Garamond-Varianten
+
+Geprüft mit derselben Codepoint-Liste (Cmap, fontTools) plus U+2DED; Rendering wie oben. Dateien nur im Scratchpad.
+
+| Schrift | Quelle | Lizenz | Stile | Fehlende Codepoints |
+|---|---|---|---|---|
+| EB Garamond | https://github.com/google/fonts/tree/main/ofl/ebgaramond (Octavio Pardo; Ursprung Georg Duffner) | OFL 1.1 | variabel wght 400–800, Upright + Italic (R/I/B/BI) | ѡ U+0461, ѧ U+0467, ѿ U+047F, ꙋ U+A64B, ꙗ U+A657, U+0483–0487, U+2DED. Latein, Umlaute, ѣ ѳ ѵ і ѫ ѕ und polytonisches Griechisch vorhanden |
+| Cormorant Garamond | https://github.com/google/fonts/tree/main/ofl/cormorantgaramond (Christian Thalmann, Catharsis Fonts) | OFL 1.1 | variabel wght 300–700, Upright + Italic | Griechisch teilweise (α ε θ ι κ λ ο σ τ, ή, ί, ἀ U+1F00, ἐ U+1F10, Ὁ U+1F49, ᾧ U+1FA7, ῥ U+1FE5), ѡ ѧ ѿ ꙋ ꙗ, U+0483–0487, U+2DED. Gleiches Bild für Cormorant (ohne „Garamond“) |
+
+- Weitere freie Garamonds: „Garamond Libre“ und „Garamondt“ nicht als Dateien gefunden (nicht in google/fonts; Downloadquellen über den Proxy nicht erreichbar bzw. nicht verifizierbar), daher nicht geprüft. Die Original-Quelle von EB Garamond (github.com/georgd/EB-Garamond) liefert keine fertigen TTFs im Repo (Releases gesperrt, 403).
+- Keine Garamond ist vollständig. EB Garamond ist die beste reine Garamond: Griechisch komplett, Kirchenslawisch bis auf fünf Buchstaben und alle Kombinationszeichen. Cormorant Garamond ist wegen des fast fehlenden Griechisch ungeeignet (im Bild sieht man Fallback in anderer Strichstärke).
+
+### Kombination EB Garamond mit Noto Serif als Fallback
+
+Stack `'EB Garamond','Noto Serif'` (entspricht der glyphweisen Fallback-Logik der App). Fehlende Zeichen (ѡ ѿ ꙗ ꙋ, Titlo, ⷭ) kommen aus Noto Serif.
+- Positiv: Keine Tofu-Kästchen mehr; Titlo und ⷭ über „Гдⷭ҇и“ sitzen korrekt.
+- Nachteil: Noto Serif hat deutlich größere x-Höhe und dunkleren Strich als EB Garamond; die Fallback-Glyphen (ѡ in „нашегѡ“, „Ѳеѡ́форъ“, ꙗ, „Мѹ́“ und das „Д“ im Titlo-Cluster) wirken sichtbar größer und fetter und zerreißen die Zeile. Bei 17 px stärker als bei 22 px. Der Cluster „Гдⷭ҇и“ fällt bei Fallback als Ganzes aus Noto, wodurch Д/д-Form und Größe wechseln.
+- Urteil: Als Notlösung akzeptabel, für liturgischen Satz mit häufigen ѡ/ѿ/Titlo (also fast jede Zeile) eher störend. Kosmetisch lässt sich Noto skalieren (ca. 0,88 × Größe) oder in der Gewichtung leichter wählen (Variable Font wght ca. 350), falls GPUI das erlaubt.
+
+PNGs: /mnt/project-files/gpui-rewrite/fonts/garamond-eb-garamond.png, garamond-cormorant-garamond.png, garamond-noto-fallback.png, overview-garamond.png (Noto Serif, EB Garamond, Stack).
+
+### Empfehlung (Garamond)
+
+Wenn der Garamond-Charakter gewünscht ist: EB Garamond als Primärschrift mit Noto Serif als Fallback bündeln und die Fallback-Glyphen in Größe (ca. 0,88–0,92) und Gewicht angleichen, falls die App das pro Fallback-Schrift steuern kann. Ohne diese Feinjustierung bleibt Noto Serif allein die sicherere Wahl, weil sie ohne Fallback konsistent aussieht.
