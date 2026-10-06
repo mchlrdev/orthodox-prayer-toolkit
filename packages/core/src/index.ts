@@ -39,6 +39,8 @@ export {
 } from "./textRuns.js";
 
 export { validate } from "./validate.js";
+export { locateValidationErrors } from "./locateErrors.js";
+export type { ValidationErrorLocation } from "./locateErrors.js";
 export { sanitizeStyles, validateStyles, isValidKindId, sanitizeKindIdInput } from "./validateStyles.js";
 export type { StyleValidationResult } from "./validateStyles.js";
 export { KIND_ID_PATTERN, KIND_ID_MAX_LENGTH } from "./validateStyles.js";

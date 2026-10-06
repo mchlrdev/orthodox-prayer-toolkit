@@ -23,6 +23,8 @@ if (result.ok) {
 }
 ```
 
+`locateValidationErrors(prayer, errors)` maps each error path onto the block id (and translation `lang`/`variant`, when the path names one). The editor uses it to mark the affected block while you type.
+
 ## Export
 
 ### Flat variant (JSON-shaped object)
