@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type MouseEvent } from "react";
 import {
   ActionIcon,
   Alert,
@@ -25,6 +25,8 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import type { IdCollision } from "@orthodox-prayer-toolkit/core";
+import { shortcutLabel } from "../appCommands";
+import { useContextMenu, type ContextMenuItem } from "./ContextMenu";
 import type { LibraryEntry } from "../library";
 import {
   recentLibraryLabel,
@@ -82,6 +84,7 @@ export function PrayerList({
 }: Props) {
   const [query, setQuery] = useState("");
   const [menuOpenPath, setMenuOpenPath] = useState<string | null>(null);
+  const contextMenu = useContextMenu();
   const unsavedSet = useMemo(() => new Set(unsavedPaths), [unsavedPaths]);
 
   const menuRecents = useMemo(() => recent.slice(0, 8), [recent]);
@@ -95,6 +98,59 @@ export function PrayerList({
       return hay.includes(q);
     });
   }, [entries, query]);
+
+  const libraryItems = (): ContextMenuItem[] => [
+    {
+      label: "New prayer",
+      icon: <IconPlus size={14} />,
+      shortcut: shortcutLabel("Mod+N"),
+      disabled: busy,
+      onClick: onCreate,
+    },
+    {
+      label: "Import prayer JSON…",
+      icon: <IconFileImport size={14} />,
+      disabled: busy,
+      onClick: onImportPrayer,
+    },
+    { divider: true },
+    {
+      label: "Refresh",
+      icon: <IconRefresh size={14} />,
+      disabled: busy,
+      onClick: onReload,
+    },
+    {
+      label: "Library settings",
+      icon: <IconSettings size={14} />,
+      onClick: onLibrarySettings,
+    },
+  ];
+
+  const openRowMenu = (e: MouseEvent, entry: LibraryEntry) => {
+    setMenuOpenPath(entry.path);
+    contextMenu.open(e, [
+      {
+        label: "Open",
+        disabled: selectedPath === entry.path,
+        onClick: () => onSelect(entry),
+      },
+      {
+        label: "Export prayer JSON…",
+        icon: <IconFileExport size={14} />,
+        onClick: () => onExportPrayer(entry),
+      },
+      { divider: true },
+      ...libraryItems(),
+      { divider: true },
+      {
+        label: "Delete…",
+        icon: <IconTrash size={14} />,
+        color: "accent",
+        onClick: () => onDelete(entry),
+      },
+    ]);
+  };
 
   return (
     <Stack gap="sm" h="100%" style={{ minHeight: 0 }}>
@@ -115,6 +171,11 @@ export function PrayerList({
               <Menu.Dropdown>
                 <Menu.Item
                   leftSection={<IconFolderOpen size={14} />}
+                  rightSection={
+                    <span className="context-menu-shortcut">
+                      {shortcutLabel("Mod+O")}
+                    </span>
+                  }
                   onClick={onOpenFolder}
                 >
                   Open library…
@@ -172,6 +233,11 @@ export function PrayerList({
                 <Menu.Divider />
                 <Menu.Item
                   leftSection={<IconAdjustments size={14} />}
+                  rightSection={
+                    <span className="context-menu-shortcut">
+                      {shortcutLabel("Mod+,")}
+                    </span>
+                  }
                   onClick={onAppSettings}
                 >
                   App settings
@@ -257,7 +323,15 @@ export function PrayerList({
           </Text>
         </Stack>
       ) : (
-        <ScrollArea className="prayer-list-scroll" type="hover" scrollbarSize={6}>
+        <ScrollArea
+          className="prayer-list-scroll"
+          type="hover"
+          scrollbarSize={6}
+          onContextMenu={(e) => {
+            if (e.defaultPrevented) return;
+            contextMenu.open(e, libraryItems());
+          }}
+        >
           <Stack gap={2} w="100%">
             {filtered.map((entry) => (
               <div
@@ -265,7 +339,11 @@ export function PrayerList({
                 className="prayer-row"
                 data-active={selectedPath === entry.path}
                 data-dirty={unsavedSet.has(entry.path)}
-                data-menu-open={menuOpenPath === entry.path}
+                data-menu-open={
+                  contextMenu.menu !== null && menuOpenPath === entry.path
+                }
+                title="Right-click for actions"
+                onContextMenu={(e) => openRowMenu(e, entry)}
               >
                 <button
                   type="button"
@@ -293,46 +371,18 @@ export function PrayerList({
                 </button>
                 <Group gap={4} wrap="nowrap" pr={4}>
                   {entry.valid ? null : (
-                    <Badge size="xs" color="accent" variant="filled">
+                    <Badge
+                      size="xs"
+                      color="accent"
+                      variant="filled"
+                      title={entry.errors
+                        .slice(0, 5)
+                        .map((err) => err.message)
+                        .join("\n")}
+                    >
                       !
                     </Badge>
                   )}
-                  <Menu
-                    position="bottom-end"
-                    withinPortal
-                    onChange={(o) =>
-                      setMenuOpenPath(o ? entry.path : null)
-                    }
-                  >
-                    <Menu.Target>
-                      <ActionIcon
-                        className="prayer-row-menu"
-                        variant="subtle"
-                        color="gray"
-                        size="sm"
-                        aria-label="Prayer actions"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <IconDots size={16} />
-                      </ActionIcon>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                      <Menu.Item
-                        leftSection={<IconFileExport size={14} />}
-                        onClick={() => onExportPrayer(entry)}
-                      >
-                        Export prayer JSON…
-                      </Menu.Item>
-                      <Menu.Divider />
-                      <Menu.Item
-                        color="accent"
-                        leftSection={<IconTrash size={14} />}
-                        onClick={() => onDelete(entry)}
-                      >
-                        Delete
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
                 </Group>
               </div>
             ))}
@@ -344,6 +394,7 @@ export function PrayerList({
           </Stack>
         </ScrollArea>
       )}
+      {contextMenu.menu}
     </Stack>
   );
 }

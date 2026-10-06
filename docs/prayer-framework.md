@@ -89,11 +89,15 @@ Shipped and intended behaviour includes:
 
 - Open library folder; list / create / open / save / delete prayers
 - Edit identity, variants, structure, translations; switch variants
-- Schema validation in the UI
+- Schema validation in the UI, live while editing: affected blocks are marked, the prayer header shows the issue count
+- Undo / redo per prayer across all edits (text, kinds, moves, deletes); one history per open prayer, so deleting a block needs no confirm
+- Shortcuts (Cmd on macOS, Ctrl elsewhere): S save, Shift+S save all, O open library, N new prayer, `,` settings, Z / Shift+Z undo / redo; macOS also lists them in the menu bar, Windows/Linux have no menu bar, so every action is also reachable in the app
+- Right-click menus on prayer rows, the prayer list and blocks
+- The open library folder is watched: unchanged prayers reload from disk, prayers with unsaved edits show "Changed on disk" / "Deleted on disk"
 - Preview with kind styles (library `styles.json` over built-in defaults)
 - Export: flat JSON, HTML, layout RTF/DOCX
 - Optional manifest; id collision detection; kind rename across library with confirm
-- Auto-update against GitHub Releases ([RELEASE.md](RELEASE.md))
+- Auto-update against GitHub Releases ([RELEASE.md](RELEASE.md)); downloads in the background, and "Install and Restart" asks to save or discard unsaved prayers first
 
 ---
 

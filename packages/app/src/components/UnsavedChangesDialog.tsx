@@ -3,6 +3,8 @@ import { Button, Group, Modal, Stack, Text } from "@mantine/core";
 type Props = {
   opened: boolean;
   count: number;
+  /** Extra line, e.g. why the app asks now. */
+  reason?: string;
   loading?: boolean;
   onSaveAll: () => void;
   onDiscard: () => void;
@@ -12,6 +14,7 @@ type Props = {
 export function UnsavedChangesDialog({
   opened,
   count,
+  reason,
   loading = false,
   onSaveAll,
   onDiscard,
@@ -34,6 +37,11 @@ export function UnsavedChangesDialog({
     >
       <Stack gap="md">
         <Text size="sm">{label} Save all, discard all, or cancel.</Text>
+        {reason ? (
+          <Text size="sm" c="dimmed">
+            {reason}
+          </Text>
+        ) : null}
         <Group justify="flex-end" gap="sm" wrap="wrap">
           <Button variant="default" onClick={onCancel} disabled={loading}>
             Cancel
