@@ -33,7 +33,8 @@ import {
   type ExportFormat,
   type ExportOptions,
 } from "./exportPrayerVariant";
-import { persistPrayer } from "./persistPrayer";
+import { persistPrayer, prayerFileText } from "./persistPrayer";
+import { recordEdit, stepBack, stepForward } from "./history";
 import { planKindRename, renameKindAcrossLibrary } from "./renameKindLibrary";
 import type {
   KindRenamePlan,
@@ -219,16 +220,30 @@ export function mergeOpResult(
   return result.state;
 }
 
+export type EditOptions = {
+  /** Same key within a short window merges into one undo step (live typing). */
+  coalesceKey?: string | null;
+  now?: number;
+};
+
 export function editDraft(
   state: PrayerSessionState,
   next: Prayer,
+  options: EditOptions = {},
 ): SessionOpResult {
   const path = state.selectedPath;
   if (!path) return { state, notices: [] };
   const current = state.drafts[path];
   if (!current) return { state, notices: [] };
   if (next === current.prayer) return { state, notices: [] };
-  const edited = applyDraftEdit(next, current.visibleVariants, current.errors);
+  const edited: SessionDraft = {
+    ...current,
+    ...applyDraftEdit(next, current.visibleVariants, current.errors),
+    history: recordEdit(current.history, current.prayer, {
+      coalesceKey: options.coalesceKey,
+      now: options.now ?? Date.now(),
+    }),
+  };
   return {
     state: {
       ...state,
@@ -236,6 +251,43 @@ export function editDraft(
     },
     notices: [],
   };
+}
+
+function applyHistoryStep(
+  state: PrayerSessionState,
+  step: typeof stepBack,
+): PrayerSessionState {
+  const path = state.selectedPath;
+  const current = path ? state.drafts[path] : undefined;
+  if (!path || !current) return state;
+  const moved = step(current.history, current.prayer);
+  if (!moved) return state;
+  const base = applyDraftEdit(
+    moved.prayer,
+    current.visibleVariants,
+    current.errors,
+  );
+  return {
+    ...state,
+    drafts: {
+      ...state.drafts,
+      [path]: {
+        ...current,
+        ...base,
+        history: moved.history,
+        dirty: current.saved ? moved.prayer !== current.saved : true,
+      },
+    },
+  };
+}
+
+/** Undo the last edit of the selected prayer (whole-prayer snapshot). */
+export function undoDraft(state: PrayerSessionState): PrayerSessionState {
+  return applyHistoryStep(state, stepBack);
+}
+
+export function redoDraft(state: PrayerSessionState): PrayerSessionState {
+  return applyHistoryStep(state, stepForward);
 }
 
 export function setDraftVisibleVariants(
@@ -309,8 +361,11 @@ export function putPrayerFromText(
   }
 
   const catalog = patchCatalogPrayer(state.catalog, path, result.prayer);
+  const prayer = structuredClone(result.prayer);
   const draft: SessionDraft = {
-    prayer: structuredClone(result.prayer),
+    prayer,
+    saved: prayer,
+    diskText: text,
     errors: [],
     visibleVariants: resolveVisibleVariants(
       result.prayer,
@@ -384,11 +439,15 @@ function applyPersistedPath(
     movePrayerView(catalog.root, fromPath, toPath);
   }
   catalog = patchCatalogPrayer(catalog, toPath, prayer);
+  const previous = state.drafts[fromPath];
   drafts[toPath] = {
     prayer,
     errors,
     visibleVariants,
     dirty: false,
+    history: previous?.history,
+    saved: prayer,
+    diskText: prayerFileText(prayer),
   };
   savePrayerView(catalog.root, toPath, visibleVariants);
   const selectedPath =
@@ -618,7 +677,7 @@ export async function commitCreatePrayer(
     await api.writeText(
       state.catalog.root,
       path,
-      `${JSON.stringify(state.createDraft, null, 2)}\n`,
+      prayerFileText(state.createDraft),
     );
     const prayer = structuredClone(state.createDraft);
     const variant = state.createVariant;
@@ -637,6 +696,8 @@ export async function commitCreatePrayer(
             errors: [],
             visibleVariants: [variant],
             dirty: false,
+            saved: prayer,
+            diskText: prayerFileText(prayer),
           },
         },
         createDraft: null,
@@ -891,8 +952,12 @@ export async function applyKindRename(
       libraryStyles: state.catalog.libraryStyles,
     });
     let catalog = state.catalog;
+    const drafts = { ...result.drafts };
     for (const { path, prayer } of result.written) {
       catalog = patchCatalogPrayer(catalog, path, prayer);
+      // Own write: the folder watcher must not report it as external.
+      const draft = drafts[path];
+      if (draft) drafts[path] = { ...draft, diskText: prayerFileText(prayer) };
     }
     catalog = {
       ...catalog,
@@ -914,7 +979,7 @@ export async function applyKindRename(
       state: {
         ...state,
         catalog,
-        drafts: result.drafts,
+        drafts,
         appStyles: result.appStyles,
         pendingKindRename: null,
       },

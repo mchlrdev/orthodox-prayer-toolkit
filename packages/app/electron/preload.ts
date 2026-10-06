@@ -59,6 +59,20 @@ export type PrayerToolkitApi = {
   confirmClose: () => void;
   /** Electron only: tell main process whether unsaved changes exist. */
   setDirty: (dirty: boolean) => void;
+  /** Electron only: watch the open library folder (null stops watching). */
+  watchLibrary: (libraryRoot: string | null) => Promise<void>;
+  /** Electron only: `.json` files changed on disk outside the app. */
+  onLibraryChanged: (
+    cb: (change: { root: string; paths: string[] }) => void,
+  ) => () => void;
+  /** Electron only: app menu command (shortcuts on macOS go through the menu). */
+  onCommand: (cb: (command: string) => void) => () => void;
+  /** Electron only: clipboard edit actions for the renderer's context menus. */
+  runEdit: (action: "cut" | "copy" | "paste" | "selectAll") => Promise<void>;
+  /** Electron only: "Install and Restart" chosen while prayers are unsaved. */
+  onInstallRequested: (cb: () => void) => () => void;
+  /** Electron only: unsaved changes handled; quit and install the update. */
+  confirmInstall: () => void;
   getAppInfo: () => Promise<AppInfo>;
   checkForUpdates: () => Promise<AppUpdateCheckResult>;
   installUpdate: () => Promise<{ ok: boolean }>;
@@ -123,6 +137,36 @@ const api: PrayerToolkitApi = {
   },
   setDirty: (dirty) => {
     ipcRenderer.send("app:set-dirty", dirty);
+  },
+  watchLibrary: (libraryRoot) =>
+    ipcRenderer.invoke("library:watch", libraryRoot),
+  onLibraryChanged: (cb) => {
+    const handler = (
+      _event: unknown,
+      change: { root: string; paths: string[] },
+    ) => cb(change);
+    ipcRenderer.on("library:changed", handler);
+    return () => {
+      ipcRenderer.removeListener("library:changed", handler);
+    };
+  },
+  onCommand: (cb) => {
+    const handler = (_event: unknown, command: string) => cb(command);
+    ipcRenderer.on("app:command", handler);
+    return () => {
+      ipcRenderer.removeListener("app:command", handler);
+    };
+  },
+  runEdit: (action) => ipcRenderer.invoke("edit:run", action),
+  onInstallRequested: (cb) => {
+    const handler = () => cb();
+    ipcRenderer.on("app:install-requested", handler);
+    return () => {
+      ipcRenderer.removeListener("app:install-requested", handler);
+    };
+  },
+  confirmInstall: () => {
+    ipcRenderer.send("app:confirm-install");
   },
   getAppInfo: () => ipcRenderer.invoke("app:get-info"),
   checkForUpdates: () => ipcRenderer.invoke("app:check-for-updates"),

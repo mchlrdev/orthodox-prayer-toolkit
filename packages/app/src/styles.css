@@ -1,3 +1,20 @@
+/* Source Serif 4 (SIL OFL 1.1, see assets/fonts/OFL.txt): the prayer font, bundled so it does not depend on installed fonts. */
+@font-face {
+  font-family: "Source Serif 4";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: block;
+  src: url("./assets/fonts/SourceSerif4-Variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Serif 4";
+  font-style: italic;
+  font-weight: 200 900;
+  font-display: block;
+  src: url("./assets/fonts/SourceSerif4-Italic-Variable.woff2") format("woff2");
+}
+
 :root {
   /* Hex literals live ONLY here (and the dark block below). */
   --opt-base: #1a1a1a;
@@ -1940,4 +1957,51 @@ body,
 .settings-accordion .mantine-Accordion-control:hover,
 .settings-accordion .mantine-Accordion-control:active {
   background: transparent;
+}
+
+/* Live validation markers */
+.inline-block[data-invalid="true"] {
+  box-shadow: inset 3px 0 0 var(--opt-accent);
+  background: color-mix(in srgb, var(--opt-accent) 5%, transparent);
+}
+
+.split-cell[data-invalid="true"] .inline-content {
+  text-decoration: underline wavy color-mix(in srgb, var(--opt-accent) 70%, transparent);
+  text-decoration-skip-ink: none;
+  text-underline-offset: 4px;
+}
+
+.inline-block-issue {
+  display: inline-flex;
+  align-items: center;
+  color: var(--opt-accent);
+  padding: 0 2px;
+  cursor: help;
+}
+
+.workspace-issues-badge {
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.workspace-issue-row {
+  display: block;
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.workspace-issue-row:not(:disabled):hover {
+  background: var(--opt-hover);
+}
+
+.workspace-disk-conflict {
+  margin-top: 8px;
+}
+
+.context-menu-shortcut {
+  font-size: 11px;
+  color: var(--opt-text-secondary);
+  letter-spacing: 0.02em;
 }

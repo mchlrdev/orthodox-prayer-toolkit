@@ -24,6 +24,7 @@ import {
   resolveUnderRoot,
   walkJsonFiles,
 } from "../nodeFs";
+import { createLibraryWatcher } from "./libraryWatch";
 import { startMacUpdateInstall } from "./macUpdateInstall";
 import {
   resolveUpdateCheck,
@@ -94,6 +95,30 @@ function examplesLibraryPath(): string | null {
   return existsSync(candidate) ? candidate : null;
 }
 
+const libraryWatcher = createLibraryWatcher((root, paths) => {
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) {
+      win.webContents.send("library:changed", { root, paths });
+    }
+  }
+});
+
+/** Commands shared by menu items and renderer shortcuts (see src/appCommands.ts). */
+type AppCommand =
+  | "new-prayer"
+  | "open-library"
+  | "save"
+  | "save-all"
+  | "settings"
+  | "undo"
+  | "redo";
+
+function sendCommand(command: AppCommand): void {
+  const win =
+    BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0];
+  win?.webContents.send("app:command", command);
+}
+
 const allowCloseWindows = new WeakSet<BrowserWindow>();
 const dirtyWindows = new WeakSet<BrowserWindow>();
 
@@ -135,6 +160,21 @@ function createWindow(): BrowserWindow {
   } else {
     void win.loadFile(join(RENDERER_DIST, "index.html"));
   }
+
+  // Native edit menu for text fields the renderer has no own menu for.
+  win.webContents.on("context-menu", (_event, params) => {
+    if (!params.isEditable && !params.selectionText) return;
+    const items: Electron.MenuItemConstructorOptions[] = params.isEditable
+      ? [
+          { role: "cut", enabled: params.editFlags.canCut },
+          { role: "copy", enabled: params.editFlags.canCopy },
+          { role: "paste", enabled: params.editFlags.canPaste },
+          { type: "separator" },
+          { role: "selectAll" },
+        ]
+      : [{ role: "copy" }];
+    Menu.buildFromTemplate(items).popup({ window: win });
+  });
 
   win.webContents.on("preload-error", (_event, preloadPath, error) => {
     console.error("Preload failed:", preloadPath, error);
@@ -214,6 +254,25 @@ function registerIpc(): void {
     return rememberLibraryRoot(normalized);
   });
 
+  ipcMain.handle("library:watch", (_evt, libraryRoot: string | null) => {
+    if (!libraryRoot) {
+      libraryWatcher.stop();
+      return;
+    }
+    libraryWatcher.start(assertAllowedLibraryRoot(libraryRoot));
+  });
+
+  ipcMain.handle(
+    "edit:run",
+    (event, action: "cut" | "copy" | "paste" | "selectAll") => {
+      const wc = event.sender;
+      if (action === "cut") wc.cut();
+      else if (action === "copy") wc.copy();
+      else if (action === "paste") wc.paste();
+      else if (action === "selectAll") wc.selectAll();
+    },
+  );
+
   ipcMain.handle("library:listJson", (_evt, libraryRoot: string) => {
     const root = assertAllowedLibraryRoot(libraryRoot);
     const files: string[] = [];
@@ -258,6 +317,7 @@ function registerIpc(): void {
       const root = assertAllowedLibraryRoot(libraryRoot);
       const full = resolveUnderRoot(root, relativePath);
       mkdirSync(dirname(full), { recursive: true });
+      libraryWatcher.noteWrite(root, relativePath, content);
       writeFileSync(full, content, "utf8");
     },
   );
@@ -267,6 +327,7 @@ function registerIpc(): void {
     (_evt, libraryRoot: string, relativePath: string) => {
       const root = assertAllowedLibraryRoot(libraryRoot);
       const full = resolveUnderRoot(root, relativePath);
+      libraryWatcher.noteWrite(root, relativePath, null);
       rmSync(full, { force: true });
     },
   );
@@ -286,6 +347,8 @@ function registerIpc(): void {
         throw new Error(`Target already exists: ${toRelative}`);
       }
       mkdirSync(dirname(to), { recursive: true });
+      libraryWatcher.noteWrite(root, fromRelative, null);
+      libraryWatcher.noteWrite(root, toRelative, readFileSync(from, "utf8"));
       renameSync(from, to);
     },
   );
@@ -318,6 +381,11 @@ function registerIpc(): void {
       const root = assertAllowedLibraryRoot(libraryRoot);
       const path = libraryStylesPath(root);
       mkdirSync(dirname(path), { recursive: true });
+      libraryWatcher.noteWrite(
+        root,
+        ".orthodox-prayer-toolkit/styles.json",
+        content,
+      );
       writeFileSync(path, content, "utf8");
     },
   );
@@ -431,6 +499,10 @@ function registerIpc(): void {
     const result = await queryUpdateStatus();
     broadcastUpdateStatus(result);
     return result;
+  });
+
+  ipcMain.on("app:confirm-install", () => {
+    if (pendingUpdateVersion) installAndRestart();
   });
 
   ipcMain.handle("app:install-update", () => {
@@ -559,7 +631,7 @@ function promptInstallUpdate(version: string, force: boolean): void {
     installPromptOpen = false;
     if (result.response === 0) {
       // Sheet must finish dismissing before we quit the parent window.
-      setImmediate(() => installAndRestart());
+      setImmediate(() => requestInstallAndRestart());
       return;
     }
     updatePromptDismissedThisSession = true;
@@ -572,6 +644,18 @@ function allowWindowsToClose(): void {
     allowCloseWindows.add(win);
     win.removeAllListeners("close");
   }
+}
+
+/** Unsaved prayers first: the renderer asks Save all / Discard / Cancel. */
+function requestInstallAndRestart(): void {
+  const dirty = BrowserWindow.getAllWindows().find(
+    (win) => !win.isDestroyed() && dirtyWindows.has(win),
+  );
+  if (dirty) {
+    dirty.webContents.send("app:install-requested");
+    return;
+  }
+  installAndRestart();
 }
 
 function installAndRestart(): void {
@@ -768,6 +852,11 @@ function buildAppMenu(): void {
               { role: "about" as const },
               { type: "separator" as const },
               {
+                label: "Settings…",
+                accelerator: "CmdOrCtrl+,",
+                click: () => sendCommand("settings"),
+              },
+              {
                 label: "Check for Updates…",
                 click: () => onCheckForUpdatesMenu(),
               },
@@ -785,13 +874,46 @@ function buildAppMenu(): void {
       : []),
     {
       label: "File",
-      submenu: [isMac ? { role: "close" } : { role: "quit" }],
+      submenu: [
+        {
+          label: "New Prayer",
+          accelerator: "CmdOrCtrl+N",
+          click: () => sendCommand("new-prayer"),
+        },
+        {
+          label: "Open Library…",
+          accelerator: "CmdOrCtrl+O",
+          click: () => sendCommand("open-library"),
+        },
+        { type: "separator" },
+        {
+          label: "Save",
+          accelerator: "CmdOrCtrl+S",
+          click: () => sendCommand("save"),
+        },
+        {
+          label: "Save All",
+          accelerator: "CmdOrCtrl+Shift+S",
+          click: () => sendCommand("save-all"),
+        },
+        { type: "separator" },
+        isMac ? { role: "close" } : { role: "quit" },
+      ],
     },
     {
       label: "Edit",
       submenu: [
-        { role: "undo" },
-        { role: "redo" },
+        // App undo across blocks; falls back to native undo while typing.
+        {
+          label: "Undo",
+          accelerator: "CmdOrCtrl+Z",
+          click: () => sendCommand("undo"),
+        },
+        {
+          label: "Redo",
+          accelerator: "Shift+CmdOrCtrl+Z",
+          click: () => sendCommand("redo"),
+        },
         { type: "separator" },
         { role: "cut" },
         { role: "copy" },

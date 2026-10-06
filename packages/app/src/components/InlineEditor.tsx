@@ -12,13 +12,18 @@ import {
   type FocusEvent,
   type MouseEvent as ReactMouseEvent,
 } from "react";
-import { ActionIcon, Group, Menu, Stack } from "@mantine/core";
+import { ActionIcon, Group, Menu, Stack, Tooltip } from "@mantine/core";
 import {
+  IconAlertTriangle,
   IconArrowDown,
   IconArrowUp,
   IconChevronDown,
+  IconClipboard,
+  IconCopy,
+  IconCut,
   IconNote,
   IconPlus,
+  IconRowInsertBottom,
   IconTrash,
 } from "@tabler/icons-react";
 import {
@@ -34,7 +39,9 @@ import {
 } from "@orthodox-prayer-toolkit/core";
 import { styleColorToCss } from "../colors";
 import { KindSelect, KindTrigger } from "./KindSelect";
-import { ConfirmDialog } from "./ConfirmDialog";
+import { useContextMenu, type ContextMenuItem } from "./ContextMenu";
+import { getToolkitApi } from "../api";
+import { FLUSH_EDITS_EVENT, shortcutLabel } from "../appCommands";
 import { sameVariant, variantKey, type ActiveVariant } from "../variant";
 import {
   getElementOffsets,
@@ -73,12 +80,21 @@ type StyleEditing = {
   onChangeLibrary: (next: StyleMap) => void;
 };
 
+/** Validation problems of one block, for markers (from Core locateValidationErrors). */
+export type BlockIssues = {
+  messages: string[];
+  /** variantKey()s of translation cells the problems point at. */
+  variantKeys: Set<string>;
+};
+
 type Props = {
   prayer: Prayer;
   visibleVariants: ActiveVariant[];
   styles: StyleMap;
   styleEditing: StyleEditing;
-  onChange: (prayer: Prayer) => void;
+  issues?: Map<string, BlockIssues>;
+  /** `coalesceKey`: typing in one cell merges into one undo step. */
+  onChange: (prayer: Prayer, options?: { coalesceKey?: string }) => void;
   onRenameKind: (from: string, to: string) => void;
 };
 
@@ -242,6 +258,14 @@ const EditableBlock = memo(function EditableBlock({
   const ref = useRef<HTMLDivElement>(null);
   const skipBlurCommitRef = useRef(false);
   const dirtyRef = useRef(false);
+  /** Typing the app has not taken yet; native undo applies while set. */
+  const setUncommitted = (value: boolean) => {
+    dirtyRef.current = value;
+    const el = ref.current;
+    if (!el) return;
+    if (value) el.dataset.uncommitted = "true";
+    else delete el.dataset.uncommitted;
+  };
   const skipSyncOnBlurRef = useRef(false);
   const [focused, setFocused] = useState(false);
   const [domEmpty, setDomEmpty] = useState(() => {
@@ -287,7 +311,7 @@ const EditableBlock = memo(function EditableBlock({
   const syncFromProps = () => {
     const el = ref.current;
     if (!el) return;
-    dirtyRef.current = false;
+    setUncommitted(false);
     renderEditable(el, content, lineMode);
     setDomEmpty(isDomEmpty(el));
   };
@@ -311,9 +335,26 @@ const EditableBlock = memo(function EditableBlock({
     return serializeEditable(el, lineMode);
   };
 
-  const markDirty = () => {
-    dirtyRef.current = true;
-  };
+  // Save shortcuts commit pending typing without leaving the cell.
+  const contentRef = useRef(content);
+  contentRef.current = content;
+  const onCommitRef = useRef(onCommit);
+  onCommitRef.current = onCommit;
+  useEffect(() => {
+    const flush = () => {
+      if (!dirtyRef.current || !ref.current) return;
+      const serialized = serializeEditable(ref.current, lineMode);
+      setUncommitted(false);
+      if (editorCommitUnchanged(contentRef.current, serialized, lineMode)) {
+        return;
+      }
+      onCommitRef.current(serialized);
+    };
+    window.addEventListener(FLUSH_EDITS_EVENT, flush);
+    return () => window.removeEventListener(FLUSH_EDITS_EVENT, flush);
+  }, [lineMode]);
+
+  const markDirty = () => setUncommitted(true);
 
   const updateToolbar = () => {
     const el = ref.current;
@@ -424,7 +465,7 @@ const EditableBlock = memo(function EditableBlock({
       setDomEmpty(isDomEmpty(el));
       onCommit(plainText(next).length === 0 ? null : next);
     }
-    dirtyRef.current = false;
+    setUncommitted(false);
     setToolbar(null);
     el.focus();
   };
@@ -451,7 +492,7 @@ const EditableBlock = memo(function EditableBlock({
       return;
     }
 
-    dirtyRef.current = false;
+    setUncommitted(false);
     setDomEmpty(isDomEmpty(e.currentTarget));
     const serialized = serializeEditable(e.currentTarget, lineMode);
     if (editorCommitUnchanged(content, serialized, lineMode)) {
@@ -578,7 +619,7 @@ const EditableBlock = memo(function EditableBlock({
           if (el) {
             renderEditable(el, before ?? (lineMode ? [] : ""), lineMode);
             setDomEmpty(isDomEmpty(el));
-            dirtyRef.current = false;
+            setUncommitted(false);
           }
           onInsertBelow(before, after);
         }}
@@ -590,7 +631,7 @@ const EditableBlock = memo(function EditableBlock({
           const serialized = readContent();
           if (editorCommitUnchanged(content, serialized, lineMode)) return;
           onCommit(serialized);
-          dirtyRef.current = false;
+          setUncommitted(false);
         }}
         onPaste={(e) => {
           e.preventDefault();
@@ -670,15 +711,14 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
       visibleVariants,
       styles,
       styleEditing,
+      issues,
       onChange,
       onRenameKind,
     },
     ref,
   ) {
   const [kindUiBlockId, setKindUiBlockId] = useState<string | null>(null);
-  const [pendingDeleteIndex, setPendingDeleteIndex] = useState<number | null>(
-    null,
-  );
+  const contextMenu = useContextMenu();
   const [jumpTargetId, setJumpTargetId] = useState<string | null>(null);
   const [lastAddedKind, setLastAddedKind] = useState("verse");
   const layoutRef = useRef<HTMLDivElement>(null);
@@ -860,7 +900,8 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
       // Backspace on the sole (empty) block: nothing to remove.
       if (options?.treatAsEmpty !== undefined) return;
 
-      setPendingDeleteIndex(index);
+      // No confirm: deleting is one undo step (Cmd/Ctrl+Z).
+      change(removeBlock(p, index));
     },
     [focusEditor],
   );
@@ -876,7 +917,9 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     if (!fn) {
       fn = (next) => {
         const { prayer: p, onChange: change } = ctxRef.current;
-        change(applyCommittedContent(p, blockId, col, next));
+        change(applyCommittedContent(p, blockId, col, next), {
+          coalesceKey: key,
+        });
       };
       handlersRef.current.commit.set(key, fn);
     }
@@ -970,6 +1013,85 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     onChange(moveBlockInPrayer(prayer, index, dir));
   };
 
+  const insertBlockAfter = (index: number, kind: string) => {
+    const id = createBlockId(prayer.structure.length);
+    const col = visibleVariants[0];
+    const added = addBlockToPrayer(prayer, kind, id);
+    // addBlock appends; move the new block up to sit below `index`.
+    const structure = [...added.structure];
+    const [block] = structure.splice(structure.length - 1, 1);
+    structure.splice(index + 1, 0, block!);
+    setLastAddedKind(kind);
+    onChange({ ...added, structure });
+    if (col) window.setTimeout(() => focusEditor(id, col), 0);
+  };
+
+  const openBlockMenu = (
+    e: ReactMouseEvent<HTMLDivElement>,
+    index: number,
+    kind: string,
+  ) => {
+    const target = e.target as HTMLElement;
+    // Dropdowns portal out but still bubble React events through the tree.
+    if (!e.currentTarget.contains(target)) return;
+    const inText = target.closest(".inline-content") !== null;
+    const api = getToolkitApi();
+    const items: ContextMenuItem[] = [];
+    if (inText) {
+      const hasSelection = (window.getSelection()?.toString() ?? "") !== "";
+      items.push(
+        {
+          label: "Cut",
+          icon: <IconCut size={14} />,
+          shortcut: shortcutLabel("Mod+X"),
+          disabled: !hasSelection,
+          onClick: () => void api.runEdit("cut"),
+        },
+        {
+          label: "Copy",
+          icon: <IconCopy size={14} />,
+          shortcut: shortcutLabel("Mod+C"),
+          disabled: !hasSelection,
+          onClick: () => void api.runEdit("copy"),
+        },
+        {
+          label: "Paste",
+          icon: <IconClipboard size={14} />,
+          shortcut: shortcutLabel("Mod+V"),
+          onClick: () => void api.runEdit("paste"),
+        },
+        { divider: true },
+      );
+    }
+    items.push(
+      {
+        label: `Add ${kindDisplayLabel(kind)} below`,
+        icon: <IconRowInsertBottom size={14} />,
+        onClick: () => insertBlockAfter(index, kind),
+      },
+      {
+        label: "Move up",
+        icon: <IconArrowUp size={14} />,
+        disabled: index === 0,
+        onClick: () => moveBlock(index, -1),
+      },
+      {
+        label: "Move down",
+        icon: <IconArrowDown size={14} />,
+        disabled: index === prayer.structure.length - 1,
+        onClick: () => moveBlock(index, 1),
+      },
+      { divider: true },
+      {
+        label: "Delete block",
+        icon: <IconTrash size={14} />,
+        color: "accent",
+        onClick: () => onChange(removeBlock(prayer, index)),
+      },
+    );
+    contextMenu.open(e, items);
+  };
+
   return (
     <Stack gap={4}>
       <div
@@ -1031,12 +1153,15 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
           const styleCss =
             cssByKind[block.kind] ?? styleToCss(FALLBACK_KIND_STYLE);
           const blockStyle = styles[block.kind] ?? FALLBACK_KIND_STYLE;
+          const blockIssues = issues?.get(block.id);
 
           return (
             <div
               key={block.id}
               className="inline-block"
               data-block-id={block.id}
+              data-invalid={blockIssues ? "true" : undefined}
+              onContextMenu={(e) => openBlockMenu(e, index, block.kind)}
               data-indicate={
                 blockStyle.indicate === "true" ? "true" : undefined
               }
@@ -1109,6 +1234,23 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                     onClick={() => setKindUiBlockId(block.id)}
                   />
                 )}
+                {blockIssues ? (
+                  <Tooltip
+                    label={blockIssues.messages.join("\n")}
+                    withArrow
+                    multiline
+                    maw={320}
+                    style={{ whiteSpace: "pre-line" }}
+                  >
+                    <span
+                      className="inline-block-issue"
+                      role="img"
+                      aria-label={`${blockIssues.messages.length} validation problem${blockIssues.messages.length === 1 ? "" : "s"}`}
+                    >
+                      <IconAlertTriangle size={14} stroke={2} />
+                    </span>
+                  </Tooltip>
+                ) : null}
                 <Group gap={2}>
                   <ActionIcon
                     size="sm"
@@ -1152,6 +1294,11 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                       key={variantKey(col)}
                       className="split-cell"
                       data-lang={col.lang}
+                      data-invalid={
+                        blockIssues?.variantKeys.has(variantKey(col))
+                          ? "true"
+                          : undefined
+                      }
                     >
                       <EditableBlock
                         content={content}
@@ -1217,17 +1364,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         </Menu>
       </div>
 
-      <ConfirmDialog
-        opened={pendingDeleteIndex !== null}
-        onClose={() => setPendingDeleteIndex(null)}
-        title="Delete block?"
-        message="This removes the block and its translations from the prayer. You can undo by not saving."
-        onConfirm={() => {
-          if (pendingDeleteIndex === null) return;
-          onChange(removeBlock(prayer, pendingDeleteIndex));
-          setPendingDeleteIndex(null);
-        }}
-      />
+      {contextMenu.menu}
     </Stack>
   );
   },

@@ -1,4 +1,5 @@
 export type {
+  DiskConflict,
   KindRenamePlan,
   LeaveAction,
   PersistResult,
@@ -23,7 +24,16 @@ export {
   validationErrorsFor,
   DRAFT_VALIDATE_DEBOUNCE_MS,
 } from "./draftEdit";
-export { persistPrayer } from "./persistPrayer";
+export { persistPrayer, prayerFileText } from "./persistPrayer";
+export {
+  emptyHistory,
+  HISTORY_COALESCE_MS,
+  HISTORY_LIMIT,
+  recordEdit,
+  stepBack,
+  stepForward,
+} from "./history";
+export type { DraftHistory } from "./history";
 export {
   exportPrayerFile,
   importPrayerFile,
@@ -60,6 +70,7 @@ export {
   persistAppStyles,
   persistLibraryStyles,
   putPrayerFromText,
+  redoDraft,
   requestKindRename,
   requestLeave,
   resetForLibrary,
@@ -71,4 +82,7 @@ export {
   setDraftErrors,
   setDraftVisibleVariants,
   sidebarEntries,
+  undoDraft,
 } from "./operations";
+export type { EditOptions } from "./operations";
+export { applyDiskChange, keepLocalVersion, takeDiskVersion } from "./diskSync";

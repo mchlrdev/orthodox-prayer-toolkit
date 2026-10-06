@@ -79,6 +79,10 @@ Release builds: [RELEASE.md](RELEASE.md) and `.github/workflows/release.yml`.
 - **Format truth:** schema + [prayer-format.md](prayer-format.md)
 - **Agents:** [../AGENTS.md](../AGENTS.md)
 
+## Bundled font
+
+The editor ships **Source Serif 4**, the prayer font it already used (variable `wght` + `opsz`, upright + italic WOFF2, converted from google/fonts without other changes), in `packages/app/src/assets/fonts/`, declared via `@font-face` in `styles.css`. Prayer text then looks the same whether or not the font is installed. Characters it lacks (some Church Slavonic letters and marks) fall back to system fonts as before. The packaged renderer builds with `base: "./"`, so the font resolves from `file://`.
+
 ## What not to commit
 
 - Secrets / `.env*`
@@ -88,3 +92,5 @@ Release builds: [RELEASE.md](RELEASE.md) and `.github/workflows/release.yml`.
 ## License
 
 Contributions are under the same [MIT](../LICENSE) license as the project.
+
+Third-party: the bundled Source Serif 4 font is under SIL OFL 1.1 (see the root README).

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  isPrayerFilename,
   resolveStyles,
   type LibraryManifest,
   type Prayer,
@@ -9,6 +10,7 @@ import { getToolkitApi, isBrowserDev } from "./api";
 import { scanLibraryCatalog } from "./catalog";
 import type { LibraryEntry } from "./library";
 import {
+  applyDiskChange,
   applyKindRename,
   applyCatalogChunk,
   beginCreatePrayer,
@@ -29,12 +31,14 @@ import {
   exportPrayerFile,
   importPrayerFile,
   hasUnsaved,
+  keepLocalVersion,
   evictPreviousClean,
   mergeOpResult,
   persistAppStyles as persistAppStylesOp,
   persistLibraryStyles as persistLibraryStylesOp,
   parseAppStyles,
   putPrayerFromText,
+  redoDraft,
   requestKindRename,
   requestLeave,
   resetForLibrary,
@@ -46,7 +50,10 @@ import {
   setDraftErrors,
   setDraftVisibleVariants,
   sidebarEntries,
+  takeDiskVersion,
+  undoDraft,
   validationErrorsFor,
+  type EditOptions,
   type ExportFormat,
   type HtmlExportRequest,
   type LayoutExportRequest,
@@ -63,6 +70,14 @@ import {
   type RecentLibrary,
 } from "./recentLibraries";
 import { savePrayerView } from "./viewPrefs";
+
+/** Library files that are not prayers but change how the library reads. */
+function isLibraryMetaPath(path: string): boolean {
+  return (
+    path === "manifest.json" ||
+    path === ".orthodox-prayer-toolkit/styles.json"
+  );
+}
 
 export function usePrayerSession(opts?: {
   onNotice?: (n: SessionNotice) => void;
@@ -384,13 +399,49 @@ export function usePrayerSession(opts?: {
     }
   };
 
-  const updateDraft = (next: Prayer) => {
-    const result = editDraft(stateRef.current, next);
+  const updateDraft = (next: Prayer, options?: EditOptions) => {
+    const result = editDraft(stateRef.current, next, options);
     if (result.state === stateRef.current) return;
     commit(result);
     if (result.state.selectedPath) {
       scheduleDraftValidation(result.state.selectedPath);
     }
+  };
+
+  const stepHistory = (step: typeof undoDraft): boolean => {
+    const next = step(stateRef.current);
+    if (next === stateRef.current) return false;
+    stateRef.current = next;
+    setState(next);
+    if (next.selectedPath) scheduleDraftValidation(next.selectedPath);
+    return true;
+  };
+
+  const undo = () => stepHistory(undoDraft);
+  const redo = () => stepHistory(redoDraft);
+
+  const keepLocal = (path: string) => {
+    const next = keepLocalVersion(stateRef.current, path);
+    stateRef.current = next;
+    setState(next);
+  };
+
+  const reloadFromDisk = async (path: string) => {
+    const catalog = stateRef.current.catalog;
+    if (!catalog) return;
+    let text: string | null = null;
+    try {
+      if (await api.exists(catalog.root, path)) {
+        text = await api.readText(catalog.root, path);
+      }
+    } catch (err) {
+      emit([errorNotice("Could not reload prayer", err)]);
+      return;
+    }
+    if (stateRef.current.selectedPath === path) cancelDraftValidation();
+    const next = takeDiskVersion(stateRef.current, path, text);
+    stateRef.current = next;
+    setState(next);
   };
 
   const setVisibleVariants = (cols: ActiveVariant[]) => {
@@ -406,6 +457,7 @@ export function usePrayerSession(opts?: {
   };
 
   const saveDraft = async () => {
+    if (!selectedDraft(stateRef.current)?.dirty) return;
     cancelDraftValidation();
     setOpBusy(true);
     try {
@@ -550,6 +602,9 @@ export function usePrayerSession(opts?: {
         commit({ state: resetForLibrary(stateRef.current), notices: [] });
         await startCatalogScan(action.root);
         break;
+      case "install-update":
+        api.confirmInstall();
+        break;
     }
   };
 
@@ -576,7 +631,11 @@ export function usePrayerSession(opts?: {
     if (!pending) return null;
     setLeaveBusy(true);
     try {
-      if (pending.type === "close-window" || pending.type === "open-folder") {
+      if (
+        pending.type === "close-window" ||
+        pending.type === "open-folder" ||
+        pending.type === "install-update"
+      ) {
         commit({
           state: clearPendingLeave(clearDirtyDrafts(stateRef.current)),
           notices: [],
@@ -619,6 +678,52 @@ export function usePrayerSession(opts?: {
       );
     });
   }, [api, commit, persistCurrentView]);
+
+  useEffect(() => {
+    if (isBrowserDev()) return;
+    return api.onInstallRequested(() => {
+      persistCurrentView();
+      if (!hasUnsaved(stateRef.current)) {
+        api.confirmInstall();
+        return;
+      }
+      commit(requestLeave(stateRef.current, { type: "install-update" }));
+    });
+  }, [api, commit, persistCurrentView]);
+
+  const libraryRoot = library?.root ?? null;
+  useEffect(() => {
+    if (isBrowserDev()) return;
+    void api.watchLibrary(libraryRoot).catch((err: unknown) => {
+      console.error("Cannot watch library", err);
+    });
+  }, [api, libraryRoot]);
+
+  useEffect(() => {
+    if (isBrowserDev()) return;
+    return api.onLibraryChanged(({ root, paths }) => {
+      void (async () => {
+        if (stateRef.current.catalog?.root !== root) return;
+        if (paths.some(isLibraryMetaPath)) {
+          await startCatalogScan(root);
+        }
+        const prayerPaths = paths.filter(
+          (p) => !isLibraryMetaPath(p) && isPrayerFilename(p),
+        );
+        for (const path of prayerPaths) {
+          let text: string | null = null;
+          try {
+            if (await api.exists(root, path)) text = await api.readText(root, path);
+          } catch {
+            continue;
+          }
+          if (stateRef.current.catalog?.root !== root) return;
+          if (stateRef.current.selectedPath === path) cancelDraftValidation();
+          commit(applyDiskChange(stateRef.current, path, text), true);
+        }
+      })();
+    });
+  }, [api, cancelDraftValidation, commit, startCatalogScan]);
 
   useEffect(() => {
     if (!library || !selectedPath || visibleVariants.length === 0) return;
@@ -675,6 +780,14 @@ export function usePrayerSession(opts?: {
     saveLibraryManifest,
     openEntry,
     updateDraft,
+    undo,
+    redo,
+    canUndo: (selected?.history?.past.length ?? 0) > 0,
+    canRedo: (selected?.history?.future.length ?? 0) > 0,
+    diskConflict: selected?.diskConflict ?? null,
+    keepLocal,
+    reloadFromDisk,
+    saveAll: saveAllUnsaved,
     setActiveVariant,
     setCreateDraft: (prayer: Prayer | null) => {
       const next = { ...stateRef.current, createDraft: prayer };

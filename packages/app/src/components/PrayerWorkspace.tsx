@@ -1,14 +1,19 @@
 import { useCallback, useMemo, useRef, type Ref } from "react";
 import {
   ActionIcon,
+  Alert,
   Badge,
   Button,
   Group,
   Menu,
+  Popover,
+  Stack,
   Text,
   Tooltip,
+  UnstyledButton,
 } from "@mantine/core";
 import {
+  IconAlertTriangle,
   IconColumns2,
   IconDownload,
   IconPlus,
@@ -17,12 +22,20 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import {
+  locateValidationErrors,
   resolveDisplayTitle,
   type Prayer,
   type StyleMap,
+  type ValidationError,
   type VariantMeta,
 } from "@orthodox-prayer-toolkit/core";
-import { InlineEditor, type InlineEditorHandle } from "./InlineEditor";
+import {
+  InlineEditor,
+  type BlockIssues,
+  type InlineEditorHandle,
+} from "./InlineEditor";
+import { shortcutLabel } from "../appCommands";
+import type { DiskConflict } from "../session";
 import { FindReplacePanel } from "./FindReplacePanel";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { usePrayerScroll } from "../prayerScroll";
@@ -53,9 +66,14 @@ type Props = {
   styleEditing: StyleEditing;
   busy: boolean;
   dirty: boolean;
+  /** Live validation of the session draft. */
+  errors: ValidationError[];
+  diskConflict: DiskConflict | null;
   editorRef?: Ref<InlineEditorHandle>;
   scrollRootRef?: Ref<HTMLDivElement | null>;
-  onChange: (prayer: Prayer) => void;
+  onChange: (prayer: Prayer, options?: { coalesceKey?: string }) => void;
+  onKeepLocal: () => void;
+  onReloadFromDisk: () => void;
   onVisibleVariantsChange: (cols: ActiveVariant[]) => void;
   onSave: () => void;
   onSettings: () => void;
@@ -149,9 +167,13 @@ export function PrayerWorkspace({
   styleEditing,
   busy,
   dirty,
+  errors,
+  diskConflict,
   editorRef,
   scrollRootRef,
   onChange,
+  onKeepLocal,
+  onReloadFromDisk,
   onVisibleVariantsChange,
   onSave,
   onSettings,
@@ -217,6 +239,35 @@ export function PrayerWorkspace({
 
   const headerTitle = resolveDisplayTitle(prayer, visibleVariants[0] ?? null);
 
+  const located = useMemo(
+    () => locateValidationErrors(prayer, errors),
+    [prayer, errors],
+  );
+  const issues = useMemo(() => {
+    const byBlock = new Map<string, BlockIssues>();
+    for (const { error, blockId, variant } of located) {
+      if (!blockId) continue;
+      const entry = byBlock.get(blockId) ?? {
+        messages: [],
+        variantKeys: new Set<string>(),
+      };
+      if (!entry.messages.includes(error.message)) {
+        entry.messages.push(error.message);
+      }
+      if (variant) entry.variantKeys.add(variantKey(variant));
+      byBlock.set(blockId, entry);
+    }
+    return byBlock;
+  }, [located]);
+
+  const jumpToIssue = (blockId: string) => {
+    localEditorRef.current?.revealBlock(blockId, {
+      scroll: "smooth-center",
+      focusCol: null,
+      flash: true,
+    });
+  };
+
   const findReplace = useFindReplace({
     prayer,
     prayerPath,
@@ -239,9 +290,52 @@ export function PrayerWorkspace({
                 Unsaved
               </Badge>
             ) : null}
+            {errors.length > 0 ? (
+              <Popover width={340} position="bottom-start" withArrow shadow="md">
+                <Popover.Target>
+                  <Badge
+                    component="button"
+                    size="sm"
+                    color="accent"
+                    variant="filled"
+                    className="workspace-issues-badge"
+                    leftSection={<IconAlertTriangle size={11} stroke={2.2} />}
+                    aria-label={`${errors.length} validation problem${errors.length === 1 ? "" : "s"}`}
+                  >
+                    {errors.length} {errors.length === 1 ? "issue" : "issues"}
+                  </Badge>
+                </Popover.Target>
+                <Popover.Dropdown>
+                  <Stack gap={6}>
+                    <Text size="xs" c="dimmed">
+                      Fix these before saving.
+                    </Text>
+                    {located.map(({ error, blockId }, i) => (
+                      <UnstyledButton
+                        key={`${error.path}-${i}`}
+                        className="workspace-issue-row"
+                        disabled={!blockId}
+                        onClick={() => {
+                          if (blockId) jumpToIssue(blockId);
+                        }}
+                      >
+                        <Text size="sm">{error.message}</Text>
+                        <Text size="xs" c="dimmed" ff="monospace">
+                          {error.path}
+                        </Text>
+                      </UnstyledButton>
+                    ))}
+                  </Stack>
+                </Popover.Dropdown>
+              </Popover>
+            ) : null}
           </Group>
           <Group gap="xs" wrap="nowrap">
-            <Tooltip label="Find (⌘F)" withArrow openDelay={300}>
+            <Tooltip
+              label={`Find (${shortcutLabel("Mod+F")})`}
+              withArrow
+              openDelay={300}
+            >
               <ActionIcon
                 size="sm"
                 variant={findReplace.state.open ? "light" : "subtle"}
@@ -286,6 +380,40 @@ export function PrayerWorkspace({
             </Button>
           </Group>
         </div>
+
+        {diskConflict ? (
+          <Alert
+            className="workspace-disk-conflict"
+            color="accent"
+            variant="light"
+            p="xs"
+            icon={<IconAlertTriangle size={16} />}
+            title={
+              diskConflict === "deleted" ? "Deleted on disk" : "Changed on disk"
+            }
+          >
+            <Group justify="space-between" gap="xs" wrap="wrap">
+              <Text size="sm">
+                {diskConflict === "deleted"
+                  ? "The file was deleted outside the app. Saving recreates it."
+                  : "The file was changed outside the app. Saving overwrites those changes."}
+              </Text>
+              <Group gap={6} wrap="nowrap">
+                <Button size="compact-xs" variant="default" onClick={onKeepLocal}>
+                  Keep my version
+                </Button>
+                <Button
+                  size="compact-xs"
+                  color="accent"
+                  variant="light"
+                  onClick={onReloadFromDisk}
+                >
+                  {diskConflict === "deleted" ? "Close prayer" : "Load from disk"}
+                </Button>
+              </Group>
+            </Group>
+          </Alert>
+        ) : null}
 
         {prayer.variants.length > 1 ? (
           <div
@@ -412,6 +540,7 @@ export function PrayerWorkspace({
             visibleVariants={visibleVariants}
             styles={styles}
             styleEditing={styleEditing}
+            issues={issues}
             onChange={onChange}
             onRenameKind={onRenameKind}
           />

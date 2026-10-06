@@ -86,6 +86,12 @@ function fakeToolkit(
     checkForUpdates: async () => ({ status: "dev", version: "0.0.0-test" }),
     installUpdate: async () => ({ ok: false }),
     onUpdateStatus: () => () => undefined,
+    watchLibrary: async () => undefined,
+    onLibraryChanged: () => () => undefined,
+    onCommand: () => () => undefined,
+    runEdit: async () => undefined,
+    onInstallRequested: () => () => undefined,
+    confirmInstall: () => undefined,
     ...overrides,
   };
   return api;

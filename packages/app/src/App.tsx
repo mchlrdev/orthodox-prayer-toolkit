@@ -7,7 +7,7 @@ import {
   IconChevronRight,
 } from "@tabler/icons-react";
 import { indexVariants, kindDisplayLabel } from "@orthodox-prayer-toolkit/core";
-import { isBrowserDev } from "./api";
+import { getToolkitApi, isBrowserDev } from "./api";
 import { PrayerList } from "./components/PrayerList";
 import { PrayerWorkspace } from "./components/PrayerWorkspace";
 import { ContentOutline } from "./components/ContentOutline";
@@ -35,6 +35,14 @@ import {
   type ColorSchemePreference,
 } from "./appearancePrefs";
 import { toMantineColorScheme } from "./mantineColorScheme";
+import {
+  commandForKey,
+  flushPendingEdits,
+  isAppCommand,
+  isMacPlatform,
+  wantsNativeUndo,
+  type AppCommand,
+} from "./appCommands";
 
 const OVERLAY_BREAKPOINT = "(max-width: 1099px)";
 
@@ -90,6 +98,80 @@ export function App() {
     },
     [overlayMode, session],
   );
+
+  const commandRef = useRef<(command: AppCommand, fromKey: boolean) => boolean>(
+    () => false,
+  );
+  /** Returns false when the command should fall through to the browser. */
+  commandRef.current = (command, fromKey) => {
+    const dialogOpen = document.querySelector("[role='dialog']") !== null;
+    switch (command) {
+      case "save":
+        flushPendingEdits();
+        void session.saveDraft();
+        return true;
+      case "save-all":
+        flushPendingEdits();
+        void session.saveAll();
+        return true;
+      case "open-library":
+        if (dialogOpen) return true;
+        handleOpenFolder();
+        return true;
+      case "new-prayer":
+        if (dialogOpen || !session.library) return true;
+        void session.beginCreatePrayer();
+        return true;
+      case "settings":
+        if (dialogOpen) return true;
+        setAppSettingsOpen(true);
+        return true;
+      case "undo":
+      case "redo": {
+        const active = document.activeElement;
+        if (wantsNativeUndo(active)) {
+          // Keys: the browser undoes itself. Menu clicks (macOS) need a nudge.
+          if (!fromKey) document.execCommand(command);
+          return false;
+        }
+        if (dialogOpen) return false;
+        // Leave the cell so it re-renders from the restored prayer.
+        if (active instanceof HTMLElement && active.isContentEditable) {
+          active.blur();
+        }
+        if (command === "undo") session.undo();
+        else session.redo();
+        return true;
+      }
+    }
+  };
+
+  useEffect(() => {
+    const mac = isMacPlatform();
+    let lastKey: { command: AppCommand; at: number } | null = null;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.isComposing) return;
+      const command = commandForKey(event, mac);
+      if (!command) return;
+      if (commandRef.current(command, true)) {
+        event.preventDefault();
+        lastKey = { command, at: Date.now() };
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    // macOS menu items carry the same accelerators; skip their echo.
+    const unsubscribe = getToolkitApi().onCommand((command) => {
+      if (!isAppCommand(command)) return;
+      if (lastKey?.command === command && Date.now() - lastKey.at < 400) {
+        return;
+      }
+      commandRef.current(command, false);
+    });
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      unsubscribe();
+    };
+  }, []);
 
   const handleOutlineJump = useCallback(
     (blockId: string) => {
@@ -323,9 +405,17 @@ export function App() {
                 }}
                 busy={busy}
                 dirty={dirty}
+                errors={draftErrors}
+                diskConflict={session.diskConflict}
                 editorRef={editorRef}
                 scrollRootRef={scrollRootRef}
                 onChange={session.updateDraft}
+                onKeepLocal={() => {
+                  if (selectedPath) session.keepLocal(selectedPath);
+                }}
+                onReloadFromDisk={() => {
+                  if (selectedPath) void session.reloadFromDisk(selectedPath);
+                }}
                 onVisibleVariantsChange={setVisibleVariants}
                 onSave={() => void session.saveDraft()}
                 onSettings={() => setSettingsOpen(true)}
@@ -539,6 +629,11 @@ export function App() {
       <UnsavedChangesDialog
         opened={pendingLeave !== null}
         count={unsavedCount}
+        reason={
+          pendingLeave?.type === "install-update"
+            ? "The update installs and restarts the app afterwards."
+            : undefined
+        }
         loading={leaveBusy || busy}
         onCancel={() => setPendingLeave(null)}
         onDiscard={() => {

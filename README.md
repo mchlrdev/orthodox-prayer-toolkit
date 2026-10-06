@@ -142,3 +142,7 @@ Early open-source release (`0.1.x`). The MVP editor and Core export surface are 
 ## License
 
 [MIT](LICENSE) © Orthodox Prayer Toolkit contributors
+
+### Third-party notices
+
+- **Source Serif 4** (bundled in the editor) is licensed under the SIL Open Font License 1.1; license text at [packages/app/src/assets/fonts/OFL.txt](packages/app/src/assets/fonts/OFL.txt).
