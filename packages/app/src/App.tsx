@@ -407,13 +407,9 @@ export function App() {
                 dirty={dirty}
                 errors={draftErrors}
                 diskConflict={session.diskConflict}
-                canUndo={session.canUndo}
-                canRedo={session.canRedo}
                 editorRef={editorRef}
                 scrollRootRef={scrollRootRef}
                 onChange={session.updateDraft}
-                onUndo={session.undo}
-                onRedo={session.redo}
                 onKeepLocal={() => {
                   if (selectedPath) session.keepLocal(selectedPath);
                 }}

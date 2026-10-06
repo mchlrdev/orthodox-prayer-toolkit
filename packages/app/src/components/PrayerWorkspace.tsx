@@ -14,8 +14,6 @@ import {
 } from "@mantine/core";
 import {
   IconAlertTriangle,
-  IconArrowBackUp,
-  IconArrowForwardUp,
   IconColumns2,
   IconDownload,
   IconPlus,
@@ -71,13 +69,9 @@ type Props = {
   /** Live validation of the session draft. */
   errors: ValidationError[];
   diskConflict: DiskConflict | null;
-  canUndo: boolean;
-  canRedo: boolean;
   editorRef?: Ref<InlineEditorHandle>;
   scrollRootRef?: Ref<HTMLDivElement | null>;
   onChange: (prayer: Prayer, options?: { coalesceKey?: string }) => void;
-  onUndo: () => void;
-  onRedo: () => void;
   onKeepLocal: () => void;
   onReloadFromDisk: () => void;
   onVisibleVariantsChange: (cols: ActiveVariant[]) => void;
@@ -175,13 +169,9 @@ export function PrayerWorkspace({
   dirty,
   errors,
   diskConflict,
-  canUndo,
-  canRedo,
   editorRef,
   scrollRootRef,
   onChange,
-  onUndo,
-  onRedo,
   onKeepLocal,
   onReloadFromDisk,
   onVisibleVariantsChange,
@@ -342,38 +332,6 @@ export function PrayerWorkspace({
           </Group>
           <Group gap="xs" wrap="nowrap">
             <Tooltip
-              label={`Undo (${shortcutLabel("Mod+Z")})`}
-              withArrow
-              openDelay={300}
-            >
-              <ActionIcon
-                size="sm"
-                variant="subtle"
-                color="gray"
-                aria-label="Undo"
-                disabled={!canUndo}
-                onClick={onUndo}
-              >
-                <IconArrowBackUp size={16} />
-              </ActionIcon>
-            </Tooltip>
-            <Tooltip
-              label={`Redo (${shortcutLabel("Mod+Shift+Z")})`}
-              withArrow
-              openDelay={300}
-            >
-              <ActionIcon
-                size="sm"
-                variant="subtle"
-                color="gray"
-                aria-label="Redo"
-                disabled={!canRedo}
-                onClick={onRedo}
-              >
-                <IconArrowForwardUp size={16} />
-              </ActionIcon>
-            </Tooltip>
-            <Tooltip
               label={`Find (${shortcutLabel("Mod+F")})`}
               withArrow
               openDelay={300}
@@ -411,21 +369,15 @@ export function PrayerWorkspace({
                 <IconDownload size={16} />
               </ActionIcon>
             </Tooltip>
-            <Tooltip
-              label={`Save (${shortcutLabel("Mod+S")})`}
-              withArrow
-              openDelay={300}
+            <Button
+              size="xs"
+              color="accent"
+              loading={busy}
+              onClick={onSave}
+              disabled={!dirty}
             >
-              <Button
-                size="xs"
-                color="accent"
-                loading={busy}
-                onClick={onSave}
-                disabled={!dirty}
-              >
-                Save
-              </Button>
-            </Tooltip>
+              Save
+            </Button>
           </Group>
         </div>
 
