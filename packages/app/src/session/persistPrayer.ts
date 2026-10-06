@@ -6,6 +6,11 @@ import {
 import type { PrayerToolkitApi } from "../../electron/preload";
 import type { PersistResult } from "./types";
 
+/** Canonical on-disk text for a prayer file. */
+export function prayerFileText(prayer: Prayer): string {
+  return `${JSON.stringify(prayer, null, 2)}\n`;
+}
+
 /** Write a prayer to the library, renaming the file when the id changes. */
 export async function persistPrayer(
   api: PrayerToolkitApi,
@@ -34,7 +39,7 @@ export async function persistPrayer(
     }
   }
 
-  const content = `${JSON.stringify(prayer, null, 2)}\n`;
+  const content = prayerFileText(prayer);
   try {
     if (currentBase !== targetName) {
       await api.writeText(libraryRoot, targetName, content);

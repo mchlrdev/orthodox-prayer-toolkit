@@ -184,6 +184,15 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
     onFindRequested: () => () => {},
     onFindNextRequested: () => () => {},
     confirmClose: () => {},
+    watchLibrary: async () => {},
+    onLibraryChanged: () => () => {},
+    onCommand: () => () => {},
+    runEdit: async (action) => {
+      if (action === "paste") return;
+      document.execCommand(action);
+    },
+    onInstallRequested: () => () => {},
+    confirmInstall: () => {},
     setDirty: () => {},
 
     getAppInfo: async () => ({

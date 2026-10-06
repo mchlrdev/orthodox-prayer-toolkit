@@ -74,8 +74,15 @@ Validate / sanitize via Core `validateStyles` / `sanitizeStyles` / `resolveStyle
 - On save, the file is written as `{id}.json`.
 - Renaming `id` renames the file; if the target exists, save is blocked.
 - Deleting a prayer removes its file and patches the Library catalog (no full rescan).
-- **Export prayer JSON** (sidebar row menu) writes the complete `{id}.json` source file via a save dialog. Unsaved draft changes are included.
+- **Export prayer JSON** (right-click a sidebar row) writes the complete `{id}.json` source file via a save dialog. Unsaved draft changes are included.
 - **Import prayer JSON** (library menu) copies a picked `.json` into the library root as `{id}.json`. The file is not rewritten. Existing ids/filenames are not overwritten.
+
+## External changes (editor)
+
+- The app watches the open library folder for `.json` changes made outside it (another editor, git, sync tools).
+- A prayer without unsaved edits reloads from disk; new files appear in the list, deleted ones disappear.
+- A prayer with unsaved edits keeps them and shows **Changed on disk** or **Deleted on disk**: keep your version (the next save overwrites or recreates the file) or load the disk version.
+- Changes to `manifest.json` or `.orthodox-prayer-toolkit/styles.json` rescan the library.
 
 ## Dev sample
 
