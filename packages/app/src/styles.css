@@ -1,3 +1,20 @@
+/* Noto Serif (SIL OFL 1.1, see assets/fonts/OFL.txt), bundled so prayer text renders the same everywhere. */
+@font-face {
+  font-family: "Noto Serif";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: block;
+  src: url("./assets/fonts/NotoSerif-Variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Noto Serif";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: block;
+  src: url("./assets/fonts/NotoSerif-Italic-Variable.woff2") format("woff2");
+}
+
 :root {
   /* Hex literals live ONLY here (and the dark block below). */
   --opt-base: #1a1a1a;
@@ -15,8 +32,8 @@
   --opt-on-accent: #ffffff;
   --opt-sidebar-width: 280px;
   --opt-min-app-width: 400px;
-  --opt-prayer-font: "Source Serif 4", "Iowan Old Style", "Palatino Linotype",
-    Palatino, Georgia, serif;
+  --opt-prayer-font: "Noto Serif", "Source Serif 4", "Iowan Old Style",
+    "Palatino Linotype", Palatino, Georgia, serif;
   color-scheme: light;
 }
 
