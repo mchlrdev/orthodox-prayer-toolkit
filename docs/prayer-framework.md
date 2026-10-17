@@ -91,6 +91,7 @@ Shipped and intended behaviour includes:
 - Edit identity, variants, structure, translations; switch variants
 - Schema validation in the UI, live while editing: affected blocks are marked, the prayer header shows the issue count
 - Undo / redo per prayer across all edits (text, kinds, moves, deletes); one history per open prayer, so deleting a block needs no confirm
+- Enter splits a block at the caret; Backspace at a block's start joins it onto the block above, Delete at its end pulls the block below in. The block the caret was in keeps its kind and id; text joins with no separator in every variant, verse keeps its lines, and verse ↔ text reshapes like a kind change (notes kept). A block empty in every variant is removed instead. One undo step.
 - Shortcuts (Cmd on macOS, Ctrl elsewhere): S save, Shift+S save all, O open library, N new prayer, `,` settings, Z / Shift+Z undo / redo; macOS also lists them in the menu bar, Windows/Linux have no menu bar, so every action is also reachable in the app
 - Right-click menus on prayer rows, the prayer list and blocks
 - The open library folder is watched: unchanged prayers reload from disk, prayers with unsaved edits show "Changed on disk" / "Deleted on disk"
