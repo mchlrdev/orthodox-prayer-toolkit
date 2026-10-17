@@ -55,8 +55,7 @@ import {
   validationErrorsFor,
   type EditOptions,
   type ExportFormat,
-  type HtmlExportRequest,
-  type LayoutExportRequest,
+  type ExportOptions,
   type LeaveAction,
   type PrayerSessionState,
   type SessionNotice,
@@ -517,11 +516,7 @@ export function usePrayerSession(opts?: {
     entry: LibraryEntry,
     variant: ActiveVariant,
     format: ExportFormat = "flat-json",
-    options: {
-      includeBlocksWithoutTranslation?: boolean;
-      html?: HtmlExportRequest;
-      layout?: LayoutExportRequest;
-    } = {},
+    options: ExportOptions = {},
   ): Promise<string | null | false> => {
     const result = await exportEntry(
       stateRef.current,

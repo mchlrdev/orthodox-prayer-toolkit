@@ -25,6 +25,8 @@ if (result.ok) {
 
 `locateValidationErrors(prayer, errors)` maps each error path onto the block id (and translation `lang`/`variant`, when the path names one). The editor uses it to mark the affected block while you type.
 
+`validate` drops `rtl: false` from variants so LTR editions omit the field. `resolveDir(variantRtl, kindDir)` is the Core seam for editor and export direction (`kindDir` of `rtl` / `ltr` wins; otherwise the variant flag).
+
 ## Export
 
 ### Flat variant (JSON-shaped object)
@@ -58,7 +60,7 @@ Tags are allowlisted (`HTML_TAG_ALLOWLIST`). Disallowed or missing tags fall bac
 
 ### Layout (RTF / DOCX)
 
-For Affinity Publisher and similar tools that map **named paragraph styles**:
+For Affinity Publisher and similar tools that map **named paragraph styles** (one per kind) and a **character** style for inline notes:
 
 ```ts
 import {

@@ -1,6 +1,7 @@
 import { toRuns, type InlineContent } from "./textRuns.js";
-import { styleNameWithPrefix } from "./stylePrefix.js";
-import type { Prayer, Translation } from "./types.js";
+import { paragraphStyleName, styleNameWithPrefix } from "./stylePrefix.js";
+import { resolveBlockDir } from "./resolveDir.js";
+import type { Prayer, StyleMap, Translation } from "./types.js";
 
 export type ExportLayoutOptions = {
   lang: string;
@@ -11,6 +12,8 @@ export type ExportLayoutOptions = {
    */
   prefixStem?: string;
   includeBlocksWithoutTranslation?: boolean;
+  /** Resolved kind styles; `dir` on a kind overrides the variant RTL flag. */
+  styles?: StyleMap;
 };
 
 export type LayoutRun = {
@@ -27,6 +30,7 @@ export type LayoutParagraph = {
 };
 
 export type LayoutStory = {
+  /** Character style for inline note runs only. */
   noteStyleName: string;
   paragraphs: LayoutParagraph[];
 };
@@ -56,6 +60,7 @@ export function buildLayoutStory(
   const { lang, variant } = options;
   const prefixStem = options.prefixStem ?? "";
   const includeEmpty = options.includeBlocksWithoutTranslation === true;
+  const styles = options.styles;
 
   const meta = prayer.variants.find(
     (v) => v.lang === lang && v.variant === variant,
@@ -78,7 +83,11 @@ export function buildLayoutStory(
 
     paragraphs.push({
       kind: block.kind,
-      styleName: styleNameWithPrefix(prefixStem, block.kind),
+      styleName: paragraphStyleName(
+        prefixStem,
+        block.kind,
+        resolveBlockDir(meta, block.kind, styles),
+      ),
       lines: linesFromTranslation(tr),
     });
   }

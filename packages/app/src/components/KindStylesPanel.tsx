@@ -70,6 +70,9 @@ export function KindStylesPanel({
     if (!nextStyle.htmlTag) {
       delete nextStyle.htmlTag;
     }
+    if (!nextStyle.dir) {
+      delete nextStyle.dir;
+    }
     onChangeLibrary({ ...libraryStyles, [kind]: nextStyle });
   };
 

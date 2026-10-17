@@ -48,7 +48,11 @@
           },
           "title": { "type": "string", "minLength": 1 },
           "license": { "type": "string", "minLength": 1 },
-          "source": { "type": "string", "minLength": 1 }
+          "source": { "type": "string", "minLength": 1 },
+          "rtl": {
+            "type": "boolean",
+            "description": "When true, this edition is right-to-left. Omit when LTR."
+          }
         }
       }
     },

@@ -104,6 +104,17 @@ export {
 export {
   DEFAULT_STYLE_PREFIX_STEM,
   isValidStylePrefixStem,
+  paragraphStyleName,
   resolveLibraryStylePrefixStem,
   styleNameWithPrefix,
 } from "./stylePrefix.js";
+
+export {
+  isKindDir,
+  normalizePrayerVariants,
+  normalizeVariantMeta,
+  resolveBlockDir,
+  resolveDir,
+  variantIsRtl,
+} from "./resolveDir.js";
+export type { KindDir, TextDir } from "./resolveDir.js";

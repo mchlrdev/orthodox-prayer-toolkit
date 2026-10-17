@@ -53,8 +53,11 @@ There is **no** top-level canonical `title`. Human-facing titles come from the a
 | `variant` | Edition/script within the language (e.g. `standard`, `synodal-cyrl`, `synodal-latn`) |
 | `title` | Display title for this language/edition |
 | `license` / `source` | Rights & provenance; unclear → `unknown` / `draft` |
+| `rtl` | Optional. `true` when this **whole edition** is right-to-left. Omit for LTR (do not write `false`). |
 
-Church Slavonic script differences are **separate variants** under `cu`, not a separate schema field.
+Church Slavonic script differences are **separate variants** under `cu`, not a schema field. Direction is the optional `rtl` flag on that variant — not inferred from `lang`.
+
+Kind-level direction (`dir`: `rtl` / `ltr`) lives in library `styles.json`, not on blocks. A set kind `dir` overrides the variant; omit the token to inherit.
 
 ## Blocks
 
@@ -119,7 +122,7 @@ When a string needs marked spans, use runs instead of a plain string. Note runs 
 ]
 ```
 
-Exports map `note` runs to HTML / layout character styles as appropriate.
+Exports map `note` runs to HTML / layout character styles as appropriate. Layout RTF/DOCX map each kind to a paragraph style and `note` runs to a character style.
 
 ## Minimal example
 

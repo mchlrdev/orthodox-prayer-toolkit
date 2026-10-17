@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Accordion, Button, Group, Stack, Text } from "@mantine/core";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
-import type { Prayer, VariantMeta } from "@orthodox-prayer-toolkit/core";
+import {
+  normalizeVariantMeta,
+  type Prayer,
+  type VariantMeta,
+} from "@orthodox-prayer-toolkit/core";
 import { VariantMetaFields } from "./VariantMetaFields";
 
 type ActiveVariant = { lang: string; variant: string };
@@ -31,7 +35,7 @@ export function LanguagesPanel({
 
   const updateVariantMeta = (index: number, patch: Partial<VariantMeta>) => {
     const variants = prayer.variants.map((v, i) =>
-      i === index ? { ...v, ...patch } : v,
+      i === index ? normalizeVariantMeta({ ...v, ...patch }) : v,
     );
     onChange({ ...prayer, variants });
     const updated = variants[index];

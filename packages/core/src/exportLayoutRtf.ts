@@ -13,7 +13,6 @@ function escapeRtfChar(ch: string): string {
   const code = ch.codePointAt(0);
   if (code === undefined) return "";
   if (code <= 127) return ch;
-  // RTF \uN uses signed 16-bit
   const signed = code > 32767 ? code - 65536 : code;
   return `\\u${signed}?`;
 }
@@ -22,10 +21,7 @@ function escapeRtf(text: string): string {
   return [...text].map(escapeRtfChar).join("");
 }
 
-function renderRuns(
-  runs: LayoutRun[],
-  noteCs: number,
-): string {
+function renderRuns(runs: LayoutRun[], noteCs: number): string {
   return runs
     .map((run) => {
       const escaped = escapeRtf(run.v);
@@ -75,8 +71,8 @@ function serializeRtf(story: LayoutStory): string {
 }
 
 /**
- * Export a Place-friendly RTF story: blank named styles, soft breaks for
- * `lines`, character style for notes, no document meta/title.
+ * Export a Place-friendly RTF story: blank named kind paragraph styles,
+ * character style for notes, soft breaks, no document meta/title.
  */
 export function exportLayoutRtf(
   prayer: Prayer,

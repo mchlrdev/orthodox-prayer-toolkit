@@ -4,10 +4,12 @@ import { fileURLToPath } from "node:url";
 import { inflateRawSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import {
+  FALLBACK_KIND_STYLE,
   exportLayoutDocx,
   exportLayoutRtf,
   validate,
 } from "../src/index.js";
+import type { Prayer } from "../src/index.js";
 
 const fixturesDir = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 
@@ -59,10 +61,9 @@ describe("exportLayoutRtf", () => {
     expect(rtf).toContain("Trisagion");
     expect(rtf).toContain("\\line ");
     expect(rtf).toMatch(/\{\\cs10 [^}]*Starker/);
-    // Blank canvas: no font size / italic baked into stylesheet entries
+    expect(rtf).not.toMatch(/\{\\cs10 [^}]*Trisagion/);
     expect(rtf).not.toMatch(/\{\\s\d+\\f\d+\\fs\d+/);
     expect(rtf).not.toMatch(/\{\\*\\cs\d+\\i /);
-    // No title/meta paragraphs
     expect(rtf).not.toContain("Probegebet");
     expect(rtf).not.toContain("CC0");
   });
@@ -136,14 +137,13 @@ describe("exportLayoutDocx", () => {
     expect(styles).toContain('w:styleId="opt_annotation"');
     expect(styles).toContain('w:styleId="opt_verse"');
     expect(styles).toContain('w:styleId="opt_note"');
-    // Blank: no italics / bold forced on note character style
     expect(styles).not.toMatch(
       /w:styleId="opt_note"[\s\S]*?<w:i\b/,
     );
     expect(document).toContain("Trisagion");
-    // Soft line break (docx emits bare <w:br/> for text-wrapping breaks)
     expect(document).toContain("<w:br/>");
     expect(document).toContain('w:rStyle w:val="opt_note"');
+    expect(document).toContain('w:pStyle w:val="opt_heading"');
     expect(document).toContain("Starker");
     expect(document).not.toContain("Probegebet");
   });
@@ -181,5 +181,80 @@ describe("exportLayoutDocx", () => {
     expect(styles).toContain('w:styleId="heading"');
     expect(styles).toContain('w:styleId="note"');
     expect(styles).not.toContain("opt_");
+  });
+});
+
+const rtlPrayer = (): Prayer => ({
+  id: "rtl-layout",
+  type: "prayer",
+  variants: [
+    {
+      lang: "ar",
+      variant: "standard",
+      title: "ت",
+      license: "u",
+      source: "s",
+      rtl: true,
+    },
+  ],
+  structure: [
+    {
+      id: "v1",
+      kind: "verse",
+      translations: [{ lang: "ar", variant: "standard", lines: ["نص"] }],
+    },
+  ],
+});
+
+describe("layout RTL style names", () => {
+  it("suffixes paragraph styles with _rtl and leaves note unsuffixed", () => {
+    const rtf = exportLayoutRtf(rtlPrayer(), {
+      lang: "ar",
+      variant: "standard",
+      prefixStem: "opt",
+    });
+    expect(rtf).toContain("{\\s1 opt_verse_rtl;}");
+    expect(rtf).toContain("{\\*\\cs10 opt_note;}");
+    expect(rtf).not.toContain("opt_verse;}");
+    expect(rtf).not.toContain("\\rtlpar");
+  });
+
+  it("suffixes only kinds whose effective dir is rtl", () => {
+    const prayer: Prayer = {
+      id: "mixed-dir",
+      type: "prayer",
+      variants: [
+        {
+          lang: "de",
+          variant: "standard",
+          title: "T",
+          license: "u",
+          source: "s",
+        },
+      ],
+      structure: [
+        {
+          id: "h1",
+          kind: "heading",
+          translations: [{ lang: "de", variant: "standard", text: "Titel" }],
+        },
+        {
+          id: "v1",
+          kind: "verse",
+          translations: [{ lang: "de", variant: "standard", lines: ["نص"] }],
+        },
+      ],
+    };
+    const rtf = exportLayoutRtf(prayer, {
+      lang: "de",
+      variant: "standard",
+      prefixStem: "opt",
+      styles: {
+        heading: { ...FALLBACK_KIND_STYLE },
+        verse: { ...FALLBACK_KIND_STYLE, dir: "rtl" },
+      },
+    });
+    expect(rtf).toContain("opt_heading");
+    expect(rtf).toContain("opt_verse_rtl");
   });
 });

@@ -90,6 +90,7 @@ export function exportVariant(
   if (prayer.tone !== undefined) flat.tone = prayer.tone;
   if (prayer.description !== undefined) flat.description = prayer.description;
   if (prayer.meta !== undefined) flat.meta = prayer.meta;
+  if (meta.rtl === true) flat.rtl = true;
 
   return flat;
 }

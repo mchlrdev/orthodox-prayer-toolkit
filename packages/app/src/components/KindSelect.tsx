@@ -201,6 +201,9 @@ export function KindSelect({
     if (!nextStyle.htmlTag) {
       delete nextStyle.htmlTag;
     }
+    if (!nextStyle.dir) {
+      delete nextStyle.dir;
+    }
     styleEditing.onChangeLibrary({
       ...styleEditing.libraryStyles,
       [editingKind]: nextStyle,

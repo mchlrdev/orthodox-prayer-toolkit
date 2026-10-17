@@ -24,6 +24,8 @@ export type VariantMeta = {
   title: string;
   license: string;
   source: string;
+  /** When true, this edition is RTL. Omit when LTR. */
+  rtl?: boolean;
 };
 
 export type Block = {
@@ -55,6 +57,8 @@ export type FlatPrayer = {
   description?: string;
   license: string;
   source: string;
+  /** Present only when the source variant is RTL. */
+  rtl?: true;
   structure: FlatBlock[];
   meta?: Prayer["meta"];
 };
@@ -77,8 +81,10 @@ export type KindStyle = {
   indicate?: string;
   /** Preferred HTML element for this kind when exporting HTML. */
   htmlTag?: string;
-  /** CSS text-align: `left`, `center`, or `justify`. Missing → left. */
+  /** CSS text-align: `left`, `center`, or `justify`. `left` is logical start. */
   textAlign?: string;
+  /** Kind direction override: `rtl` or `ltr`. Omit to inherit the variant. */
+  dir?: string;
   [extra: string]: string | undefined;
 };
 

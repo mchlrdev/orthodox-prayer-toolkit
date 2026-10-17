@@ -25,3 +25,16 @@ export function resolveLibraryStylePrefixStem(
 export function styleNameWithPrefix(stem: string, name: string): string {
   return stem === "" ? name : `${stem}_${name}`;
 }
+
+/**
+ * Paragraph style name, with `_rtl` when the effective direction is RTL.
+ * Character styles (`note`) stay unsuffixed — call {@link styleNameWithPrefix}.
+ */
+export function paragraphStyleName(
+  stem: string,
+  kind: string,
+  dir: "ltr" | "rtl",
+): string {
+  const base = styleNameWithPrefix(stem, kind);
+  return dir === "rtl" ? `${base}_rtl` : base;
+}

@@ -5,6 +5,7 @@ import {
   exportVariant,
   parseHtmlAttributes,
   type Prayer,
+  type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import type { PrayerToolkitApi } from "../../electron/preload";
 import type { LayoutFormat } from "../exportPrefs";
@@ -28,6 +29,7 @@ export type LayoutExportRequest = {
 
 export type ExportOptions = {
   includeBlocksWithoutTranslation?: boolean;
+  styles?: StyleMap;
   html?: HtmlExportRequest;
   layout?: LayoutExportRequest;
 };
@@ -56,6 +58,7 @@ export async function exportPrayerVariant(
       lang: variant.lang,
       variant: variant.variant,
       tagMap: html.tagMap,
+      styles: options.styles,
       includeBlocksWithoutTranslation,
       wrapper: html.wrapperEnabled
         ? {
@@ -79,6 +82,7 @@ export async function exportPrayerVariant(
       variant: variant.variant,
       prefixStem: layout.prefixStem,
       includeBlocksWithoutTranslation,
+      styles: options.styles,
     };
     if (layout.layoutFormat === "docx") {
       const content = await exportLayoutDocx(prayer, layoutOpts);

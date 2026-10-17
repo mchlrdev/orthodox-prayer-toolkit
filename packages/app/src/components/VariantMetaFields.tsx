@@ -1,4 +1,4 @@
-import { Group, Stack, TextInput } from "@mantine/core";
+import { Checkbox, Group, Stack, TextInput } from "@mantine/core";
 import type { VariantMeta } from "@orthodox-prayer-toolkit/core";
 
 type Props = {
@@ -38,6 +38,16 @@ export function VariantMetaFields({ value, onChange }: Props) {
           onChange={(e) => onChange({ source: e.currentTarget.value })}
         />
       </Group>
+      <Checkbox
+        mt="sm"
+        label="Right to Left"
+        checked={value.rtl === true}
+        onChange={(e) =>
+          onChange(
+            e.currentTarget.checked ? { rtl: true } : { rtl: undefined },
+          )
+        }
+      />
     </Stack>
   );
 }

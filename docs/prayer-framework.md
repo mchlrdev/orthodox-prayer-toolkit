@@ -38,6 +38,7 @@ Related: [affinity-bridge.md](affinity-bridge.md).
 | Taxonomy | fields on the prayer (`type`, `book`, `occasion`, …), not paths |
 | Manifest | optional; collection meta only (`description`, `defaultVariant`, `stylePrefixStem`, …) |
 | Languages | per prayer in `variants[]` |
+| Direction | optional `rtl: true` on the variant (omit when LTR). Kind `dir` in `styles.json` may override (`rtl` / `ltr`; omit = inherit). |
 | Sync across variants | no enforcement; missing translation = omit entry |
 | Display title | per variant; no separate canonical English `title` field |
 | Styles | not in prayer JSON; library `styles.json` over built-in defaults |

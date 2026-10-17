@@ -122,9 +122,28 @@ export function KindStyleFields({
           value={textAlign}
           onChange={(v) => onChange({ textAlign: v })}
           data={[
-            { label: "Left", value: "left" },
+            { label: "Start", value: "left" },
             { label: "Center", value: "center" },
             { label: "Justified", value: "justify" },
+          ]}
+        />
+      </Stack>
+      <Stack gap={4}>
+        <Input.Label>Direction</Input.Label>
+        <SegmentedControl
+          fullWidth
+          size="xs"
+          aria-label="Text direction"
+          value={
+            style.dir === "rtl" || style.dir === "ltr" ? style.dir : "inherit"
+          }
+          onChange={(v) =>
+            onChange({ dir: v === "inherit" ? "" : v })
+          }
+          data={[
+            { label: "Inherit", value: "inherit" },
+            { label: "RTL", value: "rtl" },
+            { label: "LTR", value: "ltr" },
           ]}
         />
       </Stack>

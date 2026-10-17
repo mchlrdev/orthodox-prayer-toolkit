@@ -29,7 +29,7 @@ Downstream sites, print tools, or Affinity workflows can consume flat JSON, HTML
 | **Editor** | Open a library folder, create/edit/delete prayers, switch variants, outline navigation, live preview |
 | **Validation** | JSON Schema + Core `validate()` with errors in the UI |
 | **Styles** | Kind-based typography per library (`styles.json` over built-in defaults) |
-| **Export** | Flat single-variant JSON, HTML, Layout RTF / DOCX (named paragraph styles) |
+| **Export** | Flat single-variant JSON, HTML, Layout RTF / DOCX (named paragraph + character styles) |
 | **Core package** | Pure TypeScript API usable without Electron |
 
 ## Download

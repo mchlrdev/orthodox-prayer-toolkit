@@ -31,6 +31,7 @@ import {
   isRunArray,
   kindDisplayLabel,
   plainText,
+  resolveDir,
   toggleNoteRange,
   type InlineContent,
   type KindStyle,
@@ -130,7 +131,7 @@ function styleToCss(style: KindStyle): CSSProperties {
   const textAlign =
     style.textAlign === "center" || style.textAlign === "justify"
       ? style.textAlign
-      : "left";
+      : "start";
   return {
     fontSize: style.fontSize,
     color,
@@ -255,6 +256,7 @@ const EditableBlock = memo(function EditableBlock({
   editorKey: key,
   blockId,
   initialCap = false,
+  dir = "ltr",
   onCommit,
   onFocusChange,
   onInsertBelow,
@@ -269,6 +271,7 @@ const EditableBlock = memo(function EditableBlock({
   editorKey: string;
   blockId: string;
   initialCap?: boolean;
+  dir?: "ltr" | "rtl";
   /** Commit on every input (outline kinds need live Content labels). */
   liveCommit?: boolean;
   onCommit: (content: InlineContent | InlineContent[] | null) => void;
@@ -548,6 +551,7 @@ const EditableBlock = memo(function EditableBlock({
         data-empty={domEmpty ? "true" : undefined}
         data-editor={key}
         data-initial-cap={initialCap ? "true" : undefined}
+        dir={dir}
         role="textbox"
         aria-multiline="true"
         style={{
@@ -1339,6 +1343,10 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                 {visibleVariants.map((col) => {
                   const tr = getTranslation(prayer, block.id, col);
                   const content = translationEditorContent(block.kind, tr);
+                  const colMeta = prayer.variants.find((v) =>
+                    sameVariant(v, col),
+                  );
+                  const dir = resolveDir(colMeta?.rtl, blockStyle.dir);
 
                   return (
                     <div
@@ -1360,6 +1368,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                         style={styleCss}
                         noteColor={noteColor}
                         initialCap={blockStyle.initialCap === "true"}
+                        dir={dir}
                         liveCommit={
                           (block.kind === "heading" ||
                             block.kind === "subheading") &&

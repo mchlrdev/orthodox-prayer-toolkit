@@ -47,7 +47,7 @@ Collection metadata only. Languages stay inside each prayer’s `variants[]`.
 |-------|------|
 | `description` | Human blurb for the collection |
 | `defaultVariant` | Preferred lang/variant for list titles and defaults |
-| `stylePrefixStem` | Prefix stem for Layout export paragraph style names (default resolution uses `opt`) |
+| `stylePrefixStem` | Prefix stem for Layout export paragraph and character style names (default resolution uses `opt`) |
 
 Prayers remain valid without a manifest.
 
@@ -60,7 +60,8 @@ Visual tokens **per kind**, not inside prayer JSON:
 | `fontSize` | CSS size string |
 | `color` | Semantic token (`base` / `accent`) or legacy hex |
 | `fontWeight` / `fontStyle` | Weight and style |
-| `textAlign` | Optional `left`, `center`, or `justify`. Missing → left, except **verse** and **annotation** default to `justify`. |
+| `textAlign` | Optional `left`, `center`, or `justify`. `left` is logical start (follows `dir`). Missing → left, except **verse** and **annotation** default to `justify`. |
+| `dir` | Optional `rtl` or `ltr`. Omit to inherit the variant’s RTL flag. When set, this kind overrides the variant. |
 | `initialCap` | Optional liturgical initial (`"true"`) |
 | `indicate` | Optional editor marker (`"true"`) → `data-indicate` on blocks |
 | `htmlTag` | Preferred HTML element for HTML export |

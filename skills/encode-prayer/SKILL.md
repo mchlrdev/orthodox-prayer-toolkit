@@ -48,6 +48,11 @@ Always emit a markdown `json` fence so the prayer can be copied. Agents may also
 | Optional | `book`, `occasion`, `tone`, `description` |
 | Omit if unknown | `book`, `occasion`, `tone`, `description` — do not invent |
 
+| On a variant | Keys |
+|--------------|------|
+| Required | `lang`, `variant`, `title`, `license`, `source` |
+| Optional | `rtl` — write `true` only for a **full** right-to-left edition. Omit for LTR. Never write `false`. |
+
 | On a block | Keys |
 |------------|------|
 | Only these | `id`, `kind`, `translations` |
@@ -114,6 +119,8 @@ Prefer the four kinds above. Custom `kind` strings only when the source clearly 
 Greek, Church Slavonic, or other languages printed **inside** a German (etc.) page are further `verse` blocks of that same `(lang, variant)`, in source order. They are not extra variants and not parallel `translations[]` on the German block.
 
 Register `el` / `cu` / … only when the source is a complete parallel edition.
+
+A full Arabic / Syriac / other RTL source is one variant with `"rtl": true`. Snippets of those scripts inside an LTR page stay on that LTR variant — omit `rtl`. Do not put `rtl` on blocks. Kind `dir` lives in library `styles.json` (inherit unless the user asked to override a kind); do not invent kind-direction tokens while encoding.
 
 ## Verse payload
 

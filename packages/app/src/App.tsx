@@ -589,6 +589,7 @@ export function App() {
               {
                 includeBlocksWithoutTranslation:
                   payload.includeBlocksWithoutTranslation,
+                styles: resolvedStyles,
                 html: payload.html,
                 layout: payload.layout,
               },

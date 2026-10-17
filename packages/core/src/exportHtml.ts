@@ -4,7 +4,8 @@ import {
   resolveWrapperTag,
   type HtmlTag,
 } from "./htmlTags.js";
-import type { Prayer, Translation } from "./types.js";
+import { resolveBlockDir, resolveDir } from "./resolveDir.js";
+import type { Prayer, StyleMap, Translation } from "./types.js";
 
 export type ExportHtmlOptions = {
   lang: string;
@@ -23,6 +24,8 @@ export type ExportHtmlOptions = {
    * as empty elements with `data-kind`. Default / absent: omit them.
    */
   includeBlocksWithoutTranslation?: boolean;
+  /** Resolved kind styles; `dir` on a kind overrides the variant RTL flag. */
+  styles?: StyleMap;
 };
 
 function escapeText(value: string): string {
@@ -81,6 +84,7 @@ function autoMetaAttrs(
     "data-license": meta.license,
     "data-source": meta.source,
     "data-type": prayer.type,
+    dir: resolveDir(meta.rtl),
   };
 
   if (prayer.book !== undefined) attrs["data-book"] = prayer.book;
@@ -94,6 +98,7 @@ function autoMetaAttrs(
 
 const ATTR_META_ORDER = [
   "lang",
+  "dir",
   "data-lang",
   "data-variant",
   "data-title",
@@ -131,6 +136,7 @@ export function exportHtml(
     tagMap = {},
     wrapper,
     includeBlocksWithoutTranslation,
+    styles,
   } = options;
 
   // Ensure variant exists even when wrapper is off (consistent with exportVariant).
@@ -153,8 +159,9 @@ export function exportHtml(
 
     const tag = resolveHtmlTag(tagMap[block.kind]);
     const inner = tr ? renderPayload(tr) : "";
+    const dir = resolveBlockDir(meta, block.kind, styles);
     elements.push(
-      `${openTag(tag, { "data-kind": block.kind })}${inner}</${tag}>`,
+      `${openTag(tag, { "data-kind": block.kind, dir })}${inner}</${tag}>`,
     );
   }
 

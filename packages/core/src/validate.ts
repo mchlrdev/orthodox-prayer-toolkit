@@ -3,6 +3,7 @@ import addFormats from "ajv-formats";
 import prayerSchema from "../schema/prayer.schema.json";
 import type { Prayer, ValidationError, ValidationResult } from "./types.js";
 import { isInlineContent, normalizeRuns, toRuns } from "./textRuns.js";
+import { normalizePrayerVariants } from "./resolveDir.js";
 
 const ajv = new Ajv2020({
   allErrors: true,
@@ -156,7 +157,7 @@ export function validate(data: unknown): ValidationResult {
     return { ok: false, errors };
   }
 
-  const prayer = prepared as Prayer;
+  const prayer = normalizePrayerVariants(prepared as Prayer);
   const semantic = semanticChecks(prayer);
   if (semantic.length > 0) {
     return { ok: false, errors: semantic };

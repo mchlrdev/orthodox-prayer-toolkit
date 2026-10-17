@@ -47,7 +47,7 @@ function buildDocument(story: LayoutStory): Document {
     name,
     basedOn: "Normal",
     next: "Normal",
-    quickStyle: true,
+    quickFormat: true,
   }));
 
   const characterStyles: ICharacterStyleOptions[] = [
@@ -55,6 +55,7 @@ function buildDocument(story: LayoutStory): Document {
       id: story.noteStyleName,
       name: story.noteStyleName,
       basedOn: "DefaultParagraphFont",
+      quickFormat: true,
     },
   ];
 
@@ -81,8 +82,8 @@ function buildDocument(story: LayoutStory): Document {
 }
 
 /**
- * Export a Place-friendly DOCX story: blank named styles, soft breaks for
- * `lines`, character style for notes, no document meta/title.
+ * Export a Place-friendly DOCX story: blank named kind paragraph styles,
+ * character style for notes, soft breaks, no document meta/title.
  */
 export async function exportLayoutDocx(
   prayer: Prayer,
@@ -90,7 +91,6 @@ export async function exportLayoutDocx(
 ): Promise<Uint8Array> {
   const story = buildLayoutStory(prayer, options);
   const doc = buildDocument(story);
-  // toArrayBuffer works in browser and Node; toBuffer requires Node Buffer.
   const arrayBuffer = await Packer.toArrayBuffer(doc);
   return new Uint8Array(arrayBuffer);
 }

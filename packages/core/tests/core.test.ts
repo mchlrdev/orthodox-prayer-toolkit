@@ -20,9 +20,11 @@ import {
   parseHtmlAttributes,
   renameKind,
   resolveDisplayTitle,
+  resolveDir,
   resolveLibraryStylePrefixStem,
   resolveStyles,
   sanitizeStyles,
+  paragraphStyleName,
   styleNameWithPrefix,
   tagMapFromStyles,
   validate,
@@ -53,6 +55,63 @@ describe("validate", () => {
     if (result.ok) {
       expect(result.prayer.id).toBe("tropar-prokopios");
       expect(result.prayer.variants).toHaveLength(2);
+    }
+  });
+
+  it("accepts rtl true and drops rtl false from the returned prayer", () => {
+    const withRtl = validate({
+      id: "rtl-on",
+      type: "prayer",
+      variants: [
+        {
+          lang: "ar",
+          variant: "standard",
+          title: "ت",
+          license: "unknown",
+          source: "draft",
+          rtl: true,
+        },
+      ],
+      structure: [
+        {
+          id: "v1",
+          kind: "verse",
+          translations: [
+            { lang: "ar", variant: "standard", lines: ["نص"] },
+          ],
+        },
+      ],
+    });
+    expect(withRtl.ok).toBe(true);
+    if (withRtl.ok) expect(withRtl.prayer.variants[0]?.rtl).toBe(true);
+
+    const withFalse = validate({
+      id: "rtl-off",
+      type: "prayer",
+      variants: [
+        {
+          lang: "de",
+          variant: "standard",
+          title: "T",
+          license: "unknown",
+          source: "draft",
+          rtl: false,
+        },
+      ],
+      structure: [
+        {
+          id: "v1",
+          kind: "verse",
+          translations: [
+            { lang: "de", variant: "standard", lines: ["Text"] },
+          ],
+        },
+      ],
+    });
+    expect(withFalse.ok).toBe(true);
+    if (withFalse.ok) {
+      expect(withFalse.prayer.variants[0]?.rtl).toBeUndefined();
+      expect("rtl" in withFalse.prayer.variants[0]!).toBe(false);
     }
   });
 
@@ -451,6 +510,46 @@ describe("exportVariant", () => {
       exportVariant(validated.prayer, { lang: "fr", variant: "standard" }),
     ).toThrow(/Variant not found/);
   });
+
+  it("copies rtl true onto the flat document and omits it otherwise", () => {
+    const prayer: Prayer = {
+      id: "flat-rtl",
+      type: "prayer",
+      variants: [
+        {
+          lang: "ar",
+          variant: "standard",
+          title: "ت",
+          license: "u",
+          source: "s",
+          rtl: true,
+        },
+        {
+          lang: "de",
+          variant: "standard",
+          title: "T",
+          license: "u",
+          source: "s",
+        },
+      ],
+      structure: [
+        {
+          id: "v1",
+          kind: "verse",
+          translations: [
+            { lang: "ar", variant: "standard", lines: ["نص"] },
+            { lang: "de", variant: "standard", lines: ["Text"] },
+          ],
+        },
+      ],
+    };
+    expect(exportVariant(prayer, { lang: "ar", variant: "standard" }).rtl).toBe(
+      true,
+    );
+    expect(exportVariant(prayer, { lang: "de", variant: "standard" }).rtl).toBe(
+      undefined,
+    );
+  });
 });
 
 describe("exportHtml", () => {
@@ -484,7 +583,7 @@ describe("exportHtml", () => {
       tagMap: defaultTags,
     });
     expect(html).toBe(
-      '<p data-kind="verse">Holy God, Holy Mighty, Holy Immortal, have mercy on us.</p>\n',
+      '<p data-kind="verse" dir="ltr">Holy God, Holy Mighty, Holy Immortal, have mercy on us.</p>\n',
     );
   });
 
@@ -501,9 +600,9 @@ describe("exportHtml", () => {
     });
     expect(html).toBe(
       [
-        '<h2 data-kind="heading"></h2>',
-        '<p data-kind="annotation"></p>',
-        '<p data-kind="verse">Holy God, Holy Mighty, Holy Immortal, have mercy on us.</p>',
+        '<h2 data-kind="heading" dir="ltr"></h2>',
+        '<p data-kind="annotation" dir="ltr"></p>',
+        '<p data-kind="verse" dir="ltr">Holy God, Holy Mighty, Holy Immortal, have mercy on us.</p>',
         "",
       ].join("\n"),
     );
@@ -522,7 +621,7 @@ describe("exportHtml", () => {
         includeBlocksWithoutTranslation: false,
       }),
     ).toBe(
-      '<p data-kind="verse">Holy God, Holy Mighty, Holy Immortal, have mercy on us.</p>\n',
+      '<p data-kind="verse" dir="ltr">Holy God, Holy Mighty, Holy Immortal, have mercy on us.</p>\n',
     );
   });
 
@@ -537,7 +636,7 @@ describe("exportHtml", () => {
       tagMap: { verse: "script" },
     });
     expect(html).toBe(
-      '<div data-kind="verse">Holy God, Holy Mighty, Holy Immortal, have mercy on us.</div>\n',
+      '<div data-kind="verse" dir="ltr">Holy God, Holy Mighty, Holy Immortal, have mercy on us.</div>\n',
     );
   });
 
@@ -575,7 +674,9 @@ describe("exportHtml", () => {
         variant: "standard",
         tagMap: { annotation: "p" },
       }),
-    ).toBe('<p data-kind="annotation">A &lt;B&gt; &amp; &quot;C&quot;</p>\n');
+    ).toBe(
+      '<p data-kind="annotation" dir="ltr">A &lt;B&gt; &amp; &quot;C&quot;</p>\n',
+    );
   });
 
   it("wraps with auto-meta attributes when enabled", () => {
@@ -613,6 +714,104 @@ describe("exportHtml", () => {
     expect(html).toContain('data-lang="en"');
     expect(html).not.toContain("data-id=");
     expect(html).not.toContain('id="v1"');
+  });
+
+  it("emits dir=rtl on blocks and wrapper when the variant is RTL", () => {
+    const prayer: Prayer = {
+      id: "rtl-html",
+      type: "prayer",
+      variants: [
+        {
+          lang: "ar",
+          variant: "standard",
+          title: "ت",
+          license: "u",
+          source: "s",
+          rtl: true,
+        },
+      ],
+      structure: [
+        {
+          id: "v1",
+          kind: "verse",
+          translations: [
+            { lang: "ar", variant: "standard", lines: ["نص"] },
+          ],
+        },
+      ],
+    };
+
+    expect(
+      exportHtml(prayer, {
+        lang: "ar",
+        variant: "standard",
+        tagMap: { verse: "p" },
+      }),
+    ).toBe('<p data-kind="verse" dir="rtl">نص</p>\n');
+
+    const wrapped = exportHtml(prayer, {
+      lang: "ar",
+      variant: "standard",
+      tagMap: { verse: "p" },
+      wrapper: { enabled: true },
+    });
+    expect(wrapped).toContain('dir="rtl"');
+    expect(wrapped.startsWith("<article lang=\"ar\" dir=\"rtl\"")).toBe(true);
+  });
+
+  it("lets a kind dir override the variant", () => {
+    const prayer: Prayer = {
+      id: "kind-dir",
+      type: "prayer",
+      variants: [
+        {
+          lang: "de",
+          variant: "standard",
+          title: "T",
+          license: "u",
+          source: "s",
+        },
+      ],
+      structure: [
+        {
+          id: "h1",
+          kind: "heading",
+          translations: [
+            { lang: "de", variant: "standard", text: "Titel" },
+          ],
+        },
+        {
+          id: "v1",
+          kind: "verse",
+          translations: [
+            { lang: "de", variant: "standard", lines: ["نص"] },
+          ],
+        },
+      ],
+    };
+
+    const html = exportHtml(prayer, {
+      lang: "de",
+      variant: "standard",
+      tagMap: { heading: "h2", verse: "p" },
+      styles: {
+        heading: { ...FALLBACK_KIND_STYLE },
+        verse: { ...FALLBACK_KIND_STYLE, dir: "rtl" },
+      },
+    });
+    expect(html).toContain('<h2 data-kind="heading" dir="ltr">Titel</h2>');
+    expect(html).toContain('<p data-kind="verse" dir="rtl">نص</p>');
+  });
+});
+
+describe("resolveDir", () => {
+  it("inherits the variant unless the kind sets rtl or ltr", () => {
+    expect(resolveDir(undefined, undefined)).toBe("ltr");
+    expect(resolveDir(false, undefined)).toBe("ltr");
+    expect(resolveDir(true, undefined)).toBe("rtl");
+    expect(resolveDir(true, "ltr")).toBe("ltr");
+    expect(resolveDir(false, "rtl")).toBe("rtl");
+    expect(resolveDir(true, "inherit")).toBe("rtl");
   });
 });
 
@@ -900,6 +1099,33 @@ describe("validateStyles", () => {
     expect(bad.errors.some((e) => e.path.includes("textAlign"))).toBe(true);
   });
 
+  it("accepts dir rtl or ltr and rejects others", () => {
+    const ok = validateStyles({
+      verse: {
+        fontSize: "1rem",
+        color: "base",
+        fontWeight: "400",
+        fontStyle: "normal",
+        dir: "RTL",
+      },
+    });
+    expect(ok.ok).toBe(true);
+    if (ok.ok) expect(ok.styles.verse?.dir).toBe("rtl");
+
+    const bad = validateStyles({
+      verse: {
+        fontSize: "1rem",
+        color: "base",
+        fontWeight: "400",
+        fontStyle: "normal",
+        dir: "auto",
+      },
+    });
+    expect(bad.ok).toBe(false);
+    if (bad.ok) return;
+    expect(bad.errors.some((e) => e.path.includes("dir"))).toBe(true);
+  });
+
   it("accepts allowlisted htmlTag and rejects others", () => {
     const ok = validateStyles({
       verse: {
@@ -1104,5 +1330,8 @@ describe("stylePrefix", () => {
     expect(styleNameWithPrefix("opt", "heading")).toBe("opt_heading");
     expect(styleNameWithPrefix("", "heading")).toBe("heading");
     expect(styleNameWithPrefix("opt", "note")).toBe("opt_note");
+    expect(paragraphStyleName("opt", "verse", "ltr")).toBe("opt_verse");
+    expect(paragraphStyleName("opt", "verse", "rtl")).toBe("opt_verse_rtl");
+    expect(paragraphStyleName("", "verse", "rtl")).toBe("verse_rtl");
   });
 });

@@ -34,6 +34,7 @@ const ALLOWED_FIELDS = new Set([
   "indicate",
   "htmlTag",
   "textAlign",
+  "dir",
 ]);
 
 const DANGEROUS = /url\s*\(|expression\s*\(|javascript:|@import|</i;
@@ -54,6 +55,10 @@ function isSafeFontStyle(value: string): boolean {
 
 function isSafeTextAlign(value: string): boolean {
   return /^(left|center|justify)$/i.test(value.trim());
+}
+
+function isSafeDir(value: string): boolean {
+  return /^(rtl|ltr)$/i.test(value.trim());
 }
 
 function fieldError(
@@ -142,6 +147,12 @@ function validateField(
         errors.push(
           fieldError(kind, field, "expected left, center, or justify"),
         );
+        return undefined;
+      }
+      return value.trim().toLowerCase();
+    case "dir":
+      if (!isSafeDir(value)) {
+        errors.push(fieldError(kind, field, "expected rtl or ltr"));
         return undefined;
       }
       return value.trim().toLowerCase();

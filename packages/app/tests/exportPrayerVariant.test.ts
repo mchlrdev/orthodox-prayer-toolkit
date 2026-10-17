@@ -130,7 +130,7 @@ describe("exportPrayerVariant", () => {
     const [name, content] = saveExport.mock.calls[0]!;
     expect(name).toBe("morning.de.standard.html");
     expect(content).toBe(
-      '<p data-kind="verse">Herr, erbarme dich.</p>\n',
+      '<p data-kind="verse" dir="ltr">Herr, erbarme dich.</p>\n',
     );
   });
 
@@ -157,7 +157,9 @@ describe("exportPrayerVariant", () => {
     expect(content.startsWith("<article ")).toBe(true);
     expect(content).toContain('class="prayer"');
     expect(content).toContain('data-lang="de"');
-    expect(content).toContain('<p data-kind="verse">Herr, erbarme dich.</p>');
+    expect(content).toContain(
+      '<p data-kind="verse" dir="ltr">Herr, erbarme dich.</p>',
+    );
   });
 
   it("passes includeBlocksWithoutTranslation into flat export", async () => {

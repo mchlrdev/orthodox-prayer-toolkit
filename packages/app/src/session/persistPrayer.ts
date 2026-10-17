@@ -1,4 +1,5 @@
 import {
+  normalizePrayerVariants,
   prayerFilename,
   validate,
   type Prayer,
@@ -8,7 +9,7 @@ import type { PersistResult } from "./types";
 
 /** Canonical on-disk text for a prayer file. */
 export function prayerFileText(prayer: Prayer): string {
-  return `${JSON.stringify(prayer, null, 2)}\n`;
+  return `${JSON.stringify(normalizePrayerVariants(prayer), null, 2)}\n`;
 }
 
 /** Write a prayer to the library, renaming the file when the id changes. */
@@ -39,7 +40,7 @@ export async function persistPrayer(
     }
   }
 
-  const content = prayerFileText(prayer);
+  const content = prayerFileText(result.prayer);
   try {
     if (currentBase !== targetName) {
       await api.writeText(libraryRoot, targetName, content);

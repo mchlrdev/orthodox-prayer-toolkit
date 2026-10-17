@@ -8,6 +8,7 @@ import {
   evictPreviousClean,
   putPrayerFromText,
 } from "./operations";
+import { prayerFileText } from "./persistPrayer";
 import type { PrayerSessionState, SessionOpResult } from "./types";
 
 export type ImportedPrayerPath =
@@ -70,7 +71,7 @@ export async function exportPrayerFile(
   let content: string;
   const draft = state.drafts[entry.path];
   if (draft?.dirty) {
-    content = `${JSON.stringify(draft.prayer, null, 2)}\n`;
+    content = prayerFileText(draft.prayer);
   } else {
     try {
       content = await api.readText(state.catalog.root, entry.path);
