@@ -51,6 +51,7 @@ export function PrayerBasicsFields({
           min={1}
           max={8}
           allowDecimal={false}
+          hideControls
           value={prayer.tone ?? ""}
           onChange={(value) =>
             onChange({

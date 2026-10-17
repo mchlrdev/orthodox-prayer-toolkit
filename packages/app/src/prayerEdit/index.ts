@@ -47,3 +47,4 @@ export {
   type MergeKeep,
   type MergeResult,
 } from "./mergeBlocks";
+export { moveRemainderToNext } from "./spillRemainder";

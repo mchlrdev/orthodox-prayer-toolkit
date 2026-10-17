@@ -34,6 +34,9 @@
   --opt-min-app-width: 400px;
   --opt-prayer-font: "Source Serif 4", "Iowan Old Style", "Palatino Linotype",
     Palatino, Georgia, serif;
+  --opt-scrollbar-size: 8px;
+  --opt-scrollbar-thumb: color-mix(in srgb, var(--opt-text) 28%, transparent);
+  --opt-scrollbar-thumb-hover: color-mix(in srgb, var(--opt-text) 45%, transparent);
   color-scheme: light;
 }
 
@@ -56,10 +59,95 @@
   color-scheme: dark;
 }
 
+/*
+ * Overlay-style scrollbars. Windows otherwise draws a ~17px classic gutter
+ * with arrow buttons on every overflow:auto (modals, editor, settings).
+ * Mantine ScrollArea viewports hide native bars with a more specific rule.
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--opt-scrollbar-thumb) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: var(--opt-scrollbar-size);
+  height: var(--opt-scrollbar-size);
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--opt-scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--opt-scrollbar-thumb-hover);
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.mantine-ScrollArea-scrollbar {
+  background: transparent;
+}
+
+.mantine-ScrollArea-thumb {
+  background-color: var(--opt-scrollbar-thumb);
+}
+
+.mantine-ScrollArea-scrollbar:hover .mantine-ScrollArea-thumb {
+  background-color: var(--opt-scrollbar-thumb-hover);
+}
+
+/* Windows native number spinners on type=number clash with form chrome. */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* Dialogs: white in light; same deep surface as inputs in dark. */
 .mantine-Modal-content,
 .mantine-Modal-header {
   background: var(--opt-surface-solid);
+}
+
+/*
+ * Mantine puts overflow-y:auto on the whole dialog (header included).
+ * Scroll the body instead so the bar doesn't sit on the title or radius.
+ */
+.mantine-Modal-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mantine-Modal-header {
+  flex-shrink: 0;
+}
+
+.mantine-Modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 :root[data-mantine-color-scheme="dark"] .mantine-Modal-content {
@@ -954,8 +1042,10 @@ body,
 }
 
 .workspace-body-inner[data-split="true"] {
-  padding-left: 28px;
-  padding-right: 28px;
+  --editor-inline-pad: 28px;
+  --split-nudge: 8px;
+  padding-left: var(--editor-inline-pad);
+  padding-right: var(--editor-inline-pad);
   padding-block-start: 0;
 }
 
@@ -968,8 +1058,8 @@ body,
 
 .split-layout[data-split="true"] {
   position: relative;
-  margin: 0 -8px;
-  padding: 0 8px;
+  margin: 0 calc(-1 * var(--split-nudge));
+  padding: 0 var(--split-nudge);
 }
 
 /* Full-height column rules — one continuous stroke per gutter */
@@ -996,8 +1086,8 @@ body,
   position: sticky;
   top: 0;
   z-index: 2;
-  margin: 0 -8px 8px;
-  padding: 0px 8px 0px;
+  margin: 0 calc(-1 * var(--split-nudge)) 8px;
+  padding: 0 var(--split-nudge) 0;
   pointer-events: none;
   background: var(--opt-glass);
   backdrop-filter: blur(16px) saturate(160%);
@@ -1005,14 +1095,14 @@ body,
 }
 
 .split-col-labels::after {
-  --offset: 28px;
+  /* Labels already sit --split-nudge into the inner pad; reach the canvas edge. */
+  --offset: calc(var(--editor-inline-pad) - var(--split-nudge));
   content: "";
   position: absolute;
   left: calc(var(--offset) * -1);
-  right: 0;
+  right: calc(var(--offset) * -1);
   bottom: 0;
   height: 1px;
-  width: calc(100% + (2 * var(--offset)));
   background: var(--opt-border);
 }
 
@@ -1146,6 +1236,7 @@ body,
 .workspace-body {
   flex: 1;
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -1462,6 +1553,7 @@ body,
 .invalid-prayer-errors {
   max-height: min(50vh, 360px);
   overflow: auto;
+  overscroll-behavior: contain;
   padding-right: 4px;
 }
 
@@ -1686,9 +1778,10 @@ body,
   pointer-events: none;
 }
 
-/* Initial cap only on real text — not on empty placeholders. */
-.inline-content[data-initial-cap="true"]:not([data-empty="true"])::first-letter {
+/* Initiale is a real span: ::first-letter cannot host a caret in contenteditable. */
+.inline-content[data-initial-cap="true"] .inline-initial-cap {
   color: var(--opt-accent);
+  -webkit-text-fill-color: var(--opt-accent);
 }
 
 .inline-content:focus {
@@ -1920,6 +2013,7 @@ body,
   position: absolute;
   inset: 0;
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 20px 24px 24px;
   opacity: 0;
   pointer-events: none;

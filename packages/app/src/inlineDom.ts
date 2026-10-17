@@ -9,6 +9,7 @@ import {
 
 const NOTE_ATTR = "data-role";
 const NOTE_VALUE = "note";
+const INITIAL_CAP_VALUE = "initial-cap";
 
 export function isNoteElement(node: Node): boolean {
   return (
@@ -31,11 +32,60 @@ function appendRuns(parent: HTMLElement, content: InlineContent): void {
   }
 }
 
+function unwrapInitialCaps(root: HTMLElement): void {
+  for (const span of [
+    ...root.querySelectorAll(`[${NOTE_ATTR}="${INITIAL_CAP_VALUE}"]`),
+  ]) {
+    const parent = span.parentNode;
+    if (!parent) continue;
+    while (span.firstChild) parent.insertBefore(span.firstChild, span);
+    parent.removeChild(span);
+  }
+}
+
+/**
+ * Wrap the first visible character so we can color it without CSS
+ * `::first-letter`, which cannot host a caret in contenteditable.
+ */
+export function applyInitialCap(root: HTMLElement, enabled: boolean): void {
+  unwrapInitialCaps(root);
+  if (!enabled) return;
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let node = walker.nextNode() as Text | null;
+  while (node) {
+    const text = node.textContent ?? "";
+    const idx = text.search(/\S/);
+    if (idx < 0) {
+      node = walker.nextNode() as Text | null;
+      continue;
+    }
+    const parent = node.parentElement;
+    if (parent && isNoteElement(parent)) return;
+
+    if (idx > 0) node = node.splitText(idx);
+    const cp = node.textContent?.codePointAt(0);
+    if (cp === undefined) return;
+    const len = cp > 0xffff ? 2 : 1;
+    if ((node.textContent?.length ?? 0) > len) node.splitText(len);
+
+    const span = document.createElement("span");
+    span.setAttribute(NOTE_ATTR, INITIAL_CAP_VALUE);
+    span.className = "inline-initial-cap";
+    span.style.color = "var(--opt-accent)";
+    span.style.setProperty("-webkit-text-fill-color", "var(--opt-accent)");
+    node.parentNode?.insertBefore(span, node);
+    span.appendChild(node);
+    return;
+  }
+}
+
 /** Render line-mode (joined by \\n) or single text into a contenteditable. */
 export function renderEditable(
   el: HTMLElement,
   content: InlineContent | InlineContent[],
   lineMode: boolean,
+  initialCap: boolean = false,
 ): void {
   el.replaceChildren();
   if (lineMode) {
@@ -44,9 +94,10 @@ export function renderEditable(
       if (i > 0) el.appendChild(document.createTextNode("\n"));
       appendRuns(el, line);
     });
-    return;
+  } else {
+    appendRuns(el, content as InlineContent);
   }
-  appendRuns(el, content as InlineContent);
+  applyInitialCap(el, initialCap);
 }
 
 function pushRun(runs: TextRun[], t: "text" | "note", v: string): void {
@@ -92,6 +143,11 @@ export function serializeEditable(
 
     if (tag === "BR") {
       runs = flushLine(lines, runs);
+      return;
+    }
+
+    if (elNode.getAttribute(NOTE_ATTR) === INITIAL_CAP_VALUE) {
+      for (const child of elNode.childNodes) visit(child);
       return;
     }
 

@@ -32,6 +32,8 @@ export type ParallelExportRequest = {
   columns: [ActiveVariant, ActiveVariant];
   /** Empty string → bare kind / note style names. */
   prefixStem: string;
+  /** Empty middle column so Word can drag the gap. */
+  gutterColumn?: boolean;
 };
 
 export type ExportOptions = {
@@ -86,14 +88,16 @@ export async function exportPrayerVariant(
       throw new Error("Word table export settings are required");
     }
     const [left, right] = parallel.columns;
+    // Always skip rows with no text in either column; empty cells already
+    // keep alignment when only one language is missing.
     const content = await exportLayoutDocxParallel(prayer, {
       columns: [
         { lang: left.lang, variant: left.variant },
         { lang: right.lang, variant: right.variant },
       ],
       prefixStem: parallel.prefixStem,
-      includeBlocksWithoutTranslation,
       styles: options.styles,
+      gutterColumn: parallel.gutterColumn === true,
     });
     const name = `${prayer.id}.${left.lang}.${left.variant}.${right.lang}.${right.variant}.docx`;
     return api.saveExport(name, content);

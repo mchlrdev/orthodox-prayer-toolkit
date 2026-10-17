@@ -250,6 +250,7 @@ describe("exportPrayerVariant", () => {
             { lang: "cu", variant: "synodal-cyrl" },
           ],
           prefixStem: "opt",
+          gutterColumn: true,
         },
       },
     );

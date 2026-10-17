@@ -27,6 +27,11 @@ export type ExportLayoutParallelOptions = {
   prefixStem?: string;
   includeBlocksWithoutTranslation?: boolean;
   styles?: StyleMap;
+  /**
+   * Empty middle table column so Word can set the gap by dragging.
+   * Default / absent: two columns only.
+   */
+  gutterColumn?: boolean;
 };
 
 export type LayoutRun = {

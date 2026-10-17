@@ -125,6 +125,7 @@ export function ExportModal({
   const [wrapperAttributes, setWrapperAttributes] = useState("");
   const [layoutFormat, setLayoutFormat] = useState<LayoutFormat>("docx");
   const [prefixStem, setPrefixStem] = useState("opt");
+  const [gutterColumn, setGutterColumn] = useState(false);
 
   const libraryResolvedStem = resolveLibraryStylePrefixStem(
     libraryManifest?.stylePrefixStem,
@@ -148,6 +149,7 @@ export function ExportModal({
     });
     setLeftKey(pair ? variantKey(pair[0]) : "");
     setRightKey(pair ? variantKey(pair[1]) : "");
+    setGutterColumn(saved?.parallelGutterColumn === true);
     const defaults = defaultHtmlPrefs(resolvedStyles);
     setIncludeBlocksWithoutTranslation(
       saved?.includeBlocksWithoutTranslation ?? false,
@@ -280,6 +282,7 @@ export function ExportModal({
           ? {
               columns: [left, right],
               prefixStem,
+              gutterColumn,
             }
           : undefined;
 
@@ -287,7 +290,8 @@ export function ExportModal({
       const savedPath = await onExport({
         variant,
         format,
-        includeBlocksWithoutTranslation,
+        includeBlocksWithoutTranslation:
+          format === "docx-parallel" ? false : includeBlocksWithoutTranslation,
         html,
         layout,
         parallel,
@@ -295,7 +299,10 @@ export function ExportModal({
 
       if (savedPath) {
         saveExportPrefs(libraryRoot, prayerPath, {
-          includeBlocksWithoutTranslation,
+          includeBlocksWithoutTranslation:
+            format === "docx-parallel"
+              ? undefined
+              : includeBlocksWithoutTranslation,
           html:
             format === "html" && html
               ? {
@@ -319,7 +326,7 @@ export function ExportModal({
                 : undefined,
           parallel:
             format === "docx-parallel" && left && right
-              ? { left, right }
+              ? { left, right, gutterColumn }
               : undefined,
         });
       }
@@ -545,16 +552,24 @@ export function ExportModal({
               />
             </Group>
             {prefixField}
+            <Checkbox
+              mt="sm"
+              label="Add empty middle column"
+              checked={gutterColumn}
+              onChange={(e) => setGutterColumn(e.currentTarget.checked)}
+            />
           </Stack>
         ) : null}
 
-        <Checkbox
-          label="Include blocks without translation"
-          checked={includeBlocksWithoutTranslation}
-          onChange={(e) =>
-            setIncludeBlocksWithoutTranslation(e.currentTarget.checked)
-          }
-        />
+        {format !== "docx-parallel" ? (
+          <Checkbox
+            label="Include blocks without translation"
+            checked={includeBlocksWithoutTranslation}
+            onChange={(e) =>
+              setIncludeBlocksWithoutTranslation(e.currentTarget.checked)
+            }
+          />
+        ) : null}
 
         {selectData.length === 0 ? (
           <Text size="xs" c="dimmed">

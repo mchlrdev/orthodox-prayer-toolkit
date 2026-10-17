@@ -635,7 +635,9 @@ export function App() {
         reason={
           pendingLeave?.type === "install-update"
             ? "The update installs and restarts the app afterwards."
-            : undefined
+            : pendingLeave?.type === "reload-library"
+              ? "Refresh reloads the library and the open prayer from disk."
+              : undefined
         }
         loading={leaveBusy || busy}
         onCancel={() => setPendingLeave(null)}

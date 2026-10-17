@@ -169,7 +169,7 @@ export function ContentOutline({
         </div>
       </div>
 
-      <ScrollArea className="content-outline-scroll" type="auto" offsetScrollbars>
+      <ScrollArea className="content-outline-scroll">
         {outline.length === 0 ? (
           <p className="content-outline-empty">No heading</p>
         ) : (

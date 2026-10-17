@@ -161,7 +161,6 @@ describe("exportPrefs", () => {
     });
 
     saveExportPrefs("/lib", "a.json", {
-      includeBlocksWithoutTranslation: false,
       layout: {
         layoutFormat: "docx",
         layoutPrefixStem: "opt",
@@ -169,6 +168,7 @@ describe("exportPrefs", () => {
       parallel: {
         left: { lang: "de", variant: "standard" },
         right: { lang: "en", variant: "standard" },
+        gutterColumn: true,
       },
     });
 
@@ -182,6 +182,7 @@ describe("exportPrefs", () => {
       layoutPrefixStem: "opt",
       parallelLeft: { lang: "de", variant: "standard" },
       parallelRight: { lang: "en", variant: "standard" },
+      parallelGutterColumn: true,
     });
   });
 });

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Accordion, Button, Group, Stack, Text, TextInput } from "@mantine/core";
+import { useClickOutside } from "@mantine/hooks";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import {
   FALLBACK_KIND_STYLE,
@@ -75,6 +76,13 @@ export function KindStylesPanel({
     }
     onChangeLibrary({ ...libraryStyles, [kind]: nextStyle });
   };
+
+  const cancelAdd = useCallback(() => {
+    setAdding(false);
+    setNewKind("");
+  }, []);
+
+  const addFormRef = useClickOutside<HTMLDivElement>(cancelAdd);
 
   const commitAdd = () => {
     const id = sanitizeKindIdInput(newKind);
@@ -166,7 +174,7 @@ export function KindStylesPanel({
       </Accordion>
 
       {adding ? (
-        <Group gap="xs" wrap="nowrap">
+        <Stack ref={addFormRef} gap="xs">
           <TextInput
             size="xs"
             placeholder="new-kind"
@@ -175,10 +183,15 @@ export function KindStylesPanel({
               setNewKind(sanitizeKindIdInput(e.currentTarget.value))
             }
             onKeyDown={(e) => {
-              if (e.key === "Enter") commitAdd();
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.stopPropagation();
+                commitAdd();
+              }
               if (e.key === "Escape") {
-                setAdding(false);
-                setNewKind("");
+                e.preventDefault();
+                e.stopPropagation();
+                cancelAdd();
               }
             }}
             error={
@@ -186,17 +199,21 @@ export function KindStylesPanel({
                 ? "Already exists"
                 : undefined
             }
-            style={{ flex: 1 }}
             autoFocus
           />
-          <Button
-            size="xs"
-            onClick={commitAdd}
-            disabled={!newKind.trim() || existing.has(newKind.trim())}
-          >
-            Add
-          </Button>
-        </Group>
+          <Group gap="xs" wrap="nowrap">
+            <Button
+              size="xs"
+              onClick={commitAdd}
+              disabled={!newKind.trim() || existing.has(newKind.trim())}
+            >
+              Add
+            </Button>
+            <Button size="xs" variant="default" onClick={cancelAdd}>
+              Cancel
+            </Button>
+          </Group>
+        </Stack>
       ) : (
         <Button
           size="xs"

@@ -330,5 +330,28 @@ describe("exportLayoutDocxParallel", () => {
     expect(document).not.toContain('w:top="1134"');
     expect(document).toContain('w:tblW w:type="pct" w:w="100%"');
     expect(document).toMatch(/w:val="single"[^>]*w:sz="4"/);
+    expect(document.match(/<w:gridCol/g)).toHaveLength(2);
+  });
+
+  it("inserts an empty middle column when gutterColumn is set", async () => {
+    const validated = validate(loadJson("parallel-layout-sample.json"));
+    expect(validated.ok).toBe(true);
+    if (!validated.ok) return;
+
+    const bytes = await exportLayoutDocxParallel(validated.prayer, {
+      columns: [
+        { lang: "de", variant: "standard" },
+        { lang: "en", variant: "standard" },
+      ],
+      prefixStem: "opt",
+      gutterColumn: true,
+    });
+    const files = unzipTexts(bytes);
+    const document = files["word/document.xml"] ?? "";
+
+    expect(document.match(/<w:gridCol/g)).toHaveLength(3);
+    expect(document).toContain('<w:gridCol w:w="720"/>');
+    expect(document).toContain("Heiliger Gott");
+    expect(document).toContain("Holy God");
   });
 });

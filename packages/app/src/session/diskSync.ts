@@ -129,6 +129,30 @@ export function applyDiskChange(
   };
 }
 
+/**
+ * After a catalog rescan, apply freshly read disk text to session drafts.
+ * Clean prayers follow disk; unsaved ones keep local edits and get a conflict.
+ */
+export function applyReloadedDrafts(
+  state: PrayerSessionState,
+  files: ReadonlyArray<{ path: string; text: string | null }>,
+): SessionOpResult {
+  let next = state;
+  const notices: SessionOpResult["notices"] = [];
+  const dropCatalogPaths: string[] = [];
+  for (const { path, text } of files) {
+    const result = applyDiskChange(next, path, text);
+    next = result.state;
+    notices.push(...result.notices);
+    if (result.dropCatalogPaths) dropCatalogPaths.push(...result.dropCatalogPaths);
+  }
+  return {
+    state: next,
+    notices,
+    dropCatalogPaths: dropCatalogPaths.length > 0 ? dropCatalogPaths : undefined,
+  };
+}
+
 /** Keep the unsaved edits; the next save overwrites (or recreates) the file. */
 export function keepLocalVersion(
   state: PrayerSessionState,

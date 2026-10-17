@@ -66,6 +66,7 @@ import {
   kindOptions,
   mergeBlocks,
   moveBlock as moveBlockInPrayer,
+  moveRemainderToNext,
   removeBlock,
   setBlockKind,
   splitBlock as splitBlockInPrayer,
@@ -101,7 +102,12 @@ type Props = {
   onRenameKind: (from: string, to: string) => void;
 };
 
-export type BlockRevealScroll = "smooth-center" | "instant-start";
+export type BlockRevealScroll = "smooth-center" | "instant-start" | "nearest";
+
+export type BlockRevealCaret =
+  | "start"
+  | "end"
+  | { x: number; line: "start" | "end" };
 
 export type BlockRevealOptions = {
   scroll: BlockRevealScroll;
@@ -109,7 +115,7 @@ export type BlockRevealOptions = {
   focusCol: ActiveVariant | null;
   flash: boolean;
   /** Caret placement when focusing. Default: end. */
-  caret?: "start" | "end";
+  caret?: BlockRevealCaret;
 };
 
 /** What the parent did on Backspace at a cell's start / Delete at its end. */
@@ -161,26 +167,152 @@ function placeCaretAtEnd(el: HTMLElement): void {
 function placeCaretAtStart(el: HTMLElement): void {
   const sel = window.getSelection();
   if (!sel) return;
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  range.collapse(true);
+  const range = createRangeFromOffsets(el, 0, 0);
+  if (range) {
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return;
+  }
+  const fallback = document.createRange();
+  fallback.selectNodeContents(el);
+  fallback.collapse(true);
   sel.removeAllRanges();
-  sel.addRange(range);
+  sel.addRange(fallback);
+}
+
+function textBesideCaret(
+  el: HTMLElement,
+  side: "before" | "after",
+): string | null {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || !sel.isCollapsed) return null;
+  const caret = sel.getRangeAt(0);
+  if (!el.contains(caret.startContainer) && caret.startContainer !== el) {
+    return null;
+  }
+  const rest = document.createRange();
+  rest.selectNodeContents(el);
+  if (side === "before") rest.setEnd(caret.startContainer, caret.startOffset);
+  else rest.setStart(caret.startContainer, caret.startOffset);
+  return rest.toString();
 }
 
 /** Collapsed caret at the start (or end) of the cell's text. */
 function caretAtEdge(el: HTMLElement, edge: "start" | "end"): boolean {
+  if (isDomEmpty(el)) return true;
+  const rest = textBesideCaret(el, edge === "start" ? "before" : "after");
+  if (rest === null) return false;
+  // Chrome may keep a trailing "\n" in the editable.
+  return rest.replace(/\n/g, "").length === 0;
+}
+
+function rangeBox(range: Range): DOMRect | null {
+  const rects = range.getClientRects();
+  for (const rect of rects) {
+    if (rect.height > 0 || rect.width > 0) return rect;
+  }
+  const box = range.getBoundingClientRect();
+  if (box.height === 0 && box.width === 0) return null;
+  return box;
+}
+
+function contentLineBoxes(el: HTMLElement): DOMRect[] {
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const rects = [...range.getClientRects()].filter((r) => r.height > 0);
+  // Inline spans (initial, notes) split one visual line into extra boxes.
+  const lines: Array<{
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+  }> = [];
+  for (const r of rects) {
+    const current = lines[lines.length - 1];
+    if (current && r.top < current.bottom && current.top < r.bottom) {
+      current.left = Math.min(current.left, r.left);
+      current.right = Math.max(current.right, r.right);
+      current.top = Math.min(current.top, r.top);
+      current.bottom = Math.max(current.bottom, r.bottom);
+    } else {
+      lines.push({
+        left: r.left,
+        top: r.top,
+        right: r.right,
+        bottom: r.bottom,
+      });
+    }
+  }
+  return lines.map(
+    (l) => new DOMRect(l.left, l.top, l.right - l.left, l.bottom - l.top),
+  );
+}
+
+/**
+ * True when ArrowUp / ArrowDown should leave this Block.
+ * Asks Chromium whether a line move stays at the cell's start / end, so a
+ * collapsed caret sitting on the previous line's box is not treated as line 1.
+ */
+function caretOnBoundaryLine(
+  el: HTMLElement,
+  edge: "first" | "last",
+): boolean {
+  if (isDomEmpty(el)) return true;
   const sel = window.getSelection();
   if (!sel || sel.rangeCount === 0 || !sel.isCollapsed) return false;
   const caret = sel.getRangeAt(0);
-  if (!el.contains(caret.startContainer)) return false;
-  if (isDomEmpty(el)) return true;
-  const rest = document.createRange();
-  rest.selectNodeContents(el);
-  if (edge === "start") rest.setEnd(caret.startContainer, caret.startOffset);
-  else rest.setStart(caret.startContainer, caret.startOffset);
-  // Chrome may keep a trailing "\n" in the editable.
-  return rest.toString().replace(/\n/g, "").length === 0;
+  if (!el.contains(caret.startContainer) && caret.startContainer !== el) {
+    return false;
+  }
+  const saved = caret.cloneRange();
+  try {
+    sel.modify(
+      "move",
+      edge === "first" ? "backward" : "forward",
+      "line",
+    );
+    return caretAtEdge(el, edge === "first" ? "start" : "end");
+  } finally {
+    sel.removeAllRanges();
+    sel.addRange(saved);
+  }
+}
+
+function caretClientX(el: HTMLElement): number {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) {
+    const box = rangeBox(sel.getRangeAt(0));
+    if (box) return box.left;
+  }
+  return el.getBoundingClientRect().left;
+}
+
+function placeCaretOnLine(
+  el: HTMLElement,
+  line: "start" | "end",
+  clientX: number,
+): void {
+  if (isDomEmpty(el)) {
+    placeCaretAtStart(el);
+    return;
+  }
+  const lines = contentLineBoxes(el);
+  const box = line === "start" ? lines[0] : lines[lines.length - 1];
+  if (!box) {
+    if (line === "start") placeCaretAtStart(el);
+    else placeCaretAtEnd(el);
+    return;
+  }
+  const x = Math.min(Math.max(clientX, box.left), box.right);
+  if (line === "start" && x <= box.left + 2) {
+    placeCaretAtStart(el);
+    return;
+  }
+  if (line === "end" && x >= box.right - 2) {
+    placeCaretAtEnd(el);
+    return;
+  }
+  placeCaretFromPoint(el, x, box.top + box.height / 2);
 }
 
 /** Place caret from a click; fall back to end when the hit misses text nodes. */
@@ -260,6 +392,8 @@ const EditableBlock = memo(function EditableBlock({
   onCommit,
   onFocusChange,
   onInsertBelow,
+  onSpillToNext,
+  onArrowLeave,
   onJoin,
   liveCommit = false,
 }: {
@@ -280,6 +414,13 @@ const EditableBlock = memo(function EditableBlock({
     before: InlineContent | InlineContent[] | null,
     after: InlineContent | InlineContent[] | null,
   ) => void;
+  /** Ctrl/Cmd+Enter: remainder goes into the next existing Block, same column. */
+  onSpillToNext?: (
+    before: InlineContent | InlineContent[] | null,
+    after: InlineContent | InlineContent[] | null,
+  ) => boolean;
+  /** ArrowUp on the first visual line / ArrowDown on the last: neighbour Block. */
+  onArrowLeave?: (direction: "up" | "down", clientX: number) => boolean;
   /** Backspace at the start / Delete at the end: merge with the neighbour Block. */
   onJoin?: (
     direction: JoinDirection,
@@ -339,11 +480,15 @@ const EditableBlock = memo(function EditableBlock({
     return () => cancelHoverHide();
   }, []);
 
+  const paint = (el: HTMLElement, next: InlineContent | InlineContent[]) => {
+    renderEditable(el, next, lineMode, initialCap);
+  };
+
   const syncFromProps = () => {
     const el = ref.current;
     if (!el) return;
     setUncommitted(false);
-    renderEditable(el, content, lineMode);
+    paint(el, content);
     setDomEmpty(isDomEmpty(el));
   };
 
@@ -354,7 +499,7 @@ const EditableBlock = memo(function EditableBlock({
       return;
     }
     syncFromProps();
-  }, [contentKey(content), lineMode, focused]);
+  }, [contentKey(content), lineMode, initialCap, focused]);
 
   useLayoutEffect(() => {
     syncFromProps();
@@ -479,7 +624,7 @@ const EditableBlock = memo(function EditableBlock({
       const nextLine = toggleNoteRange(line, startMap.local, endMap.local);
       const nextLines = [...lines];
       nextLines[lineIndex] = nextLine;
-      renderEditable(el, nextLines, true);
+      paint(el, nextLines);
       setDomEmpty(isDomEmpty(el));
       onCommit(nextLines.length === 0 ? null : nextLines);
     } else {
@@ -492,7 +637,7 @@ const EditableBlock = memo(function EditableBlock({
           : current
       ) as InlineContent;
       const next = toggleNoteRange(inline, saved.start, saved.end);
-      renderEditable(el, next, false);
+      paint(el, next);
       setDomEmpty(isDomEmpty(el));
       onCommit(plainText(next).length === 0 ? null : next);
     }
@@ -609,6 +754,22 @@ const EditableBlock = memo(function EditableBlock({
             return;
           }
 
+          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+            if (e.nativeEvent.isComposing) return;
+            if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+            if (!onArrowLeave) return;
+            const el = ref.current;
+            if (!el) return;
+            const edge = e.key === "ArrowUp" ? "first" : "last";
+            if (!caretOnBoundaryLine(el, edge)) return;
+            const moved = onArrowLeave(
+              e.key === "ArrowUp" ? "up" : "down",
+              caretClientX(el),
+            );
+            if (moved) e.preventDefault();
+            return;
+          }
+
           if (e.key === "Backspace" || e.key === "Delete") {
             if (e.nativeEvent.isComposing) return;
             if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
@@ -627,7 +788,7 @@ const EditableBlock = memo(function EditableBlock({
               return;
             }
             // This cell survives the merge; show the joined text, caret at the seam.
-            renderEditable(el, outcome.content, lineMode);
+            paint(el, outcome.content);
             setUncommitted(false);
             setDomEmpty(isDomEmpty(el));
             const range = createRangeFromOffsets(el, outcome.caret, outcome.caret);
@@ -650,6 +811,29 @@ const EditableBlock = memo(function EditableBlock({
             return;
           }
 
+          if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+            if (!onSpillToNext) return;
+            e.preventDefault();
+            const content = readContent();
+            const el = ref.current;
+            const offsets = el ? getSelectionOffsets(el) : null;
+            const { before, after } = splitEditorContent(
+              content,
+              offsets?.start ?? Number.POSITIVE_INFINITY,
+              offsets?.end ?? Number.POSITIVE_INFINITY,
+              lineMode,
+            );
+            const spilled = onSpillToNext(before, after);
+            if (!spilled) return;
+            skipBlurCommitRef.current = true;
+            if (el) {
+              paint(el, before ?? (lineMode ? [] : ""));
+              setDomEmpty(isDomEmpty(el));
+              setUncommitted(false);
+            }
+            return;
+          }
+
           if (e.altKey || e.ctrlKey || e.metaKey) return;
           if (!onInsertBelow) return;
 
@@ -667,7 +851,7 @@ const EditableBlock = memo(function EditableBlock({
           // contenteditable keeps the full text while focused; write `before`
           // now so the remainder is not still visible in this block.
           if (el) {
-            renderEditable(el, before ?? (lineMode ? [] : ""), lineMode);
+            paint(el, before ?? (lineMode ? [] : ""));
             setDomEmpty(isDomEmpty(el));
             setUncommitted(false);
           }
@@ -675,7 +859,8 @@ const EditableBlock = memo(function EditableBlock({
         }}
         onInput={() => {
           markDirty();
-          if (ref.current) setDomEmpty(isDomEmpty(ref.current));
+          const el = ref.current;
+          if (el) setDomEmpty(isDomEmpty(el));
           updateToolbar();
           if (!liveCommit) return;
           const serialized = readContent();
@@ -823,12 +1008,23 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         after: InlineContent | InlineContent[] | null,
       ) => void
     >(),
+    spill: new Map<
+      string,
+      (
+        before: InlineContent | InlineContent[] | null,
+        after: InlineContent | InlineContent[] | null,
+      ) => boolean
+    >(),
     join: new Map<
       string,
       (
         direction: JoinDirection,
         current: InlineContent | InlineContent[] | null,
       ) => JoinOutcome
+    >(),
+    arrowLeave: new Map<
+      string,
+      (direction: "up" | "down", clientX: number) => boolean
     >(),
   });
 
@@ -876,6 +1072,17 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
           behavior: "smooth",
           block: "center",
         });
+      } else if (options.scroll === "nearest") {
+        const focusTarget = options.focusCol
+          ? root.querySelector<HTMLElement>(
+              `[data-editor="${CSS.escape(editorKey(blockId, options.focusCol))}"]`,
+            )
+          : null;
+        (focusTarget ?? blockEl).scrollIntoView({
+          behavior: "auto",
+          block: "nearest",
+          inline: "nearest",
+        });
       } else {
         const scroller = blockEl.closest(".workspace-body") as HTMLElement | null;
         if (scroller) {
@@ -901,8 +1108,14 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         if (!editable) return;
         focusedIdRef.current = blockId;
         editable.focus();
-        if (options.caret === "start") placeCaretAtStart(editable);
-        else placeCaretAtEnd(editable);
+        const caret = options.caret;
+        if (caret && typeof caret === "object") {
+          placeCaretOnLine(editable, caret.line, caret.x);
+        } else if (caret === "start") {
+          placeCaretAtStart(editable);
+        } else {
+          placeCaretAtEnd(editable);
+        }
       }
     },
     [],
@@ -971,6 +1184,56 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     return fn;
   };
 
+  const getSpillHandler = (blockId: string, col: ActiveVariant) => {
+    const key = editorKey(blockId, col);
+    let fn = handlersRef.current.spill.get(key);
+    if (!fn) {
+      fn = (before, after) => {
+        const { prayer: p, onChange: change } = ctxRef.current;
+        const index = p.structure.findIndex((b) => b.id === blockId);
+        if (index < 0) return false;
+        const nextBlock = p.structure[index + 1];
+        if (!nextBlock) return false;
+        const updated = moveRemainderToNext(p, index, col, before, after);
+        if (!updated) return false;
+        change(updated);
+        window.setTimeout(
+          () => focusEditorRef.current(nextBlock.id, col, "start"),
+          0,
+        );
+        return true;
+      };
+      handlersRef.current.spill.set(key, fn);
+    }
+    return fn;
+  };
+
+  const getArrowLeaveHandler = (blockId: string, col: ActiveVariant) => {
+    const key = editorKey(blockId, col);
+    let fn = handlersRef.current.arrowLeave.get(key);
+    if (!fn) {
+      fn = (direction, clientX) => {
+        const { prayer: p } = ctxRef.current;
+        const index = p.structure.findIndex((b) => b.id === blockId);
+        if (index < 0) return false;
+        const target = p.structure[direction === "up" ? index - 1 : index + 1];
+        if (!target) return false;
+        revealBlock(target.id, {
+          scroll: "nearest",
+          focusCol: col,
+          flash: false,
+          caret: {
+            x: clientX,
+            line: direction === "up" ? "end" : "start",
+          },
+        });
+        return true;
+      };
+      handlersRef.current.arrowLeave.set(key, fn);
+    }
+    return fn;
+  };
+
   const getJoinHandler = (blockId: string, col: ActiveVariant) => {
     const key = editorKey(blockId, col);
     let fn = handlersRef.current.join.get(key);
@@ -1032,7 +1295,9 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     for (const map of [
       handlersRef.current.commit,
       handlersRef.current.insert,
+      handlersRef.current.spill,
       handlersRef.current.join,
+      handlersRef.current.arrowLeave,
     ]) {
       for (const key of map.keys()) {
         if (!live.has(key)) map.delete(key);
@@ -1380,6 +1645,8 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                         onFocusChange={handleFocusChange}
                         onCommit={getCommitHandler(block.id, col)}
                         onInsertBelow={getInsertHandler(block.id, col)}
+                        onSpillToNext={getSpillHandler(block.id, col)}
+                        onArrowLeave={getArrowLeaveHandler(block.id, col)}
                         onJoin={getJoinHandler(block.id, col)}
                       />
                     </div>

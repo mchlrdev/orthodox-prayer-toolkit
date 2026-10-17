@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Prayer } from "@orthodox-prayer-toolkit/core";
 import { patchCatalogPrayer, type LibraryCatalog } from "../src/catalog";
 import {
+  applyCatalogChunk,
   editDraft,
   emptySessionState,
   putPrayerFromText,
@@ -10,6 +11,7 @@ import {
 } from "../src/session/operations";
 import {
   applyDiskChange,
+  applyReloadedDrafts,
   keepLocalVersion,
   takeDiskVersion,
 } from "../src/session/diskSync";
@@ -188,5 +190,34 @@ describe("disk changes", () => {
     const next = takeDiskVersion(s, "a.json", text);
     expect(draftOf(next).dirty).toBe(false);
     expect(draftOf(next).diskText).toBe(text);
+  });
+
+  it("catalog rescan keeps the open draft until disk text is applied", () => {
+    const s = opened();
+    const external = prayerFileText(prayerAt("a", "external"));
+    const rescanned = applyCatalogChunk(s, s.catalog!, { replace: true }).state;
+    expect(draftOf(rescanned).prayer.structure[0]!.translations[0]!.text).toBe(
+      "one",
+    );
+
+    const next = applyReloadedDrafts(rescanned, [
+      { path: "a.json", text: external },
+    ]).state;
+    expect(draftOf(next).prayer.structure[0]!.translations[0]!.text).toBe(
+      "external",
+    );
+    expect(draftOf(next).dirty).toBe(false);
+  });
+
+  it("reloading drafts flags a conflict instead of dropping unsaved edits", () => {
+    let s = opened();
+    s = editDraft(s, withText(draftOf(s).prayer, "mine"), { now: 0 }).state;
+    const next = applyReloadedDrafts(s, [
+      { path: "a.json", text: prayerFileText(prayerAt("a", "theirs")) },
+    ]).state;
+    expect(draftOf(next).diskConflict).toBe("changed");
+    expect(draftOf(next).prayer.structure[0]!.translations[0]!.text).toBe(
+      "mine",
+    );
   });
 });

@@ -325,8 +325,6 @@ export function PrayerList({
       ) : (
         <ScrollArea
           className="prayer-list-scroll"
-          type="hover"
-          scrollbarSize={6}
           onContextMenu={(e) => {
             if (e.defaultPrevented) return;
             contextMenu.open(e, libraryItems());

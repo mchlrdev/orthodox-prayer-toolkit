@@ -108,6 +108,12 @@ export const theme = createTheme({
         overlayProps: { backgroundOpacity: 0.45, blur: 8 },
       },
     },
+    ScrollArea: {
+      defaultProps: {
+        type: "hover",
+        scrollbarSize: 6,
+      },
+    },
     Tabs: {
       defaultProps: {
         color: "accent",

@@ -22,8 +22,11 @@ import {
 } from "./layoutModel.js";
 import type { Prayer } from "./types.js";
 
-/** Preferred grid for two equal columns (DXA). Word scales with 100% table width. */
+/** Preferred grid (DXA). Word scales with 100% table width. */
 const PARALLEL_COLUMN_DXA = 4680;
+/** Narrow empty middle column when `gutterColumn` is on (~0.5 in). */
+const PARALLEL_GUTTER_DXA = 720;
+const PARALLEL_SIDE_WITH_GUTTER_DXA = 4320;
 
 function runsToDocxChildren(
   lines: LayoutRun[][],
@@ -113,24 +116,40 @@ function pairCell(
   });
 }
 
-function buildPairDocument(story: LayoutPairStory): Document {
+function emptyGutterCell(): TableCell {
+  return new TableCell({
+    children: [new Paragraph({})],
+  });
+}
+
+function buildPairDocument(
+  story: LayoutPairStory,
+  gutterColumn: boolean,
+): Document {
   const styleNames = story.rows.flatMap((row) => [
     row.left.styleName,
     row.right.styleName,
   ]);
 
+  const columnWidths = gutterColumn
+    ? [
+        PARALLEL_SIDE_WITH_GUTTER_DXA,
+        PARALLEL_GUTTER_DXA,
+        PARALLEL_SIDE_WITH_GUTTER_DXA,
+      ]
+    : [PARALLEL_COLUMN_DXA, PARALLEL_COLUMN_DXA];
+
   const table = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
-    columnWidths: [PARALLEL_COLUMN_DXA, PARALLEL_COLUMN_DXA],
-    rows: story.rows.map(
-      (row) =>
-        new TableRow({
-          children: [
-            pairCell(row.left, story.noteStyleName),
-            pairCell(row.right, story.noteStyleName),
-          ],
-        }),
-    ),
+    columnWidths,
+    rows: story.rows.map((row) => {
+      const cells = [
+        pairCell(row.left, story.noteStyleName),
+        ...(gutterColumn ? [emptyGutterCell()] : []),
+        pairCell(row.right, story.noteStyleName),
+      ];
+      return new TableRow({ children: cells });
+    }),
   });
 
   return new Document({
@@ -162,7 +181,8 @@ export async function exportLayoutDocx(
 }
 
 /**
- * Word-only two-column table (one structure block per row).
+ * Word-only table (one structure block per row). Optional empty middle
+ * column (`gutterColumn`) so the gap can be dragged in Word.
  * Table chrome is the library default (½ pt grid); cells keep blank named
  * kind styles. Not for Affinity Place — tables do not flow as story text.
  */
@@ -171,7 +191,7 @@ export async function exportLayoutDocxParallel(
   options: ExportLayoutParallelOptions,
 ): Promise<Uint8Array> {
   const story = buildLayoutPairStory(prayer, options);
-  const doc = buildPairDocument(story);
+  const doc = buildPairDocument(story, options.gutterColumn === true);
   const arrayBuffer = await Packer.toArrayBuffer(doc);
   return new Uint8Array(arrayBuffer);
 }

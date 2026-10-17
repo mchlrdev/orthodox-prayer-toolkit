@@ -166,6 +166,10 @@ export function catalogOpenNotices(
   return notices;
 }
 
+/**
+ * Keep dirty drafts and the selected prayer so a catalog rescan does not
+ * blank the editor. Callers re-read those files after the scan.
+ */
 function retainDrafts(
   state: PrayerSessionState,
   catalog: LibraryCatalog,

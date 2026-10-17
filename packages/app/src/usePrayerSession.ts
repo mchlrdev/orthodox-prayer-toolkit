@@ -11,6 +11,7 @@ import { scanLibraryCatalog } from "./catalog";
 import type { LibraryEntry } from "./library";
 import {
   applyDiskChange,
+  applyReloadedDrafts,
   applyKindRename,
   applyCatalogChunk,
   beginCreatePrayer,
@@ -183,6 +184,33 @@ export function usePrayerSession(opts?: {
           setAwaitingCatalog(false);
           emit(notices);
         }
+        if (scanGenRef.current !== gen) return;
+        const catalog = stateRef.current.catalog;
+        const paths = Object.keys(stateRef.current.drafts);
+        if (catalog && paths.length > 0) {
+          const files: { path: string; text: string | null }[] = [];
+          const readNotices: SessionNotice[] = [];
+          for (const path of paths) {
+            try {
+              const text = (await api.exists(catalog.root, path))
+                ? await api.readText(catalog.root, path)
+                : null;
+              files.push({ path, text });
+            } catch (err) {
+              readNotices.push(errorNotice("Could not reload prayer", err));
+            }
+          }
+          if (scanGenRef.current !== gen) return;
+          if (stateRef.current.selectedPath) cancelDraftValidation();
+          const result = applyReloadedDrafts(stateRef.current, files);
+          commit(
+            {
+              ...result,
+              notices: [...readNotices, ...result.notices],
+            },
+            true,
+          );
+        }
       } catch (err) {
         if (scanGenRef.current !== gen) return;
         setAwaitingCatalog(false);
@@ -191,7 +219,7 @@ export function usePrayerSession(opts?: {
         if (scanGenRef.current === gen) setAwaitingCatalog(false);
       }
     },
-    [api, emit, rememberRecent],
+    [api, cancelDraftValidation, commit, emit, rememberRecent],
   );
 
   const selected = selectedDraft(state);

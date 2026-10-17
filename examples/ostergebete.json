@@ -14,7 +14,7 @@
     {
       "lang": "en",
       "variant": "standard",
-      "title": "Trisagion Prayers",
+      "title": "Paschal Prayers",
       "license": "unknown",
       "source": "draft"
     }
@@ -27,7 +27,9 @@
         {
           "lang": "en",
           "variant": "standard",
-          "text": "Trisagion Prayers"
+          "lines": [
+            "Through the prayers of our holy Fathers, Lord Jesus Christ our God, have mercy on us. Amen."
+          ]
         },
         {
           "lang": "de",
@@ -45,7 +47,7 @@
         {
           "lang": "en",
           "variant": "standard",
-          "text": "Glory to the Father, and to the Son, and to the Holy Spirit, both now and ever, and unto the ages of ages. Amen."
+          "text": "Then three times the Paschal Troparion in Tone 5:"
         },
         {
           "lang": "de",
@@ -72,7 +74,10 @@
           "lang": "en",
           "variant": "standard",
           "lines": [
-            "gfhfgh"
+            "Christ is risen from the dead,",
+            "trampling down death by death,",
+            "and upon those in the tombs",
+            "bestowing life."
           ]
         }
       ]
@@ -95,7 +100,10 @@
           "lang": "en",
           "variant": "standard",
           "lines": [
-            "gfhfgh"
+            "Χριστός ανέστη εκ νεκρών,",
+            "θανάτω θάνατον πατήσας,",
+            "και τοις εν τοις μνήμασι,",
+            "ζωὴν χαρισάμενος!"
           ]
         }
       ]
@@ -117,7 +125,9 @@
           "lang": "en",
           "variant": "standard",
           "lines": [
-            "fgh"
+            "Христос воскресе из мертвых,",
+            "смертию смерть поправ,",
+            "и сущим во гробех живот даровав!"
           ]
         }
       ]
@@ -130,6 +140,11 @@
           "lang": "de",
           "variant": "standard",
           "text": "Auferstehungshymnus im 6. Ton"
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "text": "Hymn of the Resurrection in Tone 6"
         }
       ]
     },
@@ -143,6 +158,13 @@
           "lines": [
             "Die Auferstehung Christi haben wir geschaut, / so lasset uns anbeten den heiligen Herrn Jesus, / Den allein sündelosen. / Vor Deinem Kreuze fallen wir nieder, o Christus, / und Deine heilige Auferstehung besingen und verherrlichen wir. / Denn Du bist unser Gott, / außer Dir kennen wir keinen anderen. / Deinen Namen rufen wir an. / Kommt, all ihr Gläubigen, / lasset uns anbeten die heilige Auferstehung Christi. / Denn siehe, durch das Kreuz ist Freude gekommen in die ganze Welt. / Allezeit lobsingen wir dem Herrn / und preisen Seine Auferstehung. / Denn Er hat die  Kreuzigung erlitten // und durch den  Tod den Tod zertreten."
           ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "Having beheld the Resurrection of Christ, / let us worship the holy Lord Jesus, / the only sinless One. / We fall down before Thy Cross, O Christ, / and we hymn and glorify Thy holy Resurrection. / For Thou art our God, / and we know none other besides Thee. / We call upon Thy name. / Come, all ye faithful, / let us worship the holy Resurrection of Christ. / For behold, through the Cross joy has come into all the world. / Ever blessing the Lord, we hymn / and praise His Resurrection. / For He has endured the Cross // and by death has trampled down death."
+          ]
         }
       ]
     },
@@ -154,6 +176,11 @@
           "lang": "de",
           "variant": "standard",
           "text": "Hypakoi im 4. Ton:"
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "text": "Hypakoe in Tone 4:"
         }
       ]
     },
@@ -166,6 +193,13 @@
           "variant": "standard",
           "lines": [
             "Die Frauen um Maria kamen dem Tagesanbruch zuvor, / und fanden den Stein vom Grabe weggewälzt, / da hörten sie von dem Engel: / „Ihn, der in ewigem Lichte ist,/ was sucht ihr Ihn wie einen Menschen bei den Toten? / Schauet die Grabtücher und laufet und verkündet der Welt, / daß erstanden ist der Herr, der getötet den Tod. // Denn Er ist der Sohn Gottes, der da errettet das Menschengeschlecht."
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "The women with Mary came before the dawn, / and found the stone rolled away from the tomb, / and heard from the angel: / “Why do you seek as a mortal among the dead / Him who abides in everlasting light? / Behold the grave-clothes, run and proclaim to the world / that the Lord is risen, who has put death to death. // For He is the Son of God, who saves the human race."
           ]
         }
       ]
@@ -189,6 +223,22 @@
               }
             ]
           ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            [
+              {
+                "t": "note",
+                "v": "Then forty times:"
+              },
+              {
+                "t": "text",
+                "v": " Lord, have mercy!"
+              }
+            ]
+          ]
         }
       ]
     },
@@ -201,6 +251,13 @@
           "variant": "standard",
           "lines": [
             "Auf die Gebete unserer heiligen Väter, Herr Jesus Christus, unser Gott, erbarme Dich unser. Amen."
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "Through the prayers of our holy Fathers, Lord Jesus Christ our God, have mercy on us. Amen."
           ]
         }
       ]

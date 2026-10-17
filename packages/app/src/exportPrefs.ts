@@ -28,11 +28,13 @@ export type ExportPrefs = {
   layoutPrefixStem?: string;
   parallelLeft?: ActiveVariant;
   parallelRight?: ActiveVariant;
+  parallelGutterColumn?: boolean;
 };
 
 /** Fields written on a successful export; merged onto existing prefs. */
 export type ExportPrefsPatch = {
-  includeBlocksWithoutTranslation: boolean;
+  /** Omitted for Word table — that format always skips fully empty rows. */
+  includeBlocksWithoutTranslation?: boolean;
   html?: HtmlExportPrefs;
   layout?: {
     layoutFormat: LayoutFormat;
@@ -41,6 +43,7 @@ export type ExportPrefsPatch = {
   parallel?: {
     left: ActiveVariant;
     right: ActiveVariant;
+    gutterColumn: boolean;
   };
 };
 
@@ -106,6 +109,12 @@ function isPrefs(value: unknown): value is ExportPrefs {
   if (p.parallelRight !== undefined && !isVariantRef(p.parallelRight)) {
     return false;
   }
+  if (
+    p.parallelGutterColumn !== undefined &&
+    typeof p.parallelGutterColumn !== "boolean"
+  ) {
+    return false;
+  }
 
   const hasHtmlKeys =
     p.tagMap !== undefined ||
@@ -120,7 +129,8 @@ function isPrefs(value: unknown): value is ExportPrefs {
     p.layoutFormat !== undefined ||
     p.layoutPrefixStem !== undefined ||
     p.parallelLeft !== undefined ||
-    p.parallelRight !== undefined
+    p.parallelRight !== undefined ||
+    p.parallelGutterColumn !== undefined
   );
 }
 
@@ -185,6 +195,9 @@ function clonePrefs(prefs: ExportPrefs): ExportPrefs {
   if (prefs.parallelRight !== undefined) {
     next.parallelRight = { ...prefs.parallelRight };
   }
+  if (prefs.parallelGutterColumn !== undefined) {
+    next.parallelGutterColumn = prefs.parallelGutterColumn;
+  }
   return next;
 }
 
@@ -198,7 +211,7 @@ export function loadExportPrefs(
 
 /**
  * Merge a successful-export patch into per-prayer prefs.
- * Always writes include-empty; HTML/Layout/Word-table fields only when provided in the patch.
+ * Include-empty, HTML, Layout, and Word-table fields only when provided in the patch.
  */
 export function saveExportPrefs(
   libraryRoot: string,
@@ -208,7 +221,9 @@ export function saveExportPrefs(
   const store = readStore();
   const existing = store[libraryRoot]?.[path] ?? {};
   const next: ExportPrefs = clonePrefs(existing);
-  next.includeBlocksWithoutTranslation = patch.includeBlocksWithoutTranslation;
+  if (patch.includeBlocksWithoutTranslation !== undefined) {
+    next.includeBlocksWithoutTranslation = patch.includeBlocksWithoutTranslation;
+  }
 
   if (patch.html) {
     next.tagMap = { ...patch.html.tagMap };
@@ -225,6 +240,7 @@ export function saveExportPrefs(
   if (patch.parallel) {
     next.parallelLeft = { ...patch.parallel.left };
     next.parallelRight = { ...patch.parallel.right };
+    next.parallelGutterColumn = patch.parallel.gutterColumn;
   }
 
   const byPath = { ...(store[libraryRoot] ?? {}) };
