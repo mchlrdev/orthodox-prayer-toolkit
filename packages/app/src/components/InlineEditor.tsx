@@ -44,6 +44,7 @@ import { getToolkitApi } from "../api";
 import { FLUSH_EDITS_EVENT, shortcutLabel } from "../appCommands";
 import { sameVariant, variantKey, type ActiveVariant } from "../variant";
 import {
+  createRangeFromOffsets,
   getElementOffsets,
   getSelectionOffsets,
   mapOffsetToLine,
@@ -62,6 +63,7 @@ import {
   isBlockEmptyAcrossVariants,
   isTranslationFilled,
   kindOptions,
+  mergeBlocks,
   moveBlock as moveBlockInPrayer,
   removeBlock,
   setBlockKind,
@@ -109,6 +111,14 @@ export type BlockRevealOptions = {
   caret?: "start" | "end";
 };
 
+/** What the parent did on Backspace at a cell's start / Delete at its end. */
+type JoinOutcome =
+  | { kind: "removed" }
+  | { kind: "merged"; content: InlineContent | InlineContent[]; caret: number }
+  | null;
+
+type JoinDirection = "backward" | "forward";
+
 export type InlineEditorHandle = {
   revealBlock: (blockId: string, options: BlockRevealOptions) => void;
 };
@@ -155,6 +165,21 @@ function placeCaretAtStart(el: HTMLElement): void {
   range.collapse(true);
   sel.removeAllRanges();
   sel.addRange(range);
+}
+
+/** Collapsed caret at the start (or end) of the cell's text. */
+function caretAtEdge(el: HTMLElement, edge: "start" | "end"): boolean {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || !sel.isCollapsed) return false;
+  const caret = sel.getRangeAt(0);
+  if (!el.contains(caret.startContainer)) return false;
+  if (isDomEmpty(el)) return true;
+  const rest = document.createRange();
+  rest.selectNodeContents(el);
+  if (edge === "start") rest.setEnd(caret.startContainer, caret.startOffset);
+  else rest.setStart(caret.startContainer, caret.startOffset);
+  // Chrome may keep a trailing "\n" in the editable.
+  return rest.toString().replace(/\n/g, "").length === 0;
 }
 
 /** Place caret from a click; fall back to end when the hit misses text nodes. */
@@ -233,7 +258,7 @@ const EditableBlock = memo(function EditableBlock({
   onCommit,
   onFocusChange,
   onInsertBelow,
-  onDeleteAtStart,
+  onJoin,
   liveCommit = false,
 }: {
   content: InlineContent | InlineContent[];
@@ -252,8 +277,11 @@ const EditableBlock = memo(function EditableBlock({
     before: InlineContent | InlineContent[] | null,
     after: InlineContent | InlineContent[] | null,
   ) => void;
-  /** Backspace in an empty cell — parent decides confirm vs immediate delete. */
-  onDeleteAtStart?: () => void;
+  /** Backspace at the start / Delete at the end: merge with the neighbour Block. */
+  onJoin?: (
+    direction: JoinDirection,
+    current: InlineContent | InlineContent[] | null,
+  ) => JoinOutcome;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const skipBlurCommitRef = useRef(false);
@@ -577,15 +605,33 @@ const EditableBlock = memo(function EditableBlock({
             return;
           }
 
-          if (e.key === "Backspace") {
+          if (e.key === "Backspace" || e.key === "Delete") {
             if (e.nativeEvent.isComposing) return;
-            if (e.altKey || e.ctrlKey || e.metaKey) return;
-            if (!onDeleteAtStart) return;
+            if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
             const el = ref.current;
-            if (!el || !isDomEmpty(el)) return;
+            if (!onJoin || !el) return;
+            const backward = e.key === "Backspace";
+            if (!caretAtEdge(el, backward ? "start" : "end")) return;
+            const outcome = onJoin(
+              backward ? "backward" : "forward",
+              readContent(),
+            );
+            if (!outcome) return;
             e.preventDefault();
-            skipBlurCommitRef.current = true;
-            onDeleteAtStart();
+            if (outcome.kind === "removed") {
+              skipBlurCommitRef.current = true;
+              return;
+            }
+            // This cell survives the merge; show the joined text, caret at the seam.
+            renderEditable(el, outcome.content, lineMode);
+            setUncommitted(false);
+            setDomEmpty(isDomEmpty(el));
+            const range = createRangeFromOffsets(el, outcome.caret, outcome.caret);
+            const sel = window.getSelection();
+            if (range && sel) {
+              sel.removeAllRanges();
+              sel.addRange(range);
+            }
             return;
           }
 
@@ -773,7 +819,13 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         after: InlineContent | InlineContent[] | null,
       ) => void
     >(),
-    delete: new Map<string, () => void>(),
+    join: new Map<
+      string,
+      (
+        direction: JoinDirection,
+        current: InlineContent | InlineContent[] | null,
+      ) => JoinOutcome
+    >(),
   });
 
   const handleFocusChange = useCallback((blockId: string, focused: boolean) => {
@@ -870,46 +922,13 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     [revealBlock],
   );
 
-  const requestDeleteBlock = useCallback(
-    (
-      index: number,
-      options?: { treatAsEmpty?: ActiveVariant; focusCol?: ActiveVariant },
-    ) => {
-      const { prayer: p, visibleVariants: cols, onChange: change } =
-        ctxRef.current;
-      const block = p.structure[index];
-      if (!block) return;
-
-      const empty = isBlockEmptyAcrossVariants(p, block.id, {
-        treatAsEmpty: options?.treatAsEmpty,
-      });
-
-      if (empty && p.structure.length > 1) {
-        const focusCol =
-          options?.focusCol ?? options?.treatAsEmpty ?? cols[0];
-        const prevId = p.structure[index - 1]?.id;
-        const nextId = p.structure[index + 1]?.id;
-        change(removeBlock(p, index));
-        const focusId = prevId ?? nextId;
-        if (focusId && focusCol) {
-          window.setTimeout(() => focusEditor(focusId, focusCol), 0);
-        }
-        return;
-      }
-
-      // Backspace on the sole (empty) block: nothing to remove.
-      if (options?.treatAsEmpty !== undefined) return;
-
-      // No confirm: deleting is one undo step (Cmd/Ctrl+Z).
-      change(removeBlock(p, index));
-    },
-    [focusEditor],
-  );
+  // No confirm: deleting is one undo step (Cmd/Ctrl+Z).
+  const requestDeleteBlock = (index: number) => {
+    onChange(removeBlock(prayer, index));
+  };
 
   const focusEditorRef = useRef(focusEditor);
   focusEditorRef.current = focusEditor;
-  const requestDeleteBlockRef = useRef(requestDeleteBlock);
-  requestDeleteBlockRef.current = requestDeleteBlock;
 
   const getCommitHandler = (blockId: string, col: ActiveVariant) => {
     const key = editorKey(blockId, col);
@@ -948,20 +967,52 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     return fn;
   };
 
-  const getDeleteHandler = (blockId: string, col: ActiveVariant) => {
+  const getJoinHandler = (blockId: string, col: ActiveVariant) => {
     const key = editorKey(blockId, col);
-    let fn = handlersRef.current.delete.get(key);
+    let fn = handlersRef.current.join.get(key);
     if (!fn) {
-      fn = () => {
-        const { prayer: p } = ctxRef.current;
-        const index = p.structure.findIndex((b) => b.id === blockId);
-        if (index < 0) return;
-        requestDeleteBlockRef.current(index, {
-          treatAsEmpty: col,
-          focusCol: col,
-        });
+      fn = (direction, current) => {
+        const { prayer: before, onChange: change } = ctxRef.current;
+        const index = before.structure.findIndex((b) => b.id === blockId);
+        if (index < 0) return null;
+        const backward = direction === "backward";
+        const neighbour = before.structure[backward ? index - 1 : index + 1];
+        const p = applyCommittedContent(before, blockId, col, current);
+
+        // A Block empty in every Variant just goes away.
+        if (isBlockEmptyAcrossVariants(p, blockId)) {
+          // Prefer the Block in the key's direction; caret lands next to the gap.
+          const focusUp = backward ? index > 0 : !neighbour;
+          const focusId = before.structure[focusUp ? index - 1 : index + 1]?.id;
+          if (!focusId) return null;
+          change(removeBlock(p, index));
+          const caret = focusUp ? "end" : "start";
+          window.setTimeout(() => focusEditorRef.current(focusId, col, caret), 0);
+          return { kind: "removed" };
+        }
+
+        if (!neighbour) return null;
+        const merged = mergeBlocks(
+          p,
+          backward ? index - 1 : index,
+          backward ? "lower" : "upper",
+          col,
+        );
+        if (!merged) return null;
+        // Pending typing first, so undo steps back to the two Blocks as typed.
+        if (p !== before) change(p, { coalesceKey: key });
+        change(merged.prayer);
+        const block = merged.prayer.structure.find((b) => b.id === merged.blockId)!;
+        return {
+          kind: "merged",
+          content: translationEditorContent(
+            block.kind,
+            getTranslation(merged.prayer, block.id, col),
+          ),
+          caret: merged.caret,
+        };
       };
-      handlersRef.current.delete.set(key, fn);
+      handlersRef.current.join.set(key, fn);
     }
     return fn;
   };
@@ -977,7 +1028,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     for (const map of [
       handlersRef.current.commit,
       handlersRef.current.insert,
-      handlersRef.current.delete,
+      handlersRef.current.join,
     ]) {
       for (const key of map.keys()) {
         if (!live.has(key)) map.delete(key);
@@ -1320,7 +1371,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                         onFocusChange={handleFocusChange}
                         onCommit={getCommitHandler(block.id, col)}
                         onInsertBelow={getInsertHandler(block.id, col)}
-                        onDeleteAtStart={getDeleteHandler(block.id, col)}
+                        onJoin={getJoinHandler(block.id, col)}
                       />
                     </div>
                   );

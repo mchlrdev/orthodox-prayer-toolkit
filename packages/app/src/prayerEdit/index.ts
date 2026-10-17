@@ -42,3 +42,8 @@ export {
   type OutlineEntry,
   type OutlineKind,
 } from "./outline";
+export {
+  mergeBlocks,
+  type MergeKeep,
+  type MergeResult,
+} from "./mergeBlocks";
