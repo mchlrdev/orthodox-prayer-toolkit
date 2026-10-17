@@ -5,7 +5,9 @@ import { inflateRawSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import {
   FALLBACK_KIND_STYLE,
+  buildLayoutPairStory,
   exportLayoutDocx,
+  exportLayoutDocxParallel,
   exportLayoutRtf,
   validate,
 } from "../src/index.js";
@@ -256,5 +258,77 @@ describe("layout RTL style names", () => {
     });
     expect(rtf).toContain("opt_heading");
     expect(rtf).toContain("opt_verse_rtl");
+  });
+});
+
+describe("buildLayoutPairStory", () => {
+  it("keeps one row per shared block and empty cells for missing translations", () => {
+    const validated = validate(loadJson("parallel-layout-sample.json"));
+    expect(validated.ok).toBe(true);
+    if (!validated.ok) return;
+
+    const story = buildLayoutPairStory(validated.prayer, {
+      columns: [
+        { lang: "de", variant: "standard" },
+        { lang: "en", variant: "standard" },
+      ],
+      prefixStem: "opt",
+    });
+
+    expect(story.rows).toHaveLength(6);
+    expect(story.rows.map((r) => r.kind)).toEqual([
+      "heading",
+      "annotation",
+      "verse",
+      "annotation",
+      "verse",
+      "verse",
+    ]);
+    expect(story.rows[3]?.left.lines.flat().map((r) => r.v).join("")).toContain(
+      "Ehre sei dem Vater",
+    );
+    expect(story.rows[3]?.right.lines).toEqual([[]]);
+    expect(story.rows[5]?.left.lines).toEqual([[]]);
+    expect(story.rows[5]?.right.lines.flat().map((r) => r.v).join("")).toContain(
+      "Our Father",
+    );
+  });
+});
+
+describe("exportLayoutDocxParallel", () => {
+  it("writes a two-column table with kind styles, notes, and soft breaks", async () => {
+    const validated = validate(loadJson("parallel-layout-sample.json"));
+    expect(validated.ok).toBe(true);
+    if (!validated.ok) return;
+
+    const bytes = await exportLayoutDocxParallel(validated.prayer, {
+      columns: [
+        { lang: "de", variant: "standard" },
+        { lang: "en", variant: "standard" },
+      ],
+      prefixStem: "opt",
+    });
+    const files = unzipTexts(bytes);
+    const styles = files["word/styles.xml"] ?? "";
+    const document = files["word/document.xml"] ?? "";
+
+    expect(document).toContain("<w:tbl>");
+    expect(document).toContain("Heiliger Gott");
+    expect(document).toContain("Holy God");
+    expect(document).toContain("Our Father");
+    expect(document).toContain("<w:br/>");
+    expect(document).toContain('w:pStyle w:val="opt_heading"');
+    expect(document).toContain('w:pStyle w:val="opt_verse"');
+    expect(document).toContain('w:rStyle w:val="opt_note"');
+    expect(document).toContain("Dann:");
+    expect(document).toContain("Then:");
+    expect(styles).toContain('w:styleId="opt_heading"');
+    expect(styles).toContain('w:styleId="opt_note"');
+    expect(document).not.toContain("Trisagion Prayers");
+    expect(document).not.toContain("<w:cantSplit/>");
+    expect(document).not.toContain("999999");
+    expect(document).not.toContain('w:top="1134"');
+    expect(document).toContain('w:tblW w:type="pct" w:w="100%"');
+    expect(document).toMatch(/w:val="single"[^>]*w:sz="4"/);
   });
 });

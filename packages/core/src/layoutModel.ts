@@ -1,7 +1,12 @@
 import { toRuns, type InlineContent } from "./textRuns.js";
 import { paragraphStyleName, styleNameWithPrefix } from "./stylePrefix.js";
 import { resolveBlockDir } from "./resolveDir.js";
-import type { Prayer, StyleMap, Translation } from "./types.js";
+import type { Prayer, StyleMap, Translation, VariantMeta } from "./types.js";
+
+export type LayoutColumnRef = {
+  lang: string;
+  variant: string;
+};
 
 export type ExportLayoutOptions = {
   lang: string;
@@ -13,6 +18,14 @@ export type ExportLayoutOptions = {
   prefixStem?: string;
   includeBlocksWithoutTranslation?: boolean;
   /** Resolved kind styles; `dir` on a kind overrides the variant RTL flag. */
+  styles?: StyleMap;
+};
+
+/** Two variants of the same prayer, aligned on the shared structure. */
+export type ExportLayoutParallelOptions = {
+  columns: [LayoutColumnRef, LayoutColumnRef];
+  prefixStem?: string;
+  includeBlocksWithoutTranslation?: boolean;
   styles?: StyleMap;
 };
 
@@ -34,6 +47,61 @@ export type LayoutStory = {
   noteStyleName: string;
   paragraphs: LayoutParagraph[];
 };
+
+/** One structure block, both column texts, so DOCX can keep them in one table row. */
+export type LayoutPairRow = {
+  kind: string;
+  left: LayoutParagraph;
+  right: LayoutParagraph;
+};
+
+export type LayoutPairStory = {
+  noteStyleName: string;
+  rows: LayoutPairRow[];
+};
+
+function requireVariant(
+  prayer: Prayer,
+  lang: string,
+  variant: string,
+): VariantMeta {
+  const meta = prayer.variants.find(
+    (v) => v.lang === lang && v.variant === variant,
+  );
+  if (!meta) {
+    throw new Error(`Variant not found: lang="${lang}" variant="${variant}"`);
+  }
+  return meta;
+}
+
+function translationFor(
+  block: Prayer["structure"][number],
+  lang: string,
+  variant: string,
+): Translation | null {
+  return (
+    block.translations.find((t) => t.lang === lang && t.variant === variant) ??
+    null
+  );
+}
+
+function paragraphForBlock(
+  block: Prayer["structure"][number],
+  meta: VariantMeta,
+  tr: Translation | null,
+  prefixStem: string,
+  styles: StyleMap | undefined,
+): LayoutParagraph {
+  return {
+    kind: block.kind,
+    styleName: paragraphStyleName(
+      prefixStem,
+      block.kind,
+      resolveBlockDir(meta, block.kind, styles),
+    ),
+    lines: linesFromTranslation(tr),
+  };
+}
 
 function runsFromContent(content: InlineContent): LayoutRun[] {
   return toRuns(content).map((r) => ({ t: r.t, v: r.v }));
@@ -61,36 +129,48 @@ export function buildLayoutStory(
   const prefixStem = options.prefixStem ?? "";
   const includeEmpty = options.includeBlocksWithoutTranslation === true;
   const styles = options.styles;
-
-  const meta = prayer.variants.find(
-    (v) => v.lang === lang && v.variant === variant,
-  );
-  if (!meta) {
-    throw new Error(
-      `Variant not found: lang="${lang}" variant="${variant}"`,
-    );
-  }
-
+  const meta = requireVariant(prayer, lang, variant);
   const noteStyleName = styleNameWithPrefix(prefixStem, "note");
   const paragraphs: LayoutParagraph[] = [];
 
   for (const block of prayer.structure) {
-    const tr =
-      block.translations.find(
-        (t) => t.lang === lang && t.variant === variant,
-      ) ?? null;
+    const tr = translationFor(block, lang, variant);
     if (!tr && !includeEmpty) continue;
-
-    paragraphs.push({
-      kind: block.kind,
-      styleName: paragraphStyleName(
-        prefixStem,
-        block.kind,
-        resolveBlockDir(meta, block.kind, styles),
-      ),
-      lines: linesFromTranslation(tr),
-    });
+    paragraphs.push(paragraphForBlock(block, meta, tr, prefixStem, styles));
   }
 
   return { noteStyleName, paragraphs };
+}
+
+/**
+ * Align two variants on the shared block skeleton.
+ * A row is kept when either column has a translation (or when empty blocks
+ * are requested). Missing text becomes an empty styled paragraph so Word
+ * table rows stay paired.
+ */
+export function buildLayoutPairStory(
+  prayer: Prayer,
+  options: ExportLayoutParallelOptions,
+): LayoutPairStory {
+  const [leftRef, rightRef] = options.columns;
+  const prefixStem = options.prefixStem ?? "";
+  const includeEmpty = options.includeBlocksWithoutTranslation === true;
+  const styles = options.styles;
+  const leftMeta = requireVariant(prayer, leftRef.lang, leftRef.variant);
+  const rightMeta = requireVariant(prayer, rightRef.lang, rightRef.variant);
+  const noteStyleName = styleNameWithPrefix(prefixStem, "note");
+  const rows: LayoutPairRow[] = [];
+
+  for (const block of prayer.structure) {
+    const leftTr = translationFor(block, leftRef.lang, leftRef.variant);
+    const rightTr = translationFor(block, rightRef.lang, rightRef.variant);
+    if (!leftTr && !rightTr && !includeEmpty) continue;
+    rows.push({
+      kind: block.kind,
+      left: paragraphForBlock(block, leftMeta, leftTr, prefixStem, styles),
+      right: paragraphForBlock(block, rightMeta, rightTr, prefixStem, styles),
+    });
+  }
+
+  return { noteStyleName, rows };
 }

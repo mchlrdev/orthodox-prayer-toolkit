@@ -233,4 +233,30 @@ describe("exportPrayerVariant", () => {
     expect((content as Uint8Array)[0]).toBe(0x50);
     expect((content as Uint8Array)[1]).toBe(0x4b);
   });
+
+  it("saves a two-column Word table with left/right order in the filename", async () => {
+    const saveExport = vi.fn(async () => "/tmp/morning.de.standard.cu.synodal-cyrl.docx");
+    const api = fakeApi({ saveExport });
+
+    await exportPrayerVariant(
+      api,
+      samplePrayer(),
+      { lang: "de", variant: "standard" },
+      "docx-parallel",
+      {
+        parallel: {
+          columns: [
+            { lang: "de", variant: "standard" },
+            { lang: "cu", variant: "synodal-cyrl" },
+          ],
+          prefixStem: "opt",
+        },
+      },
+    );
+
+    const [name, content] = saveExport.mock.calls[0]!;
+    expect(name).toBe("morning.de.standard.cu.synodal-cyrl.docx");
+    expect(content).toBeInstanceOf(Uint8Array);
+    expect((content as Uint8Array)[0]).toBe(0x50);
+  });
 });

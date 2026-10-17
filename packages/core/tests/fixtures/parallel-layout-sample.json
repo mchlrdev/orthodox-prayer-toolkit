@@ -1,0 +1,129 @@
+{
+  "id": "parallel-sample",
+  "type": "prayer",
+  "book": "horologion",
+  "occasion": "morning",
+  "tone": 5,
+  "variants": [
+    {
+      "lang": "de",
+      "variant": "standard",
+      "title": "Trisagion",
+      "license": "CC0",
+      "source": "test fixture"
+    },
+    {
+      "lang": "en",
+      "variant": "standard",
+      "title": "Trisagion Prayers",
+      "license": "CC0",
+      "source": "test fixture"
+    }
+  ],
+  "structure": [
+    {
+      "id": "h1",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Trisagion"
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "text": "Trisagion"
+        }
+      ]
+    },
+    {
+      "id": "a1",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Dreimal:"
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "text": "Thrice:"
+        }
+      ]
+    },
+    {
+      "id": "v1",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Heiliger Gott, heiliger Starker,",
+            "heiliger Unsterblicher,",
+            "erbarme dich unser."
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "Holy God, Holy Mighty, Holy Immortal, have mercy on us."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Ehre sei dem Vater und dem Sohn und dem Heiligen Geist, jetzt und immerdar und in die Ewigkeit der Ewigkeiten. Amen."
+        }
+      ]
+    },
+    {
+      "id": "v2",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            [
+              { "t": "note", "v": "Dann:" },
+              { "t": "text", "v": " Allerheiligste Dreifaltigkeit, erbarme dich unser." }
+            ]
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            [
+              { "t": "note", "v": "Then:" },
+              { "t": "text", "v": " All-holy Trinity, have mercy on us." }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "v3",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "Our Father, who art in heaven, hallowed be Thy name."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -55,10 +55,23 @@ export { exportHtml } from "./exportHtml.js";
 export type { ExportHtmlOptions } from "./exportHtml.js";
 
 export { exportLayoutRtf } from "./exportLayoutRtf.js";
-export { exportLayoutDocx } from "./exportLayoutDocx.js";
-export type { ExportLayoutOptions } from "./layoutModel.js";
-export { buildLayoutStory } from "./layoutModel.js";
-export type { LayoutParagraph, LayoutRun, LayoutStory } from "./layoutModel.js";
+export {
+  exportLayoutDocx,
+  exportLayoutDocxParallel,
+} from "./exportLayoutDocx.js";
+export type {
+  ExportLayoutOptions,
+  ExportLayoutParallelOptions,
+  LayoutColumnRef,
+} from "./layoutModel.js";
+export { buildLayoutStory, buildLayoutPairStory } from "./layoutModel.js";
+export type {
+  LayoutPairRow,
+  LayoutPairStory,
+  LayoutParagraph,
+  LayoutRun,
+  LayoutStory,
+} from "./layoutModel.js";
 
 export {
   HTML_TAG_ALLOWLIST,

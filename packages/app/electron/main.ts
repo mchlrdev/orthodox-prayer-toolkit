@@ -402,7 +402,7 @@ function registerIpc(): void {
         : isRtf
           ? "Export Layout RTF"
           : isDocx
-            ? "Export Layout DOCX"
+            ? "Export Word Document"
             : lower.endsWith(".flat.json")
               ? "Export flat variant JSON"
               : "Export prayer JSON";

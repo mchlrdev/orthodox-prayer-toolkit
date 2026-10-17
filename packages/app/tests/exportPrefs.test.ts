@@ -148,4 +148,40 @@ describe("exportPrefs", () => {
       layoutPrefixStem: "lit",
     });
   });
+
+  it("saves Word table column order without clobbering HTML fields", () => {
+    saveExportPrefs("/lib", "a.json", {
+      includeBlocksWithoutTranslation: false,
+      html: {
+        tagMap: { verse: "p" },
+        wrapperEnabled: false,
+        wrapperTag: "article",
+        wrapperAttributes: "",
+      },
+    });
+
+    saveExportPrefs("/lib", "a.json", {
+      includeBlocksWithoutTranslation: false,
+      layout: {
+        layoutFormat: "docx",
+        layoutPrefixStem: "opt",
+      },
+      parallel: {
+        left: { lang: "de", variant: "standard" },
+        right: { lang: "en", variant: "standard" },
+      },
+    });
+
+    expect(loadExportPrefs("/lib", "a.json")).toEqual({
+      includeBlocksWithoutTranslation: false,
+      tagMap: { verse: "p" },
+      wrapperEnabled: false,
+      wrapperTag: "article",
+      wrapperAttributes: "",
+      layoutFormat: "docx",
+      layoutPrefixStem: "opt",
+      parallelLeft: { lang: "de", variant: "standard" },
+      parallelRight: { lang: "en", variant: "standard" },
+    });
+  });
 });

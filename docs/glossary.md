@@ -15,6 +15,7 @@ Shared domain language for humans and agents. Prefer these terms in UI, docs, an
 | **Kind style** | Visual tokens for a block kind (`fontSize`, `color`, `fontWeight`, `fontStyle`, optional `textAlign` / `initialCap` / `indicate` / `htmlTag` / `dir`). Built-in defaults plus the open library’s `styles.json`. | CSS theme, stylesheet |
 | **Kind rename** | Renaming a block kind updates every prayer in the open Library that uses it (and the library style map). Confirm when more than one prayer is affected. | refactor kind, retag |
 | **Flat export** | Single-variant derived document from `exportVariant`. | “compile”, “render” |
+| **Word table export** | Two-variant DOCX as a default Word table (one structure block per row). Word only; not Affinity Place. | newspaper columns, bilingual layout |
 | **Structure (model A)** | Shared block skeleton; texts hang off per-variant translations on each block. | parallel files per language |
 
 ## Related

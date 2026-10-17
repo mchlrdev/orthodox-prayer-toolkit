@@ -11,7 +11,7 @@ A **standalone open-source toolkit** for liturgical prayer texts:
 1. Prayers as **self-contained JSON** (one file = one prayer)
 2. **Multiple translations** per prayer (language **and** edition/script variant)
 3. **Local-first editor** (Electron; browser-first for development): open a library folder, edit, switch variants, save
-4. **Exports** for downstream use: flat single-variant JSON, HTML, layout RTF/DOCX
+4. **Exports** for downstream use: flat single-variant JSON, HTML, layout RTF/DOCX, Word table (two variants)
 5. Optional further bridges (e.g. Affinity-oriented workflows) without baking layout into the source
 
 **Content ≠ design:** JSON holds semantics (`kind`, structure, texts). Presentation (preview, web, print) lives in styles and exporters.
@@ -97,7 +97,7 @@ Shipped and intended behaviour includes:
 - Right-click menus on prayer rows, the prayer list and blocks
 - The open library folder is watched: unchanged prayers reload from disk, prayers with unsaved edits show "Changed on disk" / "Deleted on disk"
 - Preview with kind styles (library `styles.json` over built-in defaults)
-- Export: flat JSON, HTML, layout RTF/DOCX
+- Export: flat JSON, HTML, layout RTF/DOCX, Word table (two variants, Word only)
 - Optional manifest; id collision detection; kind rename across library with confirm
 - Auto-update against GitHub Releases ([RELEASE.md](RELEASE.md)); downloads in the background, and "Install and Restart" asks to save or discard unsaved prayers first
 

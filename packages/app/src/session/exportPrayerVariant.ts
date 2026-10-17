@@ -1,6 +1,7 @@
 import {
   exportHtml,
   exportLayoutDocx,
+  exportLayoutDocxParallel,
   exportLayoutRtf,
   exportVariant,
   parseHtmlAttributes,
@@ -11,7 +12,7 @@ import type { PrayerToolkitApi } from "../../electron/preload";
 import type { LayoutFormat } from "../exportPrefs";
 import type { ActiveVariant } from "../variant";
 
-export type ExportFormat = "flat-json" | "html" | "layout";
+export type ExportFormat = "flat-json" | "html" | "layout" | "docx-parallel";
 
 export type HtmlExportRequest = {
   tagMap: Record<string, string>;
@@ -27,14 +28,21 @@ export type LayoutExportRequest = {
   prefixStem: string;
 };
 
+export type ParallelExportRequest = {
+  columns: [ActiveVariant, ActiveVariant];
+  /** Empty string → bare kind / note style names. */
+  prefixStem: string;
+};
+
 export type ExportOptions = {
   includeBlocksWithoutTranslation?: boolean;
   styles?: StyleMap;
   html?: HtmlExportRequest;
   layout?: LayoutExportRequest;
+  parallel?: ParallelExportRequest;
 };
 
-/** Flat-JSON, HTML, or Layout export for one language/variant via the save dialog. */
+/** Flat-JSON, HTML, Layout, or two-column Word table export via the save dialog. */
 export async function exportPrayerVariant(
   api: PrayerToolkitApi,
   prayer: Prayer,
@@ -69,6 +77,25 @@ export async function exportPrayerVariant(
         : { enabled: false },
     });
     const name = `${prayer.id}.${variant.lang}.${variant.variant}.html`;
+    return api.saveExport(name, content);
+  }
+
+  if (format === "docx-parallel") {
+    const parallel = options.parallel;
+    if (!parallel) {
+      throw new Error("Word table export settings are required");
+    }
+    const [left, right] = parallel.columns;
+    const content = await exportLayoutDocxParallel(prayer, {
+      columns: [
+        { lang: left.lang, variant: left.variant },
+        { lang: right.lang, variant: right.variant },
+      ],
+      prefixStem: parallel.prefixStem,
+      includeBlocksWithoutTranslation,
+      styles: options.styles,
+    });
+    const name = `${prayer.id}.${left.lang}.${left.variant}.${right.lang}.${right.variant}.docx`;
     return api.saveExport(name, content);
   }
 

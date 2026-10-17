@@ -84,6 +84,20 @@ const docx = await exportLayoutDocx(prayer, {
 
 Shared intermediate: `buildLayoutStory(...)`. Style name prefix defaults to `opt` (`DEFAULT_STYLE_PREFIX_STEM`).
 
+Word-only two-column DOCX (`exportLayoutDocxParallel`) uses a **table** — one structure block per row, column order as given — so corresponding verses stay aligned. The table uses Word’s default grid (no custom borders, margins, or page setup). Cells still get blank named kind styles. This path is **not** for Affinity Place: tables do not flow as story text across pages.
+
+```ts
+import { exportLayoutDocxParallel } from "@orthodox-prayer-toolkit/core";
+
+const docx = await exportLayoutDocxParallel(prayer, {
+  columns: [
+    { lang: "de", variant: "standard" },
+    { lang: "en", variant: "standard" },
+  ],
+  prefixStem: stem,
+});
+```
+
 See also [Affinity bridge](affinity-bridge.md).
 
 ## Kinds & variants across a library

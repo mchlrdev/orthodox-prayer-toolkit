@@ -569,6 +569,7 @@ export function App() {
           resolvedStyles={resolvedStyles}
           libraryManifest={library.manifest}
           libraryDefault={library.manifest?.defaultVariant}
+          visibleVariants={visibleVariants}
           busy={busy}
           onExport={(payload) =>
             session.exportEntry(
@@ -592,6 +593,7 @@ export function App() {
                 styles: resolvedStyles,
                 html: payload.html,
                 layout: payload.layout,
+                parallel: payload.parallel,
               },
             )
           }

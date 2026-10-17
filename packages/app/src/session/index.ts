@@ -10,12 +10,13 @@ export type {
 } from "./types";
 export { parseAppStyles } from "./parseAppStyles";
 export { pickDefaultVariant, resolveVisibleVariants } from "./visibleVariants";
-export { pickExportVariant } from "./exportPick";
+export { pickExportVariant, pickExportParallelColumns } from "./exportPick";
 export { exportPrayerVariant } from "./exportPrayerVariant";
 export type {
   ExportFormat,
   HtmlExportRequest,
   LayoutExportRequest,
+  ParallelExportRequest,
   ExportOptions,
 } from "./exportPrayerVariant";
 export { resolveExportPrefixStem } from "./layoutPrefix";
@@ -85,4 +86,9 @@ export {
   undoDraft,
 } from "./operations";
 export type { EditOptions } from "./operations";
-export { applyDiskChange, keepLocalVersion, takeDiskVersion } from "./diskSync";
+export {
+  applyDiskChange,
+  applyReloadedDrafts,
+  keepLocalVersion,
+  takeDiskVersion,
+} from "./diskSync";

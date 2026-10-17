@@ -76,6 +76,7 @@ Validate / sanitize via Core `validateStyles` / `sanitizeStyles` / `resolveStyle
 - Renaming `id` renames the file; if the target exists, save is blocked.
 - Deleting a prayer removes its file and patches the Library catalog (no full rescan).
 - **Export prayer JSON** (right-click a sidebar row) writes the complete `{id}.json` source file via a save dialog. Unsaved draft changes are included.
+- The editor **Export** dialog can write a two-column **Word table** (order of two variants). That file is for Microsoft Word; Affinity Place cannot flow tables as story text.
 - **Import prayer JSON** (library menu) copies a picked `.json` into the library root as `{id}.json`. The file is not rewritten. Existing ids/filenames are not overwritten.
 
 ## External changes (editor)
@@ -84,6 +85,7 @@ Validate / sanitize via Core `validateStyles` / `sanitizeStyles` / `resolveStyle
 - A prayer without unsaved edits reloads from disk; new files appear in the list, deleted ones disappear.
 - A prayer with unsaved edits keeps them and shows **Changed on disk** or **Deleted on disk**: keep your version (the next save overwrites or recreates the file) or load the disk version.
 - Changes to `manifest.json` or `.orthodox-prayer-toolkit/styles.json` rescan the library.
+- **Refresh** (library menu) rescans the catalog and reloads the open prayer from disk. Unsaved prayers are prompted first (save all, discard all, or cancel). Browser preview has no folder watcher, so use Refresh after external edits.
 
 ## Dev sample
 

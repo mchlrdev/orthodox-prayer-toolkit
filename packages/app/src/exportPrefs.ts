@@ -2,6 +2,7 @@ import {
   isAllowedHtmlTag,
   isAllowedWrapperTag,
 } from "@orthodox-prayer-toolkit/core";
+import type { ActiveVariant } from "./variant";
 
 const STORAGE_KEY = "orthodox-prayer-toolkit.export-prefs";
 
@@ -25,6 +26,8 @@ export type ExportPrefs = {
   layoutFormat?: LayoutFormat;
   /** Empty string means bare kind names (no prefix). */
   layoutPrefixStem?: string;
+  parallelLeft?: ActiveVariant;
+  parallelRight?: ActiveVariant;
 };
 
 /** Fields written on a successful export; merged onto existing prefs. */
@@ -34,6 +37,10 @@ export type ExportPrefsPatch = {
   layout?: {
     layoutFormat: LayoutFormat;
     layoutPrefixStem: string;
+  };
+  parallel?: {
+    left: ActiveVariant;
+    right: ActiveVariant;
   };
 };
 
@@ -63,6 +70,17 @@ function isLayoutFormat(value: unknown): value is LayoutFormat {
   return value === "docx" || value === "rtf";
 }
 
+function isVariantRef(value: unknown): value is ActiveVariant {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.lang === "string" &&
+    v.lang.length > 0 &&
+    typeof v.variant === "string" &&
+    v.variant.length > 0
+  );
+}
+
 function isPrefs(value: unknown): value is ExportPrefs {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const p = value as Record<string, unknown>;
@@ -82,6 +100,12 @@ function isPrefs(value: unknown): value is ExportPrefs {
   ) {
     return false;
   }
+  if (p.parallelLeft !== undefined && !isVariantRef(p.parallelLeft)) {
+    return false;
+  }
+  if (p.parallelRight !== undefined && !isVariantRef(p.parallelRight)) {
+    return false;
+  }
 
   const hasHtmlKeys =
     p.tagMap !== undefined ||
@@ -94,7 +118,9 @@ function isPrefs(value: unknown): value is ExportPrefs {
     p.includeBlocksWithoutTranslation !== undefined ||
     hasHtmlKeys ||
     p.layoutFormat !== undefined ||
-    p.layoutPrefixStem !== undefined
+    p.layoutPrefixStem !== undefined ||
+    p.parallelLeft !== undefined ||
+    p.parallelRight !== undefined
   );
 }
 
@@ -153,6 +179,12 @@ function clonePrefs(prefs: ExportPrefs): ExportPrefs {
   if (prefs.layoutPrefixStem !== undefined) {
     next.layoutPrefixStem = prefs.layoutPrefixStem;
   }
+  if (prefs.parallelLeft !== undefined) {
+    next.parallelLeft = { ...prefs.parallelLeft };
+  }
+  if (prefs.parallelRight !== undefined) {
+    next.parallelRight = { ...prefs.parallelRight };
+  }
   return next;
 }
 
@@ -166,7 +198,7 @@ export function loadExportPrefs(
 
 /**
  * Merge a successful-export patch into per-prayer prefs.
- * Always writes include-empty; HTML/Layout fields only when provided in the patch.
+ * Always writes include-empty; HTML/Layout/Word-table fields only when provided in the patch.
  */
 export function saveExportPrefs(
   libraryRoot: string,
@@ -188,6 +220,11 @@ export function saveExportPrefs(
   if (patch.layout) {
     next.layoutFormat = patch.layout.layoutFormat;
     next.layoutPrefixStem = patch.layout.layoutPrefixStem;
+  }
+
+  if (patch.parallel) {
+    next.parallelLeft = { ...patch.parallel.left };
+    next.parallelRight = { ...patch.parallel.right };
   }
 
   const byPath = { ...(store[libraryRoot] ?? {}) };

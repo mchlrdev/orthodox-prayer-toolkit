@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { IconArrowsLeftRight } from "@tabler/icons-react";
 import {
+  ActionIcon,
   Button,
   Checkbox,
   Group,
@@ -10,6 +12,7 @@ import {
   Text,
   Textarea,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
 import {
   HTML_TAG_ALLOWLIST,
@@ -23,12 +26,16 @@ import {
   type Prayer,
   type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
-import { pickExportVariant } from "../session/exportPick";
+import {
+  pickExportParallelColumns,
+  pickExportVariant,
+} from "../session/exportPick";
 import { resolveExportPrefixStem } from "../session/layoutPrefix";
 import type {
   ExportFormat,
   HtmlExportRequest,
   LayoutExportRequest,
+  ParallelExportRequest,
 } from "../session/exportPrayerVariant";
 import {
   loadExportPrefs,
@@ -38,6 +45,7 @@ import {
 } from "../exportPrefs";
 import {
   parseVariantKey,
+  sameVariant,
   variantKey,
   variantLabel,
   type ActiveVariant,
@@ -51,6 +59,7 @@ export type ExportPayload = {
   includeBlocksWithoutTranslation: boolean;
   html?: HtmlExportRequest;
   layout?: LayoutExportRequest;
+  parallel?: ParallelExportRequest;
 };
 
 type Props = {
@@ -64,6 +73,8 @@ type Props = {
   libraryManifest?: LibraryManifest | null;
   /** Library default language from manifest settings. */
   libraryDefault?: ActiveVariant;
+  /** Visible editor columns; prefills Word table left/right when two are shown. */
+  visibleVariants?: ActiveVariant[];
   busy?: boolean;
   /** Return the saved path, `null` if cancelled, or `false` on failure. */
   onExport: (
@@ -97,10 +108,13 @@ export function ExportModal({
   resolvedStyles,
   libraryManifest,
   libraryDefault,
+  visibleVariants = [],
   busy = false,
   onExport,
 }: Props) {
   const [variantKeyValue, setVariantKeyValue] = useState("");
+  const [leftKey, setLeftKey] = useState("");
+  const [rightKey, setRightKey] = useState("");
   const [format, setFormat] = useState<ExportFormat>("flat-json");
   const [exporting, setExporting] = useState(false);
   const [includeBlocksWithoutTranslation, setIncludeBlocksWithoutTranslation] =
@@ -123,6 +137,17 @@ export function ExportModal({
     setFormat("flat-json");
 
     const saved = loadExportPrefs(libraryRoot, prayerPath);
+    const savedPair =
+      saved?.parallelLeft && saved?.parallelRight
+        ? { left: saved.parallelLeft, right: saved.parallelRight }
+        : null;
+    const pair = pickExportParallelColumns(prayer, {
+      libraryDefault,
+      visible: visibleVariants,
+      saved: savedPair,
+    });
+    setLeftKey(pair ? variantKey(pair[0]) : "");
+    setRightKey(pair ? variantKey(pair[1]) : "");
     const defaults = defaultHtmlPrefs(resolvedStyles);
     setIncludeBlocksWithoutTranslation(
       saved?.includeBlocksWithoutTranslation ?? false,
@@ -167,6 +192,8 @@ export function ExportModal({
   );
 
   const selected = parseVariantKey(variantKeyValue);
+  const left = parseVariantKey(leftKey);
+  const right = parseVariantKey(rightKey);
   const stemValid = isValidStylePrefixStem(prefixStem);
   const htmlReady =
     format !== "html" ||
@@ -175,12 +202,44 @@ export function ExportModal({
       HTML_WRAPPER_TAG_ALLOWLIST.includes(
         wrapperTag as (typeof HTML_WRAPPER_TAG_ALLOWLIST)[number],
       ));
-  const layoutReady = format !== "layout" || stemValid;
+  const usesPrefix = format === "layout" || format === "docx-parallel";
+  const layoutReady = !usesPrefix || stemValid;
+  const parallelReady =
+    format !== "docx-parallel" ||
+    (!!left &&
+      !!right &&
+      !sameVariant(left, right) &&
+      selectData.length >= 2);
   const canExport =
-    Boolean(selected) &&
-    selectData.length > 0 &&
-    htmlReady &&
-    layoutReady;
+    format === "docx-parallel"
+      ? parallelReady && layoutReady
+      : Boolean(selected) &&
+        selectData.length > 0 &&
+        htmlReady &&
+        layoutReady;
+
+  const applyColumnChange = (
+    side: "left" | "right",
+    nextKey: string,
+  ) => {
+    const next = parseVariantKey(nextKey);
+    if (side === "left") {
+      if (next && right && sameVariant(next, right)) {
+        setRightKey(leftKey);
+      }
+      setLeftKey(nextKey);
+      return;
+    }
+    if (next && left && sameVariant(next, left)) {
+      setLeftKey(rightKey);
+    }
+    setRightKey(nextKey);
+  };
+
+  const swapColumns = () => {
+    setLeftKey(rightKey);
+    setRightKey(leftKey);
+  };
 
   const resetTagMap = () => {
     setTagMap(tagMapFromStyles(resolvedStyles));
@@ -191,7 +250,11 @@ export function ExportModal({
   };
 
   const handleExport = async () => {
-    if (!selected || !htmlReady || !layoutReady) return;
+    if (format === "docx-parallel") {
+      if (!left || !right || !parallelReady || !layoutReady) return;
+    } else if (!selected || !htmlReady || !layoutReady) {
+      return;
+    }
     setExporting(true);
     try {
       const html: HtmlExportRequest | undefined =
@@ -212,12 +275,22 @@ export function ExportModal({
             }
           : undefined;
 
+      const parallel: ParallelExportRequest | undefined =
+        format === "docx-parallel" && left && right
+          ? {
+              columns: [left, right],
+              prefixStem,
+            }
+          : undefined;
+
+      const variant = format === "docx-parallel" ? left! : selected!;
       const savedPath = await onExport({
-        variant: selected,
+        variant,
         format,
         includeBlocksWithoutTranslation,
         html,
         layout,
+        parallel,
       });
 
       if (savedPath) {
@@ -238,6 +311,15 @@ export function ExportModal({
                   layoutFormat: layout.layoutFormat,
                   layoutPrefixStem: layout.prefixStem,
                 }
+              : format === "docx-parallel"
+                ? {
+                    layoutFormat: "docx",
+                    layoutPrefixStem: prefixStem,
+                  }
+                : undefined,
+          parallel:
+            format === "docx-parallel" && left && right
+              ? { left, right }
               : undefined,
         });
       }
@@ -250,6 +332,36 @@ export function ExportModal({
     }
   };
 
+  const prefixField = (
+    <Group align="flex-end" gap="xs" wrap="nowrap">
+      <TextInput
+        style={{ flex: 1 }}
+        label="Style prefix"
+        value={prefixStem}
+        onChange={(e) => setPrefixStem(e.currentTarget.value)}
+        rightSection={
+          <Text size="sm" c="dimmed" pr="xs">
+            _
+          </Text>
+        }
+        rightSectionPointerEvents="none"
+        error={
+          stemValid
+            ? undefined
+            : "Use letters/digits only, starting with a letter — or leave empty"
+        }
+      />
+      <Button
+        variant="subtle"
+        size="compact-sm"
+        mb={stemValid ? 0 : 22}
+        onClick={resetPrefixStem}
+      >
+        Reset
+      </Button>
+    </Group>
+  );
+
   return (
     <Modal
       opened={opened}
@@ -259,20 +371,22 @@ export function ExportModal({
       autoFocus={false}
     >
       <Stack gap="sm">
-        <Select
-          label="Language"
-          placeholder={
-            selectData.length === 0
-              ? "No languages on this prayer"
-              : "Select language"
-          }
-          data={selectData}
-          value={variantKeyValue || null}
-          onChange={(value) => setVariantKeyValue(value ?? "")}
-          searchable
-          nothingFoundMessage="No matching language"
-          disabled={selectData.length === 0}
-        />
+        {format !== "docx-parallel" ? (
+          <Select
+            label="Language"
+            placeholder={
+              selectData.length === 0
+                ? "No languages on this prayer"
+                : "Select language"
+            }
+            data={selectData}
+            value={variantKeyValue || null}
+            onChange={(value) => setVariantKeyValue(value ?? "")}
+            searchable
+            nothingFoundMessage="No matching language"
+            disabled={selectData.length === 0}
+          />
+        ) : null}
 
         <Select
           label="Format"
@@ -280,10 +394,16 @@ export function ExportModal({
             { value: "flat-json", label: "Flat JSON" },
             { value: "html", label: "HTML" },
             { value: "layout", label: "Layout" },
+            { value: "docx-parallel", label: "Word table" },
           ]}
           value={format}
           onChange={(value) => {
-            if (value === "flat-json" || value === "html" || value === "layout") {
+            if (
+              value === "flat-json" ||
+              value === "html" ||
+              value === "layout" ||
+              value === "docx-parallel"
+            ) {
               setFormat(value);
             }
           }}
@@ -374,34 +494,57 @@ export function ExportModal({
                 ]}
               />
             </div>
+            {prefixField}
+          </Stack>
+        ) : null}
 
+        {format === "docx-parallel" ? (
+          <Stack gap="sm">
             <Group align="flex-end" gap="xs" wrap="nowrap">
-              <TextInput
+              <Select
                 style={{ flex: 1 }}
-                label="Style prefix"
-                value={prefixStem}
-                onChange={(e) => setPrefixStem(e.currentTarget.value)}
-                rightSection={
-                  <Text size="sm" c="dimmed" pr="xs">
-                    _
-                  </Text>
+                label="Left"
+                placeholder={
+                  selectData.length < 2
+                    ? "Need two languages"
+                    : "Select language"
                 }
-                rightSectionPointerEvents="none"
-                error={
-                  stemValid
-                    ? undefined
-                    : "Use letters/digits only, starting with a letter — or leave empty"
-                }
+                data={selectData}
+                value={leftKey || null}
+                onChange={(value) => applyColumnChange("left", value ?? "")}
+                searchable
+                nothingFoundMessage="No matching language"
+                disabled={selectData.length < 2}
               />
-              <Button
-                variant="subtle"
-                size="compact-sm"
-                mb={stemValid ? 0 : 22}
-                onClick={resetPrefixStem}
-              >
-                Reset
-              </Button>
+              <Tooltip label="Swap columns" withArrow>
+                <ActionIcon
+                  variant="default"
+                  size="lg"
+                  mb={1}
+                  aria-label="Swap columns"
+                  onClick={swapColumns}
+                  disabled={selectData.length < 2 || !leftKey || !rightKey}
+                >
+                  <IconArrowsLeftRight size={16} />
+                </ActionIcon>
+              </Tooltip>
+              <Select
+                style={{ flex: 1 }}
+                label="Right"
+                placeholder={
+                  selectData.length < 2
+                    ? "Need two languages"
+                    : "Select language"
+                }
+                data={selectData}
+                value={rightKey || null}
+                onChange={(value) => applyColumnChange("right", value ?? "")}
+                searchable
+                nothingFoundMessage="No matching language"
+                disabled={selectData.length < 2}
+              />
             </Group>
+            {prefixField}
           </Stack>
         ) : null}
 
@@ -416,6 +559,11 @@ export function ExportModal({
         {selectData.length === 0 ? (
           <Text size="xs" c="dimmed">
             Add a language in prayer settings before exporting.
+          </Text>
+        ) : format === "docx-parallel" && selectData.length < 2 ? (
+          <Text size="xs" c="dimmed">
+            Add a second language in prayer settings before exporting a Word
+            table.
           </Text>
         ) : null}
 

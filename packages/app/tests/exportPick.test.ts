@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Prayer } from "@orthodox-prayer-toolkit/core";
-import { pickExportVariant } from "../src/session/exportPick";
+import {
+  pickExportParallelColumns,
+  pickExportVariant,
+  pickOtherExportColumn,
+} from "../src/session/exportPick";
 
 function prayerWithVariants(
   variants: Array<{ lang: string; variant: string }>,
@@ -43,5 +47,77 @@ describe("pickExportVariant", () => {
 
   it("returns null when the prayer has no languages", () => {
     expect(pickExportVariant(prayerWithVariants([]), undefined)).toBeNull();
+  });
+});
+
+describe("pickExportParallelColumns", () => {
+  const prayer = prayerWithVariants([
+    { lang: "de", variant: "standard" },
+    { lang: "en", variant: "standard" },
+    { lang: "cu", variant: "synodal-cyrl" },
+  ]);
+
+  it("returns null when fewer than two languages exist", () => {
+    expect(
+      pickExportParallelColumns(
+        prayerWithVariants([{ lang: "de", variant: "standard" }]),
+      ),
+    ).toBeNull();
+  });
+
+  it("prefers a saved pair when both still exist", () => {
+    expect(
+      pickExportParallelColumns(prayer, {
+        saved: {
+          left: { lang: "en", variant: "standard" },
+          right: { lang: "cu", variant: "synodal-cyrl" },
+        },
+        visible: [
+          { lang: "de", variant: "standard" },
+          { lang: "en", variant: "standard" },
+        ],
+      }),
+    ).toEqual([
+      { lang: "en", variant: "standard" },
+      { lang: "cu", variant: "synodal-cyrl" },
+    ]);
+  });
+
+  it("uses the first two visible editor columns", () => {
+    expect(
+      pickExportParallelColumns(prayer, {
+        visible: [
+          { lang: "cu", variant: "synodal-cyrl" },
+          { lang: "de", variant: "standard" },
+        ],
+      }),
+    ).toEqual([
+      { lang: "cu", variant: "synodal-cyrl" },
+      { lang: "de", variant: "standard" },
+    ]);
+  });
+
+  it("pairs the library default with another language", () => {
+    expect(
+      pickExportParallelColumns(prayer, {
+        libraryDefault: { lang: "en", variant: "standard" },
+      }),
+    ).toEqual([
+      { lang: "en", variant: "standard" },
+      { lang: "de", variant: "standard" },
+    ]);
+  });
+});
+
+describe("pickOtherExportColumn", () => {
+  const prayer = prayerWithVariants([
+    { lang: "de", variant: "standard" },
+    { lang: "en", variant: "standard" },
+  ]);
+
+  it("returns the other language", () => {
+    expect(
+      pickOtherExportColumn(prayer, { lang: "de", variant: "standard" }),
+    ).toEqual({ lang: "en", variant: "standard" });
   });
 });

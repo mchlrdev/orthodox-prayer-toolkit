@@ -28,7 +28,7 @@ It is designed so a future website or print pipeline can **consume** a prayer li
                             │ imports
 ┌───────────────────────────▼─────────────────────────────┐
 │  packages/core                                          │
-│  validate · exportVariant · exportHtml · layout RTF/DOCX│
+│  validate · exportVariant · exportHtml · layout RTF/DOCX · Word table│
 │  indexKinds · resolveStyles · library helpers           │
 └───────────────────────────┬─────────────────────────────┘
                             │

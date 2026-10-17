@@ -40,6 +40,7 @@ When a block’s effective direction is RTL, the paragraph style name gets an `_
 - IDML direct write
 - Automatic book TOC generation
 - Pushing website CSS into Affinity
+- Two-column Word tables (`exportLayoutDocxParallel`) — tables do not flow as Place story text across pages. Use the single-variant layout RTF/DOCX path here.
 
 ## When to lean on this
 
