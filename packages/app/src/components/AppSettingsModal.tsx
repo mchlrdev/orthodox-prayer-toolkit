@@ -5,10 +5,15 @@ import {
   Loader,
   Modal,
   SegmentedControl,
+  Slider,
   Stack,
   Text,
 } from "@mantine/core";
-import type { ColorSchemePreference } from "../appearancePrefs";
+import {
+  EDITOR_FONT_SIZE_MAX,
+  EDITOR_FONT_SIZE_MIN,
+  type ColorSchemePreference,
+} from "../appearancePrefs";
 import { getToolkitApi } from "../api";
 import {
   type AppUpdateCheckResult,
@@ -20,6 +25,8 @@ type Props = {
   onClose: () => void;
   colorScheme: ColorSchemePreference;
   onColorSchemeChange: (value: ColorSchemePreference) => void;
+  editorFontSize: number;
+  onEditorFontSizeChange: (value: number) => void;
 };
 
 export function AppSettingsModal({
@@ -27,6 +34,8 @@ export function AppSettingsModal({
   onClose,
   colorScheme,
   onColorSchemeChange,
+  editorFontSize,
+  onEditorFontSizeChange,
 }: Props) {
   const [version, setVersion] = useState<string | null>(null);
   const [update, setUpdate] = useState<AppUpdateCheckResult | null>(null);
@@ -116,6 +125,25 @@ export function AppSettingsModal({
               { label: "Dark", value: "dark" },
               { label: "System", value: "system" },
             ]}
+          />
+        </Stack>
+
+        <Stack gap={8}>
+          <Group justify="space-between" align="baseline">
+            <Text size="sm" fw={600}>
+              Editor text size
+            </Text>
+            <Text size="sm" c="dimmed">
+              {editorFontSize}px
+            </Text>
+          </Group>
+          <Slider
+            min={EDITOR_FONT_SIZE_MIN}
+            max={EDITOR_FONT_SIZE_MAX}
+            step={1}
+            value={editorFontSize}
+            onChange={onEditorFontSizeChange}
+            label={null}
           />
         </Stack>
 

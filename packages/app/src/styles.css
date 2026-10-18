@@ -34,6 +34,7 @@
   --opt-min-app-width: 400px;
   --opt-prayer-font: "Source Serif 4", "Iowan Old Style", "Palatino Linotype",
     Palatino, Georgia, serif;
+  --opt-editor-font-size: 16px;
   --opt-scrollbar-size: 8px;
   --opt-scrollbar-thumb: color-mix(in srgb, var(--opt-text) 28%, transparent);
   --opt-scrollbar-thumb-hover: color-mix(in srgb, var(--opt-text) 45%, transparent);
@@ -1054,6 +1055,8 @@ body,
   --split-gap: 24px;
   --split-rule: var(--opt-border-strong);
   min-width: 0;
+  /* Kind-style rem values paint as em against this base. */
+  font-size: var(--opt-editor-font-size);
 }
 
 .split-layout[data-split="true"] {

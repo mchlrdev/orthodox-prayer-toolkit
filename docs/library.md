@@ -57,7 +57,7 @@ Visual tokens **per kind**, not inside prayer JSON:
 
 | Token | Purpose |
 |-------|---------|
-| `fontSize` | CSS size string |
+| `fontSize` | CSS size string. Editor S–XL are rem (M = 1); they follow App settings editor text size. HTML export keeps rem. |
 | `color` | Semantic token (`base` / `accent`) or legacy hex |
 | `fontWeight` / `fontStyle` | Weight and style |
 | `textAlign` | Optional `left`, `center`, or `justify`. `left` is logical start (follows `dir`). Missing → left, except **verse** and **annotation** default to `justify`. |

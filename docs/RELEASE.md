@@ -72,8 +72,8 @@ you enable signing (below).
   by a dialog — use the menu item or **App settings** to see the error.
 - **App settings** always shows the installed version, whether an update is
   available, and a **Check for updates** button (plus **Install and Restart**
-  when a download is ready). This is the update UI on Windows/Linux, where the
-  app has no menu bar.
+  when a download is ready). On Windows/Linux the in-window menu is hidden by
+  default (Alt to show); **Help → Check for Updates…** is also there.
 - Dev / `pnpm dev:electron` never talks to the update feed. Settings still
   shows the version and explains that checks run only in the installed app.
 

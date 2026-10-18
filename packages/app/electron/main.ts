@@ -30,6 +30,12 @@ import {
   resolveUpdateCheck,
   type AppUpdateCheckResult,
 } from "./updateCheck";
+import {
+  applyMenuBarPinned,
+  applyZoomAction,
+  shouldAutoHideMenuBar,
+  zoomActionFromInput,
+} from "./windowChrome";
 
 const { autoUpdater } = electronUpdater;
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -132,6 +138,7 @@ function createWindow(): BrowserWindow {
     minHeight: 400,
     title: APP_NAME,
     show: false,
+    autoHideMenuBar: shouldAutoHideMenuBar(process.platform),
     ...(icon ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, "preload.cjs"),
@@ -178,6 +185,15 @@ function createWindow(): BrowserWindow {
 
   win.webContents.on("preload-error", (_event, preloadPath, error) => {
     console.error("Preload failed:", preloadPath, error);
+  });
+
+  // Menu roles register CommandOrControl+Plus, which Windows/Linux often miss
+  // for the unshifted "=" key and the numpad. Handle zoom keys directly.
+  win.webContents.on("before-input-event", (event, input) => {
+    const action = zoomActionFromInput(input, process.platform === "darwin");
+    if (!action) return;
+    event.preventDefault();
+    applyZoomAction(win.webContents, action);
   });
 
   return win;
@@ -836,12 +852,8 @@ function sendToFocusedWindow(channel: string): void {
 }
 
 function buildAppMenu(): void {
-  // Windows/Linux: no in-window menu bar (macOS uses the system menu bar).
-  if (process.platform !== "darwin") {
-    Menu.setApplicationMenu(null);
-    return;
-  }
-
+  // Keep the menu (and its accelerators) on every platform. Windows/Linux hide
+  // the in-window bar by default; Alt shows it, View → Show Menu Bar pins it.
   const isMac = process.platform === "darwin";
   const template: Electron.MenuItemConstructorOptions[] = [
     ...(isMac
@@ -896,6 +908,16 @@ function buildAppMenu(): void {
           accelerator: "CmdOrCtrl+Shift+S",
           click: () => sendCommand("save-all"),
         },
+        ...(!isMac
+          ? [
+              { type: "separator" as const },
+              {
+                label: "Settings…",
+                accelerator: "CmdOrCtrl+,",
+                click: () => sendCommand("settings"),
+              },
+            ]
+          : []),
         { type: "separator" },
         isMac ? { role: "close" } : { role: "quit" },
       ],
@@ -940,9 +962,41 @@ function buildAppMenu(): void {
         { type: "separator" },
         { role: "resetZoom" },
         { role: "zoomIn" },
+        {
+          role: "zoomIn",
+          accelerator: "CommandOrControl+=",
+          visible: false,
+        },
+        {
+          role: "zoomIn",
+          accelerator: "CommandOrControl+numadd",
+          visible: false,
+        },
         { role: "zoomOut" },
+        {
+          role: "zoomOut",
+          accelerator: "CommandOrControl+numsub",
+          visible: false,
+        },
         { type: "separator" },
         { role: "togglefullscreen" },
+        ...(!isMac
+          ? [
+              { type: "separator" as const },
+              {
+                label: "Show Menu Bar",
+                type: "checkbox" as const,
+                checked: false,
+                click: (
+                  item: Electron.MenuItem,
+                  win?: Electron.BaseWindow,
+                ) => {
+                  if (!win) return;
+                  applyMenuBarPinned(win, item.checked);
+                },
+              },
+            ]
+          : []),
       ],
     },
     {

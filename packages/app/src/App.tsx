@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { ActionIcon, useMantineColorScheme } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useMediaQuery } from "@mantine/hooks";
@@ -66,6 +73,7 @@ export function App() {
   const [exportOpen, setExportOpen] = useState(false);
 
   const initialPrefs = useMemo(() => loadSidebarPrefs(), []);
+  const initialAppearance = useMemo(() => loadAppearancePrefs(), []);
   const [libraryCollapsed, setLibraryCollapsed] = useState(
     initialPrefs.libraryCollapsed,
   );
@@ -73,7 +81,10 @@ export function App() {
     initialPrefs.contentCollapsed,
   );
   const [colorSchemePref, setColorSchemePref] = useState<ColorSchemePreference>(
-    () => loadAppearancePrefs().colorScheme,
+    initialAppearance.colorScheme,
+  );
+  const [editorFontSize, setEditorFontSize] = useState(
+    initialAppearance.editorFontSize,
   );
 
   const overlayMode = useMediaQuery(OVERLAY_BREAKPOINT) ?? false;
@@ -86,9 +97,12 @@ export function App() {
   }, [libraryCollapsed, contentCollapsed]);
 
   useEffect(() => {
-    saveAppearancePrefs({ colorScheme: colorSchemePref });
+    saveAppearancePrefs({
+      colorScheme: colorSchemePref,
+      editorFontSize,
+    });
     setColorScheme(toMantineColorScheme(colorSchemePref));
-  }, [colorSchemePref, setColorScheme]);
+  }, [colorSchemePref, editorFontSize, setColorScheme]);
 
 
   const handleSelectEntry = useCallback(
@@ -322,6 +336,11 @@ export function App() {
         data-overlay={overlayMode ? "true" : undefined}
         data-library-collapsed={libraryCollapsed ? "true" : undefined}
         data-content-collapsed={contentCollapsed ? "true" : undefined}
+        style={
+          {
+            "--opt-editor-font-size": `${editorFontSize}px`,
+          } as CSSProperties
+        }
       >
         <ActionIcon
           className="sidebar-edge-btn sidebar-edge-btn-library"
@@ -550,6 +569,8 @@ export function App() {
         onClose={() => setAppSettingsOpen(false)}
         colorScheme={colorSchemePref}
         onColorSchemeChange={setColorSchemePref}
+        editorFontSize={editorFontSize}
+        onEditorFontSizeChange={setEditorFontSize}
       />
 
       <NewLibraryModal

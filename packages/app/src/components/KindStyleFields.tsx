@@ -98,6 +98,7 @@ export function KindStyleFields({
       <div className="kind-style-pair">
         <Select
           label="Size"
+          description="Relative to editor text size"
           w="100%"
           data={[...FONT_SIZE_OPTIONS]}
           value={size}

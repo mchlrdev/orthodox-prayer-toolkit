@@ -40,6 +40,7 @@ import {
 } from "@orthodox-prayer-toolkit/core";
 import { styleColorToCss } from "../colors";
 import { KindSelect, KindTrigger } from "./KindSelect";
+import { kindFontSizeToEditor } from "../kindFontSize";
 import { useContextMenu, type ContextMenuItem } from "./ContextMenu";
 import { getToolkitApi } from "../api";
 import { FLUSH_EDITS_EVENT, shortcutLabel } from "../appCommands";
@@ -139,7 +140,7 @@ function styleToCss(style: KindStyle): CSSProperties {
       ? style.textAlign
       : "start";
   return {
-    fontSize: style.fontSize,
+    fontSize: kindFontSizeToEditor(style.fontSize),
     color,
     fontWeight: style.fontWeight as CSSProperties["fontWeight"],
     fontStyle: style.fontStyle as CSSProperties["fontStyle"],
