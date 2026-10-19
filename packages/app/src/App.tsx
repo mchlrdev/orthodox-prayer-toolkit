@@ -79,7 +79,7 @@ export function App() {
   const [newLibraryOpen, setNewLibraryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [whatsNewOpen, setWhatsNewOpen] = useState(false);
-  const runningVersionRef = useRef("");
+  const [runningVersion, setRunningVersion] = useState("");
 
   const initialPrefs = useMemo(() => loadSidebarPrefs(), []);
   const initialAppearance = useMemo(() => loadAppearancePrefs(), []);
@@ -176,19 +176,22 @@ export function App() {
 
   useEffect(() => {
     let cancelled = false;
+    const decide = (version: string) => {
+      if (cancelled) return;
+      setRunningVersion(version);
+      setWhatsNewOpen(
+        shouldShowWhatsNew({
+          lastSeen: loadLastSeenWhatsNew(),
+          runningVersion: version,
+          notes: RELEASE_NOTES,
+        }),
+      );
+    };
     void getToolkitApi()
       .getAppInfo()
-      .then((info) => {
-        if (cancelled) return;
-        runningVersionRef.current = info.version;
-        setWhatsNewOpen(
-          shouldShowWhatsNew({
-            lastSeen: loadLastSeenWhatsNew(),
-            runningVersion: info.version,
-            notes: RELEASE_NOTES,
-          }),
-        );
-      });
+      .then((info) => decide(info.version))
+      // Failed IPC: fall back to the notes' own version rather than never showing.
+      .catch(() => decide(RELEASE_NOTES.version));
     return () => {
       cancelled = true;
     };
@@ -717,12 +720,10 @@ export function App() {
 
       <WhatsNewDialog
         opened={whatsNewOpen}
-        version={RELEASE_NOTES.version}
+        version={runningVersion}
         items={RELEASE_NOTES.items}
         onDismiss={() => {
-          saveLastSeenWhatsNew(
-            runningVersionRef.current || RELEASE_NOTES.version,
-          );
+          saveLastSeenWhatsNew(runningVersion);
           setWhatsNewOpen(false);
         }}
       />

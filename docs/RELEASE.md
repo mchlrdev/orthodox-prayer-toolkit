@@ -19,7 +19,9 @@ That runs [bumpp](https://github.com/antfu-collective/bumpp): you pick **patch**
 **minor** / **major** (or type a version). It then:
 
 - bumps `version` in the root and all workspace `package.json` files
-- creates commit `chore: release vX.Y.Z` and tag `vX.Y.Z`
+- rewrites `RELEASE_NOTES.version` to the new version (`--execute`)
+- creates commit `chore: release vX.Y.Z` (`--all`, so the notes file is
+  included, not just the bumped `package.json` files) and tag `vX.Y.Z`
 - pushes `main` **and** the tag (`--push`)
 
 Non-interactive:
@@ -56,21 +58,23 @@ Source of truth is one file shipped with the app:
 export const RELEASE_NOTES: { version: string; items: string[] }
 ```
 
-Show when `RELEASE_NOTES.version === runningVersion` **and**
-`lastSeenWhatsNew !== runningVersion` **and** `items.length > 0`. Empty
-`items` → no dialog. Dismiss (Got it / overlay / Escape) stores
-`lastSeenWhatsNew` in localStorage (`orthodox-prayer-toolkit.whats-new`).
+Show when `lastSeenWhatsNew !== runningVersion` **and** `items.length > 0`.
+Empty `items` → no dialog. The title uses `runningVersion`. Dismiss (Got it /
+overlay / Escape) stores `lastSeenWhatsNew` in localStorage
+(`orthodox-prayer-toolkit.whats-new`).
 
 `runningVersion` comes from `getAppInfo()` (Electron `app.getVersion()`,
-browser-dev Vite define). Do not read `__APP_VERSION__` at renderer startup
+browser-dev Vite define). If that IPC fails the renderer falls back to
+`RELEASE_NOTES.version`. Do not read `__APP_VERSION__` at renderer startup
 — the packaged renderer is built by `packages/app/scripts/build-electron.mjs`
 (`configFile: false`), which is a separate Vite config from `vite.config.ts`.
 
-`RELEASE_NOTES.version` must equal the app version that should display the
-bullets (`packages/app/package.json`). Keep it equal to the **current**
-package version while notes accumulate; `pnpm release` then rewrites it to
-the new tag (`git add`s the file) so the shipped build matches. If `items`
-is non-empty and `version` does not match the package version, `pnpm release`
+`RELEASE_NOTES.version` is bookkeeping: it does **not** gate the dialog (v0.3.3
+shipped with `version: "0.3.2"` because bumpp only committed the
+`package.json` files, and the dialog stayed silent). Keep it equal to the
+**current** package version while notes accumulate; `pnpm release` then
+rewrites it to the new tag and commits it with `bumpp --all`. If `items` is
+non-empty and `version` does not match the package version, `pnpm release`
 fails before bumping.
 
 ### Before every push
@@ -253,6 +257,8 @@ links stay correct. In Actions, `GITHUB_REPOSITORY` is also used.
 | App never sees updates | Tag not semver `vX.Y.Z`, or version in app `package.json` ≥ release |
 | `Cannot download …-mac.zip, status 404` | Installer filenames had spaces. GitHub stores them with dots (`Orthodox.Prayer.Toolkit-…`) while `latest-mac.yml` + electron-updater request hyphens (`Orthodox-Prayer-Toolkit-…`). `artifactName` in `electron-builder.yml` must stay space-free; the Release **build** job hyphenates names before upload (the publish job has no repo checkout). |
 | **Install and Restart** does nothing (macOS) | Squirrel.Mac needs a Developer ID. Unsigned/ad-hoc builds install via a helper script in the running app — install that build from the DMG once. Check `/tmp/orthodox-prayer-toolkit-update.log` if a later button-click still fails. |
+| macOS app much slower than `pnpm dev` | Intel (`-x64`) build on Apple Silicon runs under Rosetta. Check `file …/Contents/MacOS/OrthodoxPrayerToolkit`; install the `-arm64.dmg`. Auto-update already prefers the arm64 ZIP, so the next update also fixes it. |
+| What’s new missing after update | Notes are now shown whenever `lastSeen !== runningVersion` and `items` is non-empty; if still missing, check `items` in the tagged `releaseNotes.ts` (`git show vX.Y.Z:packages/app/src/releaseNotes.ts`). |
 | macOS: `packages/app not a file` / empty CSC password | Empty `CSC_LINK` was exported — release workflow must `unset` empty signing env vars |
 | Linux: `executableName` contains `@` | Missing `executableName` in electron-builder.yml (package name is scoped) |
 | macOS/Windows: `422 already_exists` on release | Parallel jobs raced creating the same GitHub Release — builds use `--publish never`, one job uploads assets |

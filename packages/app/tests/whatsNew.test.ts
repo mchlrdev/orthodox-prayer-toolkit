@@ -41,7 +41,7 @@ const notes = {
 };
 
 describe("shouldShowWhatsNew", () => {
-  it("opens when lastSeen is empty, notes match the running version, and items exist", () => {
+  it("opens when lastSeen is empty and items exist", () => {
     expect(
       shouldShowWhatsNew({
         lastSeen: null,
@@ -61,14 +61,15 @@ describe("shouldShowWhatsNew", () => {
     ).toBe(false);
   });
 
-  it("stays closed when notes.version does not match the running version", () => {
+  it("still opens when notes.version lags the running version (missed bump)", () => {
+    // v0.3.3 shipped with notes.version "0.3.2".
     expect(
       shouldShowWhatsNew({
-        lastSeen: null,
-        runningVersion: "0.3.0",
-        notes,
+        lastSeen: "0.3.2",
+        runningVersion: "0.3.3",
+        notes: { version: "0.3.2", items: ["Word table Own column"] },
       }),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("stays closed when items are empty", () => {

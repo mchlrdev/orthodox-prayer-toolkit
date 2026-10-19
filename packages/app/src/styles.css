@@ -3,7 +3,7 @@
   font-family: "Source Serif 4";
   font-style: normal;
   font-weight: 200 900;
-  font-display: block;
+  font-display: swap;
   src: url("./assets/fonts/SourceSerif4-Variable.woff2") format("woff2");
 }
 
@@ -11,7 +11,7 @@
   font-family: "Source Serif 4";
   font-style: italic;
   font-weight: 200 900;
-  font-display: block;
+  font-display: swap;
   src: url("./assets/fonts/SourceSerif4-Italic-Variable.woff2") format("woff2");
 }
 
@@ -155,6 +155,24 @@ input[type="number"]::-webkit-outer-spin-button {
   min-height: 0;
   overflow: auto;
   overscroll-behavior: contain;
+}
+
+/* What’s new: wrapped bullets with outside markers, no clipping. */
+.whats-new-list {
+  margin: 0;
+  padding-inline-start: 1.15em;
+  font-size: var(--mantine-font-size-sm);
+  line-height: 1.45;
+  color: var(--opt-text);
+  overflow-wrap: anywhere;
+}
+
+.whats-new-list li + li {
+  margin-top: 6px;
+}
+
+.whats-new-list li::marker {
+  color: var(--opt-text-secondary);
 }
 
 :root[data-mantine-color-scheme="dark"] .mantine-Modal-content {

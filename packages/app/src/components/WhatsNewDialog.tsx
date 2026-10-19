@@ -1,4 +1,4 @@
-import { Button, Group, List, Modal, Stack } from "@mantine/core";
+import { Button, Group, Modal, Stack } from "@mantine/core";
 
 type Props = {
   opened: boolean;
@@ -13,15 +13,16 @@ export function WhatsNewDialog({ opened, version, items, onDismiss }: Props) {
       opened={opened}
       onClose={onDismiss}
       title={`What’s new in v${version}`}
-      size="sm"
+      size="md"
       centered
     >
       <Stack gap="md">
-        <List size="sm" spacing="xs">
+        {/* Plain list: Mantine List keeps li nowrap + inside markers, which clips wrapped lines. */}
+        <ul className="whats-new-list">
           {items.map((item) => (
-            <List.Item key={item}>{item}</List.Item>
+            <li key={item}>{item}</li>
           ))}
-        </List>
+        </ul>
         <Group justify="flex-end">
           <Button color="accent" onClick={onDismiss}>
             Got it

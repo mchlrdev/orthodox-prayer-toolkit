@@ -101,12 +101,17 @@ if (status) {
 
 assertNotesMatchCurrentVersion();
 
+// bumpp without --all runs `git commit <bumped package.json files>`; a pathspec
+// commit ignores everything else in the index, so the notes file staged by
+// --execute never reached the tag (v0.3.3). --all → `git commit --all`, which
+// takes every tracked change; safe because the tree was clean above.
 const result = spawnSync(
   "pnpm",
   [
     "exec",
     "bumpp",
     "-r",
+    "--all",
     "--commit",
     "chore: release v%s",
     "--tag",
