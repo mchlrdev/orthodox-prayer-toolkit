@@ -6,6 +6,11 @@
   "additionalProperties": false,
   "required": ["id", "type", "variants", "structure"],
   "properties": {
+    "formatVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Format revision. Omitted = 1. Written as 2 only when the file uses speakers."
+    },
     "id": {
       "type": "string",
       "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
@@ -52,6 +57,20 @@
           "rtl": {
             "type": "boolean",
             "description": "When true, this edition is right-to-left. Omit when LTR."
+          },
+          "speakers": {
+            "type": "object",
+            "description": "Printed labels per speaker id for this variant",
+            "propertyNames": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$" },
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "minProperties": 1,
+              "properties": {
+                "name": { "type": "string", "minLength": 1 },
+                "short": { "type": "string", "minLength": 1 }
+              }
+            }
           }
         }
       }
@@ -73,6 +92,11 @@
             "type": "string",
             "minLength": 1,
             "description": "Open semantic role string (not a closed enum)"
+          },
+          "speaker": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$",
+            "description": "Optional speaker id, shared by every variant"
           },
           "translations": {
             "type": "array",

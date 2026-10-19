@@ -165,6 +165,7 @@ export function KindStylesPanel({
                   <KindStyleFields
                     style={current}
                     onChange={(partial) => patch(kind, partial)}
+                    speakerToggle={!preset}
                   />
                 </Stack>
               </Accordion.Panel>

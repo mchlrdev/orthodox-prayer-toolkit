@@ -55,8 +55,13 @@ Always emit a markdown `json` fence so the prayer can be copied. Agents may also
 
 | On a block | Keys |
 |------------|------|
-| Only these | `id`, `kind`, `translations` |
+| Only these | `id`, `kind`, `translations`, optional `speaker` |
 | Block `id` | Unique in the file (`h1`, `a1`, `v1`, …) |
+| `speaker` | Only when the source marks who speaks. See **Speakers** below |
+
+| On the file | Keys |
+|-------------|------|
+| `formatVersion` | Write `2` only when the file uses `speaker` or a variant `speakers` map. Otherwise omit it |
 
 `tone` is prayer-level only, integer `1`–`8`. Set it when the **whole** prayer is one Oktoechos tone. Several tones in one source → omit `tone`. Tone wording in headings stays (“… im 5. Ton”).
 
@@ -122,6 +127,48 @@ Register `el` / `cu` / … only when the source is a complete parallel edition.
 
 A full Arabic / Syriac / other RTL source is one variant with `"rtl": true`. Snippets of those scripts inside an LTR page stay on that LTR variant — omit `rtl`. Do not put `rtl` on blocks. Kind `dir` lives in library `styles.json` (inherit unless the user asked to override a kind); do not invent kind-direction tokens while encoding.
 
+## Speakers
+
+Liturgical dialogue often prefixes a line with who says it: "Priester:", "Diakon:", "Chor:", "Volk:". Encode the role as data, not text.
+
+Set a Speaker only when the source marks the speaker. Do not infer one from a verse that sounds like a reply.
+
+1. Remove the label from the text. The block's `lines` / `text` start with the words spoken.
+2. Set `speaker` on the block. Use a preset id where it fits: `priest`, `deacon`, `bishop`, `reader`, `choir`, `people`. Otherwise a short custom id (`cantor`), letters, digits, `_` and `-` only, starting with a letter.
+3. Add a `speakers` map on **each** variant that has the block. Give `name` as printed in that language and `short` as the book's abbreviation when the source shows one. Omit a field you do not know; do not invent it.
+4. One Speaker per block, the same id for every variant.
+
+```json
+{
+  "id": "d1",
+  "kind": "verse",
+  "speaker": "priest",
+  "translations": [
+    { "lang": "de", "variant": "standard", "lines": ["Christus ist auferstanden!"] }
+  ]
+}
+```
+
+```json
+"variants": [
+  {
+    "lang": "de",
+    "variant": "standard",
+    "title": "…",
+    "license": "unknown",
+    "source": "draft",
+    "speakers": {
+      "priest": { "name": "Priester", "short": "P" },
+      "people": { "name": "Volk", "short": "V" }
+    }
+  }
+]
+```
+
+Source: `Priester: Christus ist auferstanden!` → block `speaker: "priest"`, text `Christus ist auferstanden!`. Source with no marked speaker → no `speaker`, no `speakers`.
+
+Do not put `speaker` on `heading`, `subheading` or `annotation`; the editor does not offer it there. Speakers are for `verse` and custom kinds the library allows.
+
 ## Verse payload
 
 `verse` always uses `lines`. The editor shows only `lines` for verse; `text` on a verse is invisible.
@@ -156,6 +203,7 @@ Each prayer is `{id}.json`. That is the whole document.
 - verse: Ehre sei dem Vater und dem Sohne und dem Heiligen Geiste:
 - verse: [next troparion, slashes kept]
 - verse: Dann vierzigmal: Herr, erbarme Dich!   (note run + text)
+- verse [priest]: Christus ist auferstanden!     (label stripped, speaker set)
 ```
 
 Ask only where heading vs annotation vs verse is still ambiguous.

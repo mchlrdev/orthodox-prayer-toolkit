@@ -100,9 +100,16 @@ export function mergeBlocks(
     }
   }
 
+  // A speaker-less survivor inherits the other block's speaker when both share
+  // a kind, so split-then-join round-trips (the split-off block has none).
+  const other = keep === "upper" ? lower : upper;
+  const speaker =
+    survivor.speaker ?? (other.kind === survivor.kind ? other.speaker : undefined);
+
   const structure = [...prayer.structure];
   structure.splice(upperIndex, 2, {
     ...survivor,
+    ...(speaker !== undefined ? { speaker } : {}),
     translations: [],
   });
   let next: Prayer = { ...prayer, structure };

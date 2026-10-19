@@ -6,7 +6,11 @@ export type AppCommand =
   | "save-all"
   | "settings"
   | "undo"
-  | "redo";
+  | "redo"
+  | "assign-speaker";
+
+/** Shortcut of the Speaker dropdown on the block holding the caret. */
+export const SPEAKER_SHORTCUT = "Mod+Shift+P";
 
 export const APP_COMMANDS: readonly AppCommand[] = [
   "new-prayer",
@@ -16,6 +20,7 @@ export const APP_COMMANDS: readonly AppCommand[] = [
   "settings",
   "undo",
   "redo",
+  "assign-speaker",
 ];
 
 export function isAppCommand(value: unknown): value is AppCommand {
@@ -49,6 +54,8 @@ export function commandForKey(e: KeyLike, mac: boolean): AppCommand | null {
       return e.shiftKey ? "redo" : "undo";
     case "y":
       return !mac && !e.shiftKey ? "redo" : null;
+    case "p":
+      return e.shiftKey ? "assign-speaker" : null;
     default:
       return null;
   }
@@ -76,6 +83,17 @@ export function wantsNativeUndo(el: Element | null): boolean {
   }
   const editable = el.closest<HTMLElement>("[contenteditable='true'], [contenteditable='']");
   return editable?.dataset.uncommitted === "true";
+}
+
+/**
+ * App shortcuts pause while a modal is open. Popovers (warnings, Kind and
+ * Speaker pickers) also carry role="dialog" but are not modal, so they must
+ * not swallow ⌘Z — e.g. when Escape lands before the popover has opened.
+ */
+export const MODAL_SELECTOR = "[role='dialog'][aria-modal='true']";
+
+export function modalOpen(root: Pick<ParentNode, "querySelector"> = document): boolean {
+  return root.querySelector(MODAL_SELECTOR) !== null;
 }
 
 /** Ask focused prayer cells to commit pending typing (before save). */

@@ -7,20 +7,13 @@ import {
   Modal,
   Popover,
   Stack,
-  Text,
   TextInput,
   UnstyledButton,
 } from "@mantine/core";
-import {
-  IconCheck,
-  IconPencil,
-  IconPlus,
-  IconTrash,
-} from "@tabler/icons-react";
+import { IconPencil, IconTrash } from "@tabler/icons-react";
 import {
   FALLBACK_KIND_STYLE,
   isKindPreset,
-  isValidKindId,
   kindDisplayLabel,
   sanitizeKindIdInput,
   type KindStyle,
@@ -28,7 +21,14 @@ import {
 } from "@orthodox-prayer-toolkit/core";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { KindStyleFields } from "./KindStyleFields";
-import { kindRenameIssue, orderKinds, ensureKindStyle } from "../prayerEdit";
+import {
+  OPTION_DROPDOWN_PADDING,
+  OPTION_POPOVER_PROPS,
+  OptionDivider,
+  OptionList,
+  OptionRow,
+} from "./OptionList";
+import { kindRenameIssue, orderKinds } from "../prayerEdit";
 
 type StyleEditing = {
   resolved: StyleMap;
@@ -52,6 +52,8 @@ type Props = {
   defaultOpen?: boolean;
   /** Fired when popover and edit modal are both closed. */
   onIdle?: () => void;
+  /** "More kinds…": kinds are created in Prayer settings → Kinds. */
+  onMoreKinds?: () => void;
 };
 
 function styleForKind(kind: string, editing: StyleEditing): KindStyle {
@@ -107,10 +109,9 @@ export function KindSelect({
   onOpenChange,
   defaultOpen = false,
   onIdle,
+  onMoreKinds,
 }: Props) {
   const [opened, setOpened] = useState(defaultOpen);
-  const [adding, setAdding] = useState(false);
-  const [newKind, setNewKind] = useState("");
   const [editingKind, setEditingKind] = useState<string | null>(null);
   const [renameTo, setRenameTo] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -127,7 +128,6 @@ export function KindSelect({
   const setOpen = (o: boolean) => {
     setOpened(o);
     onOpenChange?.(o);
-    if (!o) setAdding(false);
   };
 
   useEffect(() => {
@@ -139,25 +139,6 @@ export function KindSelect({
     idleArmedRef.current = false;
     onIdleRef.current?.();
   }, [opened, editingKind]);
-
-  const commitAdd = () => {
-    const next = sanitizeKindIdInput(newKind);
-    if (!isValidKindId(next)) return;
-    if (styleEditing) {
-      const styles = ensureKindStyle(
-        styleEditing.libraryStyles,
-        next,
-        FALLBACK_KIND_STYLE,
-      );
-      if (styles !== styleEditing.libraryStyles) {
-        styleEditing.onChangeLibrary(styles);
-      }
-    }
-    onChange(next);
-    setNewKind("");
-    setAdding(false);
-    setOpen(false);
-  };
 
   const openEdit = (kind: string) => {
     const active = document.activeElement;
@@ -261,6 +242,7 @@ export function KindSelect({
               style={currentStyle}
               onChange={patchStyle}
               portalDropdowns={false}
+              speakerToggle={!editingPreset}
             />
           </>
         ) : null}
@@ -291,9 +273,7 @@ export function KindSelect({
       <Popover
         opened={opened}
         onChange={setOpen}
-        position="bottom-start"
-        width={220}
-        withinPortal
+        {...OPTION_POPOVER_PROPS}
       >
         <Popover.Target>
           <UnstyledButton
@@ -305,32 +285,27 @@ export function KindSelect({
           </UnstyledButton>
         </Popover.Target>
         <Popover.Dropdown
-          p={6}
+          p={OPTION_DROPDOWN_PADDING}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === "Escape") {
               e.stopPropagation();
             }
           }}
         >
-          <Stack gap={2}>
+          <OptionList>
             {all.map((kind) => {
               const active = kind === value;
               return (
                 <Group key={kind} gap={4} wrap="nowrap">
-                  <UnstyledButton
-                    className="option-row"
-                    data-active={active}
-                    style={{ flex: 1 }}
+                  <OptionRow
+                    active={active}
                     onClick={() => {
                       onChange(kind);
                       setOpen(false);
                     }}
                   >
-                    <Text size="sm" style={{ flex: 1 }}>
-                      {kindDisplayLabel(kind)}
-                    </Text>
-                    {active ? <IconCheck size={14} /> : null}
-                  </UnstyledButton>
+                    {kindDisplayLabel(kind)}
+                  </OptionRow>
                   {canEdit ? (
                     <ActionIcon
                       variant="subtle"
@@ -349,47 +324,20 @@ export function KindSelect({
               );
             })}
 
-            {adding ? (
-              <Group gap={4} mt={4}>
-                <TextInput
-                  size="xs"
-                  placeholder="new-kind"
-                  value={newKind}
-                  onChange={(e) =>
-                    setNewKind(sanitizeKindIdInput(e.currentTarget.value))
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      commitAdd();
-                    }
-                    if (e.key === "Escape") {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setAdding(false);
-                    }
+            {onMoreKinds ? (
+              <>
+                <OptionDivider />
+                <OptionRow
+                  onClick={() => {
+                    setOpen(false);
+                    onMoreKinds();
                   }}
-                  style={{ flex: 1 }}
-                  autoFocus
-                />
-                <Button size="xs" onClick={commitAdd}>
-                  Add
-                </Button>
-              </Group>
-            ) : (
-              <Button
-                variant="subtle"
-                size="xs"
-                justify="flex-start"
-                leftSection={<IconPlus size={14} />}
-                onClick={() => setAdding(true)}
-                mt={4}
-              >
-                Add kind…
-              </Button>
-            )}
-          </Stack>
+                >
+                  More kinds…
+                </OptionRow>
+              </>
+            ) : null}
+          </OptionList>
         </Popover.Dropdown>
       </Popover>
 

@@ -4,7 +4,14 @@ import {
   type LayoutRun,
   type LayoutStory,
 } from "./layoutModel.js";
+import {
+  INLINE_SPEAKER_GAP,
+  inlineSpeakerText,
+} from "./speakerExport.js";
 import type { Prayer } from "./types.js";
+
+/** First character style id; note keeps 10, speakers follow in first-use order. */
+const FIRST_CS_ID = 10;
 
 function escapeRtfChar(ch: string): string {
   if (ch === "\\") return "\\\\";
@@ -21,7 +28,10 @@ function escapeRtf(text: string): string {
   return [...text].map(escapeRtfChar).join("");
 }
 
-function renderRuns(runs: LayoutRun[], noteCs: number): string {
+function renderRuns(
+  runs: LayoutRun[],
+  noteCs: number,
+): string {
   return runs
     .map((run) => {
       const escaped = escapeRtf(run.v);
@@ -41,20 +51,29 @@ function serializeRtf(story: LayoutStory): string {
       styleIds.set(p.styleName, nextPara++);
     }
   }
-  const noteCs = 10;
+  const csIds = new Map<string, number>();
+  story.characterStyles.forEach((name, i) => csIds.set(name, FIRST_CS_ID + i));
+  const noteCs = csIds.get(story.noteStyleName)!;
 
   const stylesheetLines: string[] = [];
   for (const [name, id] of styleIds) {
     stylesheetLines.push(`{\\s${id} ${escapeRtf(name)};}`);
   }
-  stylesheetLines.push(`{\\*\\cs${noteCs} ${escapeRtf(story.noteStyleName)};}`);
+  for (const [name, id] of csIds) {
+    stylesheetLines.push(`{\\*\\cs${id} ${escapeRtf(name)};}`);
+  }
 
   const bodyLines: string[] = [];
   for (const p of story.paragraphs) {
     const sid = styleIds.get(p.styleName)!;
-    const inner = p.lines
-      .map((line) => renderRuns(line, noteCs))
-      .join("\\line ");
+    const lead = p.speaker
+      ? `{\\cs${csIds.get(p.speaker.styleName)!} ${escapeRtf(
+          inlineSpeakerText(p.speaker.label, story.speakerSeparator),
+        )}}${INLINE_SPEAKER_GAP}`
+      : "";
+    const inner =
+      lead +
+      p.lines.map((line) => renderRuns(line, noteCs)).join("\\line ");
     bodyLines.push(`{\\pard\\s${sid} ${inner}\\par}`);
   }
 

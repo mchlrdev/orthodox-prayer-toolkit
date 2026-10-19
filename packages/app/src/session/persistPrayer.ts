@@ -1,4 +1,5 @@
 import {
+  normalizeFormatVersion,
   normalizePrayerVariants,
   prayerFilename,
   validate,
@@ -7,9 +8,16 @@ import {
 import type { PrayerToolkitApi } from "../../electron/preload";
 import type { PersistResult } from "./types";
 
-/** Canonical on-disk text for a prayer file. */
+/**
+ * Canonical on-disk text for a prayer file. `formatVersion` is written (first
+ * key) only while the prayer uses speakers; files without speakers serialize
+ * exactly as before, so older apps can still open them.
+ */
 export function prayerFileText(prayer: Prayer): string {
-  return `${JSON.stringify(normalizePrayerVariants(prayer), null, 2)}\n`;
+  const normalized = normalizeFormatVersion(normalizePrayerVariants(prayer));
+  const { formatVersion, ...rest } = normalized;
+  const ordered = formatVersion === undefined ? rest : { formatVersion, ...rest };
+  return `${JSON.stringify(ordered, null, 2)}\n`;
 }
 
 /** Write a prayer to the library, renaming the file when the id changes. */

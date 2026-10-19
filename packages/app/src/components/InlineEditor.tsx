@@ -25,13 +25,17 @@ import {
   IconPlus,
   IconRowInsertBottom,
   IconTrash,
+  IconUser,
 } from "@tabler/icons-react";
 import {
   FALLBACK_KIND_STYLE,
   isRunArray,
+  kindAllowsSpeaker,
   kindDisplayLabel,
   plainText,
   resolveDir,
+  setBlockSpeaker,
+  speakerChipLabel,
   toggleNoteRange,
   type InlineContent,
   type KindStyle,
@@ -43,7 +47,18 @@ import { KindSelect, KindTrigger } from "./KindSelect";
 import { kindFontSizeToEditor } from "../kindFontSize";
 import { useContextMenu, type ContextMenuItem } from "./ContextMenu";
 import { getToolkitApi } from "../api";
-import { FLUSH_EDITS_EVENT, shortcutLabel } from "../appCommands";
+import {
+  FLUSH_EDITS_EVENT,
+  SPEAKER_SHORTCUT,
+  shortcutLabel,
+} from "../appCommands";
+import {
+  SpeakerChip,
+  SpeakerMenu,
+  SpeakerTrigger,
+  speakerContextItems,
+  speakerOptions,
+} from "./SpeakerMenu";
 import { sameVariant, variantKey, type ActiveVariant } from "../variant";
 import {
   createRangeFromOffsets,
@@ -59,7 +74,6 @@ import {
   applyCommittedContent,
   editorCommitUnchanged,
   createBlockId,
-  deleteKindWithStyles,
   fillPercent,
   getTranslation,
   isBlockEmptyAcrossVariants,
@@ -101,7 +115,17 @@ type Props = {
   /** `coalesceKey`: typing in one cell merges into one undo step. */
   onChange: (prayer: Prayer, options?: { coalesceKey?: string }) => void;
   onRenameKind: (from: string, to: string) => void;
+  /** Delete a custom kind (library-wide, via the session). */
+  onDeleteKind: (kind: string) => void;
+  /** "More speakers…" / "More kinds…": open Prayer settings on that pane. */
+  onOpenSettings?: (pane: "speakers" | "styles") => void;
 };
+
+/** Which block's Speaker dropdown is open, and what it hangs from. */
+type SpeakerUi = { blockId: string; anchor: "chip" | "chrome" };
+
+/** Caret to restore after a keyboard-opened Speaker dropdown closes. */
+type CaretRestore = { editor: string; start: number; end: number };
 
 export type BlockRevealScroll = "smooth-center" | "instant-start" | "nearest";
 
@@ -129,6 +153,8 @@ type JoinDirection = "backward" | "forward";
 
 export type InlineEditorHandle = {
   revealBlock: (blockId: string, options: BlockRevealOptions) => void;
+  /** Mod+Shift+P: Speaker dropdown on the block holding the caret. */
+  openSpeakerMenu: () => boolean;
 };
 
 const JUMP_FLASH_MS = 900;
@@ -950,10 +976,14 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
       issues,
       onChange,
       onRenameKind,
+      onDeleteKind,
+      onOpenSettings,
     },
     ref,
   ) {
   const [kindUiBlockId, setKindUiBlockId] = useState<string | null>(null);
+  const [speakerUi, setSpeakerUi] = useState<SpeakerUi | null>(null);
+  const caretRestoreRef = useRef<CaretRestore | null>(null);
   const contextMenu = useContextMenu();
   const [jumpTargetId, setJumpTargetId] = useState<string | null>(null);
   const [lastAddedKind, setLastAddedKind] = useState("verse");
@@ -967,6 +997,12 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     [prayer, styleEditing.resolved],
   );
   const split = visibleVariants.length > 1;
+  const firstCol = visibleVariants[0];
+  const speakerOpts = useMemo(
+    () => speakerOptions(prayer, firstCol),
+    // Speaker ids live on blocks, labels on variants.
+    [prayer.structure, prayer.variants, firstCol],
+  );
   const kindsUsedKey = prayer.structure.map((b) => b.kind).join("\0");
 
   const cssByKind = useMemo(() => {
@@ -991,6 +1027,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     styleEditing,
     onRenameKind,
     visibleVariants,
+    styles,
   });
   ctxRef.current = {
     prayer,
@@ -998,6 +1035,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     styleEditing,
     onRenameKind,
     visibleVariants,
+    styles,
   };
 
   const handlersRef = useRef({
@@ -1122,7 +1160,84 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     [],
   );
 
-  useImperativeHandle(ref, () => ({ revealBlock }), [revealBlock]);
+  const closeSpeakerUi = useCallback(() => {
+    setSpeakerUi(null);
+    const restore = caretRestoreRef.current;
+    caretRestoreRef.current = null;
+    if (!restore) return;
+    // Back to the caret the shortcut was pressed at (after the menu unmounts).
+    requestAnimationFrame(() => {
+      const root = layoutRef.current;
+      const el = root?.querySelector<HTMLElement>(
+        `[data-editor="${CSS.escape(restore.editor)}"]`,
+      );
+      if (!el) return;
+      el.focus();
+      const range = createRangeFromOffsets(el, restore.start, restore.end);
+      const sel = window.getSelection();
+      if (range && sel) {
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    });
+  }, []);
+
+  const toggleSpeakerUi = (blockId: string, anchor: SpeakerUi["anchor"]) => {
+    caretRestoreRef.current = null;
+    setSpeakerUi((cur) =>
+      cur?.blockId === blockId && cur.anchor === anchor
+        ? null
+        : { blockId, anchor },
+    );
+  };
+
+  const selectSpeaker = (blockId: string, id: string | null) => {
+    const { prayer: p, onChange: change } = ctxRef.current;
+    const block = p.structure.find((b) => b.id === blockId);
+    if (!block || (block.speaker ?? null) === id) return;
+    // No coalesce key: every speaker change is its own undo step.
+    change(setBlockSpeaker(p, blockId, id));
+  };
+
+  const openMoreSpeakers = () => {
+    caretRestoreRef.current = null;
+    onOpenSettings?.("speakers");
+  };
+
+  const openSpeakerMenu = useCallback((): boolean => {
+    const { prayer: p, visibleVariants: cols } = ctxRef.current;
+    const active = document.activeElement as HTMLElement | null;
+    const root = layoutRef.current;
+    const inEditor =
+      active && root?.contains(active) ? active.closest<HTMLElement>("[data-editor]") : null;
+    const blockId =
+      inEditor?.closest<HTMLElement>("[data-block-id]")?.dataset.blockId ??
+      focusedIdRef.current;
+    if (!blockId) return false;
+    const block = p.structure.find((b) => b.id === blockId);
+    if (!block) return false;
+    if (
+      block.speaker === undefined &&
+      !kindAllowsSpeaker(block.kind, ctxRef.current.styles)
+    ) {
+      return false;
+    }
+    const offsets = inEditor ? getSelectionOffsets(inEditor) : null;
+    caretRestoreRef.current =
+      inEditor?.dataset.editor && offsets
+        ? { editor: inEditor.dataset.editor, ...offsets }
+        : null;
+    setSpeakerUi({
+      blockId,
+      anchor: block.speaker !== undefined && cols[0] ? "chip" : "chrome",
+    });
+    return true;
+  }, []);
+
+  useImperativeHandle(ref, () => ({ revealBlock, openSpeakerMenu }), [
+    revealBlock,
+    openSpeakerMenu,
+  ]);
 
   const focusEditor = useCallback(
     (
@@ -1351,6 +1466,8 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     e: ReactMouseEvent<HTMLDivElement>,
     index: number,
     kind: string,
+    blockId: string,
+    speaker: string | undefined,
   ) => {
     const target = e.target as HTMLElement;
     // Dropdowns portal out but still bubble React events through the tree.
@@ -1380,6 +1497,22 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
           icon: <IconClipboard size={14} />,
           shortcut: shortcutLabel("Mod+V"),
           onClick: () => void api.runEdit("paste"),
+        },
+        { divider: true },
+      );
+    }
+    if (speaker !== undefined || kindAllowsSpeaker(kind, styles)) {
+      items.push(
+        {
+          label: "Speaker",
+          icon: <IconUser size={14} />,
+          shortcut: shortcutLabel(SPEAKER_SHORTCUT),
+          submenu: speakerContextItems({
+            value: speaker,
+            options: speakerOpts,
+            onSelect: (id) => selectSpeaker(blockId, id),
+            onMore: openMoreSpeakers,
+          }),
         },
         { divider: true },
       );
@@ -1475,6 +1608,21 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
             cssByKind[block.kind] ?? styleToCss(FALLBACK_KIND_STYLE);
           const blockStyle = styles[block.kind] ?? FALLBACK_KIND_STYLE;
           const blockIssues = issues?.get(block.id);
+          const showSpeakerTrigger =
+            block.speaker !== undefined ||
+            kindAllowsSpeaker(block.kind, styles);
+          const speakerOpt =
+            block.speaker !== undefined
+              ? speakerOpts.find((o) => o.id === block.speaker)
+              : undefined;
+          const chipText =
+            block.speaker !== undefined
+              ? (speakerOpt?.chip ??
+                (firstCol
+                  ? speakerChipLabel(prayer, firstCol, block.speaker)
+                  : block.speaker.charAt(0).toUpperCase()))
+              : null;
+          const chipName = speakerOpt?.name ?? block.speaker ?? null;
 
           return (
             <div
@@ -1482,18 +1630,25 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
               className="inline-block"
               data-block-id={block.id}
               data-invalid={blockIssues ? "true" : undefined}
-              onContextMenu={(e) => openBlockMenu(e, index, block.kind)}
+              onContextMenu={(e) =>
+                openBlockMenu(e, index, block.kind, block.id, block.speaker)
+              }
               data-indicate={
                 blockStyle.indicate === "true" ? "true" : undefined
               }
               data-jump-target={jumpTargetId === block.id ? "true" : undefined}
-              data-menu-open={kindUiBlockId === block.id ? "true" : undefined}
+              data-menu-open={
+                kindUiBlockId === block.id || speakerUi?.blockId === block.id
+                  ? "true"
+                  : undefined
+              }
               data-split={split ? "true" : undefined}
               onMouseDown={(e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest(".inline-block-chrome")) return;
                 if (target.closest(".inline-content")) return;
                 if (target.closest(".inline-note-toolbar")) return;
+                if (target.closest(".speaker-chip")) return;
                 // Kind edit / pickers portal to document.body; without this,
                 // preventDefault below steals focus from the Kind name field.
                 if (target.closest("[role='dialog']")) return;
@@ -1521,6 +1676,31 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
               }}
             >
               <div className="inline-block-chrome">
+                {showSpeakerTrigger ? (
+                  speakerUi?.blockId === block.id &&
+                  speakerUi.anchor === "chrome" ? (
+                    <SpeakerMenu
+                      opened
+                      onClose={closeSpeakerUi}
+                      value={block.speaker}
+                      options={speakerOpts}
+                      onSelect={(id) => selectSpeaker(block.id, id)}
+                      onMore={openMoreSpeakers}
+                    >
+                      <SpeakerTrigger
+                        chip={chipText}
+                        name={chipName}
+                        onClick={() => toggleSpeakerUi(block.id, "chrome")}
+                      />
+                    </SpeakerMenu>
+                  ) : (
+                    <SpeakerTrigger
+                      chip={chipText}
+                      name={chipName}
+                      onClick={() => toggleSpeakerUi(block.id, "chrome")}
+                    />
+                  )
+                ) : null}
                 {kindUiBlockId === block.id ? (
                   <KindSelect
                     key={block.id}
@@ -1531,22 +1711,17 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                     styleEditing={styleEditing}
                     onIdle={handleKindIdle}
                     onChange={(kind) => {
-                      onChange(setBlockKind(prayer, index, kind));
+                      onChange(setBlockKind(prayer, index, kind, styles));
                     }}
+                    onMoreKinds={
+                      onOpenSettings
+                        ? () => onOpenSettings("styles")
+                        : undefined
+                    }
                     onRename={(from, to) => {
                       onRenameKind(from, to);
                     }}
-                    onDelete={(kind) => {
-                      const next = deleteKindWithStyles(
-                        prayer,
-                        styleEditing.appStyles,
-                        styleEditing.libraryStyles,
-                        kind,
-                      );
-                      onChange(next.prayer);
-                      styleEditing.onChangeApp(next.appStyles);
-                      styleEditing.onChangeLibrary(next.libraryStyles);
-                    }}
+                    onDelete={onDeleteKind}
                   />
                 ) : (
                   <KindTrigger
@@ -1606,18 +1781,29 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
               </div>
 
               <div className="split-row">
-                {visibleVariants.map((col) => {
+                {visibleVariants.map((col, colIndex) => {
                   const tr = getTranslation(prayer, block.id, col);
                   const content = translationEditorContent(block.kind, tr);
                   const colMeta = prayer.variants.find((v) =>
                     sameVariant(v, col),
                   );
                   const dir = resolveDir(colMeta?.rtl, blockStyle.dir);
+                  const showChip = colIndex === 0 && chipText !== null;
+                  const chip = showChip ? (
+                    <SpeakerChip
+                      chip={chipText}
+                      name={chipName ?? ""}
+                      dir={dir}
+                      fontSize={styleCss.fontSize}
+                      onClick={() => toggleSpeakerUi(block.id, "chip")}
+                    />
+                  ) : null;
 
                   return (
                     <div
                       key={variantKey(col)}
                       className="split-cell"
+                      data-speaker={showChip ? "true" : undefined}
                       data-lang={col.lang}
                       data-invalid={
                         blockIssues?.variantKeys.has(variantKey(col))
@@ -1625,6 +1811,22 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                           : undefined
                       }
                     >
+                      {chip &&
+                      speakerUi?.blockId === block.id &&
+                      speakerUi.anchor === "chip" ? (
+                        <SpeakerMenu
+                          opened
+                          onClose={closeSpeakerUi}
+                          value={block.speaker}
+                          options={speakerOpts}
+                          onSelect={(id) => selectSpeaker(block.id, id)}
+                          onMore={openMoreSpeakers}
+                        >
+                          {chip}
+                        </SpeakerMenu>
+                      ) : (
+                        chip
+                      )}
                       <EditableBlock
                         content={content}
                         lineMode={lineMode}

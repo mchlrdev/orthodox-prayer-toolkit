@@ -5,12 +5,38 @@ import {
   exportLayoutRtf,
   exportVariant,
   parseHtmlAttributes,
+  type ParallelSpeakerExportOptions,
   type Prayer,
+  type SpeakerExportOptions,
   type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import type { PrayerToolkitApi } from "../../electron/preload";
 import type { LayoutFormat } from "../exportPrefs";
 import type { ActiveVariant } from "../variant";
+
+/** True when any block carries a speaker (gates the Speakers export UI). */
+export function prayerHasSpeakers(prayer: Prayer): boolean {
+  return prayer.structure.some(
+    (b) => typeof b.speaker === "string" && b.speaker.length > 0,
+  );
+}
+
+export type SeparatorPreset = "colon" | "dot" | "none" | "custom";
+
+/** Preset → separator string handed to Core (core adds the single space). */
+export function separatorFromPreset(
+  preset: Exclude<SeparatorPreset, "custom">,
+): string {
+  return preset === "colon" ? ": " : preset === "dot" ? ". " : "";
+}
+
+/** Which preset a stored separator corresponds to (anything else is custom). */
+export function presetFromSeparator(separator: string): SeparatorPreset {
+  if (separator === ": ") return "colon";
+  if (separator === ". ") return "dot";
+  if (separator === "") return "none";
+  return "custom";
+}
 
 export type ExportFormat = "flat-json" | "html" | "layout" | "docx-parallel";
 
@@ -26,6 +52,7 @@ export type LayoutExportRequest = {
   layoutFormat: LayoutFormat;
   /** Empty string → bare kind / note style names. */
   prefixStem: string;
+  speakers?: Partial<SpeakerExportOptions>;
 };
 
 export type ParallelExportRequest = {
@@ -34,12 +61,15 @@ export type ParallelExportRequest = {
   prefixStem: string;
   /** Empty middle column so Word can drag the gap. */
   gutterColumn?: boolean;
+  speakers?: Partial<ParallelSpeakerExportOptions>;
 };
 
 export type ExportOptions = {
   includeBlocksWithoutTranslation?: boolean;
   styles?: StyleMap;
   html?: HtmlExportRequest;
+  /** Speaker options for HTML export (ignored when the prayer has none). */
+  speakers?: Partial<SpeakerExportOptions>;
   layout?: LayoutExportRequest;
   parallel?: ParallelExportRequest;
 };
@@ -54,6 +84,8 @@ export async function exportPrayerVariant(
 ): Promise<string | null> {
   const includeBlocksWithoutTranslation =
     options.includeBlocksWithoutTranslation === true;
+
+  const hasSpeakers = prayerHasSpeakers(prayer);
 
   if (format === "html") {
     const html = options.html;
@@ -70,6 +102,9 @@ export async function exportPrayerVariant(
       tagMap: html.tagMap,
       styles: options.styles,
       includeBlocksWithoutTranslation,
+      ...(hasSpeakers && options.speakers
+        ? { speakers: options.speakers }
+        : {}),
       wrapper: html.wrapperEnabled
         ? {
             enabled: true,
@@ -98,6 +133,9 @@ export async function exportPrayerVariant(
       prefixStem: parallel.prefixStem,
       styles: options.styles,
       gutterColumn: parallel.gutterColumn === true,
+      ...(hasSpeakers && parallel.speakers
+        ? { speakers: parallel.speakers }
+        : {}),
     });
     const name = `${prayer.id}.${left.lang}.${left.variant}.${right.lang}.${right.variant}.docx`;
     return api.saveExport(name, content);
@@ -114,6 +152,9 @@ export async function exportPrayerVariant(
       prefixStem: layout.prefixStem,
       includeBlocksWithoutTranslation,
       styles: options.styles,
+      ...(hasSpeakers && layout.speakers
+        ? { speakers: layout.speakers }
+        : {}),
     };
     if (layout.layoutFormat === "docx") {
       const content = await exportLayoutDocx(prayer, layoutOpts);

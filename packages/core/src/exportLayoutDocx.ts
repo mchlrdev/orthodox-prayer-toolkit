@@ -16,10 +16,15 @@ import {
   type ExportLayoutOptions,
   type ExportLayoutParallelOptions,
   type LayoutParagraph,
+  type LayoutSpeaker,
   type LayoutPairStory,
   type LayoutRun,
   type LayoutStory,
 } from "./layoutModel.js";
+import {
+  INLINE_SPEAKER_GAP,
+  inlineSpeakerText,
+} from "./speakerExport.js";
 import type { Prayer } from "./types.js";
 
 /** Preferred grid (DXA). Word scales with 100% table width. */
@@ -27,12 +32,32 @@ const PARALLEL_COLUMN_DXA = 4680;
 /** Narrow empty middle column when `gutterColumn` is on (~0.5 in). */
 const PARALLEL_GUTTER_DXA = 720;
 const PARALLEL_SIDE_WITH_GUTTER_DXA = 4320;
+/**
+ * Speaker column (~1 in) of the 9360 DXA text width. Layout DOCX column
+ * placement: Speaker 1440 | Text 7920. Word table column placement keeps the
+ * same Speaker width and shrinks the sides: 1440 | 3960 | 3960, or with
+ * gutter 1440 | 3600 | 720 | 3600.
+ */
+const SPEAKER_COLUMN_DXA = 1440;
+const SPEAKER_TEXT_DXA = 7920;
+const SPEAKER_PARALLEL_SIDE_DXA = 3960;
+const SPEAKER_PARALLEL_SIDE_WITH_GUTTER_DXA = 3600;
 
 function runsToDocxChildren(
   lines: LayoutRun[][],
   noteStyleName: string,
+  inline?: { speaker: LayoutSpeaker; separator: string },
 ): TextRun[] {
   const children: TextRun[] = [];
+  if (inline) {
+    children.push(
+      new TextRun({
+        text: inlineSpeakerText(inline.speaker.label, inline.separator),
+        style: inline.speaker.styleName,
+      }),
+      new TextRun({ text: INLINE_SPEAKER_GAP }),
+    );
+  }
   lines.forEach((line, lineIndex) => {
     if (lineIndex > 0) {
       children.push(new TextRun({ break: 1 }));
@@ -53,13 +78,21 @@ function runsToDocxChildren(
   return children;
 }
 
+/** `separator` set -> inline speaker lead; undefined -> no speaker run. */
 function paragraphFromLayout(
   paragraph: LayoutParagraph,
   noteStyleName: string,
+  separator?: string,
 ): Paragraph {
   return new Paragraph({
     style: paragraph.styleName,
-    children: runsToDocxChildren(paragraph.lines, noteStyleName),
+    children: runsToDocxChildren(
+      paragraph.lines,
+      noteStyleName,
+      paragraph.speaker && separator !== undefined
+        ? { speaker: paragraph.speaker, separator }
+        : undefined,
+    ),
   });
 }
 
@@ -75,20 +108,59 @@ function collectParagraphStyleNames(
   }));
 }
 
-function noteCharacterStyle(noteStyleName: string): ICharacterStyleOptions[] {
-  return [
-    {
-      id: noteStyleName,
-      name: noteStyleName,
-      basedOn: "DefaultParagraphFont",
-      quickFormat: true,
+function characterStyleDefs(names: string[]): ICharacterStyleOptions[] {
+  return names.map((name) => ({
+    id: name,
+    name,
+    basedOn: "DefaultParagraphFont",
+    quickFormat: true,
+  }));
+}
+
+function speakerCell(speaker: LayoutSpeaker | undefined): TableCell {
+  return new TableCell({
+    children: [
+      new Paragraph({
+        children: speaker
+          ? [new TextRun({ text: speaker.label, style: speaker.styleName })]
+          : [],
+      }),
+    ],
+  });
+}
+
+/** Column placement: Speaker | Text, one row per block, no inline lead. */
+function buildSpeakerColumnDocument(story: LayoutStory): Document {
+  const table = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    columnWidths: [SPEAKER_COLUMN_DXA, SPEAKER_TEXT_DXA],
+    rows: story.paragraphs.map(
+      (p) =>
+        new TableRow({
+          children: [
+            speakerCell(p.speaker),
+            new TableCell({
+              children: [paragraphFromLayout(p, story.noteStyleName)],
+            }),
+          ],
+        }),
+    ),
+  });
+  return new Document({
+    styles: {
+      paragraphStyles: collectParagraphStyleNames(
+        story.paragraphs.map((p) => p.styleName),
+      ),
+      characterStyles: characterStyleDefs(story.characterStyles),
     },
-  ];
+    sections: [{ properties: {}, children: [table] }],
+  });
 }
 
 function buildDocument(story: LayoutStory): Document {
+  if (story.speakerColumn) return buildSpeakerColumnDocument(story);
   const children = story.paragraphs.map((p) =>
-    paragraphFromLayout(p, story.noteStyleName),
+    paragraphFromLayout(p, story.noteStyleName, story.speakerSeparator),
   );
 
   return new Document({
@@ -96,7 +168,7 @@ function buildDocument(story: LayoutStory): Document {
       paragraphStyles: collectParagraphStyleNames(
         story.paragraphs.map((p) => p.styleName),
       ),
-      characterStyles: noteCharacterStyle(story.noteStyleName),
+      characterStyles: characterStyleDefs(story.characterStyles),
     },
     sections: [
       {
@@ -110,9 +182,10 @@ function buildDocument(story: LayoutStory): Document {
 function pairCell(
   paragraph: LayoutParagraph,
   noteStyleName: string,
+  separator: string,
 ): TableCell {
   return new TableCell({
-    children: [paragraphFromLayout(paragraph, noteStyleName)],
+    children: [paragraphFromLayout(paragraph, noteStyleName, separator)],
   });
 }
 
@@ -131,22 +204,30 @@ function buildPairDocument(
     row.right.styleName,
   ]);
 
-  const columnWidths = gutterColumn
-    ? [
-        PARALLEL_SIDE_WITH_GUTTER_DXA,
-        PARALLEL_GUTTER_DXA,
-        PARALLEL_SIDE_WITH_GUTTER_DXA,
-      ]
-    : [PARALLEL_COLUMN_DXA, PARALLEL_COLUMN_DXA];
+  const withSpeaker = story.speakerColumn;
+  const side = withSpeaker
+    ? gutterColumn
+      ? SPEAKER_PARALLEL_SIDE_WITH_GUTTER_DXA
+      : SPEAKER_PARALLEL_SIDE_DXA
+    : gutterColumn
+      ? PARALLEL_SIDE_WITH_GUTTER_DXA
+      : PARALLEL_COLUMN_DXA;
+  const columnWidths = [
+    ...(withSpeaker ? [SPEAKER_COLUMN_DXA] : []),
+    side,
+    ...(gutterColumn ? [PARALLEL_GUTTER_DXA] : []),
+    side,
+  ];
 
   const table = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     columnWidths,
     rows: story.rows.map((row) => {
       const cells = [
-        pairCell(row.left, story.noteStyleName),
+        ...(withSpeaker ? [speakerCell(row.speaker)] : []),
+        pairCell(row.left, story.noteStyleName, story.speakerSeparator),
         ...(gutterColumn ? [emptyGutterCell()] : []),
-        pairCell(row.right, story.noteStyleName),
+        pairCell(row.right, story.noteStyleName, story.speakerSeparator),
       ];
       return new TableRow({ children: cells });
     }),
@@ -155,7 +236,7 @@ function buildPairDocument(
   return new Document({
     styles: {
       paragraphStyles: collectParagraphStyleNames(styleNames),
-      characterStyles: noteCharacterStyle(story.noteStyleName),
+      characterStyles: characterStyleDefs(story.characterStyles),
     },
     sections: [
       {

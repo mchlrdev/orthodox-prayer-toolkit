@@ -8,6 +8,7 @@ export type {
   KindStyle,
   LibraryManifest,
   Prayer,
+  SpeakerLabel,
   StyleMap,
   TextRun,
   Translation,
@@ -17,6 +18,7 @@ export type {
 } from "./types.js";
 
 export {
+  CURRENT_FORMAT_VERSION,
   KIND_PRESETS,
   KIND_PRESET_LABELS,
   isKindPreset,
@@ -41,7 +43,7 @@ export {
 export { validate } from "./validate.js";
 export { locateValidationErrors } from "./locateErrors.js";
 export type { ValidationErrorLocation } from "./locateErrors.js";
-export { sanitizeStyles, validateStyles, isValidKindId, sanitizeKindIdInput } from "./validateStyles.js";
+export { sanitizeStyles, validateStyles, isValidKindId, sanitizeKindIdInput, kindAllowsSpeaker } from "./validateStyles.js";
 export type { StyleValidationResult } from "./validateStyles.js";
 export { KIND_ID_PATTERN, KIND_ID_MAX_LENGTH } from "./validateStyles.js";
 
@@ -64,12 +66,21 @@ export type {
   ExportLayoutParallelOptions,
   LayoutColumnRef,
 } from "./layoutModel.js";
+export {
+  DEFAULT_SPEAKER_EXPORT,
+  DEFAULT_PARALLEL_SPEAKER_EXPORT,
+} from "./speakerExport.js";
+export type {
+  SpeakerExportOptions,
+  ParallelSpeakerExportOptions,
+} from "./speakerExport.js";
 export { buildLayoutStory, buildLayoutPairStory } from "./layoutModel.js";
 export type {
   LayoutPairRow,
   LayoutPairStory,
   LayoutParagraph,
   LayoutRun,
+  LayoutSpeaker,
   LayoutStory,
 } from "./layoutModel.js";
 
@@ -131,3 +142,21 @@ export {
   variantIsRtl,
 } from "./resolveDir.js";
 export type { KindDir, TextDir } from "./resolveDir.js";
+
+export {
+  SPEAKER_PRESETS,
+  isSpeakerPreset,
+  listSpeakers,
+  renameSpeaker,
+  indexSpeakers,
+  isValidSpeakerId,
+  normalizeFormatVersion,
+  removeSpeaker,
+  resolveSpeakerLabel,
+  sanitizeSpeakerIdInput,
+  setBlockSpeaker,
+  setSpeakerLabel,
+  speakerChipLabel,
+  speakerDisplayLabel,
+} from "./speakers.js";
+export type { SpeakerPreset, SpeakerSummary, VariantRef } from "./speakers.js";

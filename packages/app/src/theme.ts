@@ -124,6 +124,10 @@ export const theme = createTheme({
         radius: "md",
         shadow: "md",
       },
+      styles: {
+        // Mantine's dark-4 separator is far too bright on our surfaces.
+        divider: { borderColor: "var(--opt-divider)" },
+      },
     },
     Popover: {
       defaultProps: {

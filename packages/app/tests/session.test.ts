@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Prayer } from "@orthodox-prayer-toolkit/core";
 import { patchCatalogPrayer, type LibraryCatalog } from "../src/catalog";
-import { applyDraftEdit, validationErrorsFor } from "../src/session/draftEdit";
+import {
+  applyDraftEdit,
+  validationErrorsFor,
+  validationFor,
+} from "../src/session/draftEdit";
 import { persistPrayer } from "../src/session/persistPrayer";
 import { parseAppStyles } from "../src/session/parseAppStyles";
 import {
@@ -121,6 +125,26 @@ describe("validationErrorsFor", () => {
     expect(validationErrorsFor(prayer).length).toBeGreaterThan(0);
   });
 });
+describe("validationFor", () => {
+  it("returns speaker warnings without errors", () => {
+    const prayer = samplePrayer();
+    prayer.formatVersion = 2;
+    prayer.structure[0] = { ...prayer.structure[0]!, speaker: "priest" };
+    const { errors, warnings } = validationFor(prayer);
+    expect(errors).toEqual([]);
+    expect(warnings.length).toBeGreaterThan(0);
+    expect(warnings[0]!.code).toBe("speaker-name-missing");
+    expect(warnings[0]!.message).toContain("\u201cPriest\u201d");
+    expect(validationErrorsFor(prayer)).toEqual([]);
+  });
+
+  it("applyDraftEdit keeps previous warnings until validate runs", () => {
+    const w = [{ path: "/x", message: "m", code: "speaker-name-missing" }];
+    const d = applyDraftEdit(samplePrayer(), [], [], w);
+    expect(d.warnings).toEqual(w);
+  });
+});
+
 describe("persistPrayer", () => {
   it("writes in place when the id matches the filename", async () => {
     const writeText = vi.fn(async () => undefined);

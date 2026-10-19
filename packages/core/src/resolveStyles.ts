@@ -39,6 +39,7 @@ export const DEFAULT_KIND_STYLES: StyleMap = {
     fontWeight: "400",
     fontStyle: "normal",
     initialCap: "true",
+    speaker: "true",
     htmlTag: "p",
     textAlign: "justify",
   },

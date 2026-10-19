@@ -6,6 +6,7 @@ import {
   Checkbox,
   Group,
   Modal,
+  Input,
   SegmentedControl,
   Select,
   Stack,
@@ -23,7 +24,9 @@ import {
   resolveLibraryStylePrefixStem,
   tagMapFromStyles,
   type LibraryManifest,
+  type ParallelSpeakerExportOptions,
   type Prayer,
+  type SpeakerExportOptions,
   type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import {
@@ -31,6 +34,12 @@ import {
   pickExportVariant,
 } from "../session/exportPick";
 import { resolveExportPrefixStem } from "../session/layoutPrefix";
+import {
+  presetFromSeparator,
+  prayerHasSpeakers,
+  separatorFromPreset,
+  type SeparatorPreset,
+} from "../session/exportPrayerVariant";
 import type {
   ExportFormat,
   HtmlExportRequest,
@@ -42,6 +51,9 @@ import {
   saveExportPrefs,
   type HtmlExportPrefs,
   type LayoutFormat,
+  type ParallelSpeakerPlacement,
+  type SpeakerForm,
+  type SpeakerPlacement,
 } from "../exportPrefs";
 import {
   parseVariantKey,
@@ -60,6 +72,8 @@ export type ExportPayload = {
   html?: HtmlExportRequest;
   layout?: LayoutExportRequest;
   parallel?: ParallelExportRequest;
+  /** HTML speaker options; omitted when the prayer has no speakers. */
+  speakers?: Partial<SpeakerExportOptions>;
 };
 
 type Props = {
@@ -126,6 +140,16 @@ export function ExportModal({
   const [layoutFormat, setLayoutFormat] = useState<LayoutFormat>("docx");
   const [prefixStem, setPrefixStem] = useState("opt");
   const [gutterColumn, setGutterColumn] = useState(false);
+  const [speakerPlacement, setSpeakerPlacement] =
+    useState<SpeakerPlacement>("inline");
+  const [speakerParallelPlacement, setSpeakerParallelPlacement] =
+    useState<ParallelSpeakerPlacement>("inline-left");
+  const [speakerForm, setSpeakerForm] = useState<SpeakerForm>("name");
+  const [separatorPreset, setSeparatorPreset] =
+    useState<SeparatorPreset>("colon");
+  const [customSeparator, setCustomSeparator] = useState("");
+
+  const hasSpeakers = useMemo(() => prayerHasSpeakers(prayer), [prayer]);
 
   const libraryResolvedStem = resolveLibraryStylePrefixStem(
     libraryManifest?.stylePrefixStem,
@@ -160,6 +184,15 @@ export function ExportModal({
     setWrapperAttributes(
       saved?.wrapperAttributes ?? defaults.wrapperAttributes,
     );
+    setSpeakerPlacement(saved?.speakerPlacement ?? "inline");
+    setSpeakerParallelPlacement(
+      saved?.speakerParallelPlacement ?? "inline-left",
+    );
+    setSpeakerForm(saved?.speakerForm ?? "name");
+    const savedSep = saved?.speakerSeparator ?? ": ";
+    const savedPreset = presetFromSeparator(savedSep);
+    setSeparatorPreset(savedPreset);
+    setCustomSeparator(savedPreset === "custom" ? savedSep : "");
     setLayoutFormat(saved?.layoutFormat ?? "docx");
     setPrefixStem(
       resolveExportPrefixStem({
@@ -208,22 +241,13 @@ export function ExportModal({
   const layoutReady = !usesPrefix || stemValid;
   const parallelReady =
     format !== "docx-parallel" ||
-    (!!left &&
-      !!right &&
-      !sameVariant(left, right) &&
-      selectData.length >= 2);
+    (!!left && !!right && !sameVariant(left, right) && selectData.length >= 2);
   const canExport =
     format === "docx-parallel"
       ? parallelReady && layoutReady
-      : Boolean(selected) &&
-        selectData.length > 0 &&
-        htmlReady &&
-        layoutReady;
+      : Boolean(selected) && selectData.length > 0 && htmlReady && layoutReady;
 
-  const applyColumnChange = (
-    side: "left" | "right",
-    nextKey: string,
-  ) => {
+  const applyColumnChange = (side: "left" | "right", nextKey: string) => {
     const next = parseVariantKey(nextKey);
     if (side === "left") {
       if (next && right && sameVariant(next, right)) {
@@ -242,6 +266,13 @@ export function ExportModal({
     setLeftKey(rightKey);
     setRightKey(leftKey);
   };
+
+  const showSpeakers = hasSpeakers && format !== "flat-json";
+  const allowColumn = format === "layout" && layoutFormat === "docx";
+  const separatorValue =
+    separatorPreset === "custom"
+      ? customSeparator
+      : separatorFromPreset(separatorPreset);
 
   const resetTagMap = () => {
     setTagMap(tagMapFromStyles(resolvedStyles));
@@ -286,6 +317,30 @@ export function ExportModal({
             }
           : undefined;
 
+      let speakers: Partial<SpeakerExportOptions> | undefined;
+      if (showSpeakers) {
+        if (format === "docx-parallel" && parallel) {
+          const ps: Partial<ParallelSpeakerExportOptions> = {
+            placement: speakerParallelPlacement,
+            form: speakerForm,
+            separator: separatorValue,
+          };
+          parallel.speakers = ps;
+        } else {
+          // "column" only applies to layout DOCX; clamp elsewhere.
+          const placement: SpeakerPlacement =
+            speakerPlacement === "column" && !allowColumn
+              ? "inline"
+              : speakerPlacement;
+          speakers = {
+            placement,
+            form: speakerForm,
+            separator: separatorValue,
+          };
+          if (layout) layout.speakers = speakers;
+        }
+      }
+
       const variant = format === "docx-parallel" ? left! : selected!;
       const savedPath = await onExport({
         variant,
@@ -295,6 +350,7 @@ export function ExportModal({
         html,
         layout,
         parallel,
+        speakers: format === "html" ? speakers : undefined,
       });
 
       if (savedPath) {
@@ -328,6 +384,19 @@ export function ExportModal({
             format === "docx-parallel" && left && right
               ? { left, right, gutterColumn }
               : undefined,
+          speakers: showSpeakers
+            ? format === "docx-parallel"
+              ? {
+                  parallelPlacement: speakerParallelPlacement,
+                  form: speakerForm,
+                  separator: separatorValue,
+                }
+              : {
+                  placement: speakerPlacement,
+                  form: speakerForm,
+                  separator: separatorValue,
+                }
+            : undefined,
         });
       }
 
@@ -368,6 +437,92 @@ export function ExportModal({
       </Button>
     </Group>
   );
+
+  const speakersSection = showSpeakers ? (
+    <Stack gap="sm">
+      <Text size="xs" fw={600} c="dimmed" tt="uppercase">
+        Speakers
+      </Text>
+      <Input.Wrapper label="Placement">
+        {format === "docx-parallel" ? (
+          <SegmentedControl
+            fullWidth
+            size="xs"
+            value={speakerParallelPlacement}
+            onChange={(v) =>
+              setSpeakerParallelPlacement(v as ParallelSpeakerPlacement)
+            }
+            data={[
+              { label: "Inline left", value: "inline-left" },
+              { label: "Inline both", value: "inline-both" },
+              { label: "Own column", value: "column" },
+              { label: "Off", value: "off" },
+            ]}
+          />
+        ) : (
+          <SegmentedControl
+            fullWidth
+            size="xs"
+            value={
+              speakerPlacement === "column" && !allowColumn
+                ? "inline"
+                : speakerPlacement
+            }
+            onChange={(v) => setSpeakerPlacement(v as SpeakerPlacement)}
+            data={
+              allowColumn
+                ? [
+                    { label: "Inline", value: "inline" },
+                    { label: "Own column", value: "column" },
+                    { label: "Off", value: "off" },
+                  ]
+                : [
+                    { label: "Inline", value: "inline" },
+                    { label: "Off", value: "off" },
+                  ]
+            }
+          />
+        )}
+      </Input.Wrapper>
+      <Input.Wrapper label="Label">
+        <SegmentedControl
+          fullWidth
+          size="xs"
+          value={speakerForm}
+          onChange={(v) => setSpeakerForm(v as SpeakerForm)}
+          data={[
+            { label: "Name", value: "name" },
+            { label: "Short", value: "short" },
+          ]}
+        />
+      </Input.Wrapper>
+      <Input.Wrapper label="Separator">
+        <Stack gap="xs">
+          <SegmentedControl
+            fullWidth
+            size="xs"
+            value={separatorPreset}
+            onChange={(v) => setSeparatorPreset(v as SeparatorPreset)}
+            data={[
+              { label: ":", value: "colon" },
+              { label: ".", value: "dot" },
+              { label: "none", value: "none" },
+              { label: "Custom", value: "custom" },
+            ]}
+          />
+          {separatorPreset === "custom" ? (
+            <TextInput
+              size="xs"
+              aria-label="Custom separator"
+              placeholder="e.g. —"
+              value={customSeparator}
+              onChange={(e) => setCustomSeparator(e.currentTarget.value)}
+            />
+          ) : null}
+        </Stack>
+      </Input.Wrapper>
+    </Stack>
+  ) : null;
 
   return (
     <Modal
@@ -473,9 +628,7 @@ export function ExportModal({
                   autosize
                   minRows={2}
                   error={
-                    attrParse.ok
-                      ? undefined
-                      : attrParse.errors.join(" · ")
+                    attrParse.ok ? undefined : attrParse.errors.join(" · ")
                   }
                 />
               </>
@@ -570,6 +723,8 @@ export function ExportModal({
             }
           />
         ) : null}
+
+        {speakersSection}
 
         {selectData.length === 0 ? (
           <Text size="xs" c="dimmed">

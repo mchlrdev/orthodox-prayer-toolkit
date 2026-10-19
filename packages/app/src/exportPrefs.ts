@@ -16,6 +16,22 @@ export type HtmlExportPrefs = {
 
 export type LayoutFormat = "docx" | "rtf";
 
+export type SpeakerPlacement = "inline" | "column" | "off";
+export type ParallelSpeakerPlacement =
+  | "inline-left"
+  | "inline-both"
+  | "column"
+  | "off";
+export type SpeakerForm = "name" | "short";
+
+const SINGLE_PLACEMENTS: readonly string[] = ["inline", "column", "off"];
+const PARALLEL_PLACEMENTS: readonly string[] = [
+  "inline-left",
+  "inline-both",
+  "column",
+  "off",
+];
+
 /** Per-prayer export preferences (cross-format + format-specific). */
 export type ExportPrefs = {
   includeBlocksWithoutTranslation?: boolean;
@@ -29,6 +45,13 @@ export type ExportPrefs = {
   parallelLeft?: ActiveVariant;
   parallelRight?: ActiveVariant;
   parallelGutterColumn?: boolean;
+  /** Placement for HTML / Layout exports. */
+  speakerPlacement?: SpeakerPlacement;
+  /** Placement for the Word table (different value set). */
+  speakerParallelPlacement?: ParallelSpeakerPlacement;
+  speakerForm?: SpeakerForm;
+  /** Raw separator string (e.g. ": ", ". ", ""). */
+  speakerSeparator?: string;
 };
 
 /** Fields written on a successful export; merged onto existing prefs. */
@@ -44,6 +67,13 @@ export type ExportPrefsPatch = {
     left: ActiveVariant;
     right: ActiveVariant;
     gutterColumn: boolean;
+  };
+  /** Only the placement matching the exported format family is set. */
+  speakers?: {
+    placement?: SpeakerPlacement;
+    parallelPlacement?: ParallelSpeakerPlacement;
+    form: SpeakerForm;
+    separator: string;
   };
 };
 
@@ -116,6 +146,32 @@ function isPrefs(value: unknown): value is ExportPrefs {
     return false;
   }
 
+  if (
+    p.speakerPlacement !== undefined &&
+    !SINGLE_PLACEMENTS.includes(p.speakerPlacement as string)
+  ) {
+    return false;
+  }
+  if (
+    p.speakerParallelPlacement !== undefined &&
+    !PARALLEL_PLACEMENTS.includes(p.speakerParallelPlacement as string)
+  ) {
+    return false;
+  }
+  if (
+    p.speakerForm !== undefined &&
+    p.speakerForm !== "name" &&
+    p.speakerForm !== "short"
+  ) {
+    return false;
+  }
+  if (
+    p.speakerSeparator !== undefined &&
+    typeof p.speakerSeparator !== "string"
+  ) {
+    return false;
+  }
+
   const hasHtmlKeys =
     p.tagMap !== undefined ||
     p.wrapperEnabled !== undefined ||
@@ -130,7 +186,11 @@ function isPrefs(value: unknown): value is ExportPrefs {
     p.layoutPrefixStem !== undefined ||
     p.parallelLeft !== undefined ||
     p.parallelRight !== undefined ||
-    p.parallelGutterColumn !== undefined
+    p.parallelGutterColumn !== undefined ||
+    p.speakerPlacement !== undefined ||
+    p.speakerParallelPlacement !== undefined ||
+    p.speakerForm !== undefined ||
+    p.speakerSeparator !== undefined
   );
 }
 
@@ -198,6 +258,16 @@ function clonePrefs(prefs: ExportPrefs): ExportPrefs {
   if (prefs.parallelGutterColumn !== undefined) {
     next.parallelGutterColumn = prefs.parallelGutterColumn;
   }
+  if (prefs.speakerPlacement !== undefined) {
+    next.speakerPlacement = prefs.speakerPlacement;
+  }
+  if (prefs.speakerParallelPlacement !== undefined) {
+    next.speakerParallelPlacement = prefs.speakerParallelPlacement;
+  }
+  if (prefs.speakerForm !== undefined) next.speakerForm = prefs.speakerForm;
+  if (prefs.speakerSeparator !== undefined) {
+    next.speakerSeparator = prefs.speakerSeparator;
+  }
   return next;
 }
 
@@ -241,6 +311,17 @@ export function saveExportPrefs(
     next.parallelLeft = { ...patch.parallel.left };
     next.parallelRight = { ...patch.parallel.right };
     next.parallelGutterColumn = patch.parallel.gutterColumn;
+  }
+
+  if (patch.speakers) {
+    if (patch.speakers.placement !== undefined) {
+      next.speakerPlacement = patch.speakers.placement;
+    }
+    if (patch.speakers.parallelPlacement !== undefined) {
+      next.speakerParallelPlacement = patch.speakers.parallelPlacement;
+    }
+    next.speakerForm = patch.speakers.form;
+    next.speakerSeparator = patch.speakers.separator;
   }
 
   const byPath = { ...(store[libraryRoot] ?? {}) };

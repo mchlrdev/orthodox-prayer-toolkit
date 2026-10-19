@@ -28,6 +28,10 @@
   --opt-text-secondary: #6e6e73;
   --opt-hover: rgba(0, 0, 0, 0.04);
   --opt-hover-strong: rgba(0, 0, 0, 0.08);
+  /* Rows of menus / pick-one popovers (Menu items, .option-row). */
+  --opt-row-hover: rgba(0, 0, 0, 0.05);
+  /* Separators inside menus and popovers: barely there in both themes. */
+  --opt-divider: rgba(0, 0, 0, 0.06);
   --opt-glass: rgba(255, 255, 255, 0.92);
   --opt-on-accent: #ffffff;
   --opt-sidebar-width: 280px;
@@ -55,6 +59,8 @@
   --opt-text-secondary: #a1a1a6;
   --opt-hover: rgba(255, 255, 255, 0.06);
   --opt-hover-strong: rgba(255, 255, 255, 0.1);
+  --opt-row-hover: rgba(255, 255, 255, 0.07);
+  --opt-divider: rgba(255, 255, 255, 0.06);
   --opt-glass: rgba(28, 28, 30, 0.94);
   --opt-on-accent: #1a1a1a;
   color-scheme: dark;
@@ -1886,7 +1892,7 @@ body,
 }
 
 .option-row:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--opt-row-hover);
 }
 
 .option-row:active {
@@ -1903,7 +1909,43 @@ body,
 }
 
 :root[data-mantine-color-scheme="dark"] .option-row:hover {
-  background: var(--opt-hover);
+  background: var(--opt-row-hover);
+}
+
+/* Fixed leading slot of an OptionRow (e.g. the speaker chip). */
+.option-row-leading {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+/* ── Menu / popover rows and separators (one rule for every dropdown) ── */
+
+/* Separators: Menu.Divider (theme.ts also inlines the colour), OptionDivider. */
+.mantine-Menu-divider,
+.option-divider {
+  border-color: var(--opt-divider);
+}
+
+.option-divider {
+  height: 0;
+  margin: 4px 2px;
+  border-top: 1px solid var(--opt-divider);
+}
+
+/* Menu item hover = OptionRow hover (Mantine's dark-4 is far too bright here). */
+.mantine-Menu-item[data-hovered]:not(:disabled):not([data-disabled]),
+.mantine-Menu-item[data-sub-hovered]:not(:disabled):not([data-disabled]) {
+  background-color: var(--menu-item-hover, var(--opt-row-hover));
+}
+
+/*
+ * A row whose submenu is open keeps the highlight while the pointer is in the
+ * submenu, unless another row of the same menu is hovered: one highlighted
+ * row per menu level.
+ */
+.mantine-Menu-dropdown:not(:has(> .mantine-Menu-item[data-hovered]))
+  > .mantine-Menu-item[data-sub-open]:not(:disabled):not([data-disabled]) {
+  background-color: var(--opt-row-hover);
 }
 
 :root[data-mantine-color-scheme="dark"] .option-row[data-active="true"] {
@@ -2101,4 +2143,122 @@ body,
   font-size: 11px;
   color: var(--opt-text-secondary);
   letter-spacing: 0.02em;
+}
+
+/* ── Speakers ───────────────────────────────────────────── */
+
+.speaker-chip-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 6px;
+  border-radius: 5px;
+  font-family: var(--mantine-font-family);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-style: normal;
+  white-space: nowrap;
+  color: var(--opt-accent);
+  background: color-mix(in srgb, var(--opt-accent) 16%, transparent);
+}
+
+/*
+ * The chip is a sibling floated before the contenteditable (never inside it).
+ * The cell turns into plain block flow so the text's line boxes wrap around
+ * the float: the first line starts after the chip, the next ones at the edge.
+ */
+.split-cell[data-speaker="true"] {
+  display: block;
+}
+
+.speaker-chip {
+  float: left;
+  display: inline-flex;
+  align-items: center;
+  /* One text line of the kind's size: the pill sits centred on line 1. */
+  height: calc(1em * 1.55);
+  margin: 0 8px 0 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.speaker-chip[data-dir="rtl"] {
+  float: right;
+  margin: 0 0 0 8px;
+}
+
+.speaker-chip:hover .speaker-chip-pill,
+.speaker-chip:focus-visible .speaker-chip-pill {
+  background: color-mix(in srgb, var(--opt-accent) 26%, transparent);
+}
+
+.speaker-chip:focus-visible {
+  outline: none;
+}
+
+.speaker-chip:focus-visible .speaker-chip-pill {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--opt-accent) 45%, transparent);
+}
+
+/* Block chrome trigger, left of the Kind chip. */
+.speaker-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 6px;
+  color: var(--opt-text-secondary);
+  background: var(--opt-hover);
+}
+
+.speaker-trigger[data-set="true"] {
+  color: var(--opt-accent);
+  padding: 0 4px 0 2px;
+}
+
+.speaker-trigger[data-set="true"] .speaker-chip-pill {
+  height: 17px;
+  min-width: 17px;
+  padding: 0 5px;
+}
+
+.speaker-trigger:hover {
+  color: var(--opt-text);
+  background: var(--opt-hover-strong);
+}
+
+.speaker-trigger[data-set="true"]:hover {
+  color: var(--opt-accent);
+}
+
+/* Dropdown rows: fixed chip slot · name · check. */
+.speaker-menu-slot {
+  display: inline-flex;
+  justify-content: flex-start;
+  width: 28px;
+}
+
+/* Prayer settings → Speakers */
+.speaker-variant-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.speaker-variant-label {
+  flex: 0 0 112px;
+}
+
+.speaker-name-missing .mantine-Input-input {
+  border-color: color-mix(in srgb, var(--opt-accent) 70%, transparent);
 }

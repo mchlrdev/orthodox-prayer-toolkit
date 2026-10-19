@@ -1,5 +1,6 @@
 import {
   DEFAULT_KIND_STYLES,
+  deleteKind,
   isKindPreset,
   isValidKindId,
   prayerFilename,
@@ -27,7 +28,7 @@ import {
   savePrayerView,
 } from "../viewPrefs";
 import { sameVariant, type ActiveVariant } from "../variant";
-import { applyDraftEdit, validationErrorsFor } from "./draftEdit";
+import { applyDraftEdit, validationFor } from "./draftEdit";
 import {
   exportPrayerVariant,
   type ExportFormat,
@@ -35,8 +36,16 @@ import {
 } from "./exportPrayerVariant";
 import { persistPrayer, prayerFileText } from "./persistPrayer";
 import { recordEdit, stepBack, stepForward } from "./history";
-import { planKindRename, renameKindAcrossLibrary } from "./renameKindLibrary";
+import {
+  deleteKindAcrossLibrary,
+  planKindDelete,
+  planKindRename,
+  prayerUsesKind,
+  renameKindAcrossLibrary,
+} from "./renameKindLibrary";
+import { removeStyleKey } from "../prayerEdit";
 import type {
+  KindDeletePlan,
   KindRenamePlan,
   LeaveAction,
   PrayerSessionState,
@@ -67,6 +76,7 @@ export function emptySessionState(
     pendingLeave: null,
     pendingDelete: null,
     pendingKindRename: null,
+    pendingKindDelete: null,
   };
 }
 
@@ -242,7 +252,12 @@ export function editDraft(
   if (next === current.prayer) return { state, notices: [] };
   const edited: SessionDraft = {
     ...current,
-    ...applyDraftEdit(next, current.visibleVariants, current.errors),
+    ...applyDraftEdit(
+      next,
+      current.visibleVariants,
+      current.errors,
+      current.warnings,
+    ),
     history: recordEdit(current.history, current.prayer, {
       coalesceKey: options.coalesceKey,
       now: options.now ?? Date.now(),
@@ -327,12 +342,16 @@ export function setDraftErrors(
   state: PrayerSessionState,
   path: string,
   errors: ValidationError[],
+  warnings?: ValidationError[],
 ): PrayerSessionState {
   const current = state.drafts[path];
   if (!current) return state;
   return {
     ...state,
-    drafts: { ...state.drafts, [path]: { ...current, errors } },
+    drafts: {
+      ...state.drafts,
+      [path]: { ...current, errors, ...(warnings ? { warnings } : {}) },
+    },
   };
 }
 
@@ -467,8 +486,13 @@ export async function saveSelected(
   const draft = path ? state.drafts[path] : undefined;
   if (!state.catalog || !path || !draft) return { state, notices: [] };
 
-  const errors = validationErrorsFor(draft.prayer);
-  const withErrors: PrayerSessionState = setDraftErrors(state, path, errors);
+  const { errors, warnings } = validationFor(draft.prayer);
+  const withErrors: PrayerSessionState = setDraftErrors(
+    state,
+    path,
+    errors,
+    warnings,
+  );
 
   const result = await persistPrayer(
     api,
@@ -524,7 +548,7 @@ export async function saveAllDirty(
     );
     if (!result.ok) {
       return {
-        state: setDraftErrors(next, path, draft.errors),
+        state: setDraftErrors(next, path, draft.errors, draft.warnings),
         notices: [
           {
             color: "accent",
@@ -1033,6 +1057,140 @@ export async function requestKindRename(
     state: { ...state, pendingKindRename: plan },
     notices: [],
   };
+}
+
+/**
+ * Kinds in use across the library for the kind list: scanned catalog entries,
+ * except that an open draft replaces its file's entry (a kind deleted in the
+ * draft is gone before the file is saved).
+ */
+export function discoverKinds(
+  catalog: LibraryCatalog | null,
+  drafts: Record<string, SessionDraft>,
+): string[] {
+  const kinds = new Set<string>();
+  for (const entry of catalog?.entries ?? []) {
+    if (entry.path in drafts) continue;
+    for (const kind of entry.kinds) kinds.add(kind);
+  }
+  for (const draft of Object.values(drafts)) {
+    for (const block of draft.prayer.structure) kinds.add(block.kind);
+  }
+  return [...kinds].sort((a, b) => a.localeCompare(b));
+}
+
+/** Write both style files and put the maps into state (one step, no race). */
+async function writeKindStyles(
+  state: PrayerSessionState,
+  api: PrayerToolkitApi,
+  appStyles: StyleMap,
+  libraryStyles: StyleMap,
+): Promise<PrayerSessionState> {
+  await api.writeAppStyles(`${JSON.stringify(appStyles, null, 2)}\n`);
+  if (!state.catalog) return { ...state, appStyles };
+  await api.writeLibraryStyles(
+    state.catalog.root,
+    `${JSON.stringify(libraryStyles, null, 2)}\n`,
+  );
+  return {
+    ...state,
+    appStyles,
+    catalog: { ...state.catalog, libraryStyles, styleErrors: [] },
+  };
+}
+
+/**
+ * Remove a custom kind (Prayer settings → Kinds "Remove", Kind popover
+ * "Delete"). Only the open prayer uses it: its blocks are reassigned as one
+ * undoable edit and the style entries go. Other library prayers use it: ask
+ * first (`pendingKindDelete`), then {@link applyKindDelete} rewrites them.
+ */
+export async function requestKindDelete(
+  state: PrayerSessionState,
+  api: PrayerToolkitApi,
+  kind: string,
+): Promise<SessionOpResult> {
+  if (isKindPreset(kind)) return { state, notices: [] };
+  const drafts = state.drafts;
+  const affected = state.catalog
+    ? (await planKindDelete(api, state.catalog, kind, { drafts })).affectedPaths
+    : [];
+  const others = affected.filter((p) => p !== state.selectedPath);
+  if (others.length > 0) {
+    return {
+      state: { ...state, pendingKindDelete: { kind, affectedPaths: affected } },
+      notices: [],
+    };
+  }
+  const draft = selectedDraft(state);
+  let next = state;
+  if (draft && prayerUsesKind(draft.prayer, kind)) {
+    next = editDraft(state, deleteKind(draft.prayer, kind)).state;
+  }
+  try {
+    next = await writeKindStyles(
+      next,
+      api,
+      removeStyleKey(next.appStyles, kind),
+      removeStyleKey(next.catalog?.libraryStyles ?? {}, kind),
+    );
+    return { state: next, notices: [] };
+  } catch (err) {
+    return { state: next, notices: [errorNotice("Could not remove kind", err)] };
+  }
+}
+
+export async function applyKindDelete(
+  state: PrayerSessionState,
+  api: PrayerToolkitApi,
+  plan: KindDeletePlan,
+): Promise<SessionOpResult> {
+  if (!state.catalog) return { state: { ...state, pendingKindDelete: null }, notices: [] };
+  try {
+    const result = await deleteKindAcrossLibrary(api, state.catalog, plan, {
+      drafts: state.drafts,
+      appStyles: state.appStyles,
+      libraryStyles: state.catalog.libraryStyles,
+    });
+    let catalog = state.catalog;
+    const drafts = { ...result.drafts };
+    for (const { path, prayer } of result.written) {
+      catalog = patchCatalogPrayer(catalog, path, prayer);
+      // Own write: the folder watcher must not report it as external.
+      const draft = drafts[path];
+      if (draft) {
+        drafts[path] = {
+          ...draft,
+          diskText: prayerFileText(prayer),
+          saved: prayer,
+          dirty: false,
+        };
+      }
+    }
+    const next = await writeKindStyles(
+      { ...state, catalog, drafts, pendingKindDelete: null },
+      api,
+      result.appStyles,
+      result.libraryStyles,
+    );
+    const skippedNote =
+      result.skipped.length > 0 ? ` · ${result.skipped.length} skipped` : "";
+    return {
+      state: next,
+      notices: [
+        {
+          color: "dark",
+          title: "Kind deleted",
+          message: `“${plan.kind}” removed from ${result.writtenPaths.length} prayer${result.writtenPaths.length === 1 ? "" : "s"}${skippedNote}`,
+        },
+      ],
+    };
+  } catch (err) {
+    return {
+      state: { ...state, pendingKindDelete: null },
+      notices: [errorNotice("Kind delete failed", err)],
+    };
+  }
 }
 
 export function errorNotice(title: string, err: unknown): SessionNotice {

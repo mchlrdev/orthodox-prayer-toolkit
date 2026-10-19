@@ -1,4 +1,5 @@
 import {
+  deleteKind,
   isKindPreset,
   renameKind,
   validate,
@@ -7,34 +8,34 @@ import {
 } from "@orthodox-prayer-toolkit/core";
 import type { PrayerToolkitApi } from "../../electron/preload";
 import { entriesUsingKind, type LibraryCatalog } from "../catalog";
-import { renameStyleKey } from "../prayerEdit";
-import type { KindRenamePlan, SessionDraft } from "./types";
+import { removeStyleKey, renameStyleKey } from "../prayerEdit";
+import { prayerFileText } from "./persistPrayer";
+import type { KindDeletePlan, KindRenamePlan, SessionDraft } from "./types";
 
-export type { KindRenamePlan } from "./types";
+export type { KindDeletePlan, KindRenamePlan } from "./types";
 
 export function prayerUsesKind(prayer: Prayer, kind: string): boolean {
   return prayer.structure.some((b) => b.kind === kind);
 }
 
-export async function planKindRename(
+/**
+ * Library paths whose prayer uses `kind`: session drafts (their edited
+ * state wins), scanned catalog entries, and not-yet-scanned files (read now).
+ */
+export async function pathsUsingKind(
   api: PrayerToolkitApi,
   catalog: LibraryCatalog,
-  from: string,
-  to: string,
+  kind: string,
   opts: { drafts: Record<string, SessionDraft> },
-): Promise<KindRenamePlan> {
-  if (isKindPreset(from)) {
-    return { from, to, affectedPaths: [] };
-  }
-
+): Promise<string[]> {
   const affected = new Set<string>();
   const unread: string[] = [];
 
   for (const [path, draft] of Object.entries(opts.drafts)) {
-    if (prayerUsesKind(draft.prayer, from)) affected.add(path);
+    if (prayerUsesKind(draft.prayer, kind)) affected.add(path);
   }
 
-  for (const entry of entriesUsingKind(catalog, from)) {
+  for (const entry of entriesUsingKind(catalog, kind)) {
     if (entry.path in opts.drafts) continue;
     affected.add(entry.path);
   }
@@ -48,7 +49,7 @@ export async function planKindRename(
     try {
       const raw = await api.readText(catalog.root, path);
       const result = validate(JSON.parse(raw) as unknown);
-      if (result.ok && prayerUsesKind(result.prayer, from)) {
+      if (result.ok && prayerUsesKind(result.prayer, kind)) {
         affected.add(path);
       }
     } catch {
@@ -56,7 +57,34 @@ export async function planKindRename(
     }
   }
 
-  return { from, to, affectedPaths: [...affected] };
+  return [...affected];
+}
+
+export async function planKindRename(
+  api: PrayerToolkitApi,
+  catalog: LibraryCatalog,
+  from: string,
+  to: string,
+  opts: { drafts: Record<string, SessionDraft> },
+): Promise<KindRenamePlan> {
+  if (isKindPreset(from)) {
+    return { from, to, affectedPaths: [] };
+  }
+  return {
+    from,
+    to,
+    affectedPaths: await pathsUsingKind(api, catalog, from, opts),
+  };
+}
+
+export async function planKindDelete(
+  api: PrayerToolkitApi,
+  catalog: LibraryCatalog,
+  kind: string,
+  opts: { drafts: Record<string, SessionDraft> },
+): Promise<KindDeletePlan> {
+  if (isKindPreset(kind)) return { kind, affectedPaths: [] };
+  return { kind, affectedPaths: await pathsUsingKind(api, catalog, kind, opts) };
 }
 
 export type KindRenameResult = {
@@ -89,22 +117,29 @@ async function loadPrayerAtPath(
   }
 }
 
+type KindRewrite = {
+  kind: string;
+  affectedPaths: string[];
+  prayer: (prayer: Prayer) => Prayer;
+  styles: (styles: StyleMap) => StyleMap;
+};
+
 /**
- * Rename a kind across the open library: every affected prayer file,
- * session drafts, and app/library style maps.
+ * Rewrite every prayer of the library that uses `kind` (affected files are
+ * written now; session drafts are updated) plus the app / library style maps.
  */
-export async function renameKindAcrossLibrary(
+async function rewriteKindAcrossLibrary(
   api: PrayerToolkitApi,
   catalog: LibraryCatalog,
-  plan: KindRenamePlan,
+  rewrite: KindRewrite,
   opts: {
     drafts: Record<string, SessionDraft>;
     appStyles: StyleMap;
     libraryStyles: StyleMap;
   },
 ): Promise<KindRenameResult> {
-  const { from, to, affectedPaths } = plan;
-  if (isKindPreset(from)) {
+  const { kind, affectedPaths } = rewrite;
+  if (isKindPreset(kind)) {
     return {
       writtenPaths: [],
       written: [],
@@ -121,8 +156,8 @@ export async function renameKindAcrossLibrary(
 
   const drafts: Record<string, SessionDraft> = {};
   for (const [path, session] of Object.entries(opts.drafts)) {
-    drafts[path] = prayerUsesKind(session.prayer, from)
-      ? { ...session, prayer: renameKind(session.prayer, from, to) }
+    drafts[path] = prayerUsesKind(session.prayer, kind)
+      ? { ...session, prayer: rewrite.prayer(session.prayer) }
       : session;
   }
 
@@ -133,16 +168,12 @@ export async function renameKindAcrossLibrary(
       continue;
     }
 
-    const next = prayerUsesKind(loaded.prayer, from)
-      ? renameKind(loaded.prayer, from, to)
+    const next = prayerUsesKind(loaded.prayer, kind)
+      ? rewrite.prayer(loaded.prayer)
       : loaded.prayer;
 
     try {
-      await api.writeText(
-        catalog.root,
-        path,
-        `${JSON.stringify(next, null, 2)}\n`,
-      );
+      await api.writeText(catalog.root, path, prayerFileText(next));
       writtenPaths.push(path);
       written.push({ path, prayer: next });
     } catch (err) {
@@ -158,7 +189,64 @@ export async function renameKindAcrossLibrary(
     written,
     skipped,
     drafts,
-    appStyles: renameStyleKey(opts.appStyles, from, to),
-    libraryStyles: renameStyleKey(opts.libraryStyles, from, to),
+    appStyles: rewrite.styles(opts.appStyles),
+    libraryStyles: rewrite.styles(opts.libraryStyles),
   };
+}
+
+/**
+ * Rename a kind across the open library: every affected prayer file,
+ * session drafts, and app/library style maps.
+ */
+export function renameKindAcrossLibrary(
+  api: PrayerToolkitApi,
+  catalog: LibraryCatalog,
+  plan: KindRenamePlan,
+  opts: {
+    drafts: Record<string, SessionDraft>;
+    appStyles: StyleMap;
+    libraryStyles: StyleMap;
+  },
+): Promise<KindRenameResult> {
+  const { from, to } = plan;
+  return rewriteKindAcrossLibrary(
+    api,
+    catalog,
+    {
+      kind: from,
+      affectedPaths: plan.affectedPaths,
+      prayer: (p) => renameKind(p, from, to),
+      styles: (m) => renameStyleKey(m, from, to),
+    },
+    opts,
+  );
+}
+
+/**
+ * Delete a custom kind across the open library: its blocks become verse
+ * (annotation for verse) in every affected prayer file and session draft,
+ * and its style entries are removed.
+ */
+export function deleteKindAcrossLibrary(
+  api: PrayerToolkitApi,
+  catalog: LibraryCatalog,
+  plan: KindDeletePlan,
+  opts: {
+    drafts: Record<string, SessionDraft>;
+    appStyles: StyleMap;
+    libraryStyles: StyleMap;
+  },
+): Promise<KindRenameResult> {
+  const { kind } = plan;
+  return rewriteKindAcrossLibrary(
+    api,
+    catalog,
+    {
+      kind,
+      affectedPaths: plan.affectedPaths,
+      prayer: (p) => deleteKind(p, kind),
+      styles: (m) => removeStyleKey(m, kind),
+    },
+    opts,
+  );
 }

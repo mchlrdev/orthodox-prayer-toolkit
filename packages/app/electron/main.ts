@@ -117,7 +117,8 @@ type AppCommand =
   | "save-all"
   | "settings"
   | "undo"
-  | "redo";
+  | "redo"
+  | "assign-speaker";
 
 function sendCommand(command: AppCommand): void {
   const win =
@@ -951,6 +952,12 @@ function buildAppMenu(): void {
           label: "Find Next",
           accelerator: "CmdOrCtrl+G",
           click: () => sendToFocusedWindow("app:find-next"),
+        },
+        { type: "separator" },
+        {
+          label: "Speaker…",
+          accelerator: "CmdOrCtrl+Shift+P",
+          click: () => sendCommand("assign-speaker"),
         },
       ],
     },

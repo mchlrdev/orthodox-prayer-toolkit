@@ -1,9 +1,15 @@
 import Ajv2020, { type ErrorObject } from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import prayerSchema from "../schema/prayer.schema.json";
-import type { Prayer, ValidationError, ValidationResult } from "./types.js";
+import {
+  CURRENT_FORMAT_VERSION,
+  type Prayer,
+  type ValidationError,
+  type ValidationResult,
+} from "./types.js";
 import { isInlineContent, normalizeRuns, toRuns } from "./textRuns.js";
 import { normalizePrayerVariants } from "./resolveDir.js";
+import { speakerDisplayLabel } from "./speakers.js";
 
 const ajv = new Ajv2020({
   allErrors: true,
@@ -117,6 +123,38 @@ function semanticChecks(prayer: Prayer): ValidationError[] {
   return errors;
 }
 
+function speakerWarnings(prayer: Prayer): ValidationError[] {
+  const warnings: ValidationError[] = [];
+  const used = new Set<string>();
+  const warned = new Set<string>();
+  for (const block of prayer.structure) {
+    if (block.speaker === undefined) continue;
+    used.add(block.speaker);
+  }
+  if (used.size === 0) return warnings;
+  for (const [i, v] of prayer.variants.entries()) {
+    for (const id of used) {
+      const key = `${i}::${id}`;
+      if (warned.has(key)) continue;
+      const hasTranslation = prayer.structure.some(
+        (b) =>
+          b.speaker === id &&
+          b.translations.some(
+            (tr) => tr.lang === v.lang && tr.variant === v.variant,
+          ),
+      );
+      if (!hasTranslation || v.speakers?.[id]?.name) continue;
+      warned.add(key);
+      warnings.push({
+        path: `/variants/${i}/speakers/${id}`,
+        message: `Speaker “${speakerDisplayLabel(id)}” has no name in ${v.lang} / ${v.variant}`,
+        code: "speaker-name-missing",
+      });
+    }
+  }
+  return warnings;
+}
+
 /**
  * Drop legacy fields so older prayer JSON still validates.
  */
@@ -151,17 +189,39 @@ function stripLegacyFields(data: unknown): unknown {
  * Missing translations are allowed (omit the entry — never empty keys).
  */
 export function validate(data: unknown): ValidationResult {
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    !Array.isArray(data) &&
+    typeof (data as { formatVersion?: unknown }).formatVersion === "number" &&
+    (data as { formatVersion: number }).formatVersion > CURRENT_FORMAT_VERSION
+  ) {
+    return {
+      ok: false,
+      errors: [
+        {
+          path: "/formatVersion",
+          message: `This prayer requires a newer app version (format version ${
+            (data as { formatVersion: number }).formatVersion
+          }; this app supports up to ${CURRENT_FORMAT_VERSION})`,
+          code: "format-version-newer",
+        },
+      ],
+      warnings: [],
+    };
+  }
+
   const prepared = stripLegacyFields(data);
   if (!validateSchema(prepared)) {
     const errors = (validateSchema.errors ?? []).map(formatAjvError);
-    return { ok: false, errors };
+    return { ok: false, errors, warnings: [] };
   }
 
   const prayer = normalizePrayerVariants(prepared as Prayer);
   const semantic = semanticChecks(prayer);
   if (semantic.length > 0) {
-    return { ok: false, errors: semantic };
+    return { ok: false, errors: semantic, warnings: [] };
   }
 
-  return { ok: true, prayer };
+  return { ok: true, prayer, warnings: speakerWarnings(prayer) };
 }

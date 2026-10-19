@@ -47,6 +47,7 @@ import {
   flushPendingEdits,
   isAppCommand,
   isMacPlatform,
+  modalOpen,
   wantsNativeUndo,
   type AppCommand,
 } from "./appCommands";
@@ -118,7 +119,7 @@ export function App() {
   );
   /** Returns false when the command should fall through to the browser. */
   commandRef.current = (command, fromKey) => {
-    const dialogOpen = document.querySelector("[role='dialog']") !== null;
+    const dialogOpen = modalOpen();
     switch (command) {
       case "save":
         flushPendingEdits();
@@ -139,6 +140,10 @@ export function App() {
       case "settings":
         if (dialogOpen) return true;
         setAppSettingsOpen(true);
+        return true;
+      case "assign-speaker":
+        if (dialogOpen) return true;
+        editorRef.current?.openSpeakerMenu();
         return true;
       case "undo":
       case "redo": {
@@ -204,6 +209,7 @@ export function App() {
     selectedPath,
     draft,
     draftErrors,
+    draftWarnings,
     visibleVariants,
     setVisibleVariants,
     activeVariant,
@@ -425,6 +431,7 @@ export function App() {
                 busy={busy}
                 dirty={dirty}
                 errors={draftErrors}
+                warnings={draftWarnings}
                 diskConflict={session.diskConflict}
                 editorRef={editorRef}
                 scrollRootRef={scrollRootRef}
@@ -437,10 +444,16 @@ export function App() {
                 }}
                 onVisibleVariantsChange={setVisibleVariants}
                 onSave={() => void session.saveDraft()}
-                onSettings={() => setSettingsOpen(true)}
+                onSettings={(pane) => {
+                  if (pane) setSettingsPane(pane);
+                  setSettingsOpen(true);
+                }}
                 onExport={() => setExportOpen(true)}
                 onRenameKind={(from, to) => {
                   void session.requestKindRename(from, to);
+                }}
+                onDeleteKind={(kind) => {
+                  void session.requestKindDelete(kind);
                 }}
               />
             ) : library ? (
@@ -539,6 +552,9 @@ export function App() {
           onActiveVariantChange={session.setActiveVariant}
           onRenameKind={(from, to) => {
             void session.requestKindRename(from, to);
+          }}
+          onRemoveKind={(kind) => {
+            void session.requestKindDelete(kind);
           }}
           styles={{
             kinds: Object.keys(resolvedStyles),
@@ -648,6 +664,20 @@ export function App() {
         confirmLabel="Rename"
         loading={session.kindRenameBusy || busy}
         onConfirm={() => void session.confirmKindRename()}
+      />
+
+      <ConfirmDialog
+        opened={session.pendingKindDelete !== null}
+        onClose={session.cancelKindDelete}
+        title="Delete kind in library?"
+        message={
+          session.pendingKindDelete
+            ? `“${kindDisplayLabel(session.pendingKindDelete.kind)}” is used in ${session.pendingKindDelete.affectedPaths.length} prayers. Delete it everywhere? Its blocks become ${session.pendingKindDelete.kind === "verse" ? "annotation" : "verse"} and those files are written now.`
+            : ""
+        }
+        confirmLabel="Delete"
+        loading={session.kindRenameBusy || busy}
+        onConfirm={() => void session.confirmKindDelete()}
       />
 
       <UnsavedChangesDialog

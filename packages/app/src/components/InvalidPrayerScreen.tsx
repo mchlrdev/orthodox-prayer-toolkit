@@ -18,6 +18,25 @@ type Props = {
 export function InvalidPrayerScreen({ path, errors }: Props) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const fileName = path.split("/").pop() ?? path;
+  // Core's stable code for a formatVersion above what this app reads.
+  const newerFormat = errors.some((e) => e.code === "format-version-newer");
+
+  if (newerFormat) {
+    return (
+      <div className="workspace-empty invalid-prayer">
+        <div className="invalid-prayer-copy">
+          <Text className="invalid-prayer-kicker">Needs a newer app</Text>
+          <Text className="invalid-prayer-file" title={path}>
+            {fileName}
+          </Text>
+          <Text size="sm" c="dimmed" maw={420} ta="center">
+            This prayer was saved with a newer version of Orthodox Prayer
+            Toolkit. Update the app to open it.
+          </Text>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

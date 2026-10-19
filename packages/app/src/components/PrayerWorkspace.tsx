@@ -68,6 +68,8 @@ type Props = {
   dirty: boolean;
   /** Live validation of the session draft. */
   errors: ValidationError[];
+  /** Non-blocking findings shown below the errors in the header popover. */
+  warnings?: ValidationError[];
   diskConflict: DiskConflict | null;
   editorRef?: Ref<InlineEditorHandle>;
   scrollRootRef?: Ref<HTMLDivElement | null>;
@@ -76,9 +78,11 @@ type Props = {
   onReloadFromDisk: () => void;
   onVisibleVariantsChange: (cols: ActiveVariant[]) => void;
   onSave: () => void;
-  onSettings: () => void;
+  /** Open Prayer settings, optionally on a pane ("More speakers…" / "More kinds…"). */
+  onSettings: (pane?: "speakers" | "styles") => void;
   onExport: () => void;
   onRenameKind: (from: string, to: string) => void;
+  onDeleteKind: (kind: string) => void;
 };
 
 function assignRef<T>(ref: Ref<T> | undefined, value: T): void {
@@ -168,6 +172,7 @@ export function PrayerWorkspace({
   busy,
   dirty,
   errors,
+  warnings = [],
   diskConflict,
   editorRef,
   scrollRootRef,
@@ -179,6 +184,7 @@ export function PrayerWorkspace({
   onSettings,
   onExport,
   onRenameKind,
+  onDeleteKind,
 }: Props) {
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const localEditorRef = useRef<InlineEditorHandle | null>(null);
@@ -290,41 +296,87 @@ export function PrayerWorkspace({
                 Unsaved
               </Badge>
             ) : null}
-            {errors.length > 0 ? (
+            {errors.length > 0 || warnings.length > 0 ? (
               <Popover width={340} position="bottom-start" withArrow shadow="md">
                 <Popover.Target>
-                  <Badge
-                    component="button"
-                    size="sm"
-                    color="accent"
-                    variant="filled"
-                    className="workspace-issues-badge"
-                    leftSection={<IconAlertTriangle size={11} stroke={2.2} />}
-                    aria-label={`${errors.length} validation problem${errors.length === 1 ? "" : "s"}`}
-                  >
-                    {errors.length} {errors.length === 1 ? "issue" : "issues"}
-                  </Badge>
+                  {errors.length > 0 ? (
+                    <Badge
+                      component="button"
+                      size="sm"
+                      color="accent"
+                      variant="filled"
+                      className="workspace-issues-badge"
+                      leftSection={<IconAlertTriangle size={11} stroke={2.2} />}
+                      aria-label={`${errors.length} validation problem${errors.length === 1 ? "" : "s"}${warnings.length > 0 ? `, ${warnings.length} warning${warnings.length === 1 ? "" : "s"}` : ""}`}
+                    >
+                      {errors.length} {errors.length === 1 ? "issue" : "issues"}
+                    </Badge>
+                  ) : (
+                    <Badge
+                      component="button"
+                      size="sm"
+                      color="gray"
+                      variant="light"
+                      className="workspace-issues-badge"
+                      leftSection={<IconAlertTriangle size={11} stroke={2.2} />}
+                      aria-label={`${warnings.length} warning${warnings.length === 1 ? "" : "s"}`}
+                    >
+                      {warnings.length}{" "}
+                      {warnings.length === 1 ? "warning" : "warnings"}
+                    </Badge>
+                  )}
                 </Popover.Target>
                 <Popover.Dropdown>
                   <Stack gap={6}>
-                    <Text size="xs" c="dimmed">
-                      Fix these before saving.
-                    </Text>
-                    {located.map(({ error, blockId }, i) => (
-                      <UnstyledButton
-                        key={`${error.path}-${i}`}
-                        className="workspace-issue-row"
-                        disabled={!blockId}
-                        onClick={() => {
-                          if (blockId) jumpToIssue(blockId);
-                        }}
-                      >
-                        <Text size="sm">{error.message}</Text>
-                        <Text size="xs" c="dimmed" ff="monospace">
-                          {error.path}
+                    {errors.length > 0 ? (
+                      <>
+                        <Text size="xs" c="dimmed">
+                          Fix these before saving.
                         </Text>
-                      </UnstyledButton>
-                    ))}
+                        {located.map(({ error, blockId }, i) => (
+                          <UnstyledButton
+                            key={`${error.path}-${i}`}
+                            className="workspace-issue-row"
+                            disabled={!blockId}
+                            onClick={() => {
+                              if (blockId) jumpToIssue(blockId);
+                            }}
+                          >
+                            <Text size="sm">{error.message}</Text>
+                            <Text size="xs" c="dimmed" ff="monospace">
+                              {error.path}
+                            </Text>
+                          </UnstyledButton>
+                        ))}
+                      </>
+                    ) : null}
+                    {warnings.length > 0 ? (
+                      <>
+                        <Text
+                          size="xs"
+                          fw={600}
+                          c="dimmed"
+                          tt="uppercase"
+                          mt={errors.length > 0 ? 6 : 0}
+                        >
+                          Warnings
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          Does not block saving.
+                        </Text>
+                        {warnings.map((w, i) => (
+                          <div
+                            key={`${w.path}-${i}`}
+                            className="workspace-issue-row"
+                            data-warning="true"
+                          >
+                            <Text size="sm" c="dimmed">
+                              {w.message}
+                            </Text>
+                          </div>
+                        ))}
+                      </>
+                    ) : null}
                   </Stack>
                 </Popover.Dropdown>
               </Popover>
@@ -353,7 +405,7 @@ export function PrayerWorkspace({
                 variant="subtle"
                 color="gray"
                 aria-label="Settings"
-                onClick={onSettings}
+                onClick={() => onSettings()}
               >
                 <IconSettings size={16} />
               </ActionIcon>
@@ -543,6 +595,8 @@ export function PrayerWorkspace({
             issues={issues}
             onChange={onChange}
             onRenameKind={onRenameKind}
+            onDeleteKind={onDeleteKind}
+            onOpenSettings={onSettings}
           />
         </div>
       </div>

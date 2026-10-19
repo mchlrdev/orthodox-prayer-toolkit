@@ -34,6 +34,7 @@ There is **no** top-level canonical `title`. Human-facing titles come from the a
 | `tone` | no | Oktoechos tone `1`–`8`, or `null` |
 | `description` | no | Short language-neutral summary |
 | `meta.custom` | no | Arbitrary string/number/boolean/null map |
+| `formatVersion` | no | `2` when the file uses speakers; omitted otherwise (missing = `1`). See [Format version](#format-version). |
 
 ## Variant registry
 
@@ -54,6 +55,7 @@ There is **no** top-level canonical `title`. Human-facing titles come from the a
 | `title` | Display title for this language/edition |
 | `license` / `source` | Rights & provenance; unclear → `unknown` / `draft` |
 | `rtl` | Optional. `true` when this **whole edition** is right-to-left. Omit for LTR (do not write `false`). |
+| `speakers` | Optional. Printed labels per Speaker id for this edition. See [Speakers](#speakers). |
 
 Church Slavonic script differences are **separate variants** under `cu`, not a schema field. Direction is the optional `rtl` flag on that variant — not inferred from `lang`.
 
@@ -80,6 +82,7 @@ Kind-level direction (`dir`: `rtl` / `ltr`) lives in library `styles.json`, not 
 | `id` | Stable within the prayer |
 | `kind` | Open semantic role string (not a closed schema enum) |
 | `translations[]` | `{ lang, variant, text? }` or `{ lang, variant, lines? }` |
+| `speaker` | Optional. Id of the Speaker who says the block (`priest`, `people`, …). Same for every Variant. See [Speakers](#speakers). |
 
 ### Recommended kinds (editor presets)
 
@@ -123,6 +126,70 @@ When a string needs marked spans, use runs instead of a plain string. Note runs 
 ```
 
 Exports map `note` runs to HTML / layout character styles as appropriate. Layout RTF/DOCX map each kind to a paragraph style and `note` runs to a character style.
+
+## Speakers
+
+A **Speaker** marks who says a block (liturgical dialogue). The id is on the block; the printed name is per Variant.
+
+```json
+{
+  "formatVersion": 2,
+  "id": "ostergebete",
+  "type": "prayer",
+  "variants": [
+    {
+      "lang": "de",
+      "variant": "standard",
+      "title": "Ostergebete",
+      "license": "unknown",
+      "source": "draft",
+      "speakers": {
+        "priest": { "name": "Priester", "short": "P" },
+        "people": { "name": "Volk", "short": "V" }
+      }
+    }
+  ],
+  "structure": [
+    {
+      "id": "d1",
+      "kind": "verse",
+      "speaker": "priest",
+      "translations": [
+        { "lang": "de", "variant": "standard", "lines": ["Christus ist auferstanden!"] }
+      ]
+    },
+    {
+      "id": "d2",
+      "kind": "verse",
+      "speaker": "people",
+      "translations": [
+        { "lang": "de", "variant": "standard", "lines": ["Wahrhaftig, er ist auferstanden!"] }
+      ]
+    }
+  ]
+}
+```
+
+| Rule | Detail |
+|------|--------|
+| Speaker id | Same pattern as kind ids: letter first, then letters, digits, `_`, `-`; max 64 |
+| Block `speaker` | Optional; one per block. Do not type the label into `text` / `lines` |
+| Variant `speakers` | Map `{ [id]: { name?, short? } }`. Empty strings are not written; an entry with neither field is omitted; an empty map is omitted |
+| No registry | The Speakers of a prayer are the ids used on blocks plus the keys of `speakers` maps. There is no Library list |
+| Presets | `priest`, `deacon`, `bishop`, `reader`, `choir`, `people` are offered in the editor only. Core ships no translated labels |
+| Printed name fallback | `name` missing → the id, title-cased (`priest` → `Priest`, `my-cantor` → `My cantor`) |
+| Printed short fallback | `short` missing → first letter of the resolved name (`Priester` → `P`) |
+| Missing name | Validation warns (`speaker-name-missing`) when a used Speaker has no `name` in a Variant that has a translation for that block. The file stays valid |
+
+### Format version
+
+| `formatVersion` | Meaning |
+|-----------------|---------|
+| missing | `1` — no speakers |
+| `2` | The file uses `speaker` or `speakers` |
+| higher than the app supports | Validation fails with `format-version-newer`: the app asks for a newer version instead of showing schema errors |
+
+The app writes `formatVersion: 2` only while the file uses speakers and removes it when the last Speaker is gone. Older apps (≤ 0.2.3) reject unknown keys, so Speaker-free prayers stay openable there.
 
 ## Minimal example
 
@@ -208,3 +275,4 @@ Other exporters (`exportHtml`, `exportLayoutRtf`, `exportLayoutDocx`) take the s
 6. Keep layout out of the source file  
 7. Spoken doxologies are `verse`; glued rubric + spoken words use a `note` run  
 8. Extra languages on a monolingual page are sequential blocks of that variant; `/` stays in the string  
+9. Speakers: the role is on `speaker` and the labels are in `speakers`; the text has no "Priester:" prefix; `formatVersion` is `2` only when speakers are used  

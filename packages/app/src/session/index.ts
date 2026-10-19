@@ -1,5 +1,6 @@
 export type {
   DiskConflict,
+  KindDeletePlan,
   KindRenamePlan,
   LeaveAction,
   PersistResult,
@@ -23,6 +24,7 @@ export { resolveExportPrefixStem } from "./layoutPrefix";
 export {
   applyDraftEdit,
   validationErrorsFor,
+  validationFor,
   DRAFT_VALIDATE_DEBOUNCE_MS,
 } from "./draftEdit";
 export { persistPrayer, prayerFileText } from "./persistPrayer";
@@ -41,13 +43,18 @@ export {
   resolveImportedPrayerPath,
 } from "./prayerFileIo";
 export {
+  deleteKindAcrossLibrary,
+  pathsUsingKind,
+  planKindDelete,
   planKindRename,
   prayerUsesKind,
   renameKindAcrossLibrary,
 } from "./renameKindLibrary";
 export type { KindRenameResult } from "./renameKindLibrary";
 export {
+  applyKindDelete,
   applyKindRename,
+  discoverKinds,
   applyCatalogChunk,
   beginCreatePrayer,
   cancelCreatePrayer,
@@ -72,6 +79,7 @@ export {
   persistLibraryStyles,
   putPrayerFromText,
   redoDraft,
+  requestKindDelete,
   requestKindRename,
   requestLeave,
   resetForLibrary,
