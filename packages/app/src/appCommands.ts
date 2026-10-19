@@ -96,9 +96,25 @@ export function modalOpen(root: Pick<ParentNode, "querySelector"> = document): b
   return root.querySelector(MODAL_SELECTOR) !== null;
 }
 
-/** Ask focused prayer cells to commit pending typing (before save). */
+/** Ask prayer cells to commit pending typing (before save, leave, export, find). */
 export const FLUSH_EDITS_EVENT = "opt:flush-edits";
 
 export function flushPendingEdits(): void {
   window.dispatchEvent(new Event(FLUSH_EDITS_EVENT));
+}
+
+/**
+ * Fired when a cell's uncommitted flag appears or clears. Chrome can enable
+ * Save without committing on every keystroke.
+ */
+export const UNCOMMITTED_CHANGE_EVENT = "opt:uncommitted-change";
+
+export function notifyUncommittedChange(): void {
+  window.dispatchEvent(new Event(UNCOMMITTED_CHANGE_EVENT));
+}
+
+export function hasUncommittedEdits(
+  root: Pick<ParentNode, "querySelector"> = document,
+): boolean {
+  return root.querySelector("[data-uncommitted]") !== null;
 }

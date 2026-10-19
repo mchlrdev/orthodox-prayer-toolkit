@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { MODAL_SELECTOR, commandForKey, modalOpen } from "../src/appCommands";
+import {
+  MODAL_SELECTOR,
+  commandForKey,
+  hasUncommittedEdits,
+  modalOpen,
+} from "../src/appCommands";
 
 const key = (
   k: string,
@@ -48,5 +53,16 @@ describe("modalOpen", () => {
     expect(modalOpen(root(MODAL_SELECTOR))).toBe(true);
     expect(modalOpen(root("[role='dialog']"))).toBe(false);
     expect(modalOpen(root())).toBe(false);
+  });
+});
+
+describe("hasUncommittedEdits", () => {
+  const root = (...matches: string[]) => ({
+    querySelector: (sel: string) => (matches.includes(sel) ? ({} as Element) : null),
+  });
+
+  it("is true when a cell has data-uncommitted", () => {
+    expect(hasUncommittedEdits(root("[data-uncommitted]"))).toBe(true);
+    expect(hasUncommittedEdits(root())).toBe(false);
   });
 });

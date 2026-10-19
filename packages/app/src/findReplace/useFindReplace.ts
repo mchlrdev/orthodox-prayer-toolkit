@@ -16,6 +16,7 @@ import {
   type FindMatch,
 } from "../prayerEdit/findReplace";
 import type { ActiveVariant } from "../variant";
+import { flushPendingEdits } from "../appCommands";
 import {
   scrollFindMatchIntoView,
 } from "./highlights";
@@ -120,6 +121,7 @@ export function useFindReplace({
 
   const openFind = useCallback(
     (opts?: { expandReplace?: boolean }) => {
+      flushPendingEdits();
       const selection = getSelectionTextInWorkspace();
       const saved =
         stateByPathRef.current.get(prayerPath) ??

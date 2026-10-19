@@ -108,6 +108,7 @@ export function App() {
 
   const handleSelectEntry = useCallback(
     (entry: LibraryEntry) => {
+      flushPendingEdits();
       void session.openEntry(entry);
       if (overlayMode) setLibraryCollapsed(true);
     },
@@ -443,12 +444,18 @@ export function App() {
                   if (selectedPath) void session.reloadFromDisk(selectedPath);
                 }}
                 onVisibleVariantsChange={setVisibleVariants}
-                onSave={() => void session.saveDraft()}
+                onSave={() => {
+                  flushPendingEdits();
+                  void session.saveDraft();
+                }}
                 onSettings={(pane) => {
                   if (pane) setSettingsPane(pane);
                   setSettingsOpen(true);
                 }}
-                onExport={() => setExportOpen(true)}
+                onExport={() => {
+                  flushPendingEdits();
+                  setExportOpen(true);
+                }}
                 onRenameKind={(from, to) => {
                   void session.requestKindRename(from, to);
                 }}
@@ -698,6 +705,7 @@ export function App() {
           });
         }}
         onSaveAll={() => {
+          flushPendingEdits();
           void session.handleLeaveSaveAll().then((action) => {
             if (action?.type === "open-folder") setLibrarySettingsOpen(false);
           });

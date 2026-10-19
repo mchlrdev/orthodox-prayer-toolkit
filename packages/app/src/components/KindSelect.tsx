@@ -10,7 +10,7 @@ import {
   TextInput,
   UnstyledButton,
 } from "@mantine/core";
-import { IconPencil, IconTrash } from "@tabler/icons-react";
+import { IconCheck, IconPencil, IconTrash } from "@tabler/icons-react";
 import {
   FALLBACK_KIND_STYLE,
   isKindPreset,
@@ -20,6 +20,7 @@ import {
   type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import { ConfirmDialog } from "./ConfirmDialog";
+import type { ContextMenuItem } from "./ContextMenu";
 import { KindStyleFields } from "./KindStyleFields";
 import {
   OPTION_DROPDOWN_PADDING,
@@ -62,6 +63,38 @@ function styleForKind(kind: string, editing: StyleEditing): KindStyle {
     editing.resolved[kind] ??
     FALLBACK_KIND_STYLE
   );
+}
+
+type KindMenuActions = {
+  value: string;
+  options: string[];
+  onSelect: (kind: string) => void;
+  onMore?: () => void;
+};
+
+/** Same entries as the Kind popover, for the block right-click "Kind ▸" submenu. */
+export function kindContextItems({
+  value,
+  options,
+  onSelect,
+  onMore,
+}: KindMenuActions): ContextMenuItem[] {
+  const check = (on: boolean) => (on ? <IconCheck size={14} /> : undefined);
+  const items: ContextMenuItem[] = orderKinds(options).map((kind) => ({
+    label: kindDisplayLabel(kind),
+    right: check(kind === value),
+    onClick: () => onSelect(kind),
+  }));
+  if (onMore) {
+    items.push(
+      { divider: true },
+      {
+        label: "More kinds…",
+        onClick: onMore,
+      },
+    );
+  }
+  return items;
 }
 
 export function kindTriggerStyle(compact: boolean): CSSProperties {

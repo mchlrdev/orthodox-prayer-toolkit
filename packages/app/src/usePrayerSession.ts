@@ -73,6 +73,11 @@ import {
   type RecentLibrary,
 } from "./recentLibraries";
 import { savePrayerView } from "./viewPrefs";
+import {
+  flushPendingEdits,
+  hasUncommittedEdits,
+  UNCOMMITTED_CHANGE_EVENT,
+} from "./appCommands";
 
 /** Library files that are not prayers but change how the library reads. */
 function isLibraryMetaPath(path: string): boolean {
@@ -294,6 +299,7 @@ export function usePrayerSession(opts?: {
 
   const activateLibraryRoot = useCallback(
     async (root: string): Promise<boolean> => {
+      flushPendingEdits();
       if (hasUnsaved(stateRef.current)) {
         commit(requestLeave(stateRef.current, { type: "open-folder", root }));
         return false;
@@ -361,6 +367,7 @@ export function usePrayerSession(opts?: {
   const requestReloadLibrary = () => {
     const catalog = stateRef.current.catalog;
     if (!catalog) return;
+    flushPendingEdits();
     if (hasUnsaved(stateRef.current)) {
       commit(
         requestLeave(stateRef.current, { type: "reload-library" }),
@@ -398,6 +405,7 @@ export function usePrayerSession(opts?: {
     ) {
       return opts ?? null;
     }
+    flushPendingEdits();
     cancelDraftValidation();
     persistCurrentView();
     const cached = stateRef.current.drafts[entry.path];
@@ -673,6 +681,7 @@ export function usePrayerSession(opts?: {
   const handleLeaveSaveAll = async (): Promise<LeaveAction | null> => {
     const pending = stateRef.current.pendingLeave;
     if (!pending) return null;
+    flushPendingEdits();
     setLeaveBusy(true);
     try {
       const ok = await saveAllUnsaved();
@@ -718,6 +727,7 @@ export function usePrayerSession(opts?: {
 
   useEffect(() => {
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      flushPendingEdits();
       if (!hasUnsaved(stateRef.current)) return;
       event.preventDefault();
       event.returnValue = "";
@@ -728,13 +738,23 @@ export function usePrayerSession(opts?: {
 
   useEffect(() => {
     if (isBrowserDev()) return;
-    api.setDirty(sessionHasUnsaved);
+    const syncDirty = () => {
+      api.setDirty(hasUnsaved(stateRef.current) || hasUncommittedEdits());
+    };
+    syncDirty();
+    window.addEventListener(UNCOMMITTED_CHANGE_EVENT, syncDirty);
+    return () => window.removeEventListener(UNCOMMITTED_CHANGE_EVENT, syncDirty);
   }, [api, sessionHasUnsaved]);
 
   useEffect(() => {
     if (isBrowserDev()) return;
     return api.onCloseRequested(() => {
+      flushPendingEdits();
       persistCurrentView();
+      if (!hasUnsaved(stateRef.current)) {
+        api.confirmClose();
+        return;
+      }
       commit(
         requestLeave(stateRef.current, { type: "close-window" }),
       );
@@ -744,6 +764,7 @@ export function usePrayerSession(opts?: {
   useEffect(() => {
     if (isBrowserDev()) return;
     return api.onInstallRequested(() => {
+      flushPendingEdits();
       persistCurrentView();
       if (!hasUnsaved(stateRef.current)) {
         api.confirmInstall();

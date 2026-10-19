@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, type Ref } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type Ref } from "react";
 import {
   ActionIcon,
   Alert,
@@ -34,7 +34,12 @@ import {
   type BlockIssues,
   type InlineEditorHandle,
 } from "./InlineEditor";
-import { shortcutLabel } from "../appCommands";
+import {
+  flushPendingEdits,
+  hasUncommittedEdits,
+  shortcutLabel,
+  UNCOMMITTED_CHANGE_EVENT,
+} from "../appCommands";
 import type { DiskConflict } from "../session";
 import { FindReplacePanel } from "./FindReplacePanel";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -196,6 +201,13 @@ export function PrayerWorkspace({
     [editorRef],
   );
   usePrayerScroll(libraryRoot, prayerPath, bodyRef);
+  const [hasUncommitted, setHasUncommitted] = useState(hasUncommittedEdits);
+  useEffect(() => {
+    const sync = () => setHasUncommitted(hasUncommittedEdits());
+    sync();
+    window.addEventListener(UNCOMMITTED_CHANGE_EVENT, sync);
+    return () => window.removeEventListener(UNCOMMITTED_CHANGE_EVENT, sync);
+  }, [prayerPath]);
   const split = visibleVariants.length > 1;
 
   const availableToAdd = useMemo(() => {
@@ -426,7 +438,7 @@ export function PrayerWorkspace({
               color="accent"
               loading={busy}
               onClick={onSave}
-              disabled={!dirty}
+              disabled={!dirty && !hasUncommitted}
             >
               Save
             </Button>
@@ -564,11 +576,12 @@ export function PrayerWorkspace({
                 currentIndex: 0,
               })
             }
-            onToggleReplaceExpanded={() =>
+            onToggleReplaceExpanded={() => {
+              if (!findReplace.state.replaceExpanded) flushPendingEdits();
               findReplace.patch({
                 replaceExpanded: !findReplace.state.replaceExpanded,
-              })
-            }
+              });
+            }}
             onClose={findReplace.closeFind}
             onNext={findReplace.goNext}
             onPrev={findReplace.goPrev}

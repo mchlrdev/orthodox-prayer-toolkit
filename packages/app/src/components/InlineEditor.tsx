@@ -22,6 +22,7 @@ import {
   IconCopy,
   IconCut,
   IconNote,
+  IconPalette,
   IconPlus,
   IconRowInsertBottom,
   IconTrash,
@@ -43,15 +44,32 @@ import {
   type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import { styleColorToCss } from "../colors";
-import { KindSelect, KindTrigger } from "./KindSelect";
+import { KindSelect, KindTrigger, kindContextItems } from "./KindSelect";
 import { kindFontSizeToEditor } from "../kindFontSize";
 import { useContextMenu, type ContextMenuItem } from "./ContextMenu";
 import { getToolkitApi } from "../api";
 import {
   FLUSH_EDITS_EVENT,
+  flushPendingEdits,
+  notifyUncommittedChange,
   SPEAKER_SHORTCUT,
   shortcutLabel,
 } from "../appCommands";
+import {
+  rememberCtxPrayer,
+  snapshotAfterFlush,
+} from "../flushedEditorCtx";
+import {
+  armTransientSkipBlurCommit,
+  editableBlurDecision,
+} from "../editableBlur";
+import {
+  applyIdleCommitTrigger,
+  cancelIdleCommitTimer,
+  nativeEventIsComposing,
+  type IdleCommitTimer,
+  type IdleCommitTrigger,
+} from "../idleCommit";
 import {
   SpeakerChip,
   SpeakerMenu,
@@ -422,7 +440,6 @@ const EditableBlock = memo(function EditableBlock({
   onSpillToNext,
   onArrowLeave,
   onJoin,
-  liveCommit = false,
 }: {
   content: InlineContent | InlineContent[];
   lineMode: boolean;
@@ -433,8 +450,6 @@ const EditableBlock = memo(function EditableBlock({
   blockId: string;
   initialCap?: boolean;
   dir?: "ltr" | "rtl";
-  /** Commit on every input (outline kinds need live Content labels). */
-  liveCommit?: boolean;
   onCommit: (content: InlineContent | InlineContent[] | null) => void;
   onFocusChange?: (blockId: string, focused: boolean) => void;
   onInsertBelow?: (
@@ -457,13 +472,19 @@ const EditableBlock = memo(function EditableBlock({
   const ref = useRef<HTMLDivElement>(null);
   const skipBlurCommitRef = useRef(false);
   const dirtyRef = useRef(false);
+  const idleTimerRef = useRef<IdleCommitTimer>({ id: null });
+  const lineModeRef = useRef(lineMode);
+  lineModeRef.current = lineMode;
   /** Typing the app has not taken yet; native undo applies while set. */
   const setUncommitted = (value: boolean) => {
+    const changed = dirtyRef.current !== value;
     dirtyRef.current = value;
     const el = ref.current;
-    if (!el) return;
-    if (value) el.dataset.uncommitted = "true";
-    else delete el.dataset.uncommitted;
+    if (el) {
+      if (value) el.dataset.uncommitted = "true";
+      else delete el.dataset.uncommitted;
+    }
+    if (changed) notifyUncommittedChange();
   };
   const skipSyncOnBlurRef = useRef(false);
   const [focused, setFocused] = useState(false);
@@ -504,7 +525,10 @@ const EditableBlock = memo(function EditableBlock({
   };
 
   useEffect(() => {
-    return () => cancelHoverHide();
+    return () => {
+      cancelHoverHide();
+      cancelIdleCommitTimer(idleTimerRef.current);
+    };
   }, []);
 
   const paint = (el: HTMLElement, next: InlineContent | InlineContent[]) => {
@@ -543,19 +567,41 @@ const EditableBlock = memo(function EditableBlock({
   contentRef.current = content;
   const onCommitRef = useRef(onCommit);
   onCommitRef.current = onCommit;
+
+  const commitIfDirty = () => {
+    if (!dirtyRef.current || !ref.current) return;
+    const serialized = serializeEditable(ref.current, lineModeRef.current);
+    setUncommitted(false);
+    if (
+      editorCommitUnchanged(
+        contentRef.current,
+        serialized,
+        lineModeRef.current,
+      )
+    ) {
+      return;
+    }
+    onCommitRef.current(serialized);
+  };
+  const commitIfDirtyRef = useRef(commitIfDirty);
+  commitIfDirtyRef.current = commitIfDirty;
+
+  const applyIdle = (trigger: IdleCommitTrigger) => {
+    applyIdleCommitTrigger(idleTimerRef.current, trigger, () => {
+      commitIfDirtyRef.current();
+    });
+  };
+
   useEffect(() => {
     const flush = () => {
-      if (!dirtyRef.current || !ref.current) return;
-      const serialized = serializeEditable(ref.current, lineMode);
-      setUncommitted(false);
-      if (editorCommitUnchanged(contentRef.current, serialized, lineMode)) {
-        return;
-      }
-      onCommitRef.current(serialized);
+      applyIdleCommitTrigger(idleTimerRef.current, { type: "flush" }, () => {
+        commitIfDirtyRef.current();
+      });
+      commitIfDirtyRef.current();
     };
     window.addEventListener(FLUSH_EDITS_EVENT, flush);
     return () => window.removeEventListener(FLUSH_EDITS_EVENT, flush);
-  }, [lineMode]);
+  }, []);
 
   const markDirty = () => setUncommitted(true);
 
@@ -646,6 +692,7 @@ const EditableBlock = memo(function EditableBlock({
         setToolbar(null);
         return;
       }
+      applyIdle({ type: "structural" });
       const lineIndex = startMap.lineIndex;
       const line = lines[lineIndex] ?? "";
       const nextLine = toggleNoteRange(line, startMap.local, endMap.local);
@@ -657,6 +704,7 @@ const EditableBlock = memo(function EditableBlock({
     } else {
       const current = serializeEditable(el, false);
       if (current === null) return;
+      applyIdle({ type: "structural" });
       // Text mode yields InlineContent (string | TextRun[]), never a line list.
       const inline = (
         Array.isArray(current) && !isRunArray(current)
@@ -671,14 +719,22 @@ const EditableBlock = memo(function EditableBlock({
     setUncommitted(false);
     setToolbar(null);
     el.focus();
+    // Same-cell commit: do not leave skip-blur-commit armed for later typing.
+    skipBlurCommitRef.current = false;
   };
 
   const handleBlur = (e: FocusEvent<HTMLDivElement>) => {
     const related = e.relatedTarget as HTMLElement | null;
-    if (related?.closest?.(".inline-note-toolbar")) {
+    const decision = editableBlurDecision({
+      relatedIsNoteToolbar: Boolean(related?.closest?.(".inline-note-toolbar")),
+      skipBlurCommit: skipBlurCommitRef.current,
+      dirty: dirtyRef.current,
+    });
+    if (decision === "ignore-toolbar") {
       return;
     }
-    if (skipBlurCommitRef.current) {
+    applyIdle({ type: "blur" });
+    if (decision === "skip-commit") {
       skipBlurCommitRef.current = false;
       setFocused(false);
       onFocusChange?.(blockId, false);
@@ -689,19 +745,14 @@ const EditableBlock = memo(function EditableBlock({
     onFocusChange?.(blockId, false);
     setToolbar(null);
 
-    if (!dirtyRef.current) {
+    if (decision === "keep-dom") {
       skipSyncOnBlurRef.current = true;
       setDomEmpty(isDomEmpty(e.currentTarget));
       return;
     }
 
-    setUncommitted(false);
     setDomEmpty(isDomEmpty(e.currentTarget));
-    const serialized = serializeEditable(e.currentTarget, lineMode);
-    if (editorCommitUnchanged(content, serialized, lineMode)) {
-      return;
-    }
-    onCommit(serialized);
+    commitIfDirty();
   };
 
   const focusAtPoint = (clientX: number, clientY: number) => {
@@ -810,6 +861,7 @@ const EditableBlock = memo(function EditableBlock({
             );
             if (!outcome) return;
             e.preventDefault();
+            applyIdle({ type: "structural" });
             if (outcome.kind === "removed") {
               skipBlurCommitRef.current = true;
               return;
@@ -852,6 +904,7 @@ const EditableBlock = memo(function EditableBlock({
             );
             const spilled = onSpillToNext(before, after);
             if (!spilled) return;
+            applyIdle({ type: "structural" });
             skipBlurCommitRef.current = true;
             if (el) {
               paint(el, before ?? (lineMode ? [] : ""));
@@ -865,6 +918,7 @@ const EditableBlock = memo(function EditableBlock({
           if (!onInsertBelow) return;
 
           e.preventDefault();
+          applyIdle({ type: "structural" });
           skipBlurCommitRef.current = true;
           const content = readContent();
           const el = ref.current;
@@ -884,16 +938,18 @@ const EditableBlock = memo(function EditableBlock({
           }
           onInsertBelow(before, after);
         }}
-        onInput={() => {
+        onInput={(e) => {
           markDirty();
           const el = ref.current;
           if (el) setDomEmpty(isDomEmpty(el));
           updateToolbar();
-          if (!liveCommit) return;
-          const serialized = readContent();
-          if (editorCommitUnchanged(content, serialized, lineMode)) return;
-          onCommit(serialized);
-          setUncommitted(false);
+          applyIdle({
+            type: "input",
+            isComposing: nativeEventIsComposing(e.nativeEvent),
+          });
+        }}
+        onCompositionEnd={() => {
+          applyIdle({ type: "compositionend" });
         }}
         onPaste={(e) => {
           e.preventDefault();
@@ -912,6 +968,7 @@ const EditableBlock = memo(function EditableBlock({
             sel.addRange(range);
           }
           if (ref.current) setDomEmpty(isDomEmpty(ref.current));
+          applyIdle({ type: "paste" });
         }}
         onBlur={handleBlur}
         data-placeholder={placeholder}
@@ -925,7 +982,7 @@ const EditableBlock = memo(function EditableBlock({
           onMouseDown={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            skipBlurCommitRef.current = true;
+            armTransientSkipBlurCommit(skipBlurCommitRef);
             cancelHoverHide();
           }}
           onMouseEnter={cancelHoverHide}
@@ -948,7 +1005,7 @@ const EditableBlock = memo(function EditableBlock({
             onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              skipBlurCommitRef.current = true;
+              armTransientSkipBlurCommit(skipBlurCommitRef);
               cancelHoverHide();
               // Apply on mousedown so blur cannot clear toolbar state first.
               applyToggleNote();
@@ -1037,6 +1094,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     visibleVariants,
     styles,
   };
+  const flushedCtx = () => snapshotAfterFlush(flushPendingEdits, ctxRef);
 
   const handlersRef = useRef({
     commit: new Map<string, (c: InlineContent | InlineContent[] | null) => void>(),
@@ -1192,7 +1250,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
   };
 
   const selectSpeaker = (blockId: string, id: string | null) => {
-    const { prayer: p, onChange: change } = ctxRef.current;
+    const { prayer: p, onChange: change } = flushedCtx();
     const block = p.structure.find((b) => b.id === blockId);
     if (!block || (block.speaker ?? null) === id) return;
     // No coalesce key: every speaker change is its own undo step.
@@ -1203,6 +1261,10 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     caretRestoreRef.current = null;
     onOpenSettings?.("speakers");
   };
+
+  const openMoreKinds = onOpenSettings
+    ? () => onOpenSettings("styles")
+    : undefined;
 
   const openSpeakerMenu = useCallback((): boolean => {
     const { prayer: p, visibleVariants: cols } = ctxRef.current;
@@ -1257,7 +1319,8 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
 
   // No confirm: deleting is one undo step (Cmd/Ctrl+Z).
   const requestDeleteBlock = (index: number) => {
-    onChange(removeBlock(prayer, index));
+    const { prayer: p, onChange: change } = flushedCtx();
+    change(removeBlock(p, index));
   };
 
   const focusEditorRef = useRef(focusEditor);
@@ -1269,7 +1332,10 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     if (!fn) {
       fn = (next) => {
         const { prayer: p, onChange: change } = ctxRef.current;
-        change(applyCommittedContent(p, blockId, col, next), {
+        const updated = applyCommittedContent(p, blockId, col, next);
+        // Same-turn readers (Block menu after flush) must see this Prayer.
+        rememberCtxPrayer(ctxRef, updated);
+        change(updated, {
           coalesceKey: key,
         });
       };
@@ -1436,29 +1502,32 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
   };
 
   const addBlock = (kind: string = lastAddedKind) => {
-    const id = createBlockId(prayer.structure.length);
-    const col = visibleVariants[0];
+    const { prayer: p, onChange: change, visibleVariants: cols } = flushedCtx();
+    const id = createBlockId(p.structure.length);
+    const col = cols[0];
     setLastAddedKind(kind);
-    onChange(addBlockToPrayer(prayer, kind, id));
+    change(addBlockToPrayer(p, kind, id));
     if (col) {
       window.setTimeout(() => focusEditor(id, col), 0);
     }
   };
 
   const moveBlock = (index: number, dir: -1 | 1) => {
-    onChange(moveBlockInPrayer(prayer, index, dir));
+    const { prayer: p, onChange: change } = flushedCtx();
+    change(moveBlockInPrayer(p, index, dir));
   };
 
   const insertBlockAfter = (index: number, kind: string) => {
-    const id = createBlockId(prayer.structure.length);
-    const col = visibleVariants[0];
-    const added = addBlockToPrayer(prayer, kind, id);
+    const { prayer: p, onChange: change, visibleVariants: cols } = flushedCtx();
+    const id = createBlockId(p.structure.length);
+    const col = cols[0];
+    const added = addBlockToPrayer(p, kind, id);
     // addBlock appends; move the new block up to sit below `index`.
     const structure = [...added.structure];
     const [block] = structure.splice(structure.length - 1, 1);
     structure.splice(index + 1, 0, block!);
     setLastAddedKind(kind);
-    onChange({ ...added, structure });
+    change({ ...added, structure });
     if (col) window.setTimeout(() => focusEditor(id, col), 0);
   };
 
@@ -1501,23 +1570,34 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         { divider: true },
       );
     }
-    if (speaker !== undefined || kindAllowsSpeaker(kind, styles)) {
-      items.push(
-        {
-          label: "Speaker",
-          icon: <IconUser size={14} />,
-          shortcut: shortcutLabel(SPEAKER_SHORTCUT),
-          submenu: speakerContextItems({
-            value: speaker,
-            options: speakerOpts,
-            onSelect: (id) => selectSpeaker(blockId, id),
-            onMore: openMoreSpeakers,
-          }),
+    items.push({
+      label: "Kind",
+      icon: <IconPalette size={14} />,
+      submenu: kindContextItems({
+        value: kind,
+        options: kinds,
+        onSelect: (next) => {
+          const { prayer: p, onChange: change, styles: s } = flushedCtx();
+          change(setBlockKind(p, index, next, s));
         },
-        { divider: true },
-      );
+        onMore: openMoreKinds,
+      }),
+    });
+    if (speaker !== undefined || kindAllowsSpeaker(kind, styles)) {
+      items.push({
+        label: "Speaker",
+        icon: <IconUser size={14} />,
+        shortcut: shortcutLabel(SPEAKER_SHORTCUT),
+        submenu: speakerContextItems({
+          value: speaker,
+          options: speakerOpts,
+          onSelect: (id) => selectSpeaker(blockId, id),
+          onMore: openMoreSpeakers,
+        }),
+      });
     }
     items.push(
+      { divider: true },
       {
         label: `Add ${kindDisplayLabel(kind)} below`,
         icon: <IconRowInsertBottom size={14} />,
@@ -1540,7 +1620,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         label: "Delete block",
         icon: <IconTrash size={14} />,
         color: "accent",
-        onClick: () => onChange(removeBlock(prayer, index)),
+        onClick: () => requestDeleteBlock(index),
       },
     );
     contextMenu.open(e, items);
@@ -1711,13 +1791,11 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                     styleEditing={styleEditing}
                     onIdle={handleKindIdle}
                     onChange={(kind) => {
-                      onChange(setBlockKind(prayer, index, kind, styles));
+                      const { prayer: p, onChange: change, styles: s } =
+                        flushedCtx();
+                      change(setBlockKind(p, index, kind, s));
                     }}
-                    onMoreKinds={
-                      onOpenSettings
-                        ? () => onOpenSettings("styles")
-                        : undefined
-                    }
+                    onMoreKinds={openMoreKinds}
                     onRename={(from, to) => {
                       onRenameKind(from, to);
                     }}
@@ -1837,14 +1915,6 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                         noteColor={noteColor}
                         initialCap={blockStyle.initialCap === "true"}
                         dir={dir}
-                        liveCommit={
-                          (block.kind === "heading" ||
-                            block.kind === "subheading") &&
-                          Boolean(
-                            visibleVariants[0] &&
-                              sameVariant(col, visibleVariants[0]),
-                          )
-                        }
                         onFocusChange={handleFocusChange}
                         onCommit={getCommitHandler(block.id, col)}
                         onInsertBelow={getInsertHandler(block.id, col)}
