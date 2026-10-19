@@ -11,8 +11,10 @@ import {
   type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import type { PrayerToolkitApi } from "../../electron/preload";
-import type { LayoutFormat } from "../exportPrefs";
+import type { ExportFormat, LayoutFormat } from "../exportPrefs";
 import type { ActiveVariant } from "../variant";
+
+export type { ExportFormat };
 
 /** True when any block carries a speaker (gates the Speakers export UI). */
 export function prayerHasSpeakers(prayer: Prayer): boolean {
@@ -38,8 +40,6 @@ export function presetFromSeparator(separator: string): SeparatorPreset {
   return "custom";
 }
 
-export type ExportFormat = "flat-json" | "html" | "layout" | "docx-parallel";
-
 export type HtmlExportRequest = {
   tagMap: Record<string, string>;
   wrapperEnabled: boolean;
@@ -61,6 +61,8 @@ export type ParallelExportRequest = {
   prefixStem: string;
   /** Empty middle column so Word can drag the gap. */
   gutterColumn?: boolean;
+  /** Empty column after Speaker (Own column). Default on. */
+  speakerGutterColumn?: boolean;
   speakers?: Partial<ParallelSpeakerExportOptions>;
 };
 
@@ -132,7 +134,8 @@ export async function exportPrayerVariant(
       ],
       prefixStem: parallel.prefixStem,
       styles: options.styles,
-      gutterColumn: parallel.gutterColumn === true,
+      gutterColumn: parallel.gutterColumn !== false,
+      speakerGutterColumn: parallel.speakerGutterColumn !== false,
       ...(hasSpeakers && parallel.speakers
         ? { speakers: parallel.speakers }
         : {}),

@@ -48,6 +48,34 @@ describe("pickExportVariant", () => {
   it("returns null when the prayer has no languages", () => {
     expect(pickExportVariant(prayerWithVariants([]), undefined)).toBeNull();
   });
+
+  it("prefers a saved language when it still exists", () => {
+    const prayer = prayerWithVariants([
+      { lang: "de", variant: "standard" },
+      { lang: "en", variant: "standard" },
+    ]);
+    expect(
+      pickExportVariant(
+        prayer,
+        { lang: "de", variant: "standard" },
+        { lang: "en", variant: "standard" },
+      ),
+    ).toEqual({ lang: "en", variant: "standard" });
+  });
+
+  it("falls back when the saved language is gone", () => {
+    const prayer = prayerWithVariants([
+      { lang: "de", variant: "standard" },
+      { lang: "en", variant: "standard" },
+    ]);
+    expect(
+      pickExportVariant(
+        prayer,
+        { lang: "en", variant: "standard" },
+        { lang: "cu", variant: "synodal-cyrl" },
+      ),
+    ).toEqual({ lang: "en", variant: "standard" });
+  });
 });
 
 describe("pickExportParallelColumns", () => {
@@ -79,6 +107,24 @@ describe("pickExportParallelColumns", () => {
       }),
     ).toEqual([
       { lang: "en", variant: "standard" },
+      { lang: "cu", variant: "synodal-cyrl" },
+    ]);
+  });
+
+  it("falls back when a saved pair is no longer on the prayer", () => {
+    expect(
+      pickExportParallelColumns(prayer, {
+        saved: {
+          left: { lang: "en", variant: "standard" },
+          right: { lang: "el", variant: "standard" },
+        },
+        visible: [
+          { lang: "de", variant: "standard" },
+          { lang: "cu", variant: "synodal-cyrl" },
+        ],
+      }),
+    ).toEqual([
+      { lang: "de", variant: "standard" },
       { lang: "cu", variant: "synodal-cyrl" },
     ]);
   });

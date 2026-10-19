@@ -1,3 +1,4 @@
+import { inflateRawSync } from "node:zlib";
 import { describe, expect, it, vi } from "vitest";
 import type { Prayer } from "@orthodox-prayer-toolkit/core";
 import type { PrayerToolkitApi } from "../electron/preload";
@@ -35,6 +36,28 @@ const samplePrayer = (): Prayer => ({
   ],
   meta: {},
 });
+
+function unzipTexts(buf: Uint8Array): Record<string, string> {
+  const files: Record<string, string> = {};
+  const view = Buffer.from(buf);
+  let offset = 0;
+  while (offset + 30 <= view.length) {
+    if (view.readUInt32LE(offset) !== 0x04034b50) break;
+    const method = view.readUInt16LE(offset + 8);
+    const compSize = view.readUInt32LE(offset + 18);
+    const nameLen = view.readUInt16LE(offset + 26);
+    const extraLen = view.readUInt16LE(offset + 28);
+    const nameStart = offset + 30;
+    const name = view.subarray(nameStart, nameStart + nameLen).toString("utf8");
+    const dataStart = nameStart + nameLen + extraLen;
+    const compressed = view.subarray(dataStart, dataStart + compSize);
+    const data =
+      method === 0 ? compressed : inflateRawSync(compressed);
+    files[name] = data.toString("utf8");
+    offset = dataStart + compSize;
+  }
+  return files;
+}
 
 function fakeApi(
   overrides: Partial<PrayerToolkitApi> = {},
@@ -234,7 +257,7 @@ describe("exportPrayerVariant", () => {
     expect((content as Uint8Array)[1]).toBe(0x4b);
   });
 
-  it("saves a two-column Word table with left/right order in the filename", async () => {
+  it("saves a Word table with empty middle column by default", async () => {
     const saveExport = vi.fn(async () => "/tmp/morning.de.standard.cu.synodal-cyrl.docx");
     const api = fakeApi({ saveExport });
 
@@ -250,7 +273,6 @@ describe("exportPrayerVariant", () => {
             { lang: "cu", variant: "synodal-cyrl" },
           ],
           prefixStem: "opt",
-          gutterColumn: true,
         },
       },
     );
@@ -258,6 +280,36 @@ describe("exportPrayerVariant", () => {
     const [name, content] = saveExport.mock.calls[0]!;
     expect(name).toBe("morning.de.standard.cu.synodal-cyrl.docx");
     expect(content).toBeInstanceOf(Uint8Array);
-    expect((content as Uint8Array)[0]).toBe(0x50);
+    const document =
+      unzipTexts(content as Uint8Array)["word/document.xml"] ?? "";
+    expect(document.match(/<w:gridCol/g)).toHaveLength(3);
+  });
+
+  it("omits the empty middle column when gutterColumn is false", async () => {
+    const saveExport = vi.fn(async () => "/tmp/out.docx");
+    const api = fakeApi({ saveExport });
+
+    await exportPrayerVariant(
+      api,
+      samplePrayer(),
+      { lang: "de", variant: "standard" },
+      "docx-parallel",
+      {
+        parallel: {
+          columns: [
+            { lang: "de", variant: "standard" },
+            { lang: "cu", variant: "synodal-cyrl" },
+          ],
+          prefixStem: "opt",
+          gutterColumn: false,
+        },
+      },
+    );
+
+    const document =
+      unzipTexts(saveExport.mock.calls[0]![1] as Uint8Array)[
+        "word/document.xml"
+      ] ?? "";
+    expect(document.match(/<w:gridCol/g)).toHaveLength(2);
   });
 });

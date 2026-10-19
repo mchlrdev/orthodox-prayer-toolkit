@@ -42,6 +42,46 @@ pnpm release -- major
 `packages/app/package.json` `version` is what electron-builder embeds in the
 installers; keep releasing via `pnpm release` so root / app / core stay in sync.
 
+## What’s new notes
+
+The app shows a one-shot **What’s new** dialog after an update (Install and
+Restart, then the new build launches). Same renderer in `pnpm dev` /
+`pnpm dev:electron`, so you can try it there — those commands still do not
+talk to the update feed.
+
+Source of truth is one file shipped with the app:
+[`packages/app/src/releaseNotes.ts`](../packages/app/src/releaseNotes.ts).
+
+```ts
+export const RELEASE_NOTES: { version: string; items: string[] }
+```
+
+Show when `RELEASE_NOTES.version === runningVersion` **and**
+`lastSeenWhatsNew !== runningVersion` **and** `items.length > 0`. Empty
+`items` → no dialog. Dismiss (Got it / overlay / Escape) stores
+`lastSeenWhatsNew` in localStorage (`orthodox-prayer-toolkit.whats-new`).
+
+`version` must equal the app version that should display the bullets
+(`packages/app/package.json` / `__APP_VERSION__`). Keep it equal to the
+**current** package version while notes accumulate; `pnpm release` then
+rewrites it to the new tag so the shipped build matches. If `items` is
+non-empty and `version` does not match the package version, `pnpm release`
+fails before bumping.
+
+### Before every push
+
+Review `releaseNotes.ts`:
+
+- Add or update short bullets for **user-visible** UI / export changes in
+  this push.
+- Delete stale bullets that no longer describe what this version will ship.
+- Keep the list tiny. Short English fragments or imperatives; glossary
+  terms (Block, Kind, Speaker, Word table); no marketing.
+- Do not push user-facing UI/export changes without this pass.
+
+Do not invent bullets for uncommitted WIP. No separate CHANGELOG.md — this
+file is enough.
+
 ### Local smoke test (macOS only)
 
 ```bash

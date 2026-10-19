@@ -18,7 +18,7 @@ Shared domain language for humans and agents. Prefer these terms in UI, docs, an
 | **Speaker label** | Per-Variant printed `name` and optional `short` for a Speaker (`Priester` / `P`), stored in the Variant's `speakers` map. Missing name → title-cased id; missing short → first letter of the name. | speaker name (ambiguous), tag |
 | **Format version** | Top-level `formatVersion` integer. Missing means `1`; written as `2` only when the file uses Speakers. A file with a newer version than the app supports shows "needs a newer app". | schema version, file version |
 | **Flat export** | Single-variant derived document from `exportVariant`. | “compile”, “render” |
-| **Word table export** | Two-variant DOCX as a default Word table (one structure block per row). Optional empty middle column for the gap. Word only; not Affinity Place. | newspaper columns, bilingual layout |
+| **Word table export** | Two-variant DOCX as a default Word table (one structure block per row). Language gutter (empty middle column) is on by default. When Placement is Own column, a speaker gutter (empty column after Speaker) is also on by default. Both optional. Word needs cell widths so empty columns stay. When the prayer has Speakers, a Speaker column is on by default (Placement: Own column). Word only; not Affinity Place. | newspaper columns, bilingual layout |
 | **Structure (model A)** | Shared block skeleton; texts hang off per-variant translations on each block. | parallel files per language |
 
 ## Related

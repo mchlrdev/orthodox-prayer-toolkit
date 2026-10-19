@@ -1,3 +1,4 @@
+import { inflateRawSync } from "node:zlib";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Prayer } from "@orthodox-prayer-toolkit/core";
 import { loadExportPrefs, saveExportPrefs } from "../src/exportPrefs";
@@ -48,6 +49,73 @@ const prayer = (speaker?: string): Prayer => ({
 
 function api(saveExport: PrayerToolkitApi["saveExport"]): PrayerToolkitApi {
   return { saveExport } as unknown as PrayerToolkitApi;
+}
+
+function unzipTexts(buf: Uint8Array): Record<string, string> {
+  const files: Record<string, string> = {};
+  const view = Buffer.from(buf);
+  let offset = 0;
+  while (offset + 30 <= view.length) {
+    if (view.readUInt32LE(offset) !== 0x04034b50) break;
+    const method = view.readUInt16LE(offset + 8);
+    const compSize = view.readUInt32LE(offset + 18);
+    const nameLen = view.readUInt16LE(offset + 26);
+    const extraLen = view.readUInt16LE(offset + 28);
+    const nameStart = offset + 30;
+    const name = view.subarray(nameStart, nameStart + nameLen).toString("utf8");
+    const dataStart = nameStart + nameLen + extraLen;
+    const compressed = view.subarray(dataStart, dataStart + compSize);
+    files[name] = (
+      method === 0 ? compressed : inflateRawSync(compressed)
+    ).toString("utf8");
+    offset = dataStart + compSize;
+  }
+  return files;
+}
+
+function dialogPrayer(): Prayer {
+  const de = { lang: "de", variant: "standard" };
+  const en = { lang: "en", variant: "standard" };
+  return {
+    formatVersion: 2,
+    id: "dlg",
+    type: "prayer",
+    variants: [
+      {
+        ...de,
+        title: "Dialog",
+        license: "CC0",
+        source: "test",
+        speakers: { priest: { name: "Priester" } },
+      },
+      {
+        ...en,
+        title: "Dialog",
+        license: "CC0",
+        source: "test",
+        speakers: { priest: { name: "Priest" } },
+      },
+    ],
+    structure: [
+      {
+        id: "h",
+        kind: "heading",
+        translations: [
+          { ...de, text: "Gruss" },
+          { ...en, text: "Greeting" },
+        ],
+      },
+      {
+        id: "b1",
+        kind: "verse",
+        speaker: "priest",
+        translations: [
+          { ...de, text: "Friede" },
+          { ...en, text: "Peace" },
+        ],
+      },
+    ],
+  };
 }
 
 describe("speaker export prefs", () => {
@@ -135,6 +203,25 @@ describe("exportPrayerVariant speakers", () => {
       speakers: { placement: "off" },
     });
     expect(save.mock.calls[0]![1] as string).not.toContain("Priester");
+  });
+
+  it("Word table omitted speakers use Core own-column default with gutter", async () => {
+    const save = vi.fn(async () => "/x");
+    await exportPrayerVariant(api(save), dialogPrayer(), v, "docx-parallel", {
+      parallel: {
+        columns: [
+          { lang: "de", variant: "standard" },
+          { lang: "en", variant: "standard" },
+        ],
+        prefixStem: "opt",
+      },
+    });
+    const doc =
+      unzipTexts(save.mock.calls[0]![1] as Uint8Array)["word/document.xml"] ??
+      "";
+    expect(doc.match(/<w:gridCol /g)).toHaveLength(5);
+    expect(doc).toContain('<w:gridCol w:w="1440"/>');
+    expect(doc).toContain("Priester:");
   });
 
   it("omits speaker options when the prayer has no speakers", async () => {

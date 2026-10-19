@@ -1,6 +1,6 @@
 {
-  "id": "ostergebete",
   "formatVersion": 2,
+  "id": "ostergebete",
   "type": "prayer",
   "book": "horologion",
   "tone": null,
@@ -12,8 +12,14 @@
       "license": "unknown",
       "source": "draft",
       "speakers": {
-        "priest": { "name": "Priester", "short": "P" },
-        "people": { "name": "Volk", "short": "V" }
+        "priest": {
+          "name": "Priester",
+          "short": "P"
+        },
+        "people": {
+          "name": "Volk",
+          "short": "V"
+        }
       }
     },
     {
@@ -23,8 +29,14 @@
       "license": "unknown",
       "source": "draft",
       "speakers": {
-        "priest": { "name": "Priest", "short": "P" },
-        "people": { "name": "People", "short": "Pe" }
+        "priest": {
+          "name": "Priest",
+          "short": "P"
+        },
+        "people": {
+          "name": "People",
+          "short": "Pe"
+        }
       }
     }
   ],
@@ -47,7 +59,8 @@
             "Auf die Gebete unserer heiligen Väter, Herr Jesus Christus, unser Gott, erbarme Dich unser. Amen."
           ]
         }
-      ]
+      ],
+      "speaker": "priest"
     },
     {
       "id": "r1",

@@ -27,6 +27,7 @@ import { LibrarySettingsModal } from "./components/LibrarySettingsModal";
 import { AppSettingsModal } from "./components/AppSettingsModal";
 import { ExportModal } from "./components/ExportModal";
 import { ConfirmDialog } from "./components/ConfirmDialog";
+import { WhatsNewDialog } from "./components/WhatsNewDialog";
 import { InvalidPrayerScreen } from "./components/InvalidPrayerScreen";
 import { UnsavedChangesDialog } from "./components/UnsavedChangesDialog";
 import { LibraryWelcome } from "./components/LibraryWelcome";
@@ -41,6 +42,11 @@ import {
   saveAppearancePrefs,
   type ColorSchemePreference,
 } from "./appearancePrefs";
+import { RELEASE_NOTES, shouldShowWhatsNew } from "./releaseNotes";
+import {
+  loadLastSeenWhatsNew,
+  saveLastSeenWhatsNew,
+} from "./whatsNewPrefs";
 import { toMantineColorScheme } from "./mantineColorScheme";
 import {
   commandForKey,
@@ -72,6 +78,13 @@ export function App() {
   const [appSettingsOpen, setAppSettingsOpen] = useState(false);
   const [newLibraryOpen, setNewLibraryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [whatsNewOpen, setWhatsNewOpen] = useState(() =>
+    shouldShowWhatsNew({
+      lastSeen: loadLastSeenWhatsNew(),
+      runningVersion: __APP_VERSION__,
+      notes: RELEASE_NOTES,
+    }),
+  );
 
   const initialPrefs = useMemo(() => loadSidebarPrefs(), []);
   const initialAppearance = useMemo(() => loadAppearancePrefs(), []);
@@ -685,6 +698,16 @@ export function App() {
         confirmLabel="Delete"
         loading={session.kindRenameBusy || busy}
         onConfirm={() => void session.confirmKindDelete()}
+      />
+
+      <WhatsNewDialog
+        opened={whatsNewOpen}
+        version={RELEASE_NOTES.version}
+        items={RELEASE_NOTES.items}
+        onDismiss={() => {
+          saveLastSeenWhatsNew(__APP_VERSION__);
+          setWhatsNewOpen(false);
+        }}
       />
 
       <UnsavedChangesDialog

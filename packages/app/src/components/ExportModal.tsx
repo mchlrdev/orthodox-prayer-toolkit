@@ -16,6 +16,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import {
+  DEFAULT_PARALLEL_SPEAKER_EXPORT,
   HTML_TAG_ALLOWLIST,
   HTML_WRAPPER_TAG_ALLOWLIST,
   isValidStylePrefixStem,
@@ -47,6 +48,8 @@ import type {
   ParallelExportRequest,
 } from "../session/exportPrayerVariant";
 import {
+  exportPrefsPatchFromForm,
+  isExportFormat,
   loadExportPrefs,
   saveExportPrefs,
   type HtmlExportPrefs,
@@ -139,11 +142,12 @@ export function ExportModal({
   const [wrapperAttributes, setWrapperAttributes] = useState("");
   const [layoutFormat, setLayoutFormat] = useState<LayoutFormat>("docx");
   const [prefixStem, setPrefixStem] = useState("opt");
-  const [gutterColumn, setGutterColumn] = useState(false);
+  const [gutterColumn, setGutterColumn] = useState(true);
+  const [speakerGutterColumn, setSpeakerGutterColumn] = useState(true);
   const [speakerPlacement, setSpeakerPlacement] =
     useState<SpeakerPlacement>("inline");
   const [speakerParallelPlacement, setSpeakerParallelPlacement] =
-    useState<ParallelSpeakerPlacement>("inline-left");
+    useState<ParallelSpeakerPlacement>(DEFAULT_PARALLEL_SPEAKER_EXPORT.placement);
   const [speakerForm, setSpeakerForm] = useState<SpeakerForm>("name");
   const [separatorPreset, setSeparatorPreset] =
     useState<SeparatorPreset>("colon");
@@ -157,11 +161,11 @@ export function ExportModal({
 
   useEffect(() => {
     if (!opened) return;
-    const pick = pickExportVariant(prayer, libraryDefault);
-    setVariantKeyValue(pick ? variantKey(pick) : "");
-    setFormat("flat-json");
-
     const saved = loadExportPrefs(libraryRoot, prayerPath);
+    const pick = pickExportVariant(prayer, libraryDefault, saved?.variant);
+    setVariantKeyValue(pick ? variantKey(pick) : "");
+    setFormat(saved && isExportFormat(saved.format) ? saved.format : "flat-json");
+
     const savedPair =
       saved?.parallelLeft && saved?.parallelRight
         ? { left: saved.parallelLeft, right: saved.parallelRight }
@@ -173,7 +177,8 @@ export function ExportModal({
     });
     setLeftKey(pair ? variantKey(pair[0]) : "");
     setRightKey(pair ? variantKey(pair[1]) : "");
-    setGutterColumn(saved?.parallelGutterColumn === true);
+    setGutterColumn(saved?.parallelGutterColumn !== false);
+    setSpeakerGutterColumn(saved?.parallelSpeakerGutterColumn !== false);
     const defaults = defaultHtmlPrefs(resolvedStyles);
     setIncludeBlocksWithoutTranslation(
       saved?.includeBlocksWithoutTranslation ?? false,
@@ -186,7 +191,7 @@ export function ExportModal({
     );
     setSpeakerPlacement(saved?.speakerPlacement ?? "inline");
     setSpeakerParallelPlacement(
-      saved?.speakerParallelPlacement ?? "inline-left",
+      saved?.speakerParallelPlacement ?? DEFAULT_PARALLEL_SPEAKER_EXPORT.placement,
     );
     setSpeakerForm(saved?.speakerForm ?? "name");
     const savedSep = saved?.speakerSeparator ?? ": ";
@@ -282,6 +287,43 @@ export function ExportModal({
     setPrefixStem(libraryResolvedStem);
   };
 
+  const persistCurrentPrefs = () => {
+    saveExportPrefs(
+      libraryRoot,
+      prayerPath,
+      exportPrefsPatchFromForm({
+        format,
+        variant: selected,
+        includeBlocksWithoutTranslation,
+        html: {
+          tagMap,
+          wrapperEnabled,
+          wrapperTag,
+          wrapperAttributes,
+        },
+        layout: {
+          layoutFormat,
+          layoutPrefixStem: prefixStem,
+        },
+        parallelLeft: left,
+        parallelRight: right,
+        gutterColumn,
+        speakerGutterColumn,
+        speakers: {
+          placement: speakerPlacement,
+          parallelPlacement: speakerParallelPlacement,
+          form: speakerForm,
+          separator: separatorValue,
+        },
+      }),
+    );
+  };
+
+  const handleClose = () => {
+    persistCurrentPrefs();
+    onClose();
+  };
+
   const handleExport = async () => {
     if (format === "docx-parallel") {
       if (!left || !right || !parallelReady || !layoutReady) return;
@@ -314,6 +356,7 @@ export function ExportModal({
               columns: [left, right],
               prefixStem,
               gutterColumn,
+              speakerGutterColumn,
             }
           : undefined;
 
@@ -353,55 +396,8 @@ export function ExportModal({
         speakers: format === "html" ? speakers : undefined,
       });
 
-      if (savedPath) {
-        saveExportPrefs(libraryRoot, prayerPath, {
-          includeBlocksWithoutTranslation:
-            format === "docx-parallel"
-              ? undefined
-              : includeBlocksWithoutTranslation,
-          html:
-            format === "html" && html
-              ? {
-                  tagMap: html.tagMap,
-                  wrapperEnabled: html.wrapperEnabled,
-                  wrapperTag: html.wrapperTag,
-                  wrapperAttributes: html.wrapperAttributes,
-                }
-              : undefined,
-          layout:
-            format === "layout" && layout
-              ? {
-                  layoutFormat: layout.layoutFormat,
-                  layoutPrefixStem: layout.prefixStem,
-                }
-              : format === "docx-parallel"
-                ? {
-                    layoutFormat: "docx",
-                    layoutPrefixStem: prefixStem,
-                  }
-                : undefined,
-          parallel:
-            format === "docx-parallel" && left && right
-              ? { left, right, gutterColumn }
-              : undefined,
-          speakers: showSpeakers
-            ? format === "docx-parallel"
-              ? {
-                  parallelPlacement: speakerParallelPlacement,
-                  form: speakerForm,
-                  separator: separatorValue,
-                }
-              : {
-                  placement: speakerPlacement,
-                  form: speakerForm,
-                  separator: separatorValue,
-                }
-            : undefined,
-        });
-      }
-
       if (savedPath !== false) {
-        onClose();
+        handleClose();
       }
     } finally {
       setExporting(false);
@@ -484,6 +480,14 @@ export function ExportModal({
           />
         )}
       </Input.Wrapper>
+      {format === "docx-parallel" &&
+      speakerParallelPlacement === "column" ? (
+        <Checkbox
+          label="Add empty column after Speaker"
+          checked={speakerGutterColumn}
+          onChange={(e) => setSpeakerGutterColumn(e.currentTarget.checked)}
+        />
+      ) : null}
       <Input.Wrapper label="Label">
         <SegmentedControl
           fullWidth
@@ -527,7 +531,7 @@ export function ExportModal({
   return (
     <Modal
       opened={opened}
-      onClose={onClose}
+      onClose={handleClose}
       title="Export"
       size="md"
       autoFocus={false}
@@ -740,7 +744,7 @@ export function ExportModal({
         <Group justify="flex-end" mt="xs">
           <Button
             variant="default"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={exporting || busy}
           >
             Cancel

@@ -1,20 +1,22 @@
 import type { KeyboardEvent, ReactNode } from "react";
-import { Stack, Text, UnstyledButton } from "@mantine/core";
+import { Menu, Stack, UnstyledButton } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
+import { CONTEXT_MENU_WIDTH } from "./ContextMenu";
 
 /**
  * Shared look of the small pick-one popovers (Kind, Speaker): one Popover
  * with these props, an {@link OptionList} of {@link OptionRow}s and
  * {@link OptionDivider}s. Keep both pickers on these so they cannot drift.
+ * Density matches the block right-click Menu / its Kind ▸ Speaker ▸ items.
  */
 export const OPTION_POPOVER_PROPS = {
   position: "bottom-start",
-  width: 220,
+  width: CONTEXT_MENU_WIDTH,
   withinPortal: true,
 } as const;
 
-/** Padding of the Popover.Dropdown around an {@link OptionList}. */
-export const OPTION_DROPDOWN_PADDING = 6;
+/** Same padding as Mantine Menu.Dropdown (4px). */
+export const OPTION_DROPDOWN_PADDING = 4;
 
 const ROW_SELECTOR = "button.option-row:not(:disabled)";
 
@@ -49,7 +51,7 @@ export function focusOptionRow(container: HTMLElement | null): void {
 export function OptionList({ children }: { children: ReactNode }) {
   return (
     <Stack
-      gap={2}
+      gap={0}
       onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
         if (moveOptionFocus(e.currentTarget, e.key)) {
           e.preventDefault();
@@ -71,7 +73,7 @@ type RowProps = {
   "aria-label"?: string;
 };
 
-/** One pickable row: [leading] label · check when active. */
+/** One pickable row: [leading] label · check when active. Same classes as Menu.Item. */
 export function OptionRow({
   active = false,
   leading,
@@ -82,18 +84,21 @@ export function OptionRow({
   return (
     <UnstyledButton
       {...rest}
-      className="option-row"
+      className={`option-row ${Menu.classes.item} mantine-Menu-item`}
       data-active={active}
-      style={{ flex: 1 }}
       onClick={onClick}
     >
       {leading !== undefined ? (
-        <span className="option-row-leading">{leading}</span>
+        <div className={`${Menu.classes.itemSection} option-row-leading`} data-position="left">
+          {leading}
+        </div>
       ) : null}
-      <Text size="sm" style={{ flex: 1, minWidth: 0 }} truncate>
-        {children}
-      </Text>
-      {active ? <IconCheck size={14} /> : null}
+      <div className={`${Menu.classes.itemLabel} option-row-label`}>{children}</div>
+      {active ? (
+        <div className={Menu.classes.itemSection} data-position="right">
+          <IconCheck size={14} />
+        </div>
+      ) : null}
     </UnstyledButton>
   );
 }

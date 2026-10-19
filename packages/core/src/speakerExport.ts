@@ -26,7 +26,7 @@ export type ParallelSpeakerExportOptions = {
 };
 
 export const DEFAULT_PARALLEL_SPEAKER_EXPORT: ParallelSpeakerExportOptions = {
-  placement: "inline-left",
+  placement: "column",
   form: "name",
   separator: ": ",
 };

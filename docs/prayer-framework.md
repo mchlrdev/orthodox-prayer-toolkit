@@ -11,7 +11,7 @@ A **standalone open-source toolkit** for liturgical prayer texts:
 1. Prayers as **self-contained JSON** (one file = one prayer)
 2. **Multiple translations** per prayer (language **and** edition/script variant)
 3. **Local-first editor** (Electron; browser-first for development): open a library folder, edit, switch variants, save
-4. **Exports** for downstream use: flat single-variant JSON, HTML, layout RTF/DOCX, Word table (two variants, optional empty middle column)
+4. **Exports** for downstream use: flat single-variant JSON, HTML, layout RTF/DOCX, Word table (two variants; language gutter on by default; Own column speaker gutter on by default; both optional)
 5. Optional further bridges (e.g. Affinity-oriented workflows) without baking layout into the source
 
 **Content ≠ design:** JSON holds semantics (`kind`, structure, texts). Presentation (preview, web, print) lives in styles and exporters.
@@ -97,14 +97,14 @@ Shipped and intended behaviour includes:
 - Typing in a Block cell commits into the session draft on idle (~400ms), blur, or flush (Save / leave / export / find) — not per keystroke. Schema validation in the UI runs from the session draft, 500ms after it updates: affected blocks are marked, the prayer header shows the issue count
 - Undo / redo per prayer across all edits (text, kinds, moves, deletes); one history per open prayer, so deleting a block needs no confirm
 - Enter splits a block at the caret (new empty cells in the other columns). Ctrl+Enter (Cmd+Enter on macOS) keeps the structure and sends the text after the caret into the next block in this column — into an empty cell, or in front of text already there. ArrowDown on a block's last visual line / ArrowUp on its first moves the caret into the next / previous block in the same column. Backspace at a block's start joins it onto the block above, Delete at its end pulls the block below in. The block the caret was in keeps its kind and id; text joins with no separator in every variant, verse keeps its lines, and verse ↔ text reshapes like a kind change (notes kept). A block empty in every variant is removed instead. One undo step.
-- Speakers: a red chip before the first column's text opens the Speaker dropdown (chip, Block chrome trigger, right-click "Speaker ▸", `Mod+Shift+P`); "No speaker" removes it. The Speakers pane in Prayer settings lists the Speakers of the prayer with name and short per Variant, block counts and delete. Export places Speakers inline (HTML, RTF, DOCX), in a separate column (layout DOCX, Word table) or off, using one character style per Speaker (`<prefix>_speaker_<id>`), with name or short form and a separator.
+- Speakers: a red chip before the first column's text opens the Speaker dropdown (chip, Block chrome trigger, right-click "Speaker ▸", `Mod+Shift+P`); "No speaker" removes it. The Speakers pane in Prayer settings lists the Speakers of the prayer with name and short per Variant, block counts and delete. Export places Speakers inline (HTML, RTF, DOCX), in a separate column (layout DOCX, Word table; Word table defaults to Own column) or off, using one character style per Speaker (`<prefix>_speaker_<id>`), with name or short form and a separator. Word table Own column adds a second checkbox, "Add empty column after Speaker" (on by default).
 - Shortcuts (Cmd on macOS, Ctrl elsewhere): S save, Shift+S save all, O open library, N new prayer, `,` settings, Z / Shift+Z undo / redo, Shift+P Speaker dropdown on the block holding the caret; also listed in the menu bar. Windows/Linux hide the in-window bar by default (Alt to show, or View → Show Menu Bar to pin); every action is also reachable in the app. Zoom: Cmd/Ctrl + `+` / `-` / `0` (and `=` / numpad on Windows/Linux).
 - Right-click menus on prayer rows, the prayer list and blocks (Block menu: Kind ▸, and Speaker ▸ when the Kind allows a Speaker; Cut/Copy/Paste when the click is in text)
 - The open library folder is watched: unchanged prayers reload from disk, prayers with unsaved edits show "Changed on disk" / "Deleted on disk"
 - Refresh rescans the library and reloads the open prayer from disk; unsaved prayers are prompted first
 - Preview with kind styles (library `styles.json` over built-in defaults)
 - App settings: appearance (light/dark/system) and editor text size (px). Kind-style sizes (S–XL, stored as rem) scale from that base in the editor; export HTML still uses the stored rem against the consuming page.
-- Export: flat JSON, HTML, layout RTF/DOCX, Word table (two variants, optional empty middle column; Word only)
+- Export: flat JSON, HTML, layout RTF/DOCX, Word table (two variants; language gutter on by default; Own column also has a speaker gutter on by default; both optional; Word only). Options are remembered per Prayer (local), including the last format.
 - Optional manifest; id collision detection; kind rename across library with confirm
 - Auto-update against GitHub Releases ([RELEASE.md](RELEASE.md)); downloads in the background, and "Install and Restart" asks to save or discard unsaved prayers first
 

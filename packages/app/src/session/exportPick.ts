@@ -1,11 +1,26 @@
 import type { Prayer } from "@orthodox-prayer-toolkit/core";
 import { sameVariant, type ActiveVariant } from "../variant";
 
-/** Prefill for the export modal: library default when present, else first variant. */
+function asRef(v: { lang: string; variant: string }): ActiveVariant {
+  return { lang: v.lang, variant: v.variant };
+}
+
+function existsOnPrayer(prayer: Prayer, col: ActiveVariant): boolean {
+  return prayer.variants.some((v) => sameVariant(v, col));
+}
+
+/**
+ * Prefill for the export modal: saved variant when it still exists, else
+ * library default when present, else first variant.
+ */
 export function pickExportVariant(
   prayer: Prayer,
   libraryDefault: { lang: string; variant: string } | undefined,
+  saved?: ActiveVariant | null,
 ): ActiveVariant | null {
+  if (saved && existsOnPrayer(prayer, saved)) {
+    return asRef(saved);
+  }
   const match = libraryDefault
     ? prayer.variants.find(
         (v) =>
@@ -14,15 +29,7 @@ export function pickExportVariant(
       )
     : undefined;
   const pick = match ?? prayer.variants[0];
-  return pick ? { lang: pick.lang, variant: pick.variant } : null;
-}
-
-function asRef(v: { lang: string; variant: string }): ActiveVariant {
-  return { lang: v.lang, variant: v.variant };
-}
-
-function existsOnPrayer(prayer: Prayer, col: ActiveVariant): boolean {
-  return prayer.variants.some((v) => sameVariant(v, col));
+  return pick ? asRef(pick) : null;
 }
 
 function uniqueRefs(cols: ActiveVariant[]): ActiveVariant[] {

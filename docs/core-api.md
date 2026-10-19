@@ -84,7 +84,7 @@ const docx = await exportLayoutDocx(prayer, {
 
 Shared intermediate: `buildLayoutStory(...)`. Style name prefix defaults to `opt` (`DEFAULT_STYLE_PREFIX_STEM`).
 
-Word-only two-column DOCX (`exportLayoutDocxParallel`) uses a **table** — one structure block per row, column order as given — so corresponding verses stay aligned. Optional `gutterColumn` inserts an empty middle column so the gap can be set in Word by dragging. The table uses Word’s default grid (no custom borders, margins, or page setup). Cells still get blank named kind styles. This path is **not** for Affinity Place: tables do not flow as story text across pages.
+Word-only two-column DOCX (`exportLayoutDocxParallel`) uses a **table** — one structure block per row, column order as given — so corresponding verses stay aligned. By default an empty language gutter (`gutterColumn`) is included so the gap can be set in Word by dragging; pass `gutterColumn: false` to omit it. When Speaker Placement is Own column, `speakerGutterColumn` (default on; pass `false` to omit) inserts an empty column after Speaker. It is ignored when placement is not `column`. Column order: `Speaker | [speaker gutter] | Left | [language gutter] | Right`. Every cell gets an explicit DXA width (`w:tcW`) and the table uses fixed layout so Word does not collapse empty gutters. The table uses Word’s default grid (no custom borders, margins, or page setup). Cells still get blank named kind styles. This path is **not** for Affinity Place: tables do not flow as story text across pages.
 
 ```ts
 import { exportLayoutDocxParallel } from "@orthodox-prayer-toolkit/core";
@@ -95,7 +95,6 @@ const docx = await exportLayoutDocxParallel(prayer, {
     { lang: "en", variant: "standard" },
   ],
   prefixStem: stem,
-  gutterColumn: true,
 });
 ```
 
@@ -198,6 +197,6 @@ A Block may carry `speaker` (id, same rules as kind ids); a Variant may carry `s
 
 Inline output uses one character style per Speaker, `styleNameWithPrefix(stem, "speaker_<id>")` (`<prefix>_speaker_<id>`). HTML puts `data-speaker="<id>"` on the block and `<span data-role="speaker">` for the label. The flat export (`exportVariant`) carries `speaker` on blocks and the Variant's `speakers` map.
 
-`exportLayoutDocxParallel` takes `speakers?: { placement, form, separator }` with `placement` `inline-left` (default) · `inline-both` · `column` · `off`. `column` adds a Speaker column on the left side only. Default: `DEFAULT_PARALLEL_SPEAKER_EXPORT` = `{ placement: "inline-left", form: "name", separator: ": " }`.
+`exportLayoutDocxParallel` takes `speakers?: { placement, form, separator }` with `placement` `column` (default) · `inline-left` · `inline-both` · `off`. `column` adds a Speaker column on the left (labels from the left variant, including the separator via `inlineSpeakerText`); rows without a speaker still emit an empty Speaker cell so the grid stays aligned. Default: `DEFAULT_PARALLEL_SPEAKER_EXPORT` = `{ placement: "column", form: "name", separator: ": " }`. Word table treats the Speaker column as a first-class option, so the default is Own column: `Speaker | [speaker gutter] | Left | [language gutter] | Right` when both gutters are on (`gutterColumn` and `speakerGutterColumn` default on; `speakerGutterColumn` is ignored unless placement is `column`).
 
 Pure helpers (return new Prayers, `formatVersion` normalized): `normalizeFormatVersion`, `indexSpeakers`, `setBlockSpeaker(prayer, blockId, id | null)`, `setSpeakerLabel(prayer, {lang, variant}, id, {name?, short?})`, `removeSpeaker`. Labels: `resolveSpeakerLabel(prayer, ref, id, "name" | "short")` (name falls back to the title-cased id, short to its first letter), `speakerChipLabel`, `speakerDisplayLabel`. Ids: `SPEAKER_PRESETS`, `isValidSpeakerId`, `sanitizeSpeakerIdInput`. Kind style token `speaker` (`"true"`/`"false"`) with `kindAllowsSpeaker(kind, styles?)`: verse always, heading/subheading/annotation never, other kinds when `speaker: "true"`.

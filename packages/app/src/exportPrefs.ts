@@ -6,7 +6,9 @@ import type { ActiveVariant } from "./variant";
 
 const STORAGE_KEY = "orthodox-prayer-toolkit.export-prefs";
 
-/** HTML-specific fields remembered after a successful HTML export. */
+export type ExportFormat = "flat-json" | "html" | "layout" | "docx-parallel";
+
+/** HTML-specific fields remembered with the rest of the Export form. */
 export type HtmlExportPrefs = {
   tagMap: Record<string, string>;
   wrapperEnabled: boolean;
@@ -24,6 +26,12 @@ export type ParallelSpeakerPlacement =
   | "off";
 export type SpeakerForm = "name" | "short";
 
+const EXPORT_FORMATS: readonly string[] = [
+  "flat-json",
+  "html",
+  "layout",
+  "docx-parallel",
+];
 const SINGLE_PLACEMENTS: readonly string[] = ["inline", "column", "off"];
 const PARALLEL_PLACEMENTS: readonly string[] = [
   "inline-left",
@@ -32,8 +40,14 @@ const PARALLEL_PLACEMENTS: readonly string[] = [
   "off",
 ];
 
+export function isExportFormat(value: unknown): value is ExportFormat {
+  return typeof value === "string" && EXPORT_FORMATS.includes(value);
+}
+
 /** Per-prayer export preferences (cross-format + format-specific). */
 export type ExportPrefs = {
+  format?: ExportFormat;
+  variant?: ActiveVariant;
   includeBlocksWithoutTranslation?: boolean;
   tagMap?: Record<string, string>;
   wrapperEnabled?: boolean;
@@ -45,6 +59,8 @@ export type ExportPrefs = {
   parallelLeft?: ActiveVariant;
   parallelRight?: ActiveVariant;
   parallelGutterColumn?: boolean;
+  /** Empty column after Speaker when Word table Placement is Own column. */
+  parallelSpeakerGutterColumn?: boolean;
   /** Placement for HTML / Layout exports. */
   speakerPlacement?: SpeakerPlacement;
   /** Placement for the Word table (different value set). */
@@ -54,9 +70,10 @@ export type ExportPrefs = {
   speakerSeparator?: string;
 };
 
-/** Fields written on a successful export; merged onto existing prefs. */
+/** Fields written on export or dialog close; merged onto existing prefs. */
 export type ExportPrefsPatch = {
-  /** Omitted for Word table — that format always skips fully empty rows. */
+  format?: ExportFormat;
+  variant?: ActiveVariant;
   includeBlocksWithoutTranslation?: boolean;
   html?: HtmlExportPrefs;
   layout?: {
@@ -64,11 +81,11 @@ export type ExportPrefsPatch = {
     layoutPrefixStem: string;
   };
   parallel?: {
-    left: ActiveVariant;
-    right: ActiveVariant;
-    gutterColumn: boolean;
+    left?: ActiveVariant;
+    right?: ActiveVariant;
+    gutterColumn?: boolean;
+    speakerGutterColumn?: boolean;
   };
-  /** Only the placement matching the exported format family is set. */
   speakers?: {
     placement?: SpeakerPlacement;
     parallelPlacement?: ParallelSpeakerPlacement;
@@ -76,6 +93,53 @@ export type ExportPrefsPatch = {
     separator: string;
   };
 };
+
+/** Current Export dialog fields — persist the whole form, not a format slice. */
+export type ExportFormFields = {
+  format: ExportFormat;
+  variant?: ActiveVariant | null;
+  includeBlocksWithoutTranslation: boolean;
+  html: HtmlExportPrefs;
+  layout: {
+    layoutFormat: LayoutFormat;
+    layoutPrefixStem: string;
+  };
+  parallelLeft?: ActiveVariant | null;
+  parallelRight?: ActiveVariant | null;
+  gutterColumn: boolean;
+  speakerGutterColumn: boolean;
+  speakers: {
+    placement: SpeakerPlacement;
+    parallelPlacement: ParallelSpeakerPlacement;
+    form: SpeakerForm;
+    separator: string;
+  };
+};
+
+/** Full-form patch so switching format does not drop the other families' fields. */
+export function exportPrefsPatchFromForm(
+  form: ExportFormFields,
+): ExportPrefsPatch {
+  return {
+    format: form.format,
+    variant: form.variant ?? undefined,
+    includeBlocksWithoutTranslation: form.includeBlocksWithoutTranslation,
+    html: {
+      tagMap: { ...form.html.tagMap },
+      wrapperEnabled: form.html.wrapperEnabled,
+      wrapperTag: form.html.wrapperTag,
+      wrapperAttributes: form.html.wrapperAttributes,
+    },
+    layout: { ...form.layout },
+    parallel: {
+      ...(form.parallelLeft ? { left: form.parallelLeft } : {}),
+      ...(form.parallelRight ? { right: form.parallelRight } : {}),
+      gutterColumn: form.gutterColumn,
+      speakerGutterColumn: form.speakerGutterColumn,
+    },
+    speakers: { ...form.speakers },
+  };
+}
 
 type PrefsStore = Record<string, Record<string, ExportPrefs>>;
 
@@ -118,6 +182,12 @@ function isPrefs(value: unknown): value is ExportPrefs {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const p = value as Record<string, unknown>;
 
+  if (p.format !== undefined && !isExportFormat(p.format)) {
+    return false;
+  }
+  if (p.variant !== undefined && !isVariantRef(p.variant)) {
+    return false;
+  }
   if (
     p.includeBlocksWithoutTranslation !== undefined &&
     typeof p.includeBlocksWithoutTranslation !== "boolean"
@@ -142,6 +212,12 @@ function isPrefs(value: unknown): value is ExportPrefs {
   if (
     p.parallelGutterColumn !== undefined &&
     typeof p.parallelGutterColumn !== "boolean"
+  ) {
+    return false;
+  }
+  if (
+    p.parallelSpeakerGutterColumn !== undefined &&
+    typeof p.parallelSpeakerGutterColumn !== "boolean"
   ) {
     return false;
   }
@@ -180,6 +256,8 @@ function isPrefs(value: unknown): value is ExportPrefs {
   if (hasHtmlKeys && !hasValidHtmlFields(p)) return false;
 
   return (
+    p.format !== undefined ||
+    p.variant !== undefined ||
     p.includeBlocksWithoutTranslation !== undefined ||
     hasHtmlKeys ||
     p.layoutFormat !== undefined ||
@@ -187,6 +265,7 @@ function isPrefs(value: unknown): value is ExportPrefs {
     p.parallelLeft !== undefined ||
     p.parallelRight !== undefined ||
     p.parallelGutterColumn !== undefined ||
+    p.parallelSpeakerGutterColumn !== undefined ||
     p.speakerPlacement !== undefined ||
     p.speakerParallelPlacement !== undefined ||
     p.speakerForm !== undefined ||
@@ -233,6 +312,8 @@ function writeStore(store: PrefsStore): void {
 
 function clonePrefs(prefs: ExportPrefs): ExportPrefs {
   const next: ExportPrefs = {};
+  if (prefs.format !== undefined) next.format = prefs.format;
+  if (prefs.variant !== undefined) next.variant = { ...prefs.variant };
   if (prefs.includeBlocksWithoutTranslation !== undefined) {
     next.includeBlocksWithoutTranslation =
       prefs.includeBlocksWithoutTranslation;
@@ -258,6 +339,9 @@ function clonePrefs(prefs: ExportPrefs): ExportPrefs {
   if (prefs.parallelGutterColumn !== undefined) {
     next.parallelGutterColumn = prefs.parallelGutterColumn;
   }
+  if (prefs.parallelSpeakerGutterColumn !== undefined) {
+    next.parallelSpeakerGutterColumn = prefs.parallelSpeakerGutterColumn;
+  }
   if (prefs.speakerPlacement !== undefined) {
     next.speakerPlacement = prefs.speakerPlacement;
   }
@@ -280,8 +364,9 @@ export function loadExportPrefs(
 }
 
 /**
- * Merge a successful-export patch into per-prayer prefs.
- * Include-empty, HTML, Layout, and Word-table fields only when provided in the patch.
+ * Merge a patch into per-prayer prefs.
+ * Format, variant, include-empty, HTML, Layout, and Word-table fields only
+ * when provided — a Word-table close must not drop earlier HTML prefs.
  */
 export function saveExportPrefs(
   libraryRoot: string,
@@ -291,6 +376,8 @@ export function saveExportPrefs(
   const store = readStore();
   const existing = store[libraryRoot]?.[path] ?? {};
   const next: ExportPrefs = clonePrefs(existing);
+  if (patch.format !== undefined) next.format = patch.format;
+  if (patch.variant !== undefined) next.variant = { ...patch.variant };
   if (patch.includeBlocksWithoutTranslation !== undefined) {
     next.includeBlocksWithoutTranslation = patch.includeBlocksWithoutTranslation;
   }
@@ -308,9 +395,18 @@ export function saveExportPrefs(
   }
 
   if (patch.parallel) {
-    next.parallelLeft = { ...patch.parallel.left };
-    next.parallelRight = { ...patch.parallel.right };
-    next.parallelGutterColumn = patch.parallel.gutterColumn;
+    if (patch.parallel.left !== undefined) {
+      next.parallelLeft = { ...patch.parallel.left };
+    }
+    if (patch.parallel.right !== undefined) {
+      next.parallelRight = { ...patch.parallel.right };
+    }
+    if (patch.parallel.gutterColumn !== undefined) {
+      next.parallelGutterColumn = patch.parallel.gutterColumn;
+    }
+    if (patch.parallel.speakerGutterColumn !== undefined) {
+      next.parallelSpeakerGutterColumn = patch.parallel.speakerGutterColumn;
+    }
   }
 
   if (patch.speakers) {

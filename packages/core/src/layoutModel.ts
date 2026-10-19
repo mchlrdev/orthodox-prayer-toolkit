@@ -38,11 +38,17 @@ export type ExportLayoutParallelOptions = {
   includeBlocksWithoutTranslation?: boolean;
   styles?: StyleMap;
   /**
-   * Empty middle table column so Word can set the gap by dragging.
-   * Default / absent: two columns only.
+   * Empty language-gap table column so Word can set the gap by dragging.
+   * Default / absent: on; pass `false` to omit it.
    */
   gutterColumn?: boolean;
-  /** Speaker labels; default `inline-left`, name form, `": "` separator. */
+  /**
+   * Empty column after Speaker (Own column only).
+   * Default / absent: on when placement is `column`; ignored otherwise.
+   * Pass `false` to omit it.
+   */
+  speakerGutterColumn?: boolean;
+  /** Speaker labels; default `column`, name form, `": "` separator. */
   speakers?: Partial<ParallelSpeakerExportOptions>;
 };
 

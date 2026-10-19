@@ -270,10 +270,10 @@ describe("exportLayoutDocx speakers", () => {
     expect(doc.match(/<w:tr>|<w:tr /g)).toHaveLength(4);
     expect(doc).toContain('<w:gridCol w:w="1440"/>');
     expect(doc).toContain('<w:gridCol w:w="7920"/>');
-    // label without separator, in its character style; no inline lead
-    expect(doc).toContain("Priester");
-    expect(doc).not.toContain("Priester:");
+    // styled label + separator (trimEnd of ": " → "Priester:"); no inline gap
+    expect(doc).toContain("Priester:");
     expect(doc).toContain('<w:rStyle w:val="opt_speaker_priest"/>');
+    expect(doc).toMatch(/<w:tcW\b[^>]*\bw:w="1440"/);
     expect(files["word/styles.xml"]).toContain('w:styleId="opt_speaker_people"');
   });
 
@@ -305,15 +305,57 @@ describe("exportLayoutDocx speakers", () => {
   });
 });
 
+function tableRows(doc: string): string[] {
+  return [...doc.matchAll(/<w:tr\b[^>]*>([\s\S]*?)<\/w:tr>/g)].map(
+    (m) => m[1]!,
+  );
+}
+
+function tableCells(row: string): string[] {
+  return [...row.matchAll(/<w:tc\b[^>]*>([\s\S]*?)<\/w:tc>/g)].map(
+    (m) => m[1]!,
+  );
+}
+
+function cellText(cell: string): string {
+  return [...cell.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/g)]
+    .map((m) => m[1]!)
+    .join("");
+}
+
+const examplesDir = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../../examples",
+);
+
+function loadOstergebete(): Prayer {
+  const r = validate(
+    JSON.parse(
+      readFileSync(join(examplesDir, "ostergebete.json"), "utf8"),
+    ),
+  );
+  if (!r.ok) throw new Error("ostergebete");
+  return r.prayer;
+}
+
 describe("exportLayoutDocxParallel speakers", () => {
   const columns: [typeof DE, typeof AR] = [DE, AR];
+  const osterColumns: [typeof DE, { lang: string; variant: string }] = [
+    DE,
+    { lang: "en", variant: "standard" },
+  ];
 
-  it("inline-left (default) labels only the left side", async () => {
+  it("inline-left labels only the left side", async () => {
     const doc = unzipTexts(
-      await exportLayoutDocxParallel(prayer(), { columns }),
+      await exportLayoutDocxParallel(prayer(), {
+        columns,
+        speakers: { placement: "inline-left" },
+      }),
     )["word/document.xml"]!;
     expect(doc).toContain("Priester:");
     expect(doc).not.toContain("الكاهن:");
+    expect(doc.match(/<w:gridCol /g)).toHaveLength(3);
+    expect(doc).toMatch(/<w:tcW\b[^>]*\bw:w="720"/);
   });
 
   it("inline-both labels each side with its own variant", async () => {
@@ -339,40 +381,201 @@ describe("exportLayoutDocxParallel speakers", () => {
     );
     expect(files["word/document.xml"]).not.toContain("Priester");
     expect(files["word/styles.xml"]).not.toContain("speaker_");
+    expect(files["word/document.xml"]).toMatch(/<w:tcW\b[^>]*\bw:w="720"/);
   });
 
-  it("column adds a first Speaker column from the left variant only", async () => {
-    const files = unzipTexts(
+  it("column (default) adds a first Speaker column from the left variant only", async () => {
+    const implicit = unzipTexts(
+      await exportLayoutDocxParallel(prayer(), { columns }),
+    );
+    const explicit = unzipTexts(
       await exportLayoutDocxParallel(prayer(), {
         columns,
         speakers: { placement: "column" },
       }),
     );
-    const doc = files["word/document.xml"]!;
+    expect(implicit["word/document.xml"]).toBe(explicit["word/document.xml"]);
+    const doc = implicit["word/document.xml"]!;
     expect(doc).toContain('<w:gridCol w:w="1440"/>');
-    expect(doc.match(/<w:gridCol /g)).toHaveLength(3);
-    expect(doc.match(/<w:gridCol w:w="3960"\/>/g)).toHaveLength(2);
-    expect(doc).toContain("Priester");
+    expect(doc.match(/<w:gridCol /g)).toHaveLength(5);
+    expect(doc).toContain('<w:gridCol w:w="3240"/>');
+    expect(doc.match(/<w:gridCol w:w="720"\/>/g)).toHaveLength(2);
+    expect(doc).toContain("Priester:");
     expect(doc).not.toContain("الكاهن");
-    expect(doc).not.toContain("Priester:");
-    // 4 rows x 3 cells
-    expect(doc.match(/<w:tc>/g)).toHaveLength(12);
+    // 4 rows x 5 cells
+    expect(doc.match(/<w:tc[\s>]/g)).toHaveLength(20);
+    const rows = tableRows(doc);
+    expect(tableCells(rows[0]!).length).toBe(5);
+    expect(cellText(tableCells(rows[0]!)[0]!)).toBe("");
+    expect(tableCells(rows[0]!)[0]).toMatch(/<w:p[\s/>]/);
+    expect(cellText(tableCells(rows[1]!)[0]!)).toBe("Priester:");
+    expect(cellText(tableCells(rows[2]!)[0]!)).toBe("People:");
+    expect(cellText(tableCells(rows[1]!)[1]!)).toBe("");
+    expect(tableCells(rows[1]!)[1]).toMatch(/<w:tcW\b[^>]*\bw:w="720"/);
   });
 
-  it("column with gutter has four columns", async () => {
+  it("speakerGutterColumn false keeps four columns when language gutter is on", async () => {
     const doc = unzipTexts(
       await exportLayoutDocxParallel(prayer(), {
         columns,
-        gutterColumn: true,
+        speakerGutterColumn: false,
         speakers: { placement: "column" },
       }),
     )["word/document.xml"]!;
     expect(doc.match(/<w:gridCol /g)).toHaveLength(4);
     expect(doc).toContain('<w:gridCol w:w="3600"/>');
+    expect(doc.match(/<w:gridCol w:w="720"\/>/g)).toHaveLength(1);
+    expect(doc).toMatch(/<w:tcW\b[^>]*\bw:w="720"/);
+    expect(cellText(tableCells(tableRows(doc)[1]!)[0]!)).toBe("Priester:");
+  });
+
+  it("both gutters off keeps three columns", async () => {
+    const doc = unzipTexts(
+      await exportLayoutDocxParallel(prayer(), {
+        columns,
+        gutterColumn: false,
+        speakerGutterColumn: false,
+        speakers: { placement: "column" },
+      }),
+    )["word/document.xml"]!;
+    expect(doc.match(/<w:gridCol /g)).toHaveLength(3);
+    expect(doc.match(/<w:gridCol w:w="3960"\/>/g)).toHaveLength(2);
+    expect(doc).toMatch(/<w:tcW\b[^>]*\bw:w="1440"/);
+  });
+
+  it("speaker gutter only (language gutter off) is four columns", async () => {
+    const doc = unzipTexts(
+      await exportLayoutDocxParallel(prayer(), {
+        columns,
+        gutterColumn: false,
+        speakers: { placement: "column" },
+      }),
+    )["word/document.xml"]!;
+    expect(doc.match(/<w:gridCol /g)).toHaveLength(4);
+    expect(doc.match(/<w:gridCol w:w="3600"\/>/g)).toHaveLength(2);
     expect(doc).toContain('<w:gridCol w:w="720"/>');
   });
 
-  it("column without speakers keeps the two-column table", async () => {
+  it("column applies dot and custom separators; empty speaker cells stay empty", async () => {
+    const dot = unzipTexts(
+      await exportLayoutDocxParallel(prayer(), {
+        columns,
+        speakers: { placement: "column", separator: ". " },
+      }),
+    )["word/document.xml"]!;
+    expect(cellText(tableCells(tableRows(dot)[1]!)[0]!)).toBe("Priester.");
+    expect(cellText(tableCells(tableRows(dot)[0]!)[0]!)).toBe("");
+
+    const custom = unzipTexts(
+      await exportLayoutDocxParallel(prayer(), {
+        columns,
+        speakers: { placement: "column", separator: " — " },
+      }),
+    )["word/document.xml"]!;
+    expect(cellText(tableCells(tableRows(custom)[1]!)[0]!)).toBe("Priester —");
+  });
+
+  it("ostergebete column+gutter keeps empty speaker cells on early rows", async () => {
+    const prayer = loadOstergebete();
+    const files = unzipTexts(
+      await exportLayoutDocxParallel(prayer, {
+        columns: osterColumns,
+        speakers: { placement: "column" },
+      }),
+    );
+    const doc = files["word/document.xml"]!;
+    expect(doc).toContain("Priester:");
+    expect(doc).toContain("Volk:");
+    expect(doc.match(/<w:gridCol /g)).toHaveLength(5);
+    expect(doc).toContain('<w:gridCol w:w="1440"/>');
+    expect(doc).toContain('<w:gridCol w:w="3240"/>');
+    expect(doc.match(/<w:gridCol w:w="720"\/>/g)).toHaveLength(2);
+    expect(doc).toMatch(/<w:tcW\b[^>]*\bw:w="720"/);
+
+    const rows = tableRows(doc);
+    expect(rows.length).toBe(prayer.structure.length);
+    for (const row of rows) {
+      expect(tableCells(row).length).toBe(5);
+    }
+
+    const annotation = tableCells(
+      rows.find((r) => cellText(r).includes("Ostertroparion"))!,
+    );
+    expect(cellText(annotation[0]!)).toBe("");
+    expect(annotation[0]).toMatch(/<w:p[\s/>]/);
+    expect(cellText(annotation[1]!)).toBe("");
+    expect(annotation[1]).toMatch(/<w:tcW\b[^>]*\bw:w="720"/);
+    expect(cellText(annotation[2]!)).toContain("Ostertroparion");
+    expect(cellText(annotation[4]!)).toContain("Paschal Troparion");
+
+    const troparion = tableCells(
+      rows.find((r) =>
+        cellText(r).includes("Christus ist erstanden von den Toten"),
+      )!,
+    );
+    expect(cellText(troparion[0]!)).toBe("");
+    expect(troparion[0]).toMatch(/<w:p[\s/>]/);
+    expect(cellText(troparion[1]!)).toBe("");
+
+    const d1 = tableCells(
+      rows.find((r) => cellText(r).includes("Christus ist auferstanden!"))!,
+    );
+    expect(cellText(d1[0]!)).toBe("Priester:");
+    const d2 = tableCells(
+      rows.find((r) => cellText(r).includes("Wahrhaftig, er ist auferstanden!"))!,
+    );
+    expect(cellText(d2[0]!)).toBe("Volk:");
+    const d3 = tableCells(
+      rows.find((r) => cellText(r).includes("Der Herr sei mit euch!"))!,
+    );
+    expect(cellText(d3[0]!)).toBe("Priester:");
+    const d4 = tableCells(
+      rows.find((r) => cellText(r).includes("Und mit deinem Geiste."))!,
+    );
+    expect(cellText(d4[0]!)).toBe("Volk:");
+  });
+
+  it("ostergebete default matches column placement", async () => {
+    const prayer = loadOstergebete();
+    const implicit = unzipTexts(
+      await exportLayoutDocxParallel(prayer, { columns: osterColumns }),
+    )["word/document.xml"]!;
+    const explicit = unzipTexts(
+      await exportLayoutDocxParallel(prayer, {
+        columns: osterColumns,
+        speakers: { placement: "column" },
+      }),
+    )["word/document.xml"]!;
+    expect(implicit).toBe(explicit);
+    expect(implicit.match(/<w:gridCol /g)).toHaveLength(5);
+  });
+
+  it("ostergebete inline-left writes labels into the left cell on d1–d4 only", async () => {
+    const prayer = loadOstergebete();
+    const doc = unzipTexts(
+      await exportLayoutDocxParallel(prayer, {
+        columns: osterColumns,
+        speakers: { placement: "inline-left" },
+      }),
+    )["word/document.xml"]!;
+    expect(doc.match(/<w:gridCol /g)).toHaveLength(3);
+    expect(doc).not.toContain('<w:gridCol w:w="1440"/>');
+    expect(doc).toMatch(/<w:tcW\b[^>]*\bw:w="720"/);
+    const rows = tableRows(doc);
+    const annotation = tableCells(
+      rows.find((r) => cellText(r).includes("Ostertroparion"))!,
+    );
+    expect(annotation.length).toBe(3);
+    expect(cellText(annotation[0]!)).toContain("Ostertroparion");
+    expect(cellText(annotation[0]!)).not.toContain("Priester");
+    const d1 = tableCells(
+      rows.find((r) => cellText(r).includes("Christus ist auferstanden!"))!,
+    );
+    expect(cellText(d1[0]!)).toMatch(/^Priester/);
+    expect(cellText(d1[0]!)).toContain("Christus ist auferstanden!");
+  });
+
+  it("column without speakers keeps the table unchanged", async () => {
     const r = validate(
       JSON.parse(
         readFileSync(join(fixturesDir, "parallel-layout-sample.json"), "utf8"),

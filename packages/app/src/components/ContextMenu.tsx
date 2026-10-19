@@ -10,6 +10,11 @@ import {
 import { Group, Menu, Popover, UnstyledButton } from "@mantine/core";
 import { IconChevronRight } from "@tabler/icons-react";
 
+/** Block right-click Menu. Kind / Speaker pick-one popovers use the same width. */
+export const CONTEXT_MENU_WIDTH = 220;
+/** Kind ▸ / Speaker ▸ flyout only — do not widen the pickers or the main menu to this. */
+export const CONTEXT_SUBMENU_WIDTH = 240;
+
 export type ContextMenuAction = {
   label: ReactNode;
   icon?: ReactNode;
@@ -170,7 +175,7 @@ function SubmenuItem({
       position="right-start"
       offset={4}
       shadow="md"
-      width={240}
+      width={CONTEXT_SUBMENU_WIDTH}
       withinPortal={false}
       trapFocus={false}
       returnFocus={false}
@@ -309,7 +314,7 @@ export function useContextMenu() {
       position="bottom-start"
       offset={2}
       shadow="md"
-      width={220}
+      width={CONTEXT_MENU_WIDTH}
       withinPortal
       returnFocus={false}
       // Escape is handled on the dropdown (bubble phase), so an open submenu

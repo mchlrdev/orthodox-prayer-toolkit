@@ -76,7 +76,7 @@ Validate / sanitize via Core `validateStyles` / `sanitizeStyles` / `resolveStyle
 - Renaming `id` renames the file; if the target exists, save is blocked.
 - Deleting a prayer removes its file and patches the Library catalog (no full rescan).
 - **Export prayer JSON** (right-click a sidebar row) writes the complete `{id}.json` source file via a save dialog. Unsaved draft changes are included.
-- The editor **Export** dialog can write a two-column **Word table** (order of two variants, optional empty middle column for the gap). That file is for Microsoft Word; Affinity Place cannot flow tables as story text.
+- The editor **Export** dialog can write a two-column **Word table** (order of two variants; language gutter and, for Own column, speaker gutter are checked by default and can be turned off; Speakers default to Own column). That file is for Microsoft Word; Affinity Place cannot flow tables as story text. Export options are remembered per Prayer (local), including the last format.
 - **Import prayer JSON** (library menu) copies a picked `.json` into the library root as `{id}.json`. The file is not rewritten. Existing ids/filenames are not overwritten.
 
 ## External changes (editor)

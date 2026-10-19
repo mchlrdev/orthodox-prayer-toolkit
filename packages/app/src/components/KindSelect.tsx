@@ -329,7 +329,7 @@ export function KindSelect({
             {all.map((kind) => {
               const active = kind === value;
               return (
-                <Group key={kind} gap={4} wrap="nowrap">
+                <div key={kind} className="option-row-with-edit">
                   <OptionRow
                     active={active}
                     onClick={() => {
@@ -341,19 +341,20 @@ export function KindSelect({
                   </OptionRow>
                   {canEdit ? (
                     <ActionIcon
+                      className="option-row-edit"
                       variant="subtle"
                       color="gray"
-                      size="sm"
+                      size={18}
                       onClick={(e) => {
                         e.stopPropagation();
                         openEdit(kind);
                       }}
                       aria-label={`Edit kind ${kindDisplayLabel(kind)}`}
                     >
-                      <IconPencil size={14} />
+                      <IconPencil size={12} />
                     </ActionIcon>
                   ) : null}
-                </Group>
+                </div>
               );
             })}
 

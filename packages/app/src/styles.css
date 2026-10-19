@@ -1876,19 +1876,32 @@ body,
   flex-shrink: 0;
 }
 
+/*
+ * Pick-one rows. When OptionRow also carries Menu.Item classes, padding /
+ * font / radius come from Menu.css — these tokens keep a standalone
+ * .option-row (Kind trigger, ColorSelect) on the same density.
+ */
 .option-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--mantine-spacing-xs);
   width: 100%;
-  padding: 8px 10px;
+  min-width: 0;
+  padding: calc(var(--mantine-spacing-xs) / 1.5) var(--mantine-spacing-sm);
   border: none;
   background: transparent;
-  border-radius: 8px;
+  border-radius: var(--mantine-radius-default);
   cursor: pointer;
   font: inherit;
+  font-size: var(--mantine-font-size-sm);
   color: inherit;
   text-align: left;
+  user-select: none;
+}
+
+/* Menu.Item already spaces itemSection; don't add a second gap. */
+.option-row.mantine-Menu-item {
+  gap: 0;
 }
 
 .option-row:hover {
@@ -1918,6 +1931,36 @@ body,
   flex-shrink: 0;
 }
 
+.option-row-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Kind pencil sits beside the row without stretching the 220px panel. */
+.option-row-with-edit {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.option-row-with-edit:hover > .option-row {
+  background: var(--opt-row-hover);
+}
+
+.option-row-with-edit > .option-row {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+.option-row-edit {
+  flex-shrink: 0;
+  margin-inline-end: 2px;
+}
+
 /* ── Menu / popover rows and separators (one rule for every dropdown) ── */
 
 /* Separators: Menu.Divider (theme.ts also inlines the colour), OptionDivider. */
@@ -1928,7 +1971,7 @@ body,
 
 .option-divider {
   height: 0;
-  margin: 4px 2px;
+  margin: 4px 0;
   border-top: 1px solid var(--opt-divider);
 }
 
@@ -2240,11 +2283,12 @@ body,
   color: var(--opt-accent);
 }
 
-/* Dropdown rows: fixed chip slot · name · check. */
+/* Dropdown rows: chip column · name · check. Width matches the pill, not a 28px gutter. */
 .speaker-menu-slot {
   display: inline-flex;
   justify-content: flex-start;
-  width: 28px;
+  align-items: center;
+  width: 19px;
 }
 
 /* Prayer settings → Speakers */

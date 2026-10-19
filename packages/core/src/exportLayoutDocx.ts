@@ -4,6 +4,7 @@ import {
   Paragraph,
   Table,
   TableCell,
+  TableLayoutType,
   TableRow,
   TextRun,
   WidthType,
@@ -29,19 +30,26 @@ import type { Prayer } from "./types.js";
 
 /** Preferred grid (DXA). Word scales with 100% table width. */
 const PARALLEL_COLUMN_DXA = 4680;
-/** Narrow empty middle column when `gutterColumn` is on (~0.5 in). */
+/** Narrow empty gutter (~0.5 in). Language gap and speaker gutter share this. */
 const PARALLEL_GUTTER_DXA = 720;
 const PARALLEL_SIDE_WITH_GUTTER_DXA = 4320;
 /**
  * Speaker column (~1 in) of the 9360 DXA text width. Layout DOCX column
- * placement: Speaker 1440 | Text 7920. Word table column placement keeps the
- * same Speaker width and shrinks the sides: 1440 | 3960 | 3960, or with
- * gutter 1440 | 3600 | 720 | 3600.
+ * placement: Speaker 1440 | Text 7920. Word table Own column:
+ * neither gutter 1440 | 3960 | 3960;
+ * language gutter 1440 | 3600 | 720 | 3600;
+ * speaker gutter 1440 | 720 | 3600 | 3600;
+ * both 1440 | 720 | 3240 | 720 | 3240.
  */
 const SPEAKER_COLUMN_DXA = 1440;
 const SPEAKER_TEXT_DXA = 7920;
 const SPEAKER_PARALLEL_SIDE_DXA = 3960;
 const SPEAKER_PARALLEL_SIDE_WITH_GUTTER_DXA = 3600;
+const SPEAKER_PARALLEL_SIDE_BOTH_GUTTERS_DXA = 3240;
+
+function cellWidth(size: number): { size: number; type: typeof WidthType.DXA } {
+  return { size, type: WidthType.DXA };
+}
 
 function runsToDocxChildren(
   lines: LayoutRun[][],
@@ -117,29 +125,42 @@ function characterStyleDefs(names: string[]): ICharacterStyleOptions[] {
   }));
 }
 
-function speakerCell(speaker: LayoutSpeaker | undefined): TableCell {
+function speakerCell(
+  speaker: LayoutSpeaker | undefined,
+  separator: string,
+  width: number,
+): TableCell {
   return new TableCell({
+    width: cellWidth(width),
     children: [
-      new Paragraph({
-        children: speaker
-          ? [new TextRun({ text: speaker.label, style: speaker.styleName })]
-          : [],
-      }),
+      speaker
+        ? new Paragraph({
+            children: [
+              new TextRun({
+                text: inlineSpeakerText(speaker.label, separator),
+                style: speaker.styleName,
+              }),
+            ],
+          })
+        : new Paragraph({}),
     ],
   });
 }
 
 /** Column placement: Speaker | Text, one row per block, no inline lead. */
 function buildSpeakerColumnDocument(story: LayoutStory): Document {
+  const columnWidths = [SPEAKER_COLUMN_DXA, SPEAKER_TEXT_DXA];
   const table = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
-    columnWidths: [SPEAKER_COLUMN_DXA, SPEAKER_TEXT_DXA],
+    layout: TableLayoutType.FIXED,
+    columnWidths,
     rows: story.paragraphs.map(
       (p) =>
         new TableRow({
           children: [
-            speakerCell(p.speaker),
+            speakerCell(p.speaker, story.speakerSeparator, columnWidths[0]!),
             new TableCell({
+              width: cellWidth(columnWidths[1]!),
               children: [paragraphFromLayout(p, story.noteStyleName)],
             }),
           ],
@@ -183,21 +204,72 @@ function pairCell(
   paragraph: LayoutParagraph,
   noteStyleName: string,
   separator: string,
+  width: number,
 ): TableCell {
   return new TableCell({
+    width: cellWidth(width),
     children: [paragraphFromLayout(paragraph, noteStyleName, separator)],
   });
 }
 
-function emptyGutterCell(): TableCell {
+function emptyGutterCell(width: number): TableCell {
   return new TableCell({
+    width: cellWidth(width),
     children: [new Paragraph({})],
   });
 }
 
+/** Speaker | [speaker gutter] | Left | [language gutter] | Right — 9360 DXA. */
+function parallelColumnWidths(opts: {
+  withSpeaker: boolean;
+  languageGutter: boolean;
+  speakerGutter: boolean;
+}): number[] {
+  if (!opts.withSpeaker) {
+    return opts.languageGutter
+      ? [
+          PARALLEL_SIDE_WITH_GUTTER_DXA,
+          PARALLEL_GUTTER_DXA,
+          PARALLEL_SIDE_WITH_GUTTER_DXA,
+        ]
+      : [PARALLEL_COLUMN_DXA, PARALLEL_COLUMN_DXA];
+  }
+  if (opts.speakerGutter && opts.languageGutter) {
+    return [
+      SPEAKER_COLUMN_DXA,
+      PARALLEL_GUTTER_DXA,
+      SPEAKER_PARALLEL_SIDE_BOTH_GUTTERS_DXA,
+      PARALLEL_GUTTER_DXA,
+      SPEAKER_PARALLEL_SIDE_BOTH_GUTTERS_DXA,
+    ];
+  }
+  if (opts.speakerGutter) {
+    return [
+      SPEAKER_COLUMN_DXA,
+      PARALLEL_GUTTER_DXA,
+      SPEAKER_PARALLEL_SIDE_WITH_GUTTER_DXA,
+      SPEAKER_PARALLEL_SIDE_WITH_GUTTER_DXA,
+    ];
+  }
+  if (opts.languageGutter) {
+    return [
+      SPEAKER_COLUMN_DXA,
+      SPEAKER_PARALLEL_SIDE_WITH_GUTTER_DXA,
+      PARALLEL_GUTTER_DXA,
+      SPEAKER_PARALLEL_SIDE_WITH_GUTTER_DXA,
+    ];
+  }
+  return [
+    SPEAKER_COLUMN_DXA,
+    SPEAKER_PARALLEL_SIDE_DXA,
+    SPEAKER_PARALLEL_SIDE_DXA,
+  ];
+}
+
 function buildPairDocument(
   story: LayoutPairStory,
-  gutterColumn: boolean,
+  languageGutter: boolean,
+  speakerGutter: boolean,
 ): Document {
   const styleNames = story.rows.flatMap((row) => [
     row.left.styleName,
@@ -205,30 +277,47 @@ function buildPairDocument(
   ]);
 
   const withSpeaker = story.speakerColumn;
-  const side = withSpeaker
-    ? gutterColumn
-      ? SPEAKER_PARALLEL_SIDE_WITH_GUTTER_DXA
-      : SPEAKER_PARALLEL_SIDE_DXA
-    : gutterColumn
-      ? PARALLEL_SIDE_WITH_GUTTER_DXA
-      : PARALLEL_COLUMN_DXA;
-  const columnWidths = [
-    ...(withSpeaker ? [SPEAKER_COLUMN_DXA] : []),
-    side,
-    ...(gutterColumn ? [PARALLEL_GUTTER_DXA] : []),
-    side,
-  ];
+  const useSpeakerGutter = withSpeaker && speakerGutter;
+  const columnWidths = parallelColumnWidths({
+    withSpeaker,
+    languageGutter,
+    speakerGutter: useSpeakerGutter,
+  });
 
   const table = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
+    layout: TableLayoutType.FIXED,
     columnWidths,
     rows: story.rows.map((row) => {
-      const cells = [
-        ...(withSpeaker ? [speakerCell(row.speaker)] : []),
-        pairCell(row.left, story.noteStyleName, story.speakerSeparator),
-        ...(gutterColumn ? [emptyGutterCell()] : []),
-        pairCell(row.right, story.noteStyleName, story.speakerSeparator),
-      ];
+      const cells: TableCell[] = [];
+      let i = 0;
+      if (withSpeaker) {
+        cells.push(
+          speakerCell(row.speaker, story.speakerSeparator, columnWidths[i++]!),
+        );
+        if (useSpeakerGutter) {
+          cells.push(emptyGutterCell(columnWidths[i++]!));
+        }
+      }
+      cells.push(
+        pairCell(
+          row.left,
+          story.noteStyleName,
+          story.speakerSeparator,
+          columnWidths[i++]!,
+        ),
+      );
+      if (languageGutter) {
+        cells.push(emptyGutterCell(columnWidths[i++]!));
+      }
+      cells.push(
+        pairCell(
+          row.right,
+          story.noteStyleName,
+          story.speakerSeparator,
+          columnWidths[i++]!,
+        ),
+      );
       return new TableRow({ children: cells });
     }),
   });
@@ -262,17 +351,24 @@ export async function exportLayoutDocx(
 }
 
 /**
- * Word-only table (one structure block per row). Optional empty middle
- * column (`gutterColumn`) so the gap can be dragged in Word.
- * Table chrome is the library default (½ pt grid); cells keep blank named
- * kind styles. Not for Affinity Place — tables do not flow as story text.
+ * Word-only table (one structure block per row). Language gutter
+ * (`gutterColumn`) is on by default; pass `false` to omit it. Own-column
+ * speaker gutter (`speakerGutterColumn`) is on by default when placement is
+ * `column`; ignored otherwise. Table chrome is the library default (½ pt
+ * grid); cells keep blank named kind styles and explicit DXA widths so
+ * empty gutters stay. Not for Affinity Place — tables do not flow as story
+ * text.
  */
 export async function exportLayoutDocxParallel(
   prayer: Prayer,
   options: ExportLayoutParallelOptions,
 ): Promise<Uint8Array> {
   const story = buildLayoutPairStory(prayer, options);
-  const doc = buildPairDocument(story, options.gutterColumn === true);
+  const doc = buildPairDocument(
+    story,
+    options.gutterColumn !== false,
+    story.speakerColumn && options.speakerGutterColumn !== false,
+  );
   const arrayBuffer = await Packer.toArrayBuffer(doc);
   return new Uint8Array(arrayBuffer);
 }
