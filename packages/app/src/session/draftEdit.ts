@@ -17,6 +17,7 @@ export function applyDraftEdit(
   next: Prayer,
   visibleVariants: ActiveVariant[],
   previousErrors: ValidationError[] = [],
+  previousWarnings?: ValidationError[],
 ): SessionDraft {
   const nextVariants = reconcileVisibleVariants(
     visibleVariants,
@@ -26,6 +27,7 @@ export function applyDraftEdit(
   return {
     prayer: next,
     errors: previousErrors,
+    ...(previousWarnings ? { warnings: previousWarnings } : {}),
     visibleVariants: nextVariants,
     dirty: true,
   };
@@ -34,4 +36,16 @@ export function applyDraftEdit(
 export function validationErrorsFor(prayer: Prayer): ValidationError[] {
   const result = validate(prayer);
   return result.ok ? [] : result.errors;
+}
+
+/** Errors (block saving) and warnings (informational) from one validate run. */
+export function validationFor(prayer: Prayer): {
+  errors: ValidationError[];
+  warnings: ValidationError[];
+} {
+  const result = validate(prayer);
+  return {
+    errors: result.ok ? [] : result.errors,
+    warnings: result.warnings,
+  };
 }

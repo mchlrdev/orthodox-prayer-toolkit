@@ -10,6 +10,15 @@ export type ExportVariantOptions = {
   includeBlocksWithoutTranslation?: boolean;
 };
 
+function withSpeaker(
+  block: Prayer["structure"][number],
+  flat: FlatBlock,
+): FlatBlock {
+  if (block.speaker === undefined) return flat;
+  const { id, kind, ...rest } = flat;
+  return { id, kind, speaker: block.speaker, ...rest };
+}
+
 function flattenTranslation(tr: Translation): Omit<FlatBlock, "id" | "kind"> {
   const payload: Omit<FlatBlock, "id" | "kind"> = {};
   if (tr.text !== undefined) {
@@ -60,18 +69,22 @@ export function exportVariant(
     );
     if (!tr) {
       if (!includeEmpty) continue;
-      structure.push({
-        id: block.id,
-        kind: block.kind,
-        ...emptyPayloadForBlock(block),
-      });
+      structure.push(
+        withSpeaker(block, {
+          id: block.id,
+          kind: block.kind,
+          ...emptyPayloadForBlock(block),
+        }),
+      );
       continue;
     }
-    structure.push({
-      id: block.id,
-      kind: block.kind,
-      ...flattenTranslation(tr),
-    });
+    structure.push(
+      withSpeaker(block, {
+        id: block.id,
+        kind: block.kind,
+        ...flattenTranslation(tr),
+      }),
+    );
   }
 
   const flat: FlatPrayer = {
@@ -91,6 +104,11 @@ export function exportVariant(
   if (prayer.description !== undefined) flat.description = prayer.description;
   if (prayer.meta !== undefined) flat.meta = prayer.meta;
   if (meta.rtl === true) flat.rtl = true;
+  if (meta.speakers && Object.keys(meta.speakers).length > 0) {
+    flat.speakers = Object.fromEntries(
+      Object.entries(meta.speakers).map(([id, l]) => [id, { ...l }]),
+    );
+  }
 
   return flat;
 }

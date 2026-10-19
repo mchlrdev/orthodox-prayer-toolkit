@@ -4,6 +4,8 @@ export type { InlineContent, TextRun } from "./textRuns.js";
 
 /** Canonical prayer document (model A — shared structure, per-block translations). */
 export type Prayer = {
+  /** Format revision; omitted = 1. Written as 2 only when speakers are used. */
+  formatVersion?: number;
   id: string;
   type: string;
   book?: string;
@@ -26,11 +28,24 @@ export type VariantMeta = {
   source: string;
   /** When true, this edition is RTL. Omit when LTR. */
   rtl?: boolean;
+  /** Printed labels per speaker id. */
+  speakers?: Record<string, SpeakerLabel>;
 };
+
+/** Printed label of a speaker in one variant. Both fields non-empty when set. */
+export type SpeakerLabel = {
+  name?: string;
+  short?: string;
+};
+
+/** Highest format revision this Core understands. */
+export const CURRENT_FORMAT_VERSION = 2;
 
 export type Block = {
   id: string;
   kind: string;
+  /** Optional speaker id, shared by every variant. */
+  speaker?: string;
   translations: Translation[];
 };
 
@@ -60,12 +75,16 @@ export type FlatPrayer = {
   /** Present only when the source variant is RTL. */
   rtl?: true;
   structure: FlatBlock[];
+  /** Printed speaker labels of the exported variant (only when present). */
+  speakers?: Record<string, SpeakerLabel>;
   meta?: Prayer["meta"];
 };
 
 export type FlatBlock = {
   id: string;
   kind: string;
+  /** Speaker id, only when the block has one. */
+  speaker?: string;
   text?: InlineContent;
   lines?: InlineContent[];
 };
@@ -79,6 +98,8 @@ export type KindStyle = {
   initialCap?: string;
   /** When `"true"`, the editor marks blocks with `data-indicate`. */
   indicate?: string;
+  /** `"true"` lets blocks of this kind carry a speaker (verse always, headings never). */
+  speaker?: string;
   /** Preferred HTML element for this kind when exporting HTML. */
   htmlTag?: string;
   /** CSS text-align: `left`, `center`, or `justify`. `left` is logical start. */
@@ -93,11 +114,13 @@ export type StyleMap = Record<string, KindStyle>;
 export type ValidationError = {
   path: string;
   message: string;
+  /** Stable machine-readable code for errors/warnings the app reacts to. */
+  code?: string;
 };
 
 export type ValidationResult =
-  | { ok: true; prayer: Prayer }
-  | { ok: false; errors: ValidationError[] };
+  | { ok: true; prayer: Prayer; warnings: ValidationError[] }
+  | { ok: false; errors: ValidationError[]; warnings: ValidationError[] };
 
 export type LibraryManifest = {
   description?: string;

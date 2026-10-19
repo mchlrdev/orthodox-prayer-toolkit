@@ -32,6 +32,7 @@ const ALLOWED_FIELDS = new Set([
   "fontStyle",
   "initialCap",
   "indicate",
+  "speaker",
   "htmlTag",
   "textAlign",
   "dir",
@@ -125,6 +126,7 @@ function validateField(
       return value.trim();
     case "initialCap":
     case "indicate":
+    case "speaker":
       if (value !== "true" && value !== "false") {
         errors.push(fieldError(kind, field, 'expected "true" or "false"'));
         return undefined;
@@ -240,4 +242,16 @@ export function validateStyles(data: unknown): StyleValidationResult {
     return { ok: false, errors };
   }
   return { ok: true, styles };
+}
+
+/**
+ * Whether blocks of a kind may take a speaker.
+ * verse: always; heading/subheading/annotation: never; others: `speaker: "true"`.
+ */
+export function kindAllowsSpeaker(kind: string, styles?: StyleMap): boolean {
+  if (kind === "verse") return true;
+  if (kind === "heading" || kind === "subheading" || kind === "annotation") {
+    return false;
+  }
+  return styles?.[kind]?.speaker === "true";
 }

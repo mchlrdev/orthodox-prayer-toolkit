@@ -5,6 +5,13 @@ import {
   type HtmlTag,
 } from "./htmlTags.js";
 import { resolveBlockDir, resolveDir } from "./resolveDir.js";
+import {
+  INLINE_SPEAKER_GAP,
+  blockSpeakerLabel,
+  inlineSpeakerText,
+  resolveSpeakerExport,
+  type SpeakerExportOptions,
+} from "./speakerExport.js";
 import type { Prayer, StyleMap, Translation } from "./types.js";
 
 export type ExportHtmlOptions = {
@@ -26,6 +33,12 @@ export type ExportHtmlOptions = {
   includeBlocksWithoutTranslation?: boolean;
   /** Resolved kind styles; `dir` on a kind overrides the variant RTL flag. */
   styles?: StyleMap;
+  /**
+   * Speaker labels. `inline` (default) and `column` both render
+   * `<span data-role="speaker">Label:</span> ` before the text and put
+   * `data-speaker` on the block; `off` emits no speaker markup at all.
+   */
+  speakers?: Partial<SpeakerExportOptions>;
 };
 
 function escapeText(value: string): string {
@@ -138,6 +151,7 @@ export function exportHtml(
     includeBlocksWithoutTranslation,
     styles,
   } = options;
+  const sp = resolveSpeakerExport(options.speakers);
 
   // Ensure variant exists even when wrapper is off (consistent with exportVariant).
   const meta = prayer.variants.find(
@@ -158,11 +172,21 @@ export function exportHtml(
     if (!tr && !includeEmpty) continue;
 
     const tag = resolveHtmlTag(tagMap[block.kind]);
-    const inner = tr ? renderPayload(tr) : "";
+    let inner = tr ? renderPayload(tr) : "";
     const dir = resolveBlockDir(meta, block.kind, styles);
-    elements.push(
-      `${openTag(tag, { "data-kind": block.kind, dir })}${inner}</${tag}>`,
-    );
+    const attrs: Record<string, string> = { "data-kind": block.kind };
+    if (block.speaker !== undefined && sp.placement !== "off") {
+      attrs["data-speaker"] = block.speaker;
+      if (tr) {
+        const label = blockSpeakerLabel(prayer, block, lang, variant, sp.form)!;
+        inner =
+          `<span data-role="speaker">${escapeText(
+            inlineSpeakerText(label, sp.separator),
+          )}</span>${INLINE_SPEAKER_GAP}` + inner;
+      }
+    }
+    attrs.dir = dir;
+    elements.push(`${openTag(tag, attrs)}${inner}</${tag}>`);
   }
 
   const fragment = elements.length === 0 ? "" : `${elements.join("\n")}\n`;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { commandForKey } from "../src/appCommands";
+import { MODAL_SELECTOR, commandForKey, modalOpen } from "../src/appCommands";
 
 const key = (
   k: string,
@@ -36,5 +36,17 @@ describe("commandForKey", () => {
   it("ignores Alt combos and plain keys", () => {
     expect(commandForKey(key("f", { meta: true, alt: true }), true)).toBeNull();
     expect(commandForKey(key("s"), true)).toBeNull();
+  });
+});
+
+describe("modalOpen", () => {
+  const root = (...matches: string[]) => ({
+    querySelector: (sel: string) => (matches.includes(sel) ? ({} as Element) : null),
+  });
+
+  it("blocks shortcuts for modals only, not role=dialog popovers", () => {
+    expect(modalOpen(root(MODAL_SELECTOR))).toBe(true);
+    expect(modalOpen(root("[role='dialog']"))).toBe(false);
+    expect(modalOpen(root())).toBe(false);
   });
 });

@@ -2,21 +2,17 @@ import { Modal, Stack, UnstyledButton } from "@mantine/core";
 import {
   IconFileText,
   IconLanguage,
+  IconMicrophone,
   IconPalette,
 } from "@tabler/icons-react";
-import {
-  deleteKind,
-  isKindPreset,
-  type Prayer,
-  type StyleMap,
-} from "@orthodox-prayer-toolkit/core";
+import type { Prayer, StyleMap } from "@orthodox-prayer-toolkit/core";
 import { ExtraFieldsEditor } from "./ExtraFieldsEditor";
 import { KindStylesPanel } from "./KindStylesPanel";
 import { LanguagesPanel } from "./LanguagesPanel";
 import { PrayerBasicsFields } from "./PrayerBasicsFields";
-import { removeStyleKey } from "../prayerEdit";
+import { SpeakersPanel } from "./SpeakersPanel";
 
-export type PrayerSettingsPane = "prayer" | "languages" | "styles";
+export type PrayerSettingsPane = "prayer" | "languages" | "speakers" | "styles";
 
 type ActiveVariant = { lang: string; variant: string };
 
@@ -27,9 +23,11 @@ type Props = {
   onPaneChange: (pane: PrayerSettingsPane) => void;
   prayer: Prayer;
   activeVariant: ActiveVariant;
-  onChange: (prayer: Prayer) => void;
+  onChange: (prayer: Prayer, options?: { coalesceKey?: string }) => void;
   onActiveVariantChange: (v: ActiveVariant) => void;
   onRenameKind: (from: string, to: string) => void;
+  /** Delete a custom kind (library-wide; the session asks when others use it). */
+  onRemoveKind: (kind: string) => void;
   styles: {
     kinds: string[];
     resolved: StyleMap;
@@ -48,6 +46,7 @@ const NAV: {
 }[] = [
   { id: "prayer", label: "Prayer", icon: IconFileText },
   { id: "languages", label: "Languages", icon: IconLanguage },
+  { id: "speakers", label: "Speakers", icon: IconMicrophone },
   { id: "styles", label: "Kinds", icon: IconPalette },
 ];
 
@@ -61,6 +60,7 @@ export function PrayerSettingsModal({
   onChange,
   onActiveVariantChange,
   onRenameKind,
+  onRemoveKind,
   styles,
 }: Props) {
   return (
@@ -120,6 +120,17 @@ export function PrayerSettingsModal({
           </div>
           <div
             className="settings-hub-pane-section"
+            data-active={pane === "speakers" ? "true" : undefined}
+            aria-hidden={pane !== "speakers"}
+          >
+            <SpeakersPanel
+              key={`${prayer.id}:${opened ? "open" : "closed"}`}
+              prayer={prayer}
+              onChange={onChange}
+            />
+          </div>
+          <div
+            className="settings-hub-pane-section"
             data-active={pane === "styles" ? "true" : undefined}
             aria-hidden={pane !== "styles"}
           >
@@ -130,16 +141,7 @@ export function PrayerSettingsModal({
               libraryEnabled={styles.libraryEnabled}
               onChangeLibrary={styles.onChangeLibrary}
               onRenameKind={onRenameKind}
-              onRemoveKind={(kind) => {
-                if (isKindPreset(kind)) return;
-                styles.onChangeLibrary(
-                  removeStyleKey(styles.libraryStyles, kind),
-                );
-                styles.onChangeApp(removeStyleKey(styles.appStyles, kind));
-                if (prayer.structure.some((block) => block.kind === kind)) {
-                  onChange(deleteKind(prayer, kind));
-                }
-              }}
+              onRemoveKind={onRemoveKind}
             />
           </div>
         </div>

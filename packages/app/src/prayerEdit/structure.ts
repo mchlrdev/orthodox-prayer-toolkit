@@ -1,4 +1,9 @@
-import type { InlineContent, Prayer } from "@orthodox-prayer-toolkit/core";
+import {
+  kindAllowsSpeaker,
+  type InlineContent,
+  type Prayer,
+  type StyleMap,
+} from "@orthodox-prayer-toolkit/core";
 import type { ActiveVariant } from "../variant";
 import { applyCommittedContent } from "./commitContent";
 import {
@@ -89,20 +94,31 @@ export function removeBlock(prayer: Prayer, index: number): Prayer {
   };
 }
 
-/** Change a block kind, converting `lines` ↔ `text` when the payload shape changes. */
+/**
+ * Change a block kind, converting `lines` ↔ `text` when the payload shape
+ * changes. A speaker is dropped in the same edit when the new kind does not
+ * allow one (`kindAllowsSpeaker` with the resolved `styles`).
+ */
 export function setBlockKind(
   prayer: Prayer,
   index: number,
   kind: string,
+  styles?: StyleMap,
 ): Prayer {
   const current = prayer.structure[index];
   if (!current) return prayer;
+  if (current.kind === kind) return prayer;
 
+  const dropSpeaker =
+    current.speaker !== undefined && !kindAllowsSpeaker(kind, styles);
   const withKind: Prayer = {
     ...prayer,
-    structure: prayer.structure.map((b, i) =>
-      i === index ? { ...b, kind } : b,
-    ),
+    structure: prayer.structure.map((b, i) => {
+      if (i !== index) return b;
+      if (!dropSpeaker) return { ...b, kind };
+      const { speaker: _speaker, ...rest } = b;
+      return { ...rest, kind };
+    }),
   };
 
   if (usesLines(current.kind) === usesLines(kind)) return withKind;

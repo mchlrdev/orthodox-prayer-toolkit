@@ -181,3 +181,23 @@ Prefer golden fixtures against Core behaviour (valid/invalid docs, export output
 ```bash
 pnpm --filter @orthodox-prayer-toolkit/core test
 ```
+
+## Speakers
+
+A Block may carry `speaker` (id, same rules as kind ids); a Variant may carry `speakers` (`{ [id]: { name?, short? } }`). `CURRENT_FORMAT_VERSION` is `2`; `validate` returns one error with `code: "format-version-newer"` for anything newer. `ValidationResult` always has `warnings` (e.g. `code: "speaker-name-missing"`); `ok` is unaffected by them.
+
+### Speaker export options
+
+`exportHtml`, `exportLayoutRtf` and `exportLayoutDocx` take `speakers?: { placement, form, separator }`. Defaults: `DEFAULT_SPEAKER_EXPORT` = `{ placement: "inline", form: "name", separator: ": " }`.
+
+| Option | Values | Notes |
+|--------|--------|-------|
+| `placement` | `inline` · `column` · `off` | `column` only has an effect in layout DOCX (Speaker | Text table). HTML and RTF treat it as `inline` |
+| `form` | `name` · `short` | Printed form of the Speaker label, with the fallbacks from [Prayer format](prayer-format.md#speakers) |
+| `separator` | any string | Trailing whitespace is trimmed; one plain space always follows the label |
+
+Inline output uses one character style per Speaker, `styleNameWithPrefix(stem, "speaker_<id>")` (`<prefix>_speaker_<id>`). HTML puts `data-speaker="<id>"` on the block and `<span data-role="speaker">` for the label. The flat export (`exportVariant`) carries `speaker` on blocks and the Variant's `speakers` map.
+
+`exportLayoutDocxParallel` takes `speakers?: { placement, form, separator }` with `placement` `inline-left` (default) · `inline-both` · `column` · `off`. `column` adds a Speaker column on the left side only. Default: `DEFAULT_PARALLEL_SPEAKER_EXPORT` = `{ placement: "inline-left", form: "name", separator: ": " }`.
+
+Pure helpers (return new Prayers, `formatVersion` normalized): `normalizeFormatVersion`, `indexSpeakers`, `setBlockSpeaker(prayer, blockId, id | null)`, `setSpeakerLabel(prayer, {lang, variant}, id, {name?, short?})`, `removeSpeaker`. Labels: `resolveSpeakerLabel(prayer, ref, id, "name" | "short")` (name falls back to the title-cased id, short to its first letter), `speakerChipLabel`, `speakerDisplayLabel`. Ids: `SPEAKER_PRESETS`, `isValidSpeakerId`, `sanitizeSpeakerIdInput`. Kind style token `speaker` (`"true"`/`"false"`) with `kindAllowsSpeaker(kind, styles?)`: verse always, heading/subheading/annotation never, other kinds when `speaker: "true"`.

@@ -12,6 +12,7 @@ import type { LibraryEntry } from "./library";
 import {
   applyDiskChange,
   applyReloadedDrafts,
+  applyKindDelete,
   applyKindRename,
   applyCatalogChunk,
   beginCreatePrayer,
@@ -25,6 +26,7 @@ import {
   dirtyDrafts,
   discardDirty,
   DRAFT_VALIDATE_DEBOUNCE_MS,
+  discoverKinds,
   editDraft,
   emptySessionState,
   errorNotice,
@@ -40,6 +42,7 @@ import {
   parseAppStyles,
   putPrayerFromText,
   redoDraft,
+  requestKindDelete,
   requestKindRename,
   requestLeave,
   resetForLibrary,
@@ -53,7 +56,7 @@ import {
   sidebarEntries,
   takeDiskVersion,
   undoDraft,
-  validationErrorsFor,
+  validationFor,
   type EditOptions,
   type ExportFormat,
   type ExportOptions,
@@ -137,8 +140,8 @@ export function usePrayerSession(opts?: {
         validateTimerRef.current = null;
         const draft = stateRef.current.drafts[path];
         if (!draft) return;
-        const errors = validationErrorsFor(draft.prayer);
-        const next = setDraftErrors(stateRef.current, path, errors);
+        const { errors, warnings } = validationFor(draft.prayer);
+        const next = setDraftErrors(stateRef.current, path, errors, warnings);
         stateRef.current = next;
         setState(next);
       }, DRAFT_VALIDATE_DEBOUNCE_MS);
@@ -229,6 +232,12 @@ export function usePrayerSession(opts?: {
     state.catalog?.entries.find((e) => e.path === state.selectedPath)
       ?.errors ??
     [];
+  const draftWarnings = useMemo(
+    () =>
+      selected?.warnings ??
+      (selected ? validationFor(selected.prayer).warnings : []),
+    [selected],
+  );
   const visibleVariants = selected?.visibleVariants ?? [];
   const dirty = selected?.dirty === true;
   const unsaved = dirtyDrafts(state);
@@ -255,16 +264,14 @@ export function usePrayerSession(opts?: {
       });
   }, [api]);
 
-  const resolvedStyles = useMemo(() => {
-    const discovered = new Set(library?.kinds ?? []);
-    if (draft) {
-      for (const block of draft.structure) discovered.add(block.kind);
-    }
-    return resolveStyles({
-      discoveredKinds: [...discovered],
-      libraryOverrides: library?.libraryStyles,
-    });
-  }, [library, draft]);
+  const resolvedStyles = useMemo(
+    () =>
+      resolveStyles({
+        discoveredKinds: discoverKinds(library, state.drafts),
+        libraryOverrides: library?.libraryStyles,
+      }),
+    [library, state.drafts],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -605,6 +612,38 @@ export function usePrayerSession(opts?: {
     }
   };
 
+  const requestKindDeleteFn = async (kind: string) => {
+    cancelDraftValidation();
+    persistCurrentView();
+    setKindRenameBusy(true);
+    try {
+      commit(await requestKindDelete(stateRef.current, api, kind), true);
+    } finally {
+      setKindRenameBusy(false);
+    }
+    const path = stateRef.current.selectedPath;
+    if (path) scheduleDraftValidation(path);
+  };
+
+  const confirmKindDelete = async () => {
+    const plan = stateRef.current.pendingKindDelete;
+    if (!plan) return;
+    setKindRenameBusy(true);
+    try {
+      cancelDraftValidation();
+      persistCurrentView();
+      commit(await applyKindDelete(stateRef.current, api, plan), true);
+    } finally {
+      setKindRenameBusy(false);
+    }
+  };
+
+  const cancelKindDelete = () => {
+    const next = { ...stateRef.current, pendingKindDelete: null };
+    stateRef.current = next;
+    setState(next);
+  };
+
   const cancelKindRename = () => {
     const next = { ...stateRef.current, pendingKindRename: null };
     stateRef.current = next;
@@ -764,6 +803,7 @@ export function usePrayerSession(opts?: {
     selectedPath,
     draft,
     draftErrors,
+    draftWarnings,
     unsaved,
     visibleVariants,
     setVisibleVariants,
@@ -841,9 +881,13 @@ export function usePrayerSession(opts?: {
       setState(next);
     },
     pendingKindRename: state.pendingKindRename,
+    pendingKindDelete: state.pendingKindDelete,
     kindRenameBusy,
     requestKindRename: requestKindRenameFn,
     confirmKindRename,
     cancelKindRename,
+    requestKindDelete: requestKindDeleteFn,
+    confirmKindDelete,
+    cancelKindDelete,
   };
 }

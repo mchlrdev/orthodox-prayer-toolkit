@@ -13,6 +13,8 @@ export type DiskConflict = "changed" | "deleted";
 export type SessionDraft = {
   prayer: Prayer;
   errors: ValidationError[];
+  /** Non-blocking findings (e.g. speaker-name-missing); never mark invalid. */
+  warnings?: ValidationError[];
   visibleVariants: ActiveVariant[];
   dirty: boolean;
   history?: DraftHistory;
@@ -47,6 +49,12 @@ export type KindRenamePlan = {
   affectedPaths: string[];
 };
 
+/** A custom kind to delete in every library prayer that uses it. */
+export type KindDeletePlan = {
+  kind: string;
+  affectedPaths: string[];
+};
+
 export type PrayerSessionState = {
   catalog: LibraryCatalog | null;
   drafts: Record<string, SessionDraft>;
@@ -57,6 +65,7 @@ export type PrayerSessionState = {
   pendingLeave: LeaveAction | null;
   pendingDelete: CatalogEntry | null;
   pendingKindRename: KindRenamePlan | null;
+  pendingKindDelete: KindDeletePlan | null;
 };
 
 export type SessionOpResult = {

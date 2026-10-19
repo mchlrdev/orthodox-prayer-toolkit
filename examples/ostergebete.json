@@ -1,5 +1,6 @@
 {
   "id": "ostergebete",
+  "formatVersion": 2,
   "type": "prayer",
   "book": "horologion",
   "tone": null,
@@ -9,14 +10,22 @@
       "variant": "standard",
       "title": "Ostergebete",
       "license": "unknown",
-      "source": "draft"
+      "source": "draft",
+      "speakers": {
+        "priest": { "name": "Priester", "short": "P" },
+        "people": { "name": "Volk", "short": "V" }
+      }
     },
     {
       "lang": "en",
       "variant": "standard",
       "title": "Paschal Prayers",
       "license": "unknown",
-      "source": "draft"
+      "source": "draft",
+      "speakers": {
+        "priest": { "name": "Priest", "short": "P" },
+        "people": { "name": "People", "short": "Pe" }
+      }
     }
   ],
   "structure": [
@@ -258,6 +267,90 @@
           "variant": "standard",
           "lines": [
             "Through the prayers of our holy Fathers, Lord Jesus Christ our God, have mercy on us. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d1",
+      "kind": "verse",
+      "speaker": "priest",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Christus ist auferstanden!"
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "Christ is risen!"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d2",
+      "kind": "verse",
+      "speaker": "people",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Wahrhaftig, er ist auferstanden!"
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "Indeed, He is risen!"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d3",
+      "kind": "verse",
+      "speaker": "priest",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Der Herr sei mit euch!"
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "The Lord be with you."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "d4",
+      "kind": "verse",
+      "speaker": "people",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Und mit deinem Geiste."
+          ]
+        },
+        {
+          "lang": "en",
+          "variant": "standard",
+          "lines": [
+            "And with your spirit."
           ]
         }
       ]

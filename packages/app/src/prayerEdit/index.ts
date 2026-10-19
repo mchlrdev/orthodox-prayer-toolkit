@@ -48,3 +48,13 @@ export {
   type MergeResult,
 } from "./mergeBlocks";
 export { moveRemainderToNext } from "./spillRemainder";
+export {
+  SPEAKER_ID_INVALID,
+  SPEAKER_ID_USED,
+  addCustomSpeaker,
+  commitSpeakerRename,
+  speakerAddIssue,
+  speakerPaneRows,
+  speakerRenameIssue,
+  type SpeakerRenameResult,
+} from "./speakers";
