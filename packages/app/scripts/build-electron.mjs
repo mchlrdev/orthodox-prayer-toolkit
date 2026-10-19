@@ -9,6 +9,7 @@
  */
 import { build as viteBuild, mergeConfig, defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
@@ -16,6 +17,9 @@ import { createRequire } from "node:module";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const appRoot = resolve(__dirname, "..");
 const require = createRequire(import.meta.url);
+const appVersion = JSON.parse(
+  readFileSync(resolve(appRoot, "package.json"), "utf8"),
+).version;
 
 // vite-plugin-electron helpers (externalize Node builtins + electron)
 const {
@@ -30,6 +34,9 @@ async function buildRenderer() {
     defineConfig({
       configFile: false,
       root: appRoot,
+      define: {
+        __APP_VERSION__: JSON.stringify(appVersion),
+      },
       plugins: [react()],
       resolve: {
         alias: {

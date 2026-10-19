@@ -61,11 +61,16 @@ Show when `RELEASE_NOTES.version === runningVersion` **and**
 `items` → no dialog. Dismiss (Got it / overlay / Escape) stores
 `lastSeenWhatsNew` in localStorage (`orthodox-prayer-toolkit.whats-new`).
 
-`version` must equal the app version that should display the bullets
-(`packages/app/package.json` / `__APP_VERSION__`). Keep it equal to the
-**current** package version while notes accumulate; `pnpm release` then
-rewrites it to the new tag so the shipped build matches. If `items` is
-non-empty and `version` does not match the package version, `pnpm release`
+`runningVersion` comes from `getAppInfo()` (Electron `app.getVersion()`,
+browser-dev Vite define). Do not read `__APP_VERSION__` at renderer startup
+— the packaged renderer is built by `packages/app/scripts/build-electron.mjs`
+(`configFile: false`), which is a separate Vite config from `vite.config.ts`.
+
+`RELEASE_NOTES.version` must equal the app version that should display the
+bullets (`packages/app/package.json`). Keep it equal to the **current**
+package version while notes accumulate; `pnpm release` then rewrites it to
+the new tag (`git add`s the file) so the shipped build matches. If `items`
+is non-empty and `version` does not match the package version, `pnpm release`
 fails before bumping.
 
 ### Before every push

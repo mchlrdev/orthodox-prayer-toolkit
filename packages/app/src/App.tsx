@@ -78,13 +78,8 @@ export function App() {
   const [appSettingsOpen, setAppSettingsOpen] = useState(false);
   const [newLibraryOpen, setNewLibraryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
-  const [whatsNewOpen, setWhatsNewOpen] = useState(() =>
-    shouldShowWhatsNew({
-      lastSeen: loadLastSeenWhatsNew(),
-      runningVersion: __APP_VERSION__,
-      notes: RELEASE_NOTES,
-    }),
-  );
+  const [whatsNewOpen, setWhatsNewOpen] = useState(false);
+  const runningVersionRef = useRef("");
 
   const initialPrefs = useMemo(() => loadSidebarPrefs(), []);
   const initialAppearance = useMemo(() => loadAppearancePrefs(), []);
@@ -178,6 +173,26 @@ export function App() {
       }
     }
   };
+
+  useEffect(() => {
+    let cancelled = false;
+    void getToolkitApi()
+      .getAppInfo()
+      .then((info) => {
+        if (cancelled) return;
+        runningVersionRef.current = info.version;
+        setWhatsNewOpen(
+          shouldShowWhatsNew({
+            lastSeen: loadLastSeenWhatsNew(),
+            runningVersion: info.version,
+            notes: RELEASE_NOTES,
+          }),
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const mac = isMacPlatform();
@@ -705,7 +720,9 @@ export function App() {
         version={RELEASE_NOTES.version}
         items={RELEASE_NOTES.items}
         onDismiss={() => {
-          saveLastSeenWhatsNew(__APP_VERSION__);
+          saveLastSeenWhatsNew(
+            runningVersionRef.current || RELEASE_NOTES.version,
+          );
           setWhatsNewOpen(false);
         }}
       />

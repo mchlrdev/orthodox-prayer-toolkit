@@ -74,6 +74,7 @@ function syncNotesVersion() {
     process.exit(1);
   }
   writeFileSync(notesPath, next);
+  execSync(`git add -- "${notesPath}"`);
 }
 
 if (process.argv[2] === "--sync-notes") {

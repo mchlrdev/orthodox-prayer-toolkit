@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { shouldShowWhatsNew } from "../src/releaseNotes";
+import { viteAppVersion } from "../src/viteAppVersion";
 import {
   loadLastSeenWhatsNew,
   saveLastSeenWhatsNew,
@@ -88,6 +89,22 @@ describe("shouldShowWhatsNew", () => {
         notes,
       }),
     ).toBe(true);
+  });
+
+  it("stays closed when runningVersion is empty", () => {
+    expect(
+      shouldShowWhatsNew({
+        lastSeen: null,
+        runningVersion: "",
+        notes,
+      }),
+    ).toBe(false);
+  });
+});
+
+describe("viteAppVersion", () => {
+  it("reads the Vite define without throwing", () => {
+    expect(viteAppVersion()).toBe("0.0.0-test");
   });
 });
 

@@ -1,4 +1,6 @@
 import type { PrayerToolkitApi } from "../electron/preload";
+import { RELEASE_NOTES } from "./releaseNotes";
+import { viteAppVersion } from "./viteAppVersion";
 
 const PREFIX = "/__ptk";
 
@@ -196,12 +198,12 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
     setDirty: () => {},
 
     getAppInfo: async () => ({
-      version: __APP_VERSION__,
+      version: viteAppVersion() ?? RELEASE_NOTES.version,
       packaged: false,
     }),
     checkForUpdates: async () => ({
       status: "dev" as const,
-      version: __APP_VERSION__,
+      version: viteAppVersion() ?? RELEASE_NOTES.version,
     }),
     installUpdate: async () => ({ ok: false }),
     onUpdateStatus: () => () => {},

@@ -5,7 +5,7 @@ export type ReleaseNotes = {
 
 /**
  * User-facing bullets for the What’s new dialog. `version` must equal the
- * running app version (`packages/app/package.json` / `__APP_VERSION__`) or
+ * running app version (`getAppInfo().version`) or
  * the dialog stays silent. Empty `items` → no dialog.
  *
  * Before every push: add/update bullets for user-visible UI/export changes
@@ -13,7 +13,7 @@ export type ReleaseNotes = {
  * `version` to the new tag.
  */
 export const RELEASE_NOTES: ReleaseNotes = {
-  version: "0.3.1",
+  version: "0.3.2",
   items: [
     "Word table Own column prints the Speaker separator (Priester:)",
     "Empty Word table columns stay visible; Speaker gutter on by default",
