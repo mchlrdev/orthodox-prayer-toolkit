@@ -13,7 +13,7 @@ export type ReleaseNotes = {
  * dialog (v0.3.3 shipped with `version: "0.3.2"` and stayed silent).
  */
 export const RELEASE_NOTES: ReleaseNotes = {
-  version: "0.3.3",
+  version: "0.3.4",
   items: [
     "Word table Own column prints the Speaker separator (Priester:)",
     "Empty Word table columns stay visible; Speaker gutter is on by default",
