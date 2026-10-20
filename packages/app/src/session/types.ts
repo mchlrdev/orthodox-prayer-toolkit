@@ -1,8 +1,4 @@
-import type {
-  Prayer,
-  StyleMap,
-  ValidationError,
-} from "@orthodox-prayer-toolkit/core";
+import type { Prayer, ValidationError } from "@orthodox-prayer-toolkit/core";
 import type { CatalogEntry, LibraryCatalog } from "../catalog";
 import type { ActiveVariant } from "../variant";
 import type { DraftHistory } from "./history";
@@ -46,13 +42,24 @@ export type SessionNotice = {
 export type KindRenamePlan = {
   from: string;
   to: string;
+  /** Prayer files that use or declare `from` (written by the rename). */
   affectedPaths: string[];
+  /** Ids of kind templates that list `from`. */
+  affectedTemplates: string[];
 };
 
-/** A custom kind to delete in every library prayer that uses it. */
-export type KindDeletePlan = {
-  kind: string;
-  affectedPaths: string[];
+/** What the library still needs from the one-time per-prayer-kinds migration. */
+export type LibraryMigrationStatus = {
+  /** Catalog entries whose file is in the old format (migrated in memory). */
+  prayers: number;
+  /** `styles.json` still has legacy `speaker` tokens. */
+  legacyTokens: boolean;
+  /** Ask the user ("N prayers use the old format — migrate now?"). */
+  pending: boolean;
+  /** templates.json has errors: the "Bisherige Kinds" template is not written. */
+  templatesBroken: boolean;
+  /** Migration is needed but cannot run until this is fixed (null = can run). */
+  blocked: string | null;
 };
 
 export type PrayerSessionState = {
@@ -61,11 +68,13 @@ export type PrayerSessionState = {
   selectedPath: string | null;
   createDraft: Prayer | null;
   createVariant: ActiveVariant | null;
-  appStyles: StyleMap;
+  /** Kind template stamped into `createDraft` (null = presets only). */
+  createTemplateId: string | null;
   pendingLeave: LeaveAction | null;
   pendingDelete: CatalogEntry | null;
   pendingKindRename: KindRenamePlan | null;
-  pendingKindDelete: KindDeletePlan | null;
+  /** The user declined the library migration prompt for this library. */
+  migrationDismissed: boolean;
 };
 
 export type SessionOpResult = {

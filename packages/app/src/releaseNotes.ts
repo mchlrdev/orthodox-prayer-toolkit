@@ -15,10 +15,12 @@ export type ReleaseNotes = {
 export const RELEASE_NOTES: ReleaseNotes = {
   version: "0.3.4",
   items: [
-    "Word table Own column prints the Speaker separator (Priester:)",
-    "Empty Word table columns stay visible; Speaker gutter is on by default",
-    "Export remembers every setting per Prayer",
-    "Kind and Speaker menus match the compact right-click menu",
+    "Custom kinds now belong to each Prayer (Prayer settings → Kinds)",
+    "Kind templates: pick one for a new Prayer or apply it later (Library settings)",
+    "Older libraries ask once to migrate; files stay unchanged until you agree",
+    "Speaker allowance is set per kind in the Prayer, not in Kind styles",
+    "Library settings show all kind styles and offer to remove unused ones",
+    "Hovering a block shows the full speaker name next to Kind, in the first visible language",
   ],
 };
 

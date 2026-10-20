@@ -3,11 +3,14 @@ import {
   findIdCollisions,
   indexKinds,
   indexVariants,
+  migratePrayer,
+  rawPrayerKinds,
   resolveDisplayTitle,
   validate,
   type IndexedVariant,
   type Prayer,
   type PreferredVariant,
+  type ValidationResult,
 } from "@orthodox-prayer-toolkit/core";
 import type { CatalogEntry, LibraryCatalog } from "./types";
 
@@ -20,6 +23,32 @@ export function parseJsonSafe(text: string): unknown | null {
   } catch {
     return null;
   }
+}
+
+export type ReadPrayer =
+  | { json: false }
+  | {
+      json: true;
+      /** JSON as on disk (before migration). */
+      data: unknown;
+      /** Migration changed the prayer: the file is in the old format. */
+      migrated: boolean;
+      /** Validation of the migrated prayer. */
+      result: ValidationResult;
+    };
+
+/**
+ * Read prayer file text the way the app opens it: parse, migrate in memory
+ * with the raw library `styles.json` (legacy speaker tokens), then validate.
+ * Old files therefore open; disk bytes stay untouched.
+ */
+export function readPrayerText(text: string, rawStyles: unknown): ReadPrayer {
+  const data = parseJsonSafe(text);
+  if (data === null) return { json: false };
+  const { prayer, changed } = migratePrayer(data as Prayer, {
+    styles: rawStyles,
+  });
+  return { json: true, data, migrated: changed, result: validate(prayer) };
 }
 
 export function stubIdFromPath(path: string): string | null {
@@ -39,6 +68,8 @@ export function stubEntry(path: string): CatalogEntry {
     errors: [],
     filenameMismatch: false,
     kinds: [],
+    readable: true,
+    needsMigration: false,
     variants: [],
     scanned: false,
   };
@@ -55,6 +86,7 @@ export function entryFromPrayer(
   path: string,
   prayer: Prayer,
   preferred: PreferredVariant | null,
+  needsMigration = false,
 ): CatalogEntry {
   return {
     path,
@@ -65,6 +97,8 @@ export function entryFromPrayer(
     errors: [],
     filenameMismatch: !filenameMatchesId(path, prayer.id),
     kinds: indexKinds([prayer]),
+    readable: true,
+    needsMigration,
     variants: indexVariants([prayer]),
     scanned: true,
   };
@@ -74,9 +108,10 @@ export function entryFromText(
   path: string,
   text: string,
   preferred: PreferredVariant | null,
+  rawStyles: unknown,
 ): CatalogEntry {
-  const data = parseJsonSafe(text);
-  if (data === null) {
+  const read = readPrayerText(text, rawStyles);
+  if (!read.json) {
     return {
       path,
       id: null,
@@ -86,12 +121,14 @@ export function entryFromText(
       errors: [{ path: "/", message: "Invalid JSON" }],
       filenameMismatch: false,
       kinds: [],
+      readable: false,
+      needsMigration: false,
       variants: [],
       scanned: true,
     };
   }
 
-  const result = validate(data);
+  const { data, result } = read;
   if (!result.ok) {
     const maybeId = stringId(data);
     return {
@@ -102,13 +139,15 @@ export function entryFromText(
       valid: false,
       errors: result.errors,
       filenameMismatch: maybeId ? !filenameMatchesId(path, maybeId) : false,
-      kinds: [],
+      kinds: rawPrayerKinds(data),
+      readable: true,
+      needsMigration: read.migrated,
       variants: [],
       scanned: true,
     };
   }
 
-  return entryFromPrayer(path, result.prayer, preferred);
+  return entryFromPrayer(path, result.prayer, preferred, read.migrated);
 }
 
 export function upsertEntry(
@@ -126,15 +165,6 @@ function sortEntries(entries: CatalogEntry[]): CatalogEntry[] {
   return [...entries].sort((a, b) =>
     (a.id ?? a.path).localeCompare(b.id ?? b.path),
   );
-}
-
-function unionKinds(entries: CatalogEntry[]): string[] {
-  const kinds = new Set<string>();
-  for (const entry of entries) {
-    if (!entry.scanned) continue;
-    for (const kind of entry.kinds) kinds.add(kind);
-  }
-  return [...kinds].sort((a, b) => a.localeCompare(b));
 }
 
 function unionVariants(entries: CatalogEntry[]): IndexedVariant[] {
@@ -162,7 +192,6 @@ export function recomputeCatalogIndex(
     collisions: findIdCollisions(
       entries.map((e) => ({ path: e.path, id: e.id })),
     ),
-    kinds: unionKinds(entries),
     variants: unionVariants(entries),
   };
 }

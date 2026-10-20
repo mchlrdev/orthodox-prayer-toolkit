@@ -7,7 +7,7 @@ import {
 } from "../src/catalog";
 import {
   planKindRename,
-  prayerUsesKind,
+  prayerHasKind,
   renameKindAcrossLibrary,
 } from "../src/session/renameKindLibrary";
 
@@ -44,11 +44,14 @@ function catalogOf(
     root: "/lib",
     entries: [],
     collisions: [],
-    kinds: [],
     variants: [],
     manifest: null,
     libraryStyles: {},
     styleErrors: [],
+    libraryStylesRaw: undefined,
+    templates: [],
+    templateErrors: [],
+    templatesRaw: undefined,
     scanComplete: true,
   };
   for (const [path, p] of Object.entries(files)) {
@@ -69,6 +72,8 @@ function catalogOf(
           errors: [],
           filenameMismatch: false,
           kinds: [],
+          readable: true,
+          needsMigration: false,
           variants: [],
           scanned: false,
         },
@@ -100,10 +105,10 @@ function fakeApi(files: Record<string, Prayer>): PrayerToolkitApi {
     deleteFile: async () => undefined,
     renameFile: async () => undefined,
     exists: async (_root, path) => path in store,
-    readAppStyles: async () => null,
-    writeAppStyles: async () => undefined,
     readLibraryStyles: async () => null,
     writeLibraryStyles: async () => undefined,
+    readLibraryTemplates: async () => null,
+    writeLibraryTemplates: async () => undefined,
     saveExport: async () => null,
     pickPrayerJson: async () => null,
     showItem: async () => undefined,
@@ -125,12 +130,15 @@ function fakeApi(files: Record<string, Prayer>): PrayerToolkitApi {
   return api;
 }
 
-describe("prayerUsesKind", () => {
-  it("detects kind membership", () => {
-    expect(prayerUsesKind(prayer("a", ["verse", "rubric"]), "rubric")).toBe(
+describe("prayerHasKind", () => {
+  it("detects used and declared kinds", () => {
+    expect(prayerHasKind(prayer("a", ["verse", "rubric"]), "rubric")).toBe(
       true,
     );
-    expect(prayerUsesKind(prayer("a", ["verse"]), "rubric")).toBe(false);
+    expect(prayerHasKind(prayer("a", ["verse"]), "rubric")).toBe(false);
+    expect(
+      prayerHasKind({ ...prayer("a", ["verse"]), kinds: [{ id: "rubric" }] }, "rubric"),
+    ).toBe(true);
   });
 });
 
@@ -227,7 +235,7 @@ describe("planKindRename", () => {
 });
 
 describe("renameKindAcrossLibrary", () => {
-  it("rewrites all affected prayers and style keys", async () => {
+  it("rewrites all affected prayers", async () => {
     const store = {
       "a.json": prayer("a", ["rubric"]),
       "b.json": prayer("b", ["rubric"]),
@@ -241,20 +249,9 @@ describe("renameKindAcrossLibrary", () => {
     });
     const result = await renameKindAcrossLibrary(api, catalog, plan, {
       drafts: {},
-      appStyles: {
-        rubric: {
-          fontSize: "1rem",
-          color: "base",
-          fontWeight: "400",
-          fontStyle: "normal",
-        },
-      },
-      libraryStyles: {},
     });
 
-    expect(result.writtenPaths.sort()).toEqual(["a.json", "b.json"]);
-    expect(result.appStyles.instruction?.color).toBe("base");
-    expect(result.appStyles.rubric).toBeUndefined();
+    expect(result.written.map((w) => w.path).sort()).toEqual(["a.json", "b.json"]);
     expect(writeSpy).toHaveBeenCalledTimes(2);
 
     const rewritten = JSON.parse(
@@ -283,8 +280,6 @@ describe("renameKindAcrossLibrary", () => {
     });
     const result = await renameKindAcrossLibrary(api, catalog, plan, {
       drafts,
-      appStyles: {},
-      libraryStyles: {},
     });
 
     expect(result.drafts["open.json"]?.prayer.structure[0]?.kind).toBe(
@@ -299,28 +294,14 @@ describe("renameKindAcrossLibrary", () => {
     };
     const api = fakeApi(store);
     const writeSpy = vi.spyOn(api, "writeText");
-    const appStyles = {
-      verse: {
-        fontSize: "1rem",
-        color: "base" as const,
-        fontWeight: "400" as const,
-        fontStyle: "normal" as const,
-      },
-    };
-
     const result = await renameKindAcrossLibrary(
       api,
       catalogOf(store),
-      { from: "verse", to: "strophe", affectedPaths: ["a.json"] },
-      {
-        drafts: {},
-        appStyles,
-        libraryStyles: {},
-      },
+      { from: "verse", to: "strophe", affectedPaths: ["a.json"], affectedTemplates: [] },
+      { drafts: {} },
     );
 
-    expect(result.writtenPaths).toEqual([]);
-    expect(result.appStyles).toBe(appStyles);
+    expect(result.written).toEqual([]);
     expect(writeSpy).not.toHaveBeenCalled();
     expect(
       (JSON.parse(await api.readText("/lib", "a.json")) as Prayer).structure[0]

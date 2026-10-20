@@ -37,10 +37,11 @@ export type PrayerToolkitApi = {
     toRelative: string,
   ) => Promise<void>;
   exists: (libraryRoot: string, relativePath: string) => Promise<boolean>;
-  readAppStyles: () => Promise<string | null>;
-  writeAppStyles: (content: string) => Promise<void>;
   readLibraryStyles: (libraryRoot: string) => Promise<string | null>;
   writeLibraryStyles: (libraryRoot: string, content: string) => Promise<void>;
+  /** `.orthodox-prayer-toolkit/templates.json` text, or null when missing. */
+  readLibraryTemplates: (libraryRoot: string) => Promise<string | null>;
+  writeLibraryTemplates: (libraryRoot: string, content: string) => Promise<void>;
   saveExport: (
     defaultName: string,
     content: string | Uint8Array,
@@ -100,12 +101,14 @@ const api: PrayerToolkitApi = {
     ipcRenderer.invoke("fs:rename", libraryRoot, fromRelative, toRelative),
   exists: (libraryRoot, relativePath) =>
     ipcRenderer.invoke("fs:exists", libraryRoot, relativePath),
-  readAppStyles: () => ipcRenderer.invoke("styles:readApp"),
-  writeAppStyles: (content) => ipcRenderer.invoke("styles:writeApp", content),
   readLibraryStyles: (libraryRoot) =>
     ipcRenderer.invoke("styles:readLibrary", libraryRoot),
   writeLibraryStyles: (libraryRoot, content) =>
     ipcRenderer.invoke("styles:writeLibrary", libraryRoot, content),
+  readLibraryTemplates: (libraryRoot) =>
+    ipcRenderer.invoke("templates:readLibrary", libraryRoot),
+  writeLibraryTemplates: (libraryRoot, content) =>
+    ipcRenderer.invoke("templates:writeLibrary", libraryRoot, content),
   saveExport: (defaultName, content) =>
     ipcRenderer.invoke("dialog:saveExport", defaultName, content),
   pickPrayerJson: () => ipcRenderer.invoke("dialog:pickPrayerJson"),

@@ -45,7 +45,7 @@ Always emit a markdown `json` fence so the prayer can be copied. Agents may also
 | On the prayer | Keys |
 |---------------|------|
 | Required | `id`, `type`, `variants` (≥1), `structure` (≥1) |
-| Optional | `book`, `occasion`, `tone`, `description` |
+| Optional | `book`, `occasion`, `tone`, `description`, `kinds` |
 | Omit if unknown | `book`, `occasion`, `tone`, `description` — do not invent |
 
 | On a variant | Keys |
@@ -61,7 +61,8 @@ Always emit a markdown `json` fence so the prayer can be copied. Agents may also
 
 | On the file | Keys |
 |-------------|------|
-| `formatVersion` | Write `2` only when the file uses `speaker` or a variant `speakers` map. Otherwise omit it |
+| `kinds` | Only when a block uses a custom kind. See **Custom kinds** below. Never list `heading`, `subheading`, `annotation`, `verse`; never write `"kinds": []` |
+| `formatVersion` | `3` when `kinds` is present; else `2` when the file uses `speaker` or a variant `speakers` map; otherwise omit it |
 
 `tone` is prayer-level only, integer `1`–`8`. Set it when the **whole** prayer is one Oktoechos tone. Several tones in one source → omit `tone`. Tone wording in headings stays (“… im 5. Ton”).
 
@@ -117,6 +118,19 @@ Standalone instruction that only introduces a named hymn stays an `annotation` b
 
 Prefer the four kinds above. Custom `kind` strings only when the source clearly needs one.
 
+### Custom kinds
+
+A custom kind must be declared in the top-level `kinds` array, or the file is invalid (`kind-undeclared`). The four kinds above are built in and never go into `kinds`.
+
+```json
+"formatVersion": 3,
+"kinds": [{ "id": "refrain", "speaker": true }]
+```
+
+- One entry per custom kind, in the order first used. Id: letter first, then letters, digits, `_`, `-`.
+- Add `"speaker": true` only if blocks of that kind carry a `speaker`. Otherwise omit it (never `false`).
+- With `kinds` present, `formatVersion` is `3`.
+
 ## One edition
 
 `variants[]` lists **full editions** of the whole prayer (same structure, another language throughout).
@@ -167,7 +181,7 @@ Set a Speaker only when the source marks the speaker. Do not infer one from a ve
 
 Source: `Priester: Christus ist auferstanden!` → block `speaker: "priest"`, text `Christus ist auferstanden!`. Source with no marked speaker → no `speaker`, no `speakers`.
 
-Do not put `speaker` on `heading`, `subheading` or `annotation`; the editor does not offer it there. Speakers are for `verse` and custom kinds the library allows.
+Do not put `speaker` on `heading`, `subheading` or `annotation`; the editor does not offer it there. Speakers are for `verse` and custom kinds whose `kinds` entry has `"speaker": true`.
 
 ## Verse payload
 
@@ -188,6 +202,8 @@ HTML wrapping and comma breaks are not extra array items. Heading / annotation /
 Each prayer is `{id}.json`. That is the whole document.
 
 `manifest.json` is optional **collection** meta only (`description`, `defaultVariant`). It does not list prayers. Leave it unchanged.
+
+`.orthodox-prayer-toolkit/styles.json` and `templates.json` are library styling and kind templates. Encoding never needs them: custom kinds go into the prayer's own `kinds`. Leave them unchanged.
 
 ## Outline (before JSON)
 

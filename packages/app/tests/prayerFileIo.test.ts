@@ -55,10 +55,10 @@ function fakeApi(
     deleteFile: async () => undefined,
     renameFile: async () => undefined,
     exists: async () => false,
-    readAppStyles: async () => null,
-    writeAppStyles: async () => undefined,
     readLibraryStyles: async () => null,
     writeLibraryStyles: async () => undefined,
+    readLibraryTemplates: async () => null,
+    writeLibraryTemplates: async () => undefined,
     saveExport: async () => null,
     pickPrayerJson: async () => null,
     showItem: async () => undefined,
@@ -86,11 +86,14 @@ function catalogOf(files: Record<string, Prayer>): LibraryCatalog {
     root: "/lib",
     entries: [],
     collisions: [],
-    kinds: [],
     variants: [],
     manifest: null,
     libraryStyles: {},
     styleErrors: [],
+    libraryStylesRaw: undefined,
+    templates: [],
+    templateErrors: [],
+    templatesRaw: undefined,
     scanComplete: true,
   };
   for (const [path, prayer] of Object.entries(files)) {
@@ -208,6 +211,27 @@ describe("importPrayerFile", () => {
       title: "Imported",
       message: "morning.json",
     });
+  });
+
+  it("copies an old-format file unchanged and migrates it in memory", async () => {
+    const old = samplePrayer();
+    old.structure[0]!.kind = "refrain";
+    const incoming = `${JSON.stringify(old, null, 2)}\n`;
+    const writeText = vi.fn(async () => undefined);
+    const api = fakeApi({
+      pickPrayerJson: async () => ({ name: "morning.json", content: incoming }),
+      writeText,
+    });
+    const state = { ...emptySessionState(), catalog: catalogOf({}) };
+    const result = await importPrayerFile(state, api);
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(writeText).toHaveBeenCalledWith("/lib", "morning.json", incoming);
+    const draft = result.state.drafts["morning.json"]!;
+    expect(draft.prayer.kinds).toEqual([{ id: "refrain" }]);
+    expect(draft.dirty).toBe(false);
+    const entry = result.state.catalog!.entries.find((e) => e.path === "morning.json")!;
+    expect(entry.valid).toBe(true);
+    expect(entry.needsMigration).toBe(true);
   });
 
   it("does nothing when the picker is cancelled", async () => {

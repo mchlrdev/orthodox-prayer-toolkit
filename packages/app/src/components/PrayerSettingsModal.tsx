@@ -5,14 +5,20 @@ import {
   IconMicrophone,
   IconPalette,
 } from "@tabler/icons-react";
-import type { Prayer, StyleMap } from "@orthodox-prayer-toolkit/core";
+import type {
+  KindDef,
+  KindTemplate,
+  Prayer,
+  KindStyle,
+  StyleMap,
+} from "@orthodox-prayer-toolkit/core";
 import { ExtraFieldsEditor } from "./ExtraFieldsEditor";
-import { KindStylesPanel } from "./KindStylesPanel";
+import { PrayerKindsPanel } from "./PrayerKindsPanel";
 import { LanguagesPanel } from "./LanguagesPanel";
 import { PrayerBasicsFields } from "./PrayerBasicsFields";
 import { SpeakersPanel } from "./SpeakersPanel";
 
-export type PrayerSettingsPane = "prayer" | "languages" | "speakers" | "styles";
+export type PrayerSettingsPane = "prayer" | "languages" | "speakers" | "kinds";
 
 type ActiveVariant = { lang: string; variant: string };
 
@@ -26,16 +32,20 @@ type Props = {
   onChange: (prayer: Prayer, options?: { coalesceKey?: string }) => void;
   onActiveVariantChange: (v: ActiveVariant) => void;
   onRenameKind: (from: string, to: string) => void;
-  /** Delete a custom kind (library-wide; the session asks when others use it). */
+  /** Declare a custom kind in this prayer. */
+  onAddKind: (def: KindDef) => void;
+  /** Delete a custom kind from this prayer (undoable draft edit). */
   onRemoveKind: (kind: string) => void;
+  onSetKindSpeaker: (kind: string, allowed: boolean) => void;
+  /** Additive "Apply template" (undoable draft edit). */
+  onApplyTemplate: (templateId: string) => void;
+  templates: readonly KindTemplate[];
   styles: {
-    kinds: string[];
+    /** Every kind the library knows. */
+    libraryKinds: string[];
     resolved: StyleMap;
-    appStyles: StyleMap;
-    libraryStyles: StyleMap;
     libraryEnabled: boolean;
-    onChangeApp: (next: StyleMap) => void;
-    onChangeLibrary: (next: StyleMap) => void;
+    onPatchStyle: (kind: string, partial: Partial<KindStyle>) => void;
   };
 };
 
@@ -47,7 +57,7 @@ const NAV: {
   { id: "prayer", label: "Prayer", icon: IconFileText },
   { id: "languages", label: "Languages", icon: IconLanguage },
   { id: "speakers", label: "Speakers", icon: IconMicrophone },
-  { id: "styles", label: "Kinds", icon: IconPalette },
+  { id: "kinds", label: "Kinds", icon: IconPalette },
 ];
 
 export function PrayerSettingsModal({
@@ -60,7 +70,11 @@ export function PrayerSettingsModal({
   onChange,
   onActiveVariantChange,
   onRenameKind,
+  onAddKind,
   onRemoveKind,
+  onSetKindSpeaker,
+  onApplyTemplate,
+  templates,
   styles,
 }: Props) {
   return (
@@ -131,17 +145,21 @@ export function PrayerSettingsModal({
           </div>
           <div
             className="settings-hub-pane-section"
-            data-active={pane === "styles" ? "true" : undefined}
-            aria-hidden={pane !== "styles"}
+            data-active={pane === "kinds" ? "true" : undefined}
+            aria-hidden={pane !== "kinds"}
           >
-            <KindStylesPanel
-              kinds={styles.kinds}
+            <PrayerKindsPanel
+              prayer={prayer}
+              libraryKinds={styles.libraryKinds}
+              templates={templates}
               resolved={styles.resolved}
-              libraryStyles={styles.libraryStyles}
               libraryEnabled={styles.libraryEnabled}
-              onChangeLibrary={styles.onChangeLibrary}
+              onPatchStyle={styles.onPatchStyle}
               onRenameKind={onRenameKind}
+              onAddKind={onAddKind}
               onRemoveKind={onRemoveKind}
+              onSetKindSpeaker={onSetKindSpeaker}
+              onApplyTemplate={onApplyTemplate}
             />
           </div>
         </div>

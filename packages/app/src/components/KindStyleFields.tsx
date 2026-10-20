@@ -71,11 +71,6 @@ type Props = {
    * `false` so Size / Color / HTML tag aren't painted behind it.
    */
   portalDropdowns?: boolean;
-  /**
-   * Show "Allow speaker" (custom kinds only; verse always allows speakers,
-   * heading / subheading / annotation never).
-   */
-  speakerToggle?: boolean;
 };
 
 export function KindStyleFields({
@@ -83,7 +78,6 @@ export function KindStyleFields({
   onChange,
   leading,
   portalDropdowns = true,
-  speakerToggle = false,
 }: Props) {
   const size = nearestFontSize(style.fontSize);
   const bold = isBoldWeight(style.fontWeight);
@@ -189,17 +183,6 @@ export function KindStyleFields({
             })
           }
         />
-        {speakerToggle ? (
-          <Checkbox
-            label="Allow speaker"
-            checked={style.speaker === "true"}
-            onChange={(e) =>
-              onChange({
-                speaker: e.currentTarget.checked ? "true" : "false",
-              })
-            }
-          />
-        ) : null}
       </Group>
       <Select
         label="HTML tag for export"

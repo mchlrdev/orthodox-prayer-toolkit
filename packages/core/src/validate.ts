@@ -3,6 +3,7 @@ import addFormats from "ajv-formats";
 import prayerSchema from "../schema/prayer.schema.json";
 import {
   CURRENT_FORMAT_VERSION,
+  isKindPreset,
   type Prayer,
   type ValidationError,
   type ValidationResult,
@@ -64,6 +65,24 @@ function checkInline(
 function semanticChecks(prayer: Prayer): ValidationError[] {
   const errors: ValidationError[] = [];
 
+  const declared = new Set<string>();
+  for (const [i, def] of (prayer.kinds ?? []).entries()) {
+    if (isKindPreset(def.id)) {
+      errors.push({
+        path: `/kinds/${i}/id`,
+        message: `Preset kind "${def.id}" must not be listed in kinds`,
+        code: "kind-preset-declared",
+      });
+    } else if (declared.has(def.id)) {
+      errors.push({
+        path: `/kinds/${i}/id`,
+        message: `Duplicate kind "${def.id}"`,
+        code: "kind-duplicate",
+      });
+    }
+    declared.add(def.id);
+  }
+
   const blockIds = new Set<string>();
   for (const [i, block] of prayer.structure.entries()) {
     if (blockIds.has(block.id)) {
@@ -73,6 +92,14 @@ function semanticChecks(prayer: Prayer): ValidationError[] {
       });
     }
     blockIds.add(block.id);
+
+    if (!isKindPreset(block.kind) && !declared.has(block.kind)) {
+      errors.push({
+        path: `/structure/${i}/kind`,
+        message: `Kind "${block.kind}" is not declared in kinds`,
+        code: "kind-undeclared",
+      });
+    }
 
     const seenKeys = new Set<string>();
     for (const [j, tr] of block.translations.entries()) {

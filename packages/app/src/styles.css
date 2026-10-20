@@ -2269,7 +2269,7 @@ body,
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--opt-accent) 45%, transparent);
 }
 
-/* Block chrome trigger, left of the Kind chip. */
+/* Block chrome trigger when no speaker is set (user icon). Set speaker uses Kind compact. */
 .speaker-trigger {
   display: inline-flex;
   align-items: center;
@@ -2281,24 +2281,9 @@ body,
   background: var(--opt-hover);
 }
 
-.speaker-trigger[data-set="true"] {
-  color: var(--opt-accent);
-  padding: 0 4px 0 2px;
-}
-
-.speaker-trigger[data-set="true"] .speaker-chip-pill {
-  height: 17px;
-  min-width: 17px;
-  padding: 0 5px;
-}
-
 .speaker-trigger:hover {
   color: var(--opt-text);
   background: var(--opt-hover-strong);
-}
-
-.speaker-trigger[data-set="true"]:hover {
-  color: var(--opt-accent);
 }
 
 /* Dropdown rows: chip column · name · check. Width matches the pill, not a 28px gutter. */

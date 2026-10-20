@@ -1,7 +1,7 @@
 export type {
   DiskConflict,
-  KindDeletePlan,
   KindRenamePlan,
+  LibraryMigrationStatus,
   LeaveAction,
   PersistResult,
   PrayerSessionState,
@@ -9,7 +9,6 @@ export type {
   SessionNotice,
   SessionOpResult,
 } from "./types";
-export { parseAppStyles } from "./parseAppStyles";
 export { pickDefaultVariant, resolveVisibleVariants } from "./visibleVariants";
 export { pickExportVariant, pickExportParallelColumns } from "./exportPick";
 export { exportPrayerVariant } from "./exportPrayerVariant";
@@ -43,18 +42,54 @@ export {
   resolveImportedPrayerPath,
 } from "./prayerFileIo";
 export {
-  deleteKindAcrossLibrary,
-  pathsUsingKind,
-  planKindDelete,
+  kindExistsInLibrary,
+  kindRenameConfirmMessage,
+  kindRenameNeedsConfirm,
+  pathsWithKind,
   planKindRename,
-  prayerUsesKind,
+  prayerHasKind,
   renameKindAcrossLibrary,
 } from "./renameKindLibrary";
 export type { KindRenameResult } from "./renameKindLibrary";
 export {
-  applyKindDelete,
+  addKindToPrayer,
+  applyTemplateToPrayer,
+  deleteKindInPrayer,
+  libraryKindSources,
+  patchLibraryKindStyle,
+  removeLibraryStyle,
+  setCreateTemplate,
+  setPrayerKindSpeaker,
+  unusedLibraryStyles,
+} from "./kindOps";
+export { createLibraryOpQueue, mergeLibraryOpResult } from "./libraryOpMerge";
+export type { LibraryOpOptions, LibraryOpRunner } from "./libraryOpMerge";
+export {
+  createKindTemplate,
+  deleteKindTemplate,
+  saveKindTemplates,
+  updateKindTemplate,
+} from "./templateOps";
+export type { TemplateEdit } from "./templateOps";
+export {
+  dismissLibraryMigration,
+  libraryMigrationStatus,
+  migrateLibrary,
+  migrationPromptText,
+  migrationReportClean,
+  migrationTokensKeptReason,
+} from "./libraryMigration";
+export type { LibraryMigrationReport } from "./libraryMigration";
+export {
+  isLibraryMetaPath,
+  STYLES_UNREADABLE_MESSAGE,
+  stylesFileUnreadable,
+  templatesFileText,
+  writeLibraryStylesFile,
+  writeLibraryTemplatesFile,
+} from "./libraryFiles";
+export {
   applyKindRename,
-  discoverKinds,
   applyCatalogChunk,
   beginCreatePrayer,
   cancelCreatePrayer,
@@ -75,15 +110,14 @@ export {
   hasUnsaved,
   mergeOpResult,
   openPrayer,
-  persistAppStyles,
   persistLibraryStyles,
   putPrayerFromText,
   redoDraft,
-  requestKindDelete,
   requestKindRename,
   requestLeave,
   resetForLibrary,
   saveAllDirty,
+  saveBlockedReason,
   saveLibraryManifest,
   saveSelected,
   selectedDraft,

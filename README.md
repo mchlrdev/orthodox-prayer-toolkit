@@ -93,6 +93,7 @@ my-prayer-library/
   manifest.json                      # optional collection meta
   .orthodox-prayer-toolkit/
     styles.json                      # kind-style overrides
+    templates.json                   # kind templates for new prayers
   tropar-prokopios.json              # one prayer per file → {id}.json
 ```
 

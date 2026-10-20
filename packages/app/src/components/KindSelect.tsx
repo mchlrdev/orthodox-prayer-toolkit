@@ -7,6 +7,8 @@ import {
   Modal,
   Popover,
   Stack,
+  Switch,
+  Text,
   TextInput,
   UnstyledButton,
 } from "@mantine/core";
@@ -16,6 +18,7 @@ import {
   isKindPreset,
   kindDisplayLabel,
   sanitizeKindIdInput,
+  type KindDef,
   type KindStyle,
   type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
@@ -29,15 +32,15 @@ import {
   OptionList,
   OptionRow,
 } from "./OptionList";
-import { kindRenameIssue, orderKinds } from "../prayerEdit";
+import { kindRenameIssue } from "../prayerEdit";
 
 type StyleEditing = {
   resolved: StyleMap;
-  appStyles: StyleMap;
-  libraryStyles: StyleMap;
   libraryEnabled: boolean;
-  onChangeApp: (next: StyleMap) => void;
-  onChangeLibrary: (next: StyleMap) => void;
+  /** Every kind in the library: a rename must not collide with any. */
+  libraryKinds: string[];
+  /** Patch one kind's library style (applied to the latest styles.json). */
+  onPatchStyle: (kind: string, partial: Partial<KindStyle>) => void;
 };
 
 type Props = {
@@ -46,6 +49,10 @@ type Props = {
   onChange: (kind: string) => void;
   onRename?: (from: string, to: string) => void;
   onDelete?: (kind: string) => void;
+  /** The prayer's declared custom kinds (speaker flags for the edit dialog). */
+  kindDefs?: readonly KindDef[];
+  /** Allow / disallow speakers for a declared custom kind in this prayer. */
+  onSpeakerChange?: (kind: string, allowed: boolean) => void;
   styleEditing?: StyleEditing;
   compact?: boolean;
   onOpenChange?: (opened: boolean) => void;
@@ -59,7 +66,6 @@ type Props = {
 
 function styleForKind(kind: string, editing: StyleEditing): KindStyle {
   return (
-    editing.libraryStyles[kind] ??
     editing.resolved[kind] ??
     FALLBACK_KIND_STYLE
   );
@@ -80,7 +86,7 @@ export function kindContextItems({
   onMore,
 }: KindMenuActions): ContextMenuItem[] {
   const check = (on: boolean) => (on ? <IconCheck size={14} /> : undefined);
-  const items: ContextMenuItem[] = orderKinds(options).map((kind) => ({
+  const items: ContextMenuItem[] = [...new Set(options)].map((kind) => ({
     label: kindDisplayLabel(kind),
     right: check(kind === value),
     onClick: () => onSelect(kind),
@@ -137,6 +143,8 @@ export function KindSelect({
   onChange,
   onRename,
   onDelete,
+  kindDefs,
+  onSpeakerChange,
   styleEditing,
   compact = false,
   onOpenChange,
@@ -152,11 +160,14 @@ export function KindSelect({
   onIdleRef.current = onIdle;
   const idleArmedRef = useRef(defaultOpen || false);
 
-  const all = orderKinds(options);
+  // Picker order as given (presets, then the prayer's `kinds` order).
+  const all = [...new Set(options)];
   const editingPreset = editingKind !== null && isKindPreset(editingKind);
   const canRenameEditing = Boolean(onRename) && !editingPreset;
   const canDeleteEditing = Boolean(onDelete) && !editingPreset;
-  const canEdit = Boolean(onRename || styleEditing || onDelete);
+  const editingDef =
+    editingKind !== null ? kindDefs?.find((k) => k.id === editingKind) : undefined;
+  const canEdit = Boolean(onRename || styleEditing || onDelete || onSpeakerChange);
 
   const setOpen = (o: boolean) => {
     setOpened(o);
@@ -189,7 +200,10 @@ export function KindSelect({
 
   const renameIssue =
     editingKind && canRenameEditing
-      ? kindRenameIssue(editingKind, renameTo, all)
+      ? kindRenameIssue(editingKind, renameTo, [
+          ...all,
+          ...(styleEditing?.libraryKinds ?? []),
+        ])
       : null;
 
   const finishEdit = () => {
@@ -203,25 +217,7 @@ export function KindSelect({
 
   const patchStyle = (partial: Partial<KindStyle>) => {
     if (!editingKind || !styleEditing) return;
-    const current = styleForKind(editingKind, styleEditing);
-    const nextStyle: KindStyle = {
-      ...current,
-      ...partial,
-      fontSize: partial.fontSize ?? current.fontSize,
-      color: partial.color ?? current.color,
-      fontWeight: partial.fontWeight ?? current.fontWeight,
-      fontStyle: partial.fontStyle ?? current.fontStyle,
-    };
-    if (!nextStyle.htmlTag) {
-      delete nextStyle.htmlTag;
-    }
-    if (!nextStyle.dir) {
-      delete nextStyle.dir;
-    }
-    styleEditing.onChangeLibrary({
-      ...styleEditing.libraryStyles,
-      [editingKind]: nextStyle,
-    });
+    styleEditing.onPatchStyle(editingKind, partial);
   };
 
   const currentStyle =
@@ -254,6 +250,7 @@ export function KindSelect({
         {canRenameEditing ? (
           <TextInput
             label="Kind"
+            description="Renaming applies to every prayer and template in the library"
             value={renameTo}
             onChange={(e) =>
               setRenameTo(sanitizeKindIdInput(e.currentTarget.value))
@@ -269,13 +266,25 @@ export function KindSelect({
             autoFocus
           />
         ) : null}
+        {onSpeakerChange && editingDef && editingKind ? (
+          <Switch
+            label="Speakers"
+            description="Blocks of this kind can have a Speaker (this prayer)"
+            checked={editingDef.speaker === true}
+            onChange={(e) =>
+              onSpeakerChange(editingKind, e.currentTarget.checked)
+            }
+          />
+        ) : null}
         {styleEditing && currentStyle ? (
           <>
+            <Text size="xs" c="dimmed">
+              Style — applies to this kind in every prayer of the library
+            </Text>
             <KindStyleFields
               style={currentStyle}
               onChange={patchStyle}
               portalDropdowns={false}
-              speakerToggle={!editingPreset}
             />
           </>
         ) : null}
@@ -384,11 +393,7 @@ export function KindSelect({
             zIndex={500}
             withinPortal={false}
             title="Delete kind?"
-            message={
-              editingKind === "verse"
-                ? `Delete “${editingLabel}”? Blocks using it become annotation. Style overrides for this kind are removed.`
-                : `Delete “${editingLabel}”? Blocks using it become verse. Style overrides for this kind are removed.`
-            }
+            message={`Delete “${editingLabel}” from this prayer? Blocks using it become verse. Other prayers and the library style stay.`}
             onConfirm={() => {
               if (!editingKind || !onDelete || isKindPreset(editingKind)) return;
               onDelete(editingKind);

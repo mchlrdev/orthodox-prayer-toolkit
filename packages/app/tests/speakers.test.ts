@@ -3,7 +3,6 @@ import {
   SPEAKER_PRESETS,
   type Block,
   type Prayer,
-  type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import { commandForKey, SPEAKER_SHORTCUT, shortcutLabel } from "../src/appCommands";
 import {
@@ -51,16 +50,15 @@ describe("speakers in structure edits", () => {
     expect(next.structure[0]?.speaker).toBeUndefined();
   });
 
-  it("keeps the speaker for a custom kind that allows speakers", () => {
-    const styles = {
-      litany: { speaker: "true" },
-    } as unknown as StyleMap;
+  it("keeps the speaker for a custom kind the prayer allows speakers on", () => {
     const p = prayerWith(verse("b1", "Segne, Vater.", "deacon"));
-    expect(setBlockKind(p, 0, "litany", styles).structure[0]?.speaker).toBe(
+    const allowed = { ...p, kinds: [{ id: "litany", speaker: true as const }] };
+    expect(setBlockKind(allowed, 0, "litany").structure[0]?.speaker).toBe(
       "deacon",
     );
-    // Without "Allow speaker" the custom kind drops it.
-    expect(setBlockKind(p, 0, "litany", {}).structure[0]?.speaker).toBeUndefined();
+    // Without `speaker: true` on the prayer's kind entry it is dropped.
+    const plain = { ...p, kinds: [{ id: "litany" }] };
+    expect(setBlockKind(plain, 0, "litany").structure[0]?.speaker).toBeUndefined();
   });
 
   it("keeps the speaker when the kind stays the same", () => {
@@ -68,7 +66,7 @@ describe("speakers in structure edits", () => {
       ...verse("b1", "x", "priest"),
       kind: "litany",
     });
-    expect(setBlockKind(p, 0, "litany", {})).toBe(p);
+    expect(setBlockKind(p, 0, "litany")).toBe(p);
   });
 
   it("split: upper block keeps the speaker, the new block has none", () => {
@@ -168,21 +166,46 @@ describe("speaker lists (dropdown, right-click, settings pane)", () => {
     expect(ids.slice(SPEAKER_PRESETS.length).sort()).toEqual(["cantor2", "solo"]);
   });
 
-  it("names are canonical English; the chip letter follows the first column", () => {
+  it("names and chips follow the first column, with English as fallback", () => {
     const options = speakerOptions(withCustom(), de);
     expect(options.find((o) => o.id === "priest")).toMatchObject({
-      name: "Priest",
+      name: "Priester",
       chip: "P",
     });
-    expect(options.find((o) => o.id === "solo")?.name).toBe("Solo");
+    expect(options.find((o) => o.id === "solo")?.name).toBe("Solist");
     const labels = speakerContextItems({
       value: undefined,
       options,
       onSelect: () => undefined,
       onMore: () => undefined,
     }).map((i) => ("label" in i ? String(i.label) : ""));
-    expect(labels).toContain("Priest");
-    expect(labels).not.toContain("Priester");
+    expect(labels).toContain("Priester");
+    expect(labels).not.toContain("Priest");
+  });
+
+  it("split view uses the first column, not later ones", () => {
+    const p: Prayer = {
+      ...withCustom(),
+      variants: [
+        withCustom().variants[0]!,
+        {
+          lang: "en",
+          variant: "standard",
+          title: "E",
+          license: "unknown",
+          source: "t",
+          speakers: { priest: { name: "Priest", short: "P" } },
+        },
+      ],
+    };
+    expect(speakerOptions(p, de).find((o) => o.id === "priest")?.name).toBe(
+      "Priester",
+    );
+    expect(
+      speakerOptions(p, { lang: "en", variant: "standard" }).find(
+        (o) => o.id === "priest",
+      )?.name,
+    ).toBe("Priest");
   });
 
   it("right-click submenu: No speaker · speakers · More speakers…", () => {

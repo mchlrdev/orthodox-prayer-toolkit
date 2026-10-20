@@ -1,5 +1,9 @@
-import { Button, Group, Modal, Stack, Text } from "@mantine/core";
-import type { Prayer, VariantMeta } from "@orthodox-prayer-toolkit/core";
+import { Button, Group, Modal, Select, Stack, Text } from "@mantine/core";
+import type {
+  KindTemplate,
+  Prayer,
+  VariantMeta,
+} from "@orthodox-prayer-toolkit/core";
 import { PrayerBasicsFields } from "./PrayerBasicsFields";
 import { VariantMetaFields } from "./VariantMetaFields";
 
@@ -14,7 +18,30 @@ type Props = {
   activeVariant: ActiveVariant;
   onChange: (prayer: Prayer) => void;
   onActiveVariantChange: (v: ActiveVariant) => void;
+  /** Library kind templates; the chosen one is stamped into the prayer. */
+  templates: readonly KindTemplate[];
+  templateId: string | null;
+  onTemplateChange: (templateId: string | null) => void;
 };
+
+// Not a valid template id (slug), so it cannot collide.
+const NO_TEMPLATE = "__none__";
+
+/** Options for the Kind template select ("No template" first). */
+export function templateSelectData(
+  templates: readonly KindTemplate[],
+): { value: string; label: string }[] {
+  return [
+    { value: NO_TEMPLATE, label: "No template (built-in kinds only)" },
+    ...templates.map((t) => ({
+      value: t.id,
+      label:
+        t.kinds.length === 0
+          ? t.label
+          : `${t.label} — ${t.kinds.map((k) => k.id).join(", ")}`,
+    })),
+  ];
+}
 
 export function NewPrayerModal({
   opened,
@@ -25,6 +52,9 @@ export function NewPrayerModal({
   activeVariant,
   onChange,
   onActiveVariantChange,
+  templates,
+  templateId,
+  onTemplateChange,
 }: Props) {
   const first = prayer.variants[0];
   const idOk = prayer.id.trim().length > 0;
@@ -65,6 +95,19 @@ export function NewPrayerModal({
             <VariantMetaFields value={first} onChange={updateFirstVariant} />
           </Stack>
         ) : null}
+        <Select
+          label="Kind template"
+          description={
+            templates.length === 0
+              ? "Create kind templates in Library settings"
+              : "Copies the template’s custom kinds into the new prayer"
+          }
+          data={templateSelectData(templates)}
+          value={templateId ?? NO_TEMPLATE}
+          allowDeselect={false}
+          disabled={templates.length === 0}
+          onChange={(v) => onTemplateChange(v && v !== NO_TEMPLATE ? v : null)}
+        />
         <Group justify="flex-end">
           <Button variant="default" onClick={onClose} disabled={busy}>
             Cancel

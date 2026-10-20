@@ -200,12 +200,26 @@ function createWindow(): BrowserWindow {
   return win;
 }
 
-function appStylesPath(): string {
-  return join(app.getPath("userData"), "kind-styles.json");
+const LIBRARY_STYLES_FILE = ".orthodox-prayer-toolkit/styles.json";
+const LIBRARY_TEMPLATES_FILE = ".orthodox-prayer-toolkit/templates.json";
+
+function readLibraryConfig(libraryRoot: string, relativePath: string): string | null {
+  const root = assertAllowedLibraryRoot(libraryRoot);
+  const path = resolveUnderRoot(root, relativePath);
+  if (!existsSync(path)) return null;
+  return readFileSync(path, "utf8");
 }
 
-function libraryStylesPath(libraryRoot: string): string {
-  return resolveUnderRoot(libraryRoot, ".orthodox-prayer-toolkit/styles.json");
+function writeLibraryConfig(
+  libraryRoot: string,
+  relativePath: string,
+  content: string,
+): void {
+  const root = assertAllowedLibraryRoot(libraryRoot);
+  const path = resolveUnderRoot(root, relativePath);
+  mkdirSync(dirname(path), { recursive: true });
+  libraryWatcher.noteWrite(root, relativePath, content);
+  writeFileSync(path, content, "utf8");
 }
 
 function registerIpc(): void {
@@ -375,36 +389,24 @@ function registerIpc(): void {
     return existsSync(resolveUnderRoot(root, relativePath));
   });
 
-  ipcMain.handle("styles:readApp", () => {
-    const path = appStylesPath();
-    if (!existsSync(path)) return null;
-    return readFileSync(path, "utf8");
-  });
-
-  ipcMain.handle("styles:writeApp", (_evt, content: string) => {
-    writeFileSync(appStylesPath(), content, "utf8");
-  });
-
-  ipcMain.handle("styles:readLibrary", (_evt, libraryRoot: string) => {
-    const root = assertAllowedLibraryRoot(libraryRoot);
-    const path = libraryStylesPath(root);
-    if (!existsSync(path)) return null;
-    return readFileSync(path, "utf8");
-  });
+  ipcMain.handle("styles:readLibrary", (_evt, libraryRoot: string) =>
+    readLibraryConfig(libraryRoot, LIBRARY_STYLES_FILE),
+  );
 
   ipcMain.handle(
     "styles:writeLibrary",
-    (_evt, libraryRoot: string, content: string) => {
-      const root = assertAllowedLibraryRoot(libraryRoot);
-      const path = libraryStylesPath(root);
-      mkdirSync(dirname(path), { recursive: true });
-      libraryWatcher.noteWrite(
-        root,
-        ".orthodox-prayer-toolkit/styles.json",
-        content,
-      );
-      writeFileSync(path, content, "utf8");
-    },
+    (_evt, libraryRoot: string, content: string) =>
+      writeLibraryConfig(libraryRoot, LIBRARY_STYLES_FILE, content),
+  );
+
+  ipcMain.handle("templates:readLibrary", (_evt, libraryRoot: string) =>
+    readLibraryConfig(libraryRoot, LIBRARY_TEMPLATES_FILE),
+  );
+
+  ipcMain.handle(
+    "templates:writeLibrary",
+    (_evt, libraryRoot: string, content: string) =>
+      writeLibraryConfig(libraryRoot, LIBRARY_TEMPLATES_FILE, content),
   );
 
   ipcMain.handle(

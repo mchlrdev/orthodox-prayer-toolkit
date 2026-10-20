@@ -7,7 +7,6 @@ import {
   validationFor,
 } from "../src/session/draftEdit";
 import { persistPrayer } from "../src/session/persistPrayer";
-import { parseAppStyles } from "../src/session/parseAppStyles";
 import {
   editDraft,
   emptySessionState,
@@ -65,10 +64,10 @@ function fakeApi(
     deleteFile: async () => undefined,
     renameFile: async () => undefined,
     exists: async () => false,
-    readAppStyles: async () => null,
-    writeAppStyles: async () => undefined,
     readLibraryStyles: async () => null,
     writeLibraryStyles: async () => undefined,
+    readLibraryTemplates: async () => null,
+    writeLibraryTemplates: async () => undefined,
     saveExport: async () => null,
     pickPrayerJson: async () => null,
     showItem: async () => undefined,
@@ -188,34 +187,6 @@ describe("persistPrayer", () => {
   });
 });
 
-describe("parseAppStyles", () => {
-  it("falls back to defaults on bad JSON", () => {
-    const styles = parseAppStyles("{not json");
-    expect(styles.verse).toBeDefined();
-  });
-
-  it("keeps verse and annotation justified when persisted app styles omit textAlign", () => {
-    const styles = parseAppStyles(
-      JSON.stringify({
-        verse: {
-          fontSize: "1rem",
-          color: "base",
-          fontWeight: "400",
-          fontStyle: "normal",
-        },
-        annotation: {
-          fontSize: "1rem",
-          color: "accent",
-          fontWeight: "400",
-          fontStyle: "normal",
-        },
-      }),
-    );
-    expect(styles.verse?.textAlign).toBe("justify");
-    expect(styles.annotation?.textAlign).toBe("justify");
-  });
-});
-
 describe("session operations", () => {
   const col = { lang: "de", variant: "standard" };
 
@@ -254,11 +225,14 @@ describe("session operations", () => {
       root: "/lib",
       entries: [],
       collisions: [],
-      kinds: [],
       variants: [],
       manifest: null,
       libraryStyles: {},
       styleErrors: [],
+      libraryStylesRaw: undefined,
+      templates: [],
+      templateErrors: [],
+      templatesRaw: undefined,
       scanComplete: options?.scanComplete ?? true,
     };
     for (const [path, prayer] of Object.entries(files)) {

@@ -3,6 +3,8 @@ import {
   isPrayerFilename,
   normalizeLibraryManifest,
   sanitizeStyles,
+  sanitizeTemplates,
+  type KindTemplate,
   type LibraryManifest,
   type StyleMap,
   type ValidationError,
@@ -35,24 +37,59 @@ async function loadManifest(
   return null;
 }
 
-async function loadStyles(
-  root: string,
-  api: PrayerToolkitApi,
-): Promise<{ libraryStyles: StyleMap; styleErrors: ValidationError[] }> {
-  let libraryStyles: StyleMap = {};
-  let styleErrors: ValidationError[] = [];
-  const stylesRaw = await api.readLibraryStyles(root);
-  if (stylesRaw) {
-    const parsed = parseJsonSafe(stylesRaw);
-    if (parsed !== null) {
-      const sanitized = sanitizeStyles(parsed);
-      libraryStyles = sanitized.styles;
-      styleErrors = sanitized.errors;
-    } else {
-      styleErrors = [{ path: "/", message: "Invalid styles JSON" }];
-    }
+export type LibraryStylesState = {
+  libraryStyles: StyleMap;
+  styleErrors: ValidationError[];
+  libraryStylesRaw: unknown;
+};
+
+/**
+ * Parse `styles.json` text (null = no file); keeps the raw object for
+ * migration (`undefined` = no file, `null` = not JSON).
+ */
+export function parseLibraryStyles(stylesRaw: string | null): LibraryStylesState {
+  if (!stylesRaw) {
+    return { libraryStyles: {}, styleErrors: [], libraryStylesRaw: undefined };
   }
-  return { libraryStyles, styleErrors };
+  const parsed = parseJsonSafe(stylesRaw);
+  if (parsed === null) {
+    return {
+      libraryStyles: {},
+      styleErrors: [{ path: "/", message: "Invalid styles JSON" }],
+      libraryStylesRaw: null,
+    };
+  }
+  const sanitized = sanitizeStyles(parsed);
+  return {
+    libraryStyles: sanitized.styles,
+    styleErrors: sanitized.errors,
+    libraryStylesRaw: parsed,
+  };
+}
+
+export type LibraryTemplatesState = {
+  templates: KindTemplate[];
+  templateErrors: ValidationError[];
+  templatesRaw: unknown;
+};
+
+/** Parse `templates.json` text (null = no file). */
+export function parseLibraryTemplates(
+  templatesText: string | null,
+): LibraryTemplatesState {
+  if (templatesText === null) {
+    return { templates: [], templateErrors: [], templatesRaw: undefined };
+  }
+  const parsed = parseJsonSafe(templatesText);
+  if (parsed === null) {
+    return {
+      templates: [],
+      templateErrors: [{ path: "/", message: "Invalid templates JSON" }],
+      templatesRaw: null,
+    };
+  }
+  const { templates, errors } = sanitizeTemplates(parsed);
+  return { templates, templateErrors: errors, templatesRaw: parsed };
 }
 
 export async function* scanLibraryCatalog(
@@ -66,15 +103,16 @@ export async function* scanLibraryCatalog(
   );
   const files = await api.listJsonFiles(root);
   const manifest = await loadManifest(root, api, files);
-  const { libraryStyles, styleErrors } = await loadStyles(root, api);
+  const styles = parseLibraryStyles(await api.readLibraryStyles(root));
+  const templates = parseLibraryTemplates(await api.readLibraryTemplates(root));
   const preferred = manifest?.defaultVariant ?? null;
   const prayerFiles = files.filter(isPrayerFilename);
 
   const shell = {
     root,
     manifest,
-    libraryStyles,
-    styleErrors,
+    ...styles,
+    ...templates,
   };
 
   if (prayerFiles.length === 0) {
@@ -82,7 +120,6 @@ export async function* scanLibraryCatalog(
       ...shell,
       entries: [],
       collisions: [],
-      kinds: [],
       variants: [],
       scanComplete: true,
     });
@@ -93,7 +130,6 @@ export async function* scanLibraryCatalog(
     ...shell,
     entries: prayerFiles.map(stubEntry),
     collisions: [],
-    kinds: [],
     variants: [],
     scanComplete: false,
   });
@@ -111,13 +147,15 @@ export async function* scanLibraryCatalog(
       if (text === undefined) {
         throw new Error(`readTexts omitted ${path}`);
       }
-      entries = upsertEntry(entries, entryFromText(path, text, preferred));
+      entries = upsertEntry(
+        entries,
+        entryFromText(path, text, preferred, styles.libraryStylesRaw),
+      );
     }
     catalog = recomputeCatalogIndex({
       ...shell,
       entries,
       collisions: [],
-      kinds: [],
       variants: [],
       scanComplete: i + chunkSize >= paths.length,
     });
@@ -149,7 +187,7 @@ export async function scanCatalogFile(
     throw new Error(`Failed to read ${path}`);
   }
   const preferred = catalog.manifest?.defaultVariant ?? null;
-  const entry = entryFromText(path, text, preferred);
+  const entry = entryFromText(path, text, preferred, catalog.libraryStylesRaw);
   return recomputeCatalogIndex({
     ...catalog,
     entries: upsertEntry(catalog.entries, entry),

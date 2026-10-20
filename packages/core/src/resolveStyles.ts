@@ -1,6 +1,6 @@
 import type { KindStyle, StyleMap } from "./types.js";
 
-/** Fallback when a kind has no app or library style. */
+/** Fallback when a custom kind has no library style. */
 export const FALLBACK_KIND_STYLE: KindStyle = {
   fontSize: "1rem",
   color: "base",
@@ -39,7 +39,6 @@ export const DEFAULT_KIND_STYLES: StyleMap = {
     fontWeight: "400",
     fontStyle: "normal",
     initialCap: "true",
-    speaker: "true",
     htmlTag: "p",
     textAlign: "justify",
   },
@@ -48,46 +47,32 @@ export const DEFAULT_KIND_STYLES: StyleMap = {
 export type ResolveStylesOptions = {
   /** Kinds discovered in the opened library (and/or current prayer). */
   discoveredKinds: string[];
-  /** App-persisted defaults (partial; missing kinds use DEFAULT_KIND_STYLES / FALLBACK). */
-  appDefaults?: StyleMap;
-  /** Library override file; wins over app defaults. */
+  /** Library `styles.json` (sanitized); wins over the built-in defaults. */
   libraryOverrides?: StyleMap;
   /** Style assigned to newly discovered unknown kinds. */
   defaultPreset?: KindStyle;
 };
 
-function baseForKind(
-  kind: string,
-  appDefaults: StyleMap | undefined,
-  defaultPreset: KindStyle,
-): KindStyle {
-  const builtin = DEFAULT_KIND_STYLES[kind] ?? defaultPreset;
-  const app = appDefaults?.[kind];
-  return app ? { ...builtin, ...app } : { ...builtin };
-}
-
 /**
- * Resolve kind styles: library overrides win over app defaults.
- * Every discovered kind gets an entry (unknown → defaultPreset).
+ * Resolve kind styles: library overrides on top of `DEFAULT_KIND_STYLES`
+ * (presets) or `defaultPreset`. Every discovered kind gets an entry.
  */
 export function resolveStyles(options: ResolveStylesOptions): StyleMap {
   const {
     discoveredKinds,
-    appDefaults,
     libraryOverrides,
     defaultPreset = FALLBACK_KIND_STYLE,
   } = options;
 
   const kindSet = new Set([
     ...discoveredKinds,
-    ...Object.keys(appDefaults ?? {}),
     ...Object.keys(libraryOverrides ?? {}),
     ...Object.keys(DEFAULT_KIND_STYLES),
   ]);
 
   const resolved: StyleMap = {};
   for (const kind of kindSet) {
-    const base = baseForKind(kind, appDefaults, defaultPreset);
+    const base = DEFAULT_KIND_STYLES[kind] ?? defaultPreset;
     const override = libraryOverrides?.[kind];
     resolved[kind] = override ? { ...base, ...override } : { ...base };
   }

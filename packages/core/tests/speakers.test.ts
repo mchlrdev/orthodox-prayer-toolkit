@@ -75,8 +75,9 @@ describe("backwards compatibility", () => {
         expect(r.warnings).toEqual([]);
         expect(normalizeFormatVersion(r.prayer)).toEqual(r.prayer);
         const usesSpeakers = r.prayer.structure.some((b) => b.speaker !== undefined);
+        const hasKinds = (r.prayer.kinds?.length ?? 0) > 0;
         expect(normalizeFormatVersion(r.prayer).formatVersion).toBe(
-          usesSpeakers ? 2 : undefined,
+          hasKinds ? CURRENT_FORMAT_VERSION : usesSpeakers ? 2 : undefined,
         );
       }
     }
@@ -273,6 +274,20 @@ describe("speaker helpers", () => {
     expect(resolveSpeakerLabel(p, EN, "priest", "name")).toBe("Priest");
   });
 
+  it("resolveSpeakerLabel uses the English variant when this one has no label", () => {
+    let p = setSpeakerLabel(base(), EN, "people", {
+      name: "People",
+      short: "Pe",
+    });
+    expect(resolveSpeakerLabel(p, DE, "people", "name")).toBe("People");
+    expect(resolveSpeakerLabel(p, DE, "people", "short")).toBe("Pe");
+    expect(speakerChipLabel(p, DE, "people")).toBe("Pe");
+    p = setSpeakerLabel(p, DE, "people", { name: "Volk" });
+    expect(resolveSpeakerLabel(p, DE, "people", "name")).toBe("Volk");
+    expect(resolveSpeakerLabel(p, DE, "people", "short")).toBe("V");
+    expect(resolveSpeakerLabel(p, EN, "people", "name")).toBe("People");
+  });
+
   it("speakerChipLabel: short, then name letter, then id letter", () => {
     let p = base();
     expect(speakerChipLabel(p, DE, "choir")).toBe("C");
@@ -298,31 +313,26 @@ describe("speaker helpers", () => {
   });
 });
 
-describe("speaker kind style token", () => {
-  it("validateStyles accepts true/false and rejects other values", () => {
-    expect(validateStyles({ litany: { speaker: "true" } }).ok).toBe(true);
-    expect(validateStyles({ litany: { speaker: "false" } }).ok).toBe(true);
-    expect(validateStyles({ litany: { speaker: "yes" } }).ok).toBe(false);
-    expect(validateStyles({ litany: { speaker: true } }).ok).toBe(false);
+describe("speaker allowance", () => {
+  it("the retired style token speaker is ignored, not an error", () => {
+    expect(validateStyles({ litany: { speaker: "true", fontSize: "1rem" } })).toEqual({
+      ok: true,
+      styles: { litany: { fontSize: "1rem" } },
+    });
+    expect(validateStyles({ litany: { speaker: "yes" } })).toEqual({ ok: true, styles: {} });
+    expect(DEFAULT_KIND_STYLES.verse?.speaker).toBeUndefined();
+    expect(resolveStyles({ discoveredKinds: ["litany"] }).verse?.speaker).toBeUndefined();
   });
 
-  it("verse defaults to speaker true", () => {
-    expect(DEFAULT_KIND_STYLES.verse?.speaker).toBe("true");
-    expect(validateStyles(DEFAULT_KIND_STYLES).ok).toBe(true);
-    const s = resolveStyles({ discoveredKinds: ["litany"] });
-    expect(s.verse?.speaker).toBe("true");
-    expect(s.litany?.speaker).toBeUndefined();
-  });
-
-  it("kindAllowsSpeaker rules", () => {
-    expect(kindAllowsSpeaker("verse")).toBe(true);
-    expect(kindAllowsSpeaker("verse", { verse: { speaker: "false" } } as never)).toBe(true);
+  it("kindAllowsSpeaker reads the prayer's kinds", () => {
+    const p: Prayer = { ...base(), kinds: [{ id: "litany", speaker: true }, { id: "refrain" }] };
+    expect(kindAllowsSpeaker("verse", {})).toBe(true);
     for (const k of ["heading", "subheading", "annotation"]) {
-      expect(kindAllowsSpeaker(k, { [k]: { speaker: "true" } } as never)).toBe(false);
+      expect(kindAllowsSpeaker(k, { kinds: [{ id: k, speaker: true }] })).toBe(false);
     }
-    expect(kindAllowsSpeaker("litany")).toBe(false);
-    expect(kindAllowsSpeaker("litany", { litany: { speaker: "false" } } as never)).toBe(false);
-    expect(kindAllowsSpeaker("litany", { litany: { speaker: "true" } } as never)).toBe(true);
+    expect(kindAllowsSpeaker("litany", p)).toBe(true);
+    expect(kindAllowsSpeaker("refrain", p)).toBe(false);
+    expect(kindAllowsSpeaker("litany", base())).toBe(false);
   });
 });
 

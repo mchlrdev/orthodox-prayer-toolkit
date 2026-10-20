@@ -34,7 +34,6 @@ function sendJson(res: ServerResponse, status: number, body: unknown): void {
  */
 export function prayerToolkitBrowserFs(toolkitRoot: string): Plugin {
   const examplesRoot = resolve(toolkitRoot, "examples");
-  const appStylesPath = resolve(toolkitRoot, ".dev-app-styles.json");
 
   return {
     name: "prayer-toolkit-browser-fs",
@@ -186,39 +185,27 @@ export function prayerToolkitBrowserFs(toolkitRoot: string): Plugin {
             return;
           }
 
-          if (route === "/styles/app" && req.method === "GET") {
-            sendJson(res, 200, {
-              content: existsSync(appStylesPath)
-                ? readFileSync(appStylesPath, "utf8")
-                : null,
-            });
-            return;
-          }
+          const configFile =
+            route === "/styles/library"
+              ? ".orthodox-prayer-toolkit/styles.json"
+              : route === "/templates/library"
+                ? ".orthodox-prayer-toolkit/templates.json"
+                : null;
 
-          if (route === "/styles/app" && req.method === "POST") {
-            const body = JSON.parse(await readBody(req)) as { content: string };
-            writeFileSync(appStylesPath, body.content, "utf8");
-            sendJson(res, 200, { ok: true });
-            return;
-          }
-
-          if (route === "/styles/library" && req.method === "GET") {
+          if (configFile && req.method === "GET") {
             const root = url.searchParams.get("root") || examplesRoot;
             if (resolve(root) !== resolve(examplesRoot)) {
               sendJson(res, 403, { error: "Only examples library allowed in browser dev" });
               return;
             }
-            const path = resolveUnderRoot(
-              root,
-              ".orthodox-prayer-toolkit/styles.json",
-            );
+            const path = resolveUnderRoot(root, configFile);
             sendJson(res, 200, {
               content: existsSync(path) ? readFileSync(path, "utf8") : null,
             });
             return;
           }
 
-          if (route === "/styles/library" && req.method === "POST") {
+          if (configFile && req.method === "POST") {
             const body = JSON.parse(await readBody(req)) as {
               root: string;
               content: string;
@@ -227,10 +214,7 @@ export function prayerToolkitBrowserFs(toolkitRoot: string): Plugin {
               sendJson(res, 403, { error: "Only examples library allowed in browser dev" });
               return;
             }
-            const path = resolveUnderRoot(
-              body.root,
-              ".orthodox-prayer-toolkit/styles.json",
-            );
+            const path = resolveUnderRoot(body.root, configFile);
             mkdirSync(dirname(path), { recursive: true });
             writeFileSync(path, body.content, "utf8");
             sendJson(res, 200, { ok: true });

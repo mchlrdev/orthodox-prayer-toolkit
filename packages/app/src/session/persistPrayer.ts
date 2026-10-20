@@ -10,8 +10,8 @@ import type { PersistResult } from "./types";
 
 /**
  * Canonical on-disk text for a prayer file. `formatVersion` is written (first
- * key) only while the prayer uses speakers; files without speakers serialize
- * exactly as before, so older apps can still open them.
+ * key) only when needed (3 with declared `kinds`, 2 with speakers); plain
+ * files serialize exactly as before, so older apps can still open them.
  */
 export function prayerFileText(prayer: Prayer): string {
   const normalized = normalizeFormatVersion(normalizePrayerVariants(prayer));

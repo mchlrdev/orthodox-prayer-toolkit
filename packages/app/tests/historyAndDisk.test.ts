@@ -56,11 +56,14 @@ function opened(path = "a.json", text = "one"): PrayerSessionState {
     root: "/lib",
     entries: [],
     collisions: [],
-    kinds: [],
     variants: [],
     manifest: null,
     libraryStyles: {},
     styleErrors: [],
+    libraryStylesRaw: undefined,
+    templates: [],
+    templateErrors: [],
+    templatesRaw: undefined,
     scanComplete: true,
   };
   catalog = patchCatalogPrayer(catalog, path, prayer);

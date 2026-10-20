@@ -1,114 +1,152 @@
 import {
-  deleteKind,
+  discoverKinds,
   isKindPreset,
+  kindDisplayLabel,
+  rawPrayerKinds,
   renameKind,
-  validate,
+  renameTemplateKind,
   type Prayer,
-  type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import type { PrayerToolkitApi } from "../../electron/preload";
-import { entriesUsingKind, type LibraryCatalog } from "../catalog";
-import { removeStyleKey, renameStyleKey } from "../prayerEdit";
+import {
+  entriesUsingKind,
+  readPrayerText,
+  type LibraryCatalog,
+} from "../catalog";
+import { libraryKindSources } from "./kindOps";
 import { prayerFileText } from "./persistPrayer";
-import type { KindDeletePlan, KindRenamePlan, SessionDraft } from "./types";
+import type { KindRenamePlan, SessionDraft } from "./types";
 
-export type { KindDeletePlan, KindRenamePlan } from "./types";
+export type { KindRenamePlan } from "./types";
 
-export function prayerUsesKind(prayer: Prayer, kind: string): boolean {
-  return prayer.structure.some((b) => b.kind === kind);
+/** The prayer uses `kind` on a block or declares it in `kinds`. */
+export function prayerHasKind(prayer: Prayer, kind: string): boolean {
+  return (
+    prayer.structure.some((b) => b.kind === kind) ||
+    (prayer.kinds ?? []).some((k) => k.id === kind)
+  );
 }
 
-/**
- * Library paths whose prayer uses `kind`: session drafts (their edited
- * state wins), scanned catalog entries, and not-yet-scanned files (read now).
- */
-export async function pathsUsingKind(
+type Drafts = Record<string, SessionDraft>;
+
+/** Unscanned library files as text (unreadable ones are left out). */
+async function unscannedTexts(
   api: PrayerToolkitApi,
   catalog: LibraryCatalog,
-  kind: string,
-  opts: { drafts: Record<string, SessionDraft> },
-): Promise<string[]> {
-  const affected = new Set<string>();
-  const unread: string[] = [];
-
-  for (const [path, draft] of Object.entries(opts.drafts)) {
-    if (prayerUsesKind(draft.prayer, kind)) affected.add(path);
-  }
-
-  for (const entry of entriesUsingKind(catalog, kind)) {
-    if (entry.path in opts.drafts) continue;
-    affected.add(entry.path);
-  }
-
+  drafts: Drafts,
+): Promise<{ path: string; text: string }[]> {
+  const out: { path: string; text: string }[] = [];
   for (const entry of catalog.entries) {
-    if (entry.scanned || entry.path in opts.drafts) continue;
-    unread.push(entry.path);
-  }
-
-  for (const path of unread) {
+    if (entry.scanned || entry.path in drafts) continue;
     try {
-      const raw = await api.readText(catalog.root, path);
-      const result = validate(JSON.parse(raw) as unknown);
-      if (result.ok && prayerUsesKind(result.prayer, kind)) {
-        affected.add(path);
-      }
+      out.push({ path: entry.path, text: await api.readText(catalog.root, entry.path) });
     } catch {
       /* skip */
     }
   }
-
-  return [...affected];
+  return out;
 }
 
-export async function planKindRename(
-  api: PrayerToolkitApi,
-  catalog: LibraryCatalog,
-  from: string,
-  to: string,
-  opts: { drafts: Record<string, SessionDraft> },
-): Promise<KindRenamePlan> {
-  if (isKindPreset(from)) {
-    return { from, to, affectedPaths: [] };
-  }
-  return {
-    from,
-    to,
-    affectedPaths: await pathsUsingKind(api, catalog, from, opts),
-  };
-}
-
-export async function planKindDelete(
+/**
+ * Whether `kind` exists anywhere in the library: a preset, any prayer
+ * (drafts, scanned entries incl. files that do not validate, and
+ * not-yet-scanned files read now), any template, or any `styles.json` key
+ * (sanitized or raw, e.g. a token-only legacy entry).
+ */
+export async function kindExistsInLibrary(
   api: PrayerToolkitApi,
   catalog: LibraryCatalog,
   kind: string,
-  opts: { drafts: Record<string, SessionDraft> },
-): Promise<KindDeletePlan> {
-  if (isKindPreset(kind)) return { kind, affectedPaths: [] };
-  return { kind, affectedPaths: await pathsUsingKind(api, catalog, kind, opts) };
+  opts: { drafts: Drafts },
+): Promise<boolean> {
+  if (isKindPreset(kind)) return true;
+  const raw = catalog.libraryStylesRaw;
+  const rawStyles = typeof raw === "object" && raw !== null && !Array.isArray(raw) ? raw : {};
+  const sources = libraryKindSources(catalog, opts.drafts);
+  const styles = { ...rawStyles, ...catalog.libraryStyles };
+  if (discoverKinds({ ...sources, styles }).includes(kind)) return true;
+  for (const { text } of await unscannedTexts(api, catalog, opts.drafts)) {
+    try {
+      if (rawPrayerKinds(JSON.parse(text)).includes(kind)) return true;
+    } catch {
+      /* not JSON: its kinds are unknown */
+    }
+  }
+  return false;
 }
 
-export type KindRenameResult = {
-  writtenPaths: string[];
-  written: { path: string; prayer: Prayer }[];
-  skipped: { path: string; reason: string }[];
-  drafts: Record<string, SessionDraft>;
-  appStyles: StyleMap;
-  libraryStyles: StyleMap;
+type KindPaths = {
+  paths: string[];
+  /** Of `paths`: files that cannot be rewritten (not valid on disk). */
+  blocked: { path: string; reason: string }[];
 };
 
-async function loadPrayerAtPath(
+async function collectKindPaths(
   api: PrayerToolkitApi,
-  libraryRoot: string,
+  catalog: LibraryCatalog,
+  kind: string,
+  drafts: Drafts,
+): Promise<KindPaths> {
+  const paths = new Set<string>();
+  const blocked: KindPaths["blocked"] = [];
+
+  // An open draft was read from a valid file.
+  for (const [path, draft] of Object.entries(drafts)) {
+    if (prayerHasKind(draft.prayer, kind)) paths.add(path);
+  }
+
+  for (const entry of entriesUsingKind(catalog, kind)) {
+    if (entry.path in drafts) continue;
+    paths.add(entry.path);
+    if (!entry.valid) blocked.push({ path: entry.path, reason: "invalid prayer" });
+  }
+
+  for (const { path, text } of await unscannedTexts(api, catalog, drafts)) {
+    let data: unknown;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      continue; // not JSON: its kinds are unknown
+    }
+    if (!rawPrayerKinds(data).includes(kind)) continue;
+    paths.add(path);
+    const read = readPrayerText(text, catalog.libraryStylesRaw);
+    if (!read.json || !read.result.ok) blocked.push({ path, reason: "invalid prayer" });
+  }
+
+  return { paths: [...paths], blocked };
+}
+
+/**
+ * Library paths whose prayer uses or declares `kind`: session drafts (their
+ * edited state counts), scanned catalog entries (also files that do not
+ * validate) and not-yet-scanned files (read now).
+ */
+export async function pathsWithKind(
+  api: PrayerToolkitApi,
+  catalog: LibraryCatalog,
+  kind: string,
+  opts: { drafts: Drafts },
+): Promise<string[]> {
+  return (await collectKindPaths(api, catalog, kind, opts.drafts)).paths;
+}
+
+type DiskPrayer =
+  | { ok: true; prayer: Prayer }
+  | { ok: false; reason: string };
+
+/** The prayer file as on disk (migrated in memory), or why it cannot be used. */
+async function loadDiskPrayer(
+  api: PrayerToolkitApi,
+  catalog: LibraryCatalog,
   path: string,
-  drafts: Record<string, SessionDraft>,
-): Promise<{ ok: true; prayer: Prayer } | { ok: false; reason: string }> {
-  const session = drafts[path];
-  if (session) return { ok: true, prayer: session.prayer };
+): Promise<DiskPrayer> {
   try {
-    const raw = await api.readText(libraryRoot, path);
-    const result = validate(JSON.parse(raw) as unknown);
-    if (!result.ok) return { ok: false, reason: "invalid prayer JSON" };
-    return { ok: true, prayer: result.prayer };
+    const raw = await api.readText(catalog.root, path);
+    const read = readPrayerText(raw, catalog.libraryStylesRaw);
+    if (!read.json) return { ok: false, reason: "invalid JSON" };
+    if (!read.result.ok) return { ok: false, reason: "invalid prayer" };
+    return { ok: true, prayer: read.result.prayer };
   } catch (err) {
     return {
       ok: false,
@@ -117,136 +155,129 @@ async function loadPrayerAtPath(
   }
 }
 
-type KindRewrite = {
-  kind: string;
-  affectedPaths: string[];
-  prayer: (prayer: Prayer) => Prayer;
-  styles: (styles: StyleMap) => StyleMap;
+/**
+ * Plan a library-wide rename: affected prayer paths and template ids, plus
+ * `blocked` — affected files that cannot be rewritten (not JSON on disk,
+ * invalid, unreadable). A plan with `blocked` entries must not be applied:
+ * the rename would be partial.
+ */
+export async function planKindRename(
+  api: PrayerToolkitApi,
+  catalog: LibraryCatalog,
+  from: string,
+  to: string,
+  opts: { drafts: Drafts },
+): Promise<KindRenamePlan & { blocked: { path: string; reason: string }[] }> {
+  const empty = { from, to, affectedPaths: [], affectedTemplates: [], blocked: [] };
+  if (isKindPreset(from)) return empty;
+  const { paths: affectedPaths, blocked } = await collectKindPaths(
+    api,
+    catalog,
+    from,
+    opts.drafts,
+  );
+  const affectedTemplates = catalog.templates
+    .filter((t) => t.kinds.some((k) => k.id === from))
+    .map((t) => t.id);
+  return { from, to, affectedPaths, affectedTemplates, blocked };
+}
+
+/** A rename touching more than one prayer, or any template, asks first. */
+export function kindRenameNeedsConfirm(plan: KindRenamePlan): boolean {
+  return plan.affectedPaths.length > 1 || plan.affectedTemplates.length > 0;
+}
+
+function plural(n: number, word: string): string {
+  return `${n} ${word}${n === 1 ? "" : "s"}`;
+}
+
+/** Confirm text for a pending library-wide rename. */
+export function kindRenameConfirmMessage(plan: KindRenamePlan): string {
+  const parts = [plural(plan.affectedPaths.length, "prayer")];
+  if (plan.affectedTemplates.length > 0) {
+    parts.push(plural(plan.affectedTemplates.length, "kind template"));
+  }
+  return `Rename “${kindDisplayLabel(plan.from)}” to “${kindDisplayLabel(plan.to)}” in ${parts.join(" and ")}? This writes those files now.`;
+}
+
+export type KindRenameResult = {
+  written: { path: string; prayer: Prayer; text: string }[];
+  skipped: { path: string; reason: string }[];
+  drafts: Drafts;
 };
 
 /**
- * Rewrite every prayer of the library that uses `kind` (affected files are
- * written now; session drafts are updated) plus the app / library style maps.
+ * Rename a kind in every affected prayer (Core `renameKind`): the file on
+ * disk is renamed and written (unsaved edits are never written); an open
+ * draft is renamed in memory (incl. its undo history) and its `saved` /
+ * `diskText` follow the file, so `dirty` keeps meaning "differs from disk".
+ * Templates and styles are handled by the session op.
  */
-async function rewriteKindAcrossLibrary(
-  api: PrayerToolkitApi,
-  catalog: LibraryCatalog,
-  rewrite: KindRewrite,
-  opts: {
-    drafts: Record<string, SessionDraft>;
-    appStyles: StyleMap;
-    libraryStyles: StyleMap;
-  },
-): Promise<KindRenameResult> {
-  const { kind, affectedPaths } = rewrite;
-  if (isKindPreset(kind)) {
-    return {
-      writtenPaths: [],
-      written: [],
-      skipped: [],
-      drafts: opts.drafts,
-      appStyles: opts.appStyles,
-      libraryStyles: opts.libraryStyles,
-    };
-  }
-
-  const writtenPaths: string[] = [];
-  const written: { path: string; prayer: Prayer }[] = [];
-  const skipped: { path: string; reason: string }[] = [];
-
-  const drafts: Record<string, SessionDraft> = {};
-  for (const [path, session] of Object.entries(opts.drafts)) {
-    drafts[path] = prayerUsesKind(session.prayer, kind)
-      ? { ...session, prayer: rewrite.prayer(session.prayer) }
-      : session;
-  }
-
-  for (const path of affectedPaths) {
-    const loaded = await loadPrayerAtPath(api, catalog.root, path, drafts);
-    if (!loaded.ok) {
-      skipped.push({ path, reason: loaded.reason });
-      continue;
-    }
-
-    const next = prayerUsesKind(loaded.prayer, kind)
-      ? rewrite.prayer(loaded.prayer)
-      : loaded.prayer;
-
-    try {
-      await api.writeText(catalog.root, path, prayerFileText(next));
-      writtenPaths.push(path);
-      written.push({ path, prayer: next });
-    } catch (err) {
-      skipped.push({
-        path,
-        reason: err instanceof Error ? err.message : String(err),
-      });
-    }
-  }
-
-  return {
-    writtenPaths,
-    written,
-    skipped,
-    drafts,
-    appStyles: rewrite.styles(opts.appStyles),
-    libraryStyles: rewrite.styles(opts.libraryStyles),
-  };
-}
-
-/**
- * Rename a kind across the open library: every affected prayer file,
- * session drafts, and app/library style maps.
- */
-export function renameKindAcrossLibrary(
+export async function renameKindAcrossLibrary(
   api: PrayerToolkitApi,
   catalog: LibraryCatalog,
   plan: KindRenamePlan,
-  opts: {
-    drafts: Record<string, SessionDraft>;
-    appStyles: StyleMap;
-    libraryStyles: StyleMap;
-  },
+  opts: { drafts: Drafts },
 ): Promise<KindRenameResult> {
-  const { from, to } = plan;
-  return rewriteKindAcrossLibrary(
-    api,
-    catalog,
-    {
-      kind: from,
-      affectedPaths: plan.affectedPaths,
-      prayer: (p) => renameKind(p, from, to),
-      styles: (m) => renameStyleKey(m, from, to),
-    },
-    opts,
-  );
+  const { from, to, affectedPaths } = plan;
+  const written: KindRenameResult["written"] = [];
+  const skipped: KindRenameResult["skipped"] = [];
+  const drafts: Drafts = { ...opts.drafts };
+  if (isKindPreset(from)) return { written, skipped, drafts };
+
+  for (const path of affectedPaths) {
+    const draft = opts.drafts[path];
+    const disk = await loadDiskPrayer(api, catalog, path);
+    // The renamed file content, when it was written.
+    let savedNext: { prayer: Prayer; text: string } | null = null;
+    if (disk.ok) {
+      const next = renameKind(disk.prayer, from, to);
+      if (next !== disk.prayer) {
+        const text = prayerFileText(next);
+        try {
+          await api.writeText(catalog.root, path, text);
+          written.push({ path, prayer: next, text });
+          savedNext = { prayer: next, text };
+        } catch (err) {
+          skipped.push({
+            path,
+            reason: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+    } else {
+      skipped.push({ path, reason: disk.reason });
+    }
+
+    if (!draft) continue;
+    const clean = !draft.dirty && savedNext !== null;
+    const prayer = clean ? savedNext!.prayer : renameKind(draft.prayer, from, to);
+    const saved = savedNext ? savedNext.prayer : draft.saved;
+    const rename = (p: Prayer): Prayer =>
+      p === draft.saved && saved ? saved : renameKind(p, from, to);
+    drafts[path] = {
+      ...draft,
+      prayer,
+      saved,
+      diskText: savedNext ? savedNext.text : draft.diskText,
+      dirty: saved ? prayer !== saved : true,
+      history: draft.history && {
+        ...draft.history,
+        past: draft.history.past.map(rename),
+        future: draft.history.future.map(rename),
+      },
+    };
+  }
+
+  return { written, skipped, drafts };
 }
 
-/**
- * Delete a custom kind across the open library: its blocks become verse
- * (annotation for verse) in every affected prayer file and session draft,
- * and its style entries are removed.
- */
-export function deleteKindAcrossLibrary(
-  api: PrayerToolkitApi,
+/** Templates after renaming `from` → `to` (same array when unaffected). */
+export function renamedTemplates(
   catalog: LibraryCatalog,
-  plan: KindDeletePlan,
-  opts: {
-    drafts: Record<string, SessionDraft>;
-    appStyles: StyleMap;
-    libraryStyles: StyleMap;
-  },
-): Promise<KindRenameResult> {
-  const { kind } = plan;
-  return rewriteKindAcrossLibrary(
-    api,
-    catalog,
-    {
-      kind,
-      affectedPaths: plan.affectedPaths,
-      prayer: (p) => deleteKind(p, kind),
-      styles: (m) => removeStyleKey(m, kind),
-    },
-    opts,
-  );
+  from: string,
+  to: string,
+) {
+  const next = renameTemplateKind(catalog.templates, from, to);
+  return next.some((t, i) => t !== catalog.templates[i]) ? next : catalog.templates;
 }

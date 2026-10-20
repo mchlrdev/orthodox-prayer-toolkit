@@ -61,13 +61,13 @@ function normalizeCommittedText(
   return parts.map((l) => plainText(l)).join("\n");
 }
 
-/** True when a commit would not change the stored translation. */
-export function committedContentUnchanged(
-  blockKind: string,
+/** Line mode (verse `lines`) vs text mode: would `content` change `current`? */
+function contentUnchanged(
+  lineMode: boolean,
   current: Pick<Translation, "text" | "lines"> | undefined,
   content: InlineContent | InlineContent[] | null,
 ): boolean {
-  if (usesLines(blockKind)) {
+  if (lineMode) {
     const nextLines = normalizeCommittedLines(content);
     const currentLines = current?.lines ?? [];
     if (nextLines.length === 0 && currentLines.length === 0) return true;
@@ -80,20 +80,28 @@ export function committedContentUnchanged(
   return inlineContentEqual(currentText, nextText);
 }
 
+/** True when a commit would not change the stored translation. */
+export function committedContentUnchanged(
+  blockKind: string,
+  current: Pick<Translation, "text" | "lines"> | undefined,
+  content: InlineContent | InlineContent[] | null,
+): boolean {
+  return contentUnchanged(usesLines(blockKind), current, content);
+}
+
 /** Compare stored editor props with a fresh DOM serialization. */
 export function editorCommitUnchanged(
   stored: InlineContent | InlineContent[],
   serialized: InlineContent | InlineContent[] | null,
   lineMode: boolean,
 ): boolean {
-  const blockKind = lineMode ? "verse" : "rubric";
   if (lineMode) {
     const lines = stored as InlineContent[];
     const current =
       lines.length === 0
         ? undefined
         : ({ lines } as Pick<Translation, "lines">);
-    return committedContentUnchanged(blockKind, current, serialized);
+    return contentUnchanged(true, current, serialized);
   }
 
   const text = stored as InlineContent;
@@ -101,7 +109,7 @@ export function editorCommitUnchanged(
     plainText(text).trim().length === 0
       ? undefined
       : ({ text } as Pick<Translation, "text">);
-  return committedContentUnchanged(blockKind, current, serialized);
+  return contentUnchanged(false, current, serialized);
 }
 
 function buildCommittedPayload(

@@ -9,7 +9,7 @@
     "formatVersion": {
       "type": "integer",
       "minimum": 1,
-      "description": "Format revision. Omitted = 1. Written as 2 only when the file uses speakers."
+      "description": "Format revision. Omitted = 1. Written as 3 when kinds is non-empty, else 2 when the file uses speakers."
     },
     "id": {
       "type": "string",
@@ -75,6 +75,26 @@
         }
       }
     },
+    "kinds": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Custom kinds this prayer declares, in kind picker order (presets are implicit and never listed). Omit when empty.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]{0,63}$"
+          },
+          "speaker": {
+            "const": true,
+            "description": "Blocks of this kind may carry a speaker. Omit when false."
+          }
+        }
+      }
+    },
     "structure": {
       "type": "array",
       "minItems": 1,
@@ -91,7 +111,7 @@
           "kind": {
             "type": "string",
             "minLength": 1,
-            "description": "Open semantic role string (not a closed enum)"
+            "description": "Preset kind (heading, subheading, annotation, verse) or an id declared in kinds"
           },
           "speaker": {
             "type": "string",

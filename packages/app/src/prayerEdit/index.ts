@@ -1,7 +1,7 @@
 export {
   usesLines,
   translationEditorContent,
-  kindOptions,
+  kindAddIssue,
   kindRenameIssue,
   orderKinds,
   getTranslation,
@@ -27,13 +27,6 @@ export {
 } from "./structure";
 export { splitEditorContent } from "./splitContent";
 export {
-  renameStyleKey,
-  removeStyleKey,
-  ensureKindStyle,
-  renameKindWithStyles,
-  deleteKindWithStyles,
-} from "./styles";
-export {
   buildPrayerOutline,
   flattenOutlineEntries,
   OUTLINE_ACTIVE_THRESHOLD_SLACK_PX,
@@ -58,3 +51,9 @@ export {
   speakerRenameIssue,
   type SpeakerRenameResult,
 } from "./speakers";
+export {
+  kindAddChoices,
+  kindSpeakerNote,
+  patchKindStyle,
+  templateMissingKinds,
+} from "./kindLists";

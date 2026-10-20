@@ -71,10 +71,10 @@ function fakeToolkit(
     deleteFile: async () => undefined,
     renameFile: async () => undefined,
     exists: async (_root, path) => path in files,
-    readAppStyles: async () => null,
-    writeAppStyles: async () => undefined,
     readLibraryStyles: async () => null,
     writeLibraryStyles: async () => undefined,
+    readLibraryTemplates: async () => null,
+    writeLibraryTemplates: async () => undefined,
     saveExport: async () => null,
     pickPrayerJson: async () => null,
     showItem: async () => undefined,
@@ -112,7 +112,7 @@ describe("scanLibraryCatalog", () => {
     const catalog = yields[0]!;
     expect(catalog.scanComplete).toBe(true);
     expect(catalog.entries).toEqual([]);
-    expect(catalog.kinds).toEqual([]);
+    expect(catalog).not.toHaveProperty("kinds");
     expect(catalog.variants).toEqual([]);
     expect(catalog.root).toBe("/lib");
   });
@@ -135,7 +135,7 @@ describe("scanLibraryCatalog", () => {
     ]);
     expect(stubs.entries.every((e) => e.scanned === false)).toBe(true);
     expect(stubs.entries.every((e) => e.title === null)).toBe(true);
-    expect(stubs.kinds).toEqual([]);
+    expect(stubs.entries.every((e) => e.kinds.length === 0)).toBe(true);
 
     const complete = yields[1]!;
     expect(complete.scanComplete).toBe(true);
@@ -144,7 +144,7 @@ describe("scanLibraryCatalog", () => {
       "Title alpha",
       "Title beta",
     ]);
-    expect(complete.kinds).toEqual(["rubric", "verse"]);
+    expect(complete.entries.map((e) => e.kinds)).toEqual([["verse"], ["rubric"]]);
     expect(complete.variants).toEqual([{ lang: "de", variant: "standard" }]);
     expect(complete).not.toHaveProperty("validPrayers");
     expect(JSON.stringify(complete)).not.toContain(BODY);
@@ -169,7 +169,7 @@ describe("scanLibraryCatalog", () => {
     expect(yields[2]!.entries.filter((e) => e.scanned)).toHaveLength(2);
     expect(yields[3]!.entries.filter((e) => e.scanned)).toHaveLength(3);
     expect(yields[3]!.scanComplete).toBe(true);
-    expect(yields[3]!.kinds).toEqual(["heading", "rubric", "verse"]);
+    expect(yields[3]!.entries.flatMap((e) => e.kinds).sort()).toEqual(["heading", "rubric", "verse"]);
   });
 
   it("marks invalid JSON as scanned and invalid", async () => {
@@ -251,13 +251,12 @@ describe("patchCatalogPrayer", () => {
     expect(readTexts).not.toHaveBeenCalled();
     expect(patched.entries[0]?.title).toBe("Patched");
     expect(patched.entries[0]?.kinds).toEqual(["rubric"]);
-    expect(patched.kinds).toEqual(["rubric"]);
     expect(JSON.stringify(patched)).not.toContain(BODY);
   });
 });
 
 describe("removeCatalogPath", () => {
-  it("drops the entry and recomputes unions", async () => {
+  it("drops the entry", async () => {
     const catalog = await collectCatalog(
       scanLibraryCatalog(
         "/lib",
@@ -269,8 +268,7 @@ describe("removeCatalogPath", () => {
     );
     const next = removeCatalogPath(catalog, "a.json");
     expect(next.entries.map((e) => e.path)).toEqual(["b.json"]);
-    expect(next.kinds).toEqual(["rubric"]);
-    expect(next.kinds).not.toContain("verse");
+    expect(next.entries.flatMap((e) => e.kinds)).toEqual(["rubric"]);
   });
 });
 
@@ -308,7 +306,7 @@ describe("scanCatalogFile", () => {
     expect(entry?.kinds).toEqual(["verse"]);
     expect(next.entries.find((e) => e.path === "b.json")?.scanned).toBe(false);
     expect(next.scanComplete).toBe(false);
-    expect(next.kinds).toEqual(["verse"]);
+    expect(next.entries.flatMap((e) => e.kinds)).toEqual(["verse"]);
 
     await gen.return(undefined);
   });
@@ -349,7 +347,7 @@ describe("scanCatalogFile", () => {
     expect(next.entries.find((e) => e.path === "extra.json")?.scanned).toBe(
       true,
     );
-    expect(next.kinds).toEqual(["heading", "verse"]);
+    expect(next.entries.flatMap((e) => e.kinds).sort()).toEqual(["heading", "verse"]);
   });
 });
 
@@ -372,11 +370,14 @@ describe("patchCatalogText", () => {
         },
       ],
       collisions: [],
-      kinds: [],
       variants: [],
       manifest: null,
       libraryStyles: {},
       styleErrors: [],
+      libraryStylesRaw: undefined,
+      templates: [],
+      templateErrors: [],
+      templatesRaw: undefined,
       scanComplete: false,
     };
     const next = patchCatalogText(catalog, "a.json", "{not json");
@@ -393,11 +394,14 @@ describe("mergeCatalogs", () => {
         root: "/lib",
         entries: [],
         collisions: [],
-        kinds: [],
         variants: [],
         manifest: null,
         libraryStyles: {},
         styleErrors: [],
+        libraryStylesRaw: undefined,
+        templates: [],
+        templateErrors: [],
+        templatesRaw: undefined,
         scanComplete: false,
       },
       "a.json",
@@ -449,11 +453,14 @@ describe("mergeCatalogs", () => {
         root: "/lib",
         entries: [],
         collisions: [],
-        kinds: [],
         variants: [],
         manifest: null,
         libraryStyles: {},
         styleErrors: [],
+        libraryStylesRaw: undefined,
+        templates: [],
+        templateErrors: [],
+        templatesRaw: undefined,
         scanComplete: true,
       },
       "morning.json",
