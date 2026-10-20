@@ -37,7 +37,7 @@ Root [README.md](README.md) is the human landing page. Do not treat `.scratch/` 
 | Kind / style helpers | `indexKinds.ts`, `resolveStyles.ts`, `validateStyles.ts` |
 | Editor UX | `packages/app/src/**` |
 | Release / signing | `docs/RELEASE.md`, `scripts/release.mjs`, electron-builder config |
-| What’s new notes | `packages/app/src/releaseNotes.ts` — **before every push**, add/update tiny user-facing bullets for UI/export changes in that push and drop stale ones; `pnpm release` sets `version` to the new tag |
+| What’s new notes | `packages/app/src/releaseNotes.ts` — **before every push**, prepend a new version block for the next tag if needed; add tiny user-facing bullets; never delete older rows; `pnpm release` leaves a matching newest row alone or prepends an empty row for the new tag |
 
 ## Verify before finishing
 

@@ -50,7 +50,12 @@ import {
   saveAppearancePrefs,
   type ColorSchemePreference,
 } from "./appearancePrefs";
-import { RELEASE_NOTES, shouldShowWhatsNew } from "./releaseNotes";
+import {
+  RELEASE_NOTES,
+  newestNotesVersion,
+  notesForRunning,
+  shouldShowWhatsNew,
+} from "./releaseNotes";
 import {
   loadLastSeenWhatsNew,
   saveLastSeenWhatsNew,
@@ -206,8 +211,8 @@ export function App() {
     void getToolkitApi()
       .getAppInfo()
       .then((info) => decide(info.version))
-      // Failed IPC: fall back to the notes' own version rather than never showing.
-      .catch(() => decide(RELEASE_NOTES.version));
+      // Failed IPC: newest seeded row, not a removed `.version` field.
+      .catch(() => decide(newestNotesVersion(RELEASE_NOTES)));
     return () => {
       cancelled = true;
     };
@@ -776,8 +781,7 @@ export function App() {
 
       <WhatsNewDialog
         opened={whatsNewOpen}
-        version={runningVersion}
-        items={RELEASE_NOTES.items}
+        entries={notesForRunning(RELEASE_NOTES, runningVersion)}
         onDismiss={() => {
           saveLastSeenWhatsNew(runningVersion);
           setWhatsNewOpen(false);

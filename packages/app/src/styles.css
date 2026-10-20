@@ -157,6 +157,11 @@ input[type="number"]::-webkit-outer-spin-button {
   overscroll-behavior: contain;
 }
 
+/* What’s new: cap height so several version sections scroll the body. */
+.whats-new-dialog {
+  max-height: min(36rem, calc(100dvh - 4rem));
+}
+
 /* What’s new: wrapped bullets with outside markers, no clipping. */
 .whats-new-list {
   margin: 0;

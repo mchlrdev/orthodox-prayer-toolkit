@@ -19,7 +19,9 @@ That runs [bumpp](https://github.com/antfu-collective/bumpp): you pick **patch**
 **minor** / **major** (or type a version). It then:
 
 - bumps `version` in the root and all workspace `package.json` files
-- rewrites `RELEASE_NOTES.version` to the new version (`--execute`)
+- syncs `RELEASE_NOTES`: if the newest row is already the new version, leave
+  its items; if it is still the previous version, prepend
+  `{ version: newTag, items: [] }` so history is not overwritten (`--execute`)
 - creates commit `chore: release vX.Y.Z` (`--all`, so the notes file is
   included, not just the bumped `package.json` files) and tag `vX.Y.Z`
 - pushes `main` **and** the tag (`--push`)
@@ -46,7 +48,7 @@ installers; keep releasing via `pnpm release` so root / app / core stay in sync.
 
 ## What’s new notes
 
-The app shows a one-shot **What’s new** dialog after an update (Install and
+The app shows a **What’s new** history dialog after an update (Install and
 Restart, then the new build launches). Same renderer in `pnpm dev` /
 `pnpm dev:electron`, so you can try it there — those commands still do not
 talk to the update feed.
@@ -55,37 +57,47 @@ Source of truth is one file shipped with the app:
 [`packages/app/src/releaseNotes.ts`](../packages/app/src/releaseNotes.ts).
 
 ```ts
-export const RELEASE_NOTES: { version: string; items: string[] }
+export type ReleaseNotesEntry = { version: string; items: string[] };
+export const RELEASE_NOTES: ReleaseNotesEntry[] = [ /* newest first */ ];
 ```
 
-Show when `lastSeenWhatsNew !== runningVersion` **and** `items.length > 0`.
-Empty `items` → no dialog. The title uses `runningVersion`. Dismiss (Got it /
-overlay / Escape) stores `lastSeenWhatsNew` in localStorage
+Auto-open when `runningVersion` is nonempty **and** there is at least one
+unseen entry: `lastSeen` is null, or the entry’s version is greater than
+`lastSeen` by semver, **and** that version is ≤ `runningVersion`. Empty
+`items` rows are skipped. Dismiss (Got it / overlay / Escape) stores
+`lastSeenWhatsNew = runningVersion` in localStorage
 (`orthodox-prayer-toolkit.whats-new`).
 
-`runningVersion` comes from `getAppInfo()` (Electron `app.getVersion()`,
-browser-dev Vite define). If that IPC fails the renderer falls back to
-`RELEASE_NOTES.version`. Do not read `__APP_VERSION__` at renderer startup
-— the packaged renderer is built by `packages/app/scripts/build-electron.mjs`
-(`configFile: false`), which is a separate Vite config from `vite.config.ts`.
+When open, the dialog lists **all** entries with version ≤ `runningVersion`
+(newest first), not only the unseen slice. Title is “What’s new”; each
+section is headed `vX.Y.Z`.
 
-`RELEASE_NOTES.version` is bookkeeping: it does **not** gate the dialog (v0.3.3
-shipped with `version: "0.3.2"` because bumpp only committed the
-`package.json` files, and the dialog stayed silent). Keep it equal to the
-**current** package version while notes accumulate; `pnpm release` then
-rewrites it to the new tag and commits it with `bumpp --all`. If `items` is
-non-empty and `version` does not match the package version, `pnpm release`
-fails before bumping.
+`runningVersion` comes from `getAppInfo()` (Electron `app.getVersion()`,
+browser-dev Vite define). If that IPC fails the renderer falls back to the
+newest seeded notes version. Do not read `__APP_VERSION__` at renderer
+startup — the packaged renderer is built by
+`packages/app/scripts/build-electron.mjs` (`configFile: false`), which is a
+separate Vite config from `vite.config.ts`.
+
+The newest `RELEASE_NOTES` row may equal the **current** package version or
+be **ahead by one patch** (notes for the next tag, e.g. 0.3.5 while the
+package is 0.3.4). `pnpm release` fails before bumping if the newest row is
+behind the package, two rows share a version, or the file is unparseable.
+After bumpp, if the newest row already matches the new package version its
+items stay; if it still matches the previous package version, an empty
+`{ version: newTag, items: [] }` row is prepended — older rows are never
+overwritten.
 
 ### Before every push
 
 Review `releaseNotes.ts`:
 
-- Add or update short bullets for **user-visible** UI / export changes in
-  this push.
-- Delete stale bullets that no longer describe what this version will ship.
-- Keep the list tiny. Short English fragments or imperatives; glossary
-  terms (Block, Kind, Speaker, Word table); no marketing.
+- Prepend a new `{ version, items }` block for the **next** tag if that
+  row is not there yet. Never delete older rows.
+- Add or update short bullets on the newest row for **user-visible** UI /
+  export changes in this push.
+- Keep each version’s list tiny. Short English fragments or imperatives;
+  glossary terms (Block, Kind, Speaker, Word table); no marketing.
 - Do not push user-facing UI/export changes without this pass.
 
 Do not invent bullets for uncommitted WIP. No separate CHANGELOG.md — this
@@ -258,7 +270,7 @@ links stay correct. In Actions, `GITHUB_REPOSITORY` is also used.
 | `Cannot download …-mac.zip, status 404` | Installer filenames had spaces. GitHub stores them with dots (`Orthodox.Prayer.Toolkit-…`) while `latest-mac.yml` + electron-updater request hyphens (`Orthodox-Prayer-Toolkit-…`). `artifactName` in `electron-builder.yml` must stay space-free; the Release **build** job hyphenates names before upload (the publish job has no repo checkout). |
 | **Install and Restart** does nothing (macOS) | Squirrel.Mac needs a Developer ID. Unsigned/ad-hoc builds install via a helper script in the running app — install that build from the DMG once. Check `/tmp/orthodox-prayer-toolkit-update.log` if a later button-click still fails. |
 | macOS app much slower than `pnpm dev` | Intel (`-x64`) build on Apple Silicon runs under Rosetta. Check `file …/Contents/MacOS/OrthodoxPrayerToolkit`; install the `-arm64.dmg`. Auto-update already prefers the arm64 ZIP, so the next update also fixes it. |
-| What’s new missing after update | Notes are now shown whenever `lastSeen !== runningVersion` and `items` is non-empty; if still missing, check `items` in the tagged `releaseNotes.ts` (`git show vX.Y.Z:packages/app/src/releaseNotes.ts`). |
+| What’s new missing after update | Auto-open needs an unseen entry (`version > lastSeen` and ≤ running) with items. If still missing, check `RELEASE_NOTES` in the tagged file (`git show vX.Y.Z:packages/app/src/releaseNotes.ts`). |
 | macOS: `packages/app not a file` / empty CSC password | Empty `CSC_LINK` was exported — release workflow must `unset` empty signing env vars |
 | Linux: `executableName` contains `@` | Missing `executableName` in electron-builder.yml (package name is scoped) |
 | macOS/Windows: `422 already_exists` on release | Parallel jobs raced creating the same GitHub Release — builds use `--publish never`, one job uploads assets |

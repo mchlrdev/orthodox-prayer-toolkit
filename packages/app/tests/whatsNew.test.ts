@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { shouldShowWhatsNew } from "../src/releaseNotes";
+import {
+  notesForRunning,
+  shouldShowWhatsNew,
+  unseenNotes,
+} from "../src/releaseNotes";
 import { viteAppVersion } from "../src/viteAppVersion";
 import {
   loadLastSeenWhatsNew,
@@ -35,41 +39,100 @@ function installMemoryLocalStorage() {
   });
 }
 
-const notes = {
-  version: "0.4.0",
-  items: ["Commit Block edits on idle"],
-};
+const HISTORY = [
+  { version: "0.3.5", items: ["Kind templates"] },
+  { version: "0.3.4", items: ["Word table Own column"] },
+  { version: "0.3.1", items: ["Commit Block edits on idle"] },
+];
 
-describe("shouldShowWhatsNew", () => {
-  it("opens when lastSeen is empty and items exist", () => {
-    expect(
-      shouldShowWhatsNew({
-        lastSeen: null,
-        runningVersion: "0.4.0",
-        notes,
-      }),
-    ).toBe(true);
+describe("notesForRunning", () => {
+  it("includes every entry ≤ running, newest first", () => {
+    expect(notesForRunning(HISTORY, "0.3.5").map((e) => e.version)).toEqual([
+      "0.3.5",
+      "0.3.4",
+      "0.3.1",
+    ]);
   });
 
-  it("stays closed when lastSeen already equals the running version", () => {
+  it("excludes entries ahead of running", () => {
+    expect(notesForRunning(HISTORY, "0.3.4").map((e) => e.version)).toEqual([
+      "0.3.4",
+      "0.3.1",
+    ]);
+  });
+
+  it("skips empty items", () => {
+    const notes = [
+      { version: "0.3.5", items: ["Kind templates"] },
+      { version: "0.3.4", items: [] },
+      { version: "0.3.1", items: ["Commit Block edits on idle"] },
+    ];
+    expect(notesForRunning(notes, "0.3.5").map((e) => e.version)).toEqual([
+      "0.3.5",
+      "0.3.1",
+    ]);
+  });
+});
+
+describe("unseenNotes", () => {
+  it("lastSeen 0.3.1, running 0.3.5 → 0.3.4 and 0.3.5, not 0.3.1", () => {
+    expect(
+      unseenNotes(HISTORY, "0.3.1", "0.3.5").map((e) => e.version),
+    ).toEqual(["0.3.5", "0.3.4"]);
+  });
+
+  it("lastSeen 0.3.4, running 0.3.5 → 0.3.5 only", () => {
+    expect(
+      unseenNotes(HISTORY, "0.3.4", "0.3.5").map((e) => e.version),
+    ).toEqual(["0.3.5"]);
+  });
+
+  it("lastSeen null → all of notesForRunning", () => {
+    expect(unseenNotes(HISTORY, null, "0.3.4").map((e) => e.version)).toEqual([
+      "0.3.4",
+      "0.3.1",
+    ]);
+  });
+});
+
+describe("shouldShowWhatsNew", () => {
+  it("lastSeen 0.3.4, running 0.3.4 → closed (0.3.5 is ahead of running)", () => {
     expect(
       shouldShowWhatsNew({
-        lastSeen: "0.4.0",
-        runningVersion: "0.4.0",
-        notes,
+        lastSeen: "0.3.4",
+        runningVersion: "0.3.4",
+        notes: HISTORY,
       }),
     ).toBe(false);
   });
 
-  it("still opens when notes.version lags the running version (missed bump)", () => {
-    // v0.3.3 shipped with notes.version "0.3.2".
+  it("lastSeen 0.3.4, running 0.3.5 → opens; notesForRunning still includes older rows", () => {
     expect(
       shouldShowWhatsNew({
-        lastSeen: "0.3.2",
-        runningVersion: "0.3.3",
-        notes: { version: "0.3.2", items: ["Word table Own column"] },
+        lastSeen: "0.3.4",
+        runningVersion: "0.3.5",
+        notes: HISTORY,
       }),
     ).toBe(true);
+    expect(notesForRunning(HISTORY, "0.3.5").map((e) => e.version)).toEqual([
+      "0.3.5",
+      "0.3.4",
+      "0.3.1",
+    ]);
+  });
+
+  it("lastSeen null, running 0.3.4 → opens; 0.3.5 excluded", () => {
+    expect(
+      shouldShowWhatsNew({
+        lastSeen: null,
+        runningVersion: "0.3.4",
+        notes: HISTORY,
+      }),
+    ).toBe(true);
+    expect(notesForRunning(HISTORY, "0.3.4").map((e) => e.version)).toEqual([
+      "0.3.4",
+      "0.3.1",
+    ]);
   });
 
   it("stays closed when items are empty", () => {
@@ -77,19 +140,19 @@ describe("shouldShowWhatsNew", () => {
       shouldShowWhatsNew({
         lastSeen: null,
         runningVersion: "0.4.0",
-        notes: { version: "0.4.0", items: [] },
+        notes: [{ version: "0.4.0", items: [] }],
       }),
     ).toBe(false);
   });
 
-  it("opens after an update when lastSeen is the previous version", () => {
+  it("stays closed when lastSeen equals running and nothing newer is ≤ running", () => {
     expect(
       shouldShowWhatsNew({
-        lastSeen: "0.3.0",
-        runningVersion: "0.4.0",
-        notes,
+        lastSeen: "0.3.5",
+        runningVersion: "0.3.5",
+        notes: HISTORY,
       }),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("stays closed when runningVersion is empty", () => {
@@ -97,7 +160,7 @@ describe("shouldShowWhatsNew", () => {
       shouldShowWhatsNew({
         lastSeen: null,
         runningVersion: "",
-        notes,
+        notes: HISTORY,
       }),
     ).toBe(false);
   });
