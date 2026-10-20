@@ -1,9 +1,5 @@
-import {
-  CURRENT_FORMAT_VERSION,
-  type Prayer,
-  type SpeakerLabel,
-  type VariantMeta,
-} from "./types.js";
+import type { Prayer, SpeakerLabel, VariantMeta } from "./types.js";
+import { normalizeFormatVersion } from "./formatVersion.js";
 import {
   KIND_ID_MAX_LENGTH,
   isValidKindId,
@@ -77,53 +73,6 @@ function labelOf(
 function firstLetter(s: string): string {
   const ch = [...s.trim()][0];
   return ch ? ch.toUpperCase() : "";
-}
-
-/**
- * Set `formatVersion: 2` iff any block has a speaker or any variant has a
- * non-empty speakers map; otherwise remove the key. Prunes empty label
- * objects and empty maps. Returns the same object when nothing changes.
- */
-export function normalizeFormatVersion(prayer: Prayer): Prayer {
-  let changed = false;
-  const variants = prayer.variants.map((v) => {
-    if (!("speakers" in v)) return v;
-    const map: Record<string, SpeakerLabel> = {};
-    for (const [id, label] of Object.entries(v.speakers ?? {})) {
-      const next: SpeakerLabel = {};
-      if (label?.name) next.name = label.name;
-      if (label?.short) next.short = label.short;
-      if (Object.keys(next).length > 0) map[id] = next;
-    }
-    const pruned =
-      Object.keys(map).length > 0 &&
-      Object.keys(map).length === Object.keys(v.speakers ?? {}).length &&
-      Object.entries(map).every(([id, l]) => {
-        const o = v.speakers![id]!;
-        return o.name === l.name && o.short === l.short &&
-          Object.keys(o).length === Object.keys(l).length;
-      });
-    if (pruned) return v;
-    changed = true;
-    const { speakers: _s, ...rest } = v;
-    return (Object.keys(map).length > 0
-      ? { ...rest, speakers: map }
-      : rest) as VariantMeta;
-  });
-  const base: Prayer = changed ? { ...prayer, variants } : prayer;
-  const uses =
-    base.structure.some((b) => b.speaker !== undefined) ||
-    base.variants.some((v) => v.speakers && Object.keys(v.speakers).length > 0);
-  if (uses) {
-    return base.formatVersion === CURRENT_FORMAT_VERSION
-      ? base
-      : { ...base, formatVersion: CURRENT_FORMAT_VERSION };
-  }
-  if ("formatVersion" in base) {
-    const { formatVersion: _f, ...rest } = base;
-    return rest as Prayer;
-  }
-  return base;
 }
 
 /**
@@ -218,10 +167,31 @@ export function removeSpeaker(prayer: Prayer, id: string): Prayer {
   return normalizeFormatVersion({ ...prayer, structure, variants });
 }
 
+function isEnglishLang(lang: string): boolean {
+  const lower = lang.toLowerCase();
+  return lower === "en" || lower.startsWith("en-");
+}
+
+/** English edition to borrow labels from when `from` has none. */
+function englishFallbackLabel(
+  prayer: Prayer,
+  from: VariantRef,
+  id: string,
+): SpeakerLabel | undefined {
+  const candidates = prayer.variants.filter(
+    (v) => isEnglishLang(v.lang) && !isSameVariant(v, from),
+  );
+  if (candidates.length === 0) return undefined;
+  const pick =
+    candidates.find((v) => v.variant === from.variant) ?? candidates[0];
+  return pick?.speakers?.[id];
+}
+
 /**
  * Printed label of a speaker in a variant.
- * name: variant name, else {@link speakerDisplayLabel}(id).
- * short: variant short, else first letter (uppercase) of the resolved name.
+ * name: this variant, else the English variant, else {@link speakerDisplayLabel}(id).
+ * short: this variant's short / first letter of its name, else English short /
+ * first letter of English name, else first letter of the resolved name.
  */
 export function resolveSpeakerLabel(
   prayer: Prayer,
@@ -229,23 +199,26 @@ export function resolveSpeakerLabel(
   id: string,
   form: "name" | "short",
 ): string {
-  const label = labelOf(prayer, ref, id);
-  const name = label?.name || speakerDisplayLabel(id);
+  const here = labelOf(prayer, ref, id);
+  const en = englishFallbackLabel(prayer, ref, id);
+  const name = here?.name || en?.name || speakerDisplayLabel(id);
   if (form === "name") return name;
-  return label?.short || firstLetter(name);
+  if (here?.short) return here.short;
+  if (here?.name) return firstLetter(here.name);
+  if (en?.short) return en.short;
+  if (en?.name) return firstLetter(en.name);
+  return firstLetter(name);
 }
 
 /**
- * Editor chip text: variant short, else first letter of its name, else first
- * letter of the id (uppercase).
+ * Editor chip text: same fallbacks as {@link resolveSpeakerLabel} `short`.
  */
 export function speakerChipLabel(
   prayer: Prayer,
   ref: VariantRef,
   id: string,
 ): string {
-  const label = labelOf(prayer, ref, id);
-  return label?.short || firstLetter(label?.name ?? "") || firstLetter(id);
+  return resolveSpeakerLabel(prayer, ref, id, "short");
 }
 
 /**

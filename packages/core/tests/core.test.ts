@@ -945,9 +945,14 @@ describe("indexKinds / renameKind", () => {
     expect(a.ok).toBe(true);
     if (!a.ok) return;
 
-    const renamed = renameKind(a.prayer, "annotation", "instruction");
+    const custom = renameKind(a.prayer, "verse", "strophe");
+    expect(custom).toBe(a.prayer);
+
+    const withCustom = { ...a.prayer, kinds: [{ id: "rubric" }], structure: a.prayer.structure.map((b, i) => (i === 0 ? { ...b, kind: "rubric" } : b)) };
+    const renamed = renameKind(withCustom, "rubric", "instruction");
     expect(renamed.structure[0]?.kind).toBe("instruction");
-    expect(a.prayer.structure[0]?.kind).toBe("annotation");
+    expect(renamed.kinds).toEqual([{ id: "instruction" }]);
+    expect(withCustom.structure[0]?.kind).toBe("rubric");
   });
 
   it("deletes kind by reassigning blocks", () => {
@@ -983,10 +988,10 @@ describe("resolveStyles", () => {
     expect(FALLBACK_KIND_STYLE.htmlTag).toBeUndefined();
   });
 
-  it("fills verse and annotation textAlign from defaults when app styles omit it", () => {
+  it("fills verse and annotation textAlign from defaults when library styles omit it", () => {
     const styles = resolveStyles({
       discoveredKinds: ["verse", "annotation"],
-      appDefaults: {
+      libraryOverrides: {
         verse: {
           fontSize: "1rem",
           color: "base",
@@ -1005,18 +1010,9 @@ describe("resolveStyles", () => {
     expect(styles.annotation?.textAlign).toBe("justify");
   });
 
-  it("lets library overrides win over app defaults", () => {
+  it("lets library overrides win over the built-in defaults", () => {
     const styles = resolveStyles({
-      discoveredKinds: ["verse"],
-      appDefaults: {
-        verse: {
-          fontSize: "2rem",
-          color: "base",
-          fontWeight: "700",
-          fontStyle: "normal",
-          htmlTag: "div",
-        },
-      },
+      discoveredKinds: ["verse", "refrain"],
       libraryOverrides: {
         verse: {
           fontSize: "1.5rem",
@@ -1032,6 +1028,7 @@ describe("resolveStyles", () => {
     expect(styles.verse?.color).toBe("accent");
     expect(styles.verse?.htmlTag).toBe("blockquote");
     expect(styles.verse?.textAlign).toBe("justify");
+    expect(styles.refrain).toEqual(FALLBACK_KIND_STYLE);
   });
 });
 

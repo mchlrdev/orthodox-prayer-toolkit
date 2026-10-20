@@ -1,14 +1,15 @@
 import { forwardRef, useCallback, type ReactElement } from "react";
 import { Popover, UnstyledButton } from "@mantine/core";
-import { IconCheck, IconChevronDown, IconUser } from "@tabler/icons-react";
+import { IconCheck, IconUser } from "@tabler/icons-react";
 import {
   listSpeakers,
-  speakerDisplayLabel,
+  resolveSpeakerLabel,
   speakerChipLabel,
   type Prayer,
   type VariantRef,
 } from "@orthodox-prayer-toolkit/core";
 import type { ContextMenuItem } from "./ContextMenu";
+import { kindTriggerStyle } from "./KindSelect";
 import {
   OPTION_DROPDOWN_PADDING,
   OPTION_POPOVER_PROPS,
@@ -20,9 +21,9 @@ import {
 
 export type SpeakerOption = {
   id: string;
-  /** Chip text in the first visible column. */
+  /** Chip text for the first visible column. */
   chip: string;
-  /** Canonical English name derived from the id (not the printed label). */
+  /** Printed name for the first visible column. */
   name: string;
 };
 
@@ -38,7 +39,7 @@ export function speakerOptions(
   return listSpeakers(prayer).map((s) => ({
     id: s.id,
     chip: speakerChipLabel(prayer, at, s.id),
-    name: speakerDisplayLabel(s.id),
+    name: resolveSpeakerLabel(prayer, at, s.id, "name"),
   }));
 }
 
@@ -173,34 +174,39 @@ export function SpeakerMenu({
 }
 
 type TriggerProps = {
-  /** Chip text when a speaker is set. */
-  chip: string | null;
-  /** Full speaker name, for the accessible label. */
+  /** Full speaker name when set; null shows the unset user-icon. */
   name: string | null;
   onClick: () => void;
 };
 
 /** Block chrome control left of the Kind chip. */
 export const SpeakerTrigger = forwardRef<HTMLButtonElement, TriggerProps>(
-  function SpeakerTrigger({ chip, name, onClick, ...rest }, ref) {
+  function SpeakerTrigger({ name, onClick, ...rest }, ref) {
+    if (name) {
+      return (
+        <UnstyledButton
+          {...rest}
+          ref={ref}
+          className="option-row"
+          style={kindTriggerStyle(true)}
+          aria-label={`Speaker: ${name}`}
+          title={`Speaker: ${name}`}
+          onClick={onClick}
+        >
+          {name}
+        </UnstyledButton>
+      );
+    }
     return (
       <UnstyledButton
         {...rest}
         ref={ref}
         className="speaker-trigger"
-        data-set={chip ? "true" : undefined}
-        aria-label={name ? `Speaker: ${name}` : "Set speaker"}
-        title={name ? `Speaker: ${name}` : "Set speaker"}
+        aria-label="Set speaker"
+        title="Set speaker"
         onClick={onClick}
       >
-        {chip ? (
-          <>
-            <span className="speaker-chip-pill">{chip}</span>
-            <IconChevronDown size={11} stroke={2.2} />
-          </>
-        ) : (
-          <IconUser size={13} stroke={1.9} />
-        )}
+        <IconUser size={13} stroke={1.9} />
       </UnstyledButton>
     );
   },

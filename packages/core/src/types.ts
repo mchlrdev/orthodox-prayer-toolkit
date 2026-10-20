@@ -4,7 +4,10 @@ export type { InlineContent, TextRun } from "./textRuns.js";
 
 /** Canonical prayer document (model A — shared structure, per-block translations). */
 export type Prayer = {
-  /** Format revision; omitted = 1. Written as 2 only when speakers are used. */
+  /**
+   * Format revision; omitted = 1. Written as 3 when `kinds` is non-empty,
+   * else 2 when speakers are used (see `normalizeFormatVersion`).
+   */
   formatVersion?: number;
   id: string;
   type: string;
@@ -14,6 +17,8 @@ export type Prayer = {
   /** Short summary of the prayer (not language-specific). */
   description?: string;
   variants: VariantMeta[];
+  /** Custom kinds this prayer declares (presets are implicit). Omit when empty. */
+  kinds?: KindDef[];
   structure: Block[];
   meta?: {
     custom?: Record<string, string | number | boolean | null>;
@@ -38,8 +43,18 @@ export type SpeakerLabel = {
   short?: string;
 };
 
+/**
+ * A custom kind declared by a prayer (or a kind template). Array order is
+ * the kind picker order after the presets.
+ */
+export type KindDef = {
+  id: string;
+  /** Blocks of this kind may carry a speaker. Omitted when false. */
+  speaker?: true;
+};
+
 /** Highest format revision this Core understands. */
-export const CURRENT_FORMAT_VERSION = 2;
+export const CURRENT_FORMAT_VERSION = 3;
 
 export type Block = {
   id: string;
@@ -98,8 +113,6 @@ export type KindStyle = {
   initialCap?: string;
   /** When `"true"`, the editor marks blocks with `data-indicate`. */
   indicate?: string;
-  /** `"true"` lets blocks of this kind carry a speaker (verse always, headings never). */
-  speaker?: string;
   /** Preferred HTML element for this kind when exporting HTML. */
   htmlTag?: string;
   /** CSS text-align: `left`, `center`, or `justify`. `left` is logical start. */

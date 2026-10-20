@@ -100,21 +100,6 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
       return data.exists;
     },
 
-    readAppStyles: async () => {
-      const data = await getJson<{ content: string | null }>(
-        `${PREFIX}/styles/app`,
-      );
-      return data.content;
-    },
-
-    writeAppStyles: async (content) => {
-      await getJson(`${PREFIX}/styles/app`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-    },
-
     readLibraryStyles: async (libraryRoot) => {
       const data = await getJson<{ content: string | null }>(
         `${PREFIX}/styles/library?root=${encodeURIComponent(libraryRoot)}`,
@@ -124,6 +109,21 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
 
     writeLibraryStyles: async (libraryRoot, content) => {
       await getJson(`${PREFIX}/styles/library`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ root: libraryRoot, content }),
+      });
+    },
+
+    readLibraryTemplates: async (libraryRoot) => {
+      const data = await getJson<{ content: string | null }>(
+        `${PREFIX}/templates/library?root=${encodeURIComponent(libraryRoot)}`,
+      );
+      return data.content;
+    },
+
+    writeLibraryTemplates: async (libraryRoot, content) => {
+      await getJson(`${PREFIX}/templates/library`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ root: libraryRoot, content }),

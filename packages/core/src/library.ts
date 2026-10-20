@@ -1,7 +1,11 @@
 import type { IdCollision, LibraryManifest } from "./types.js";
 import { isValidStylePrefixStem } from "./stylePrefix.js";
 
-const NON_PRAYER_BASENAMES = new Set(["manifest.json", "styles.json"]);
+const NON_PRAYER_BASENAMES = new Set([
+  "manifest.json",
+  "styles.json",
+  "templates.json",
+]);
 
 /**
  * True if a relative path points at a prayer JSON file

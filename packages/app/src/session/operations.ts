@@ -1,12 +1,10 @@
 import {
-  DEFAULT_KIND_STYLES,
-  deleteKind,
+  validate,
   isKindPreset,
   isValidKindId,
   prayerFilename,
+  renameStyleKey,
   resolveDisplayTitle,
-  validate,
-  validateStyles,
   type LibraryManifest,
   type Prayer,
   type StyleMap,
@@ -17,6 +15,7 @@ import {
   mergeCatalogs,
   patchCatalogPrayer,
   patchCatalogText,
+  readPrayerText,
   removeCatalogPath,
   type CatalogEntry,
   type LibraryCatalog,
@@ -37,15 +36,19 @@ import {
 import { persistPrayer, prayerFileText } from "./persistPrayer";
 import { recordEdit, stepBack, stepForward } from "./history";
 import {
-  deleteKindAcrossLibrary,
-  planKindDelete,
+  kindExistsInLibrary,
+  kindRenameNeedsConfirm,
   planKindRename,
-  prayerUsesKind,
   renameKindAcrossLibrary,
+  renamedTemplates,
 } from "./renameKindLibrary";
-import { removeStyleKey } from "../prayerEdit";
+import {
+  STYLES_UNREADABLE_MESSAGE,
+  stylesFileUnreadable,
+  writeLibraryStylesFile,
+  writeLibraryTemplatesFile,
+} from "./libraryFiles";
 import type {
-  KindDeletePlan,
   KindRenamePlan,
   LeaveAction,
   PrayerSessionState,
@@ -63,20 +66,18 @@ export const DESKTOP_REQUIRED_NOTICE: SessionNotice = {
   autoClose: 6000,
 };
 
-export function emptySessionState(
-  appStyles: StyleMap = { ...DEFAULT_KIND_STYLES },
-): PrayerSessionState {
+export function emptySessionState(): PrayerSessionState {
   return {
     catalog: null,
     drafts: {},
     selectedPath: null,
     createDraft: null,
     createVariant: null,
-    appStyles,
+    createTemplateId: null,
     pendingLeave: null,
     pendingDelete: null,
     pendingKindRename: null,
-    pendingKindDelete: null,
+    migrationDismissed: false,
   };
 }
 
@@ -117,10 +118,8 @@ export function sidebarEntries(state: PrayerSessionState): CatalogEntry[] {
   });
 }
 
-export function resetForLibrary(
-  state: PrayerSessionState,
-): PrayerSessionState {
-  return emptySessionState(state.appStyles);
+export function resetForLibrary(): PrayerSessionState {
+  return emptySessionState();
 }
 
 export function clearSelection(state: PrayerSessionState): PrayerSessionState {
@@ -165,7 +164,7 @@ export function catalogOpenNotices(
   if (catalog.styleErrors.length > 0 && prevStyle === 0) {
     notices.push({
       color: "dark",
-      title: "Library styles cleaned",
+      title: "Some library styles are ignored",
       message: catalog.styleErrors
         .slice(0, 3)
         .map((e) => e.message)
@@ -362,9 +361,10 @@ export function putPrayerFromText(
 ): SessionOpResult {
   if (!state.catalog) return { state, notices: [] };
 
-  try {
-    JSON.parse(text);
-  } catch {
+  // Old-format files are migrated in memory (Core `migratePrayer`); the disk
+  // bytes stay as they are until a save or the library migration writes them.
+  const read = readPrayerText(text, state.catalog.libraryStylesRaw);
+  if (!read.json) {
     const catalog = patchCatalogText(state.catalog, path, text);
     return {
       state: { ...state, catalog, selectedPath: path },
@@ -374,7 +374,7 @@ export function putPrayerFromText(
     };
   }
 
-  const result = validate(JSON.parse(text) as unknown);
+  const { result } = read;
   if (!result.ok) {
     const catalog = patchCatalogText(state.catalog, path, text);
     return {
@@ -383,7 +383,9 @@ export function putPrayerFromText(
     };
   }
 
-  const catalog = patchCatalogPrayer(state.catalog, path, result.prayer);
+  const catalog = patchCatalogPrayer(state.catalog, path, result.prayer, {
+    needsMigration: read.migrated,
+  });
   const prayer = structuredClone(result.prayer);
   const draft: SessionDraft = {
     prayer,
@@ -478,6 +480,22 @@ function applyPersistedPath(
   return { ...state, catalog, drafts, selectedPath };
 }
 
+/**
+ * Why a draft must not be written yet, or null: an old-format file is only
+ * half migrated in memory while styles.json cannot be read (its legacy
+ * speaker tokens are unknown), so writing it would lose speaker flags.
+ */
+export function saveBlockedReason(
+  state: PrayerSessionState,
+  path: string,
+): string | null {
+  const catalog = state.catalog;
+  if (!catalog || !stylesFileUnreadable(catalog)) return null;
+  const entry = catalog.entries.find((e) => e.path === path);
+  if (!entry?.needsMigration) return null;
+  return `${path} still uses the old kind format (speaker flags unknown): ${STYLES_UNREADABLE_MESSAGE}`;
+}
+
 export async function saveSelected(
   state: PrayerSessionState,
   api: PrayerToolkitApi,
@@ -485,6 +503,13 @@ export async function saveSelected(
   const path = state.selectedPath;
   const draft = path ? state.drafts[path] : undefined;
   if (!state.catalog || !path || !draft) return { state, notices: [] };
+  const blocked = saveBlockedReason(state, path);
+  if (blocked) {
+    return {
+      state,
+      notices: [{ color: "accent", title: "Cannot save", message: blocked }],
+    };
+  }
 
   const { errors, warnings } = validationFor(draft.prayer);
   const withErrors: PrayerSessionState = setDraftErrors(
@@ -540,6 +565,14 @@ export async function saveAllDirty(
   let next = state;
   const dropCatalogPaths: string[] = [];
   for (const [path, draft] of entries) {
+    const blocked = saveBlockedReason(next, path);
+    if (blocked) {
+      return {
+        state: next,
+        notices: [{ color: "accent", title: "Cannot save all", message: blocked }],
+        dropCatalogPaths: dropCatalogPaths.length > 0 ? dropCatalogPaths : undefined,
+      };
+    }
     const result = await persistPrayer(
       api,
       next.catalog!.root,
@@ -661,7 +694,12 @@ export async function beginCreatePrayer(
 export function cancelCreatePrayer(
   state: PrayerSessionState,
 ): PrayerSessionState {
-  return { ...state, createDraft: null, createVariant: null };
+  return {
+    ...state,
+    createDraft: null,
+    createVariant: null,
+    createTemplateId: null,
+  };
 }
 
 export async function commitCreatePrayer(
@@ -730,6 +768,7 @@ export async function commitCreatePrayer(
         },
         createDraft: null,
         createVariant: null,
+        createTemplateId: null,
       },
       notices: [{ color: "dark", title: "Created", message: path }],
     };
@@ -824,65 +863,33 @@ export async function saveLibraryManifest(
   }
 }
 
-export async function persistAppStyles(
-  state: PrayerSessionState,
-  api: PrayerToolkitApi,
-  next: StyleMap,
-): Promise<SessionOpResult> {
-  const checked = validateStyles(next);
-  if (!checked.ok) {
-    return {
-      state,
-      notices: [
-        {
-          color: "accent",
-          title: "Cannot save app styles",
-          message: checked.errors.map((e) => e.message).join(" · "),
-        },
-      ],
-    };
-  }
-  await api.writeAppStyles(`${JSON.stringify(checked.styles, null, 2)}\n`);
-  return {
-    state: { ...state, appStyles: checked.styles },
-    notices: [],
-  };
-}
-
 export async function persistLibraryStyles(
   state: PrayerSessionState,
   api: PrayerToolkitApi,
   next: StyleMap,
 ): Promise<SessionOpResult> {
   if (!state.catalog) return { state, notices: [] };
-  const checked = validateStyles(next);
-  if (!checked.ok) {
+  try {
+    const written = await writeLibraryStylesFile(api, state.catalog, next);
+    if (!written.ok) {
+      return {
+        state,
+        notices: [
+          {
+            color: "accent",
+            title: "Cannot save library styles",
+            message: written.errors.map((e) => e.message).join(" · "),
+          },
+        ],
+      };
+    }
+    return { state: { ...state, catalog: written.catalog }, notices: [] };
+  } catch (err) {
     return {
       state,
-      notices: [
-        {
-          color: "accent",
-          title: "Cannot save library styles",
-          message: checked.errors.map((e) => e.message).join(" · "),
-        },
-      ],
+      notices: [errorNotice("Cannot save library styles", err)],
     };
   }
-  await api.writeLibraryStyles(
-    state.catalog.root,
-    `${JSON.stringify(checked.styles, null, 2)}\n`,
-  );
-  return {
-    state: {
-      ...state,
-      catalog: {
-        ...state.catalog,
-        libraryStyles: checked.styles,
-        styleErrors: [],
-      },
-    },
-    notices: [],
-  };
 }
 
 export async function exportEntry(
@@ -907,8 +914,9 @@ export async function exportEntry(
   if (!prayer) {
     try {
       const raw = await api.readText(state.catalog.root, entry.path);
-      const result = validate(JSON.parse(raw) as unknown);
-      if (!result.ok) {
+      const read = readPrayerText(raw, state.catalog.libraryStylesRaw);
+      const result = read.json ? read.result : null;
+      if (!result?.ok) {
         return {
           state,
           notices: [
@@ -967,230 +975,172 @@ export async function exportEntry(
   }
 }
 
+function renameRefused(state: PrayerSessionState, message: string): SessionOpResult {
+  return {
+    state: { ...state, pendingKindRename: null },
+    notices: [{ color: "accent", title: "Cannot rename kind", message }],
+  };
+}
+
+/**
+ * Why a library-wide rename cannot be written right now (a library file it
+ * would have to rewrite is broken), or null. Checked before anything is
+ * written so a rename never applies partially.
+ */
+function renameFileIssue(catalog: LibraryCatalog, affectsTemplates: boolean): string | null {
+  if (catalog.templateErrors.length > 0 && affectsTemplates) {
+    return "templates.json has errors. Fix the file first.";
+  }
+  if (stylesFileUnreadable(catalog)) {
+    return STYLES_UNREADABLE_MESSAGE;
+  }
+  return null;
+}
+
+/**
+ * Library-wide kind rename: every prayer that uses or declares `from`
+ * (blocks + `kinds`, Core `renameKind`), open drafts, all kind templates
+ * and the style key (legacy tokens move with it). Prayers are written
+ * first, then `templates.json`, then `styles.json`.
+ */
 export async function applyKindRename(
   state: PrayerSessionState,
   api: PrayerToolkitApi,
   plan: KindRenamePlan,
 ): Promise<SessionOpResult> {
   if (!state.catalog) return { state, notices: [] };
+  const { from, to } = plan;
+  const templates = renamedTemplates(state.catalog, from, to);
+  const issue = renameFileIssue(
+    state.catalog,
+    templates !== state.catalog.templates || state.catalog.templateErrors.length > 0,
+  );
+  if (issue) return renameRefused(state, issue);
+  let result: Awaited<ReturnType<typeof renameKindAcrossLibrary>>;
   try {
-    const result = await renameKindAcrossLibrary(api, state.catalog, plan, {
+    result = await renameKindAcrossLibrary(api, state.catalog, plan, {
       drafts: state.drafts,
-      appStyles: state.appStyles,
-      libraryStyles: state.catalog.libraryStyles,
     });
-    let catalog = state.catalog;
-    const drafts = { ...result.drafts };
-    for (const { path, prayer } of result.written) {
-      catalog = patchCatalogPrayer(catalog, path, prayer);
-      // Own write: the folder watcher must not report it as external.
-      const draft = drafts[path];
-      if (draft) drafts[path] = { ...draft, diskText: prayerFileText(prayer) };
-    }
-    catalog = {
-      ...catalog,
-      libraryStyles: result.libraryStyles,
-      styleErrors: [],
-    };
-    await api.writeAppStyles(
-      `${JSON.stringify(result.appStyles, null, 2)}\n`,
-    );
-    await api.writeLibraryStyles(
-      state.catalog.root,
-      `${JSON.stringify(result.libraryStyles, null, 2)}\n`,
-    );
-    const skippedNote =
-      result.skipped.length > 0
-        ? ` · ${result.skipped.length} skipped`
-        : "";
-    return {
-      state: {
-        ...state,
-        catalog,
-        drafts,
-        appStyles: result.appStyles,
-        pendingKindRename: null,
-      },
-      notices: [
-        {
-          color: "dark",
-          title: "Kind renamed",
-          message: `“${plan.from}” → “${plan.to}” in ${result.writtenPaths.length} prayer${result.writtenPaths.length === 1 ? "" : "s"}${skippedNote}`,
-        },
-      ],
-    };
   } catch (err) {
+    // Nothing reached the session yet; prayers written before the error are
+    // picked up by the watcher / next scan.
     return {
       state: { ...state, pendingKindRename: null },
-      notices: [
-        {
-          color: "accent",
-          title: "Kind rename failed",
-          message: err instanceof Error ? err.message : String(err),
-        },
-      ],
+      notices: [errorNotice("Kind rename failed", err)],
     };
   }
+  // From here on the prayer writes are applied to the session no matter what
+  // happens to templates.json / styles.json (each step reports its failure).
+  let catalog = state.catalog;
+  for (const { path, prayer } of result.written) {
+    catalog = patchCatalogPrayer(catalog, path, prayer);
+  }
+  const notices: SessionNotice[] = [];
+
+  if (templates !== catalog.templates) {
+    try {
+      const written = await writeLibraryTemplatesFile(api, catalog, templates);
+      if (written.ok) catalog = written.catalog;
+      else {
+        notices.push({ color: "accent", title: "Templates not renamed", message: written.message });
+      }
+    } catch (err) {
+      notices.push(errorNotice("Templates not renamed", err));
+    }
+  }
+
+  try {
+    const raw = catalog.libraryStylesRaw;
+    const rawRenamed =
+      typeof raw === "object" && raw !== null && !Array.isArray(raw)
+        ? renameStyleKey(raw as Record<string, unknown>, from, to)
+        : raw;
+    const styles = renameStyleKey(catalog.libraryStyles, from, to);
+    if (styles !== catalog.libraryStyles || rawRenamed !== raw) {
+      const written = await writeLibraryStylesFile(api, catalog, styles, { raw: rawRenamed });
+      if (written.ok) catalog = written.catalog;
+      else {
+        notices.push({
+          color: "accent",
+          title: "Kind style not renamed",
+          message: written.errors.map((e) => e.message).join(" · "),
+        });
+      }
+    }
+  } catch (err) {
+    notices.push(errorNotice("Kind style not renamed", err));
+  }
+
+  const n = result.written.length;
+  const skippedNote =
+    result.skipped.length > 0 ? ` · ${result.skipped.length} skipped` : "";
+  return {
+    state: {
+      ...state,
+      catalog,
+      drafts: result.drafts,
+      pendingKindRename: null,
+    },
+    notices: [
+      {
+        color: notices.length > 0 ? "accent" : "dark",
+        title: notices.length > 0 ? "Kind partly renamed" : "Kind renamed",
+        message: `“${from}” → “${to}” in ${n} prayer${n === 1 ? "" : "s"}${skippedNote}`,
+      },
+      ...notices,
+    ],
+  };
 }
 
+
+/**
+ * Start a library-wide kind rename. Refuses when `to` is a preset or already
+ * exists anywhere in the library (no merging), when a broken library file
+ * would make it partial, or when an affected prayer file cannot be
+ * rewritten. Asks first (`pendingKindRename`) when more than one prayer or
+ * any template is affected; otherwise applies right away.
+ */
 export async function requestKindRename(
   state: PrayerSessionState,
   api: PrayerToolkitApi,
   from: string,
   to: string,
 ): Promise<SessionOpResult> {
-  if (
-    !state.catalog ||
-    from === to ||
-    !isValidKindId(to.trim()) ||
-    isKindPreset(from)
-  ) {
+  const next = to.trim();
+  const catalog = state.catalog;
+  if (!catalog || from === next || !isValidKindId(next) || isKindPreset(from)) {
     return { state, notices: [] };
   }
-  const plan = await planKindRename(api, state.catalog, from, to.trim(), {
+  if (await kindExistsInLibrary(api, catalog, next, { drafts: state.drafts })) {
+    return renameRefused(state, `Kind “${next}” already exists in the library`);
+  }
+  const plan = await planKindRename(api, catalog, from, next, {
     drafts: state.drafts,
   });
-  if (plan.affectedPaths.length <= 1) {
-    return applyKindRename(state, api, plan);
+  const issue = renameFileIssue(
+    catalog,
+    plan.affectedTemplates.length > 0 || catalog.templateErrors.length > 0,
+  );
+  if (issue) return renameRefused(state, issue);
+  if (plan.blocked.length > 0) {
+    return renameRefused(
+      state,
+      `Fix first: ${plan.blocked.map((b) => `${b.path} (${b.reason})`).join(", ")}`,
+    );
+  }
+  const pending: KindRenamePlan = {
+    from: plan.from,
+    to: plan.to,
+    affectedPaths: plan.affectedPaths,
+    affectedTemplates: plan.affectedTemplates,
+  };
+  if (!kindRenameNeedsConfirm(pending)) {
+    return applyKindRename(state, api, pending);
   }
   return {
-    state: { ...state, pendingKindRename: plan },
+    state: { ...state, pendingKindRename: pending },
     notices: [],
   };
-}
-
-/**
- * Kinds in use across the library for the kind list: scanned catalog entries,
- * except that an open draft replaces its file's entry (a kind deleted in the
- * draft is gone before the file is saved).
- */
-export function discoverKinds(
-  catalog: LibraryCatalog | null,
-  drafts: Record<string, SessionDraft>,
-): string[] {
-  const kinds = new Set<string>();
-  for (const entry of catalog?.entries ?? []) {
-    if (entry.path in drafts) continue;
-    for (const kind of entry.kinds) kinds.add(kind);
-  }
-  for (const draft of Object.values(drafts)) {
-    for (const block of draft.prayer.structure) kinds.add(block.kind);
-  }
-  return [...kinds].sort((a, b) => a.localeCompare(b));
-}
-
-/** Write both style files and put the maps into state (one step, no race). */
-async function writeKindStyles(
-  state: PrayerSessionState,
-  api: PrayerToolkitApi,
-  appStyles: StyleMap,
-  libraryStyles: StyleMap,
-): Promise<PrayerSessionState> {
-  await api.writeAppStyles(`${JSON.stringify(appStyles, null, 2)}\n`);
-  if (!state.catalog) return { ...state, appStyles };
-  await api.writeLibraryStyles(
-    state.catalog.root,
-    `${JSON.stringify(libraryStyles, null, 2)}\n`,
-  );
-  return {
-    ...state,
-    appStyles,
-    catalog: { ...state.catalog, libraryStyles, styleErrors: [] },
-  };
-}
-
-/**
- * Remove a custom kind (Prayer settings → Kinds "Remove", Kind popover
- * "Delete"). Only the open prayer uses it: its blocks are reassigned as one
- * undoable edit and the style entries go. Other library prayers use it: ask
- * first (`pendingKindDelete`), then {@link applyKindDelete} rewrites them.
- */
-export async function requestKindDelete(
-  state: PrayerSessionState,
-  api: PrayerToolkitApi,
-  kind: string,
-): Promise<SessionOpResult> {
-  if (isKindPreset(kind)) return { state, notices: [] };
-  const drafts = state.drafts;
-  const affected = state.catalog
-    ? (await planKindDelete(api, state.catalog, kind, { drafts })).affectedPaths
-    : [];
-  const others = affected.filter((p) => p !== state.selectedPath);
-  if (others.length > 0) {
-    return {
-      state: { ...state, pendingKindDelete: { kind, affectedPaths: affected } },
-      notices: [],
-    };
-  }
-  const draft = selectedDraft(state);
-  let next = state;
-  if (draft && prayerUsesKind(draft.prayer, kind)) {
-    next = editDraft(state, deleteKind(draft.prayer, kind)).state;
-  }
-  try {
-    next = await writeKindStyles(
-      next,
-      api,
-      removeStyleKey(next.appStyles, kind),
-      removeStyleKey(next.catalog?.libraryStyles ?? {}, kind),
-    );
-    return { state: next, notices: [] };
-  } catch (err) {
-    return { state: next, notices: [errorNotice("Could not remove kind", err)] };
-  }
-}
-
-export async function applyKindDelete(
-  state: PrayerSessionState,
-  api: PrayerToolkitApi,
-  plan: KindDeletePlan,
-): Promise<SessionOpResult> {
-  if (!state.catalog) return { state: { ...state, pendingKindDelete: null }, notices: [] };
-  try {
-    const result = await deleteKindAcrossLibrary(api, state.catalog, plan, {
-      drafts: state.drafts,
-      appStyles: state.appStyles,
-      libraryStyles: state.catalog.libraryStyles,
-    });
-    let catalog = state.catalog;
-    const drafts = { ...result.drafts };
-    for (const { path, prayer } of result.written) {
-      catalog = patchCatalogPrayer(catalog, path, prayer);
-      // Own write: the folder watcher must not report it as external.
-      const draft = drafts[path];
-      if (draft) {
-        drafts[path] = {
-          ...draft,
-          diskText: prayerFileText(prayer),
-          saved: prayer,
-          dirty: false,
-        };
-      }
-    }
-    const next = await writeKindStyles(
-      { ...state, catalog, drafts, pendingKindDelete: null },
-      api,
-      result.appStyles,
-      result.libraryStyles,
-    );
-    const skippedNote =
-      result.skipped.length > 0 ? ` · ${result.skipped.length} skipped` : "";
-    return {
-      state: next,
-      notices: [
-        {
-          color: "dark",
-          title: "Kind deleted",
-          message: `“${plan.kind}” removed from ${result.writtenPaths.length} prayer${result.writtenPaths.length === 1 ? "" : "s"}${skippedNote}`,
-        },
-      ],
-    };
-  } catch (err) {
-    return {
-      state: { ...state, pendingKindDelete: null },
-      notices: [errorNotice("Kind delete failed", err)],
-    };
-  }
 }
 
 export function errorNotice(title: string, err: unknown): SessionNotice {

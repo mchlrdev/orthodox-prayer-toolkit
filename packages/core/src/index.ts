@@ -4,6 +4,7 @@ export type {
   FlatPrayer,
   IdCollision,
   InlineContent,
+  KindDef,
   KindPreset,
   KindStyle,
   LibraryManifest,
@@ -43,7 +44,7 @@ export {
 export { validate } from "./validate.js";
 export { locateValidationErrors } from "./locateErrors.js";
 export type { ValidationErrorLocation } from "./locateErrors.js";
-export { sanitizeStyles, validateStyles, isValidKindId, sanitizeKindIdInput, kindAllowsSpeaker } from "./validateStyles.js";
+export { sanitizeStyles, validateStyles, isValidKindId, sanitizeKindIdInput } from "./validateStyles.js";
 export type { StyleValidationResult } from "./validateStyles.js";
 export { KIND_ID_PATTERN, KIND_ID_MAX_LENGTH } from "./validateStyles.js";
 
@@ -99,8 +100,70 @@ export type { ParseHtmlAttributesResult } from "./parseHtmlAttributes.js";
 
 export { tagMapFromStyles } from "./tagMapFromStyles.js";
 
-export { deleteKind, indexKinds, indexVariants, renameKind } from "./indexKinds.js";
-export type { IndexedVariant } from "./indexKinds.js";
+export {
+  discoverKinds,
+  indexKinds,
+  indexVariants,
+  libraryKindsInUse,
+  rawPrayerKinds,
+  unusedStyleKeys,
+} from "./indexKinds.js";
+export type { IndexedVariant, LibraryKindSources } from "./indexKinds.js";
+
+export {
+  declareBlockKinds,
+  declareKinds,
+  deleteKind,
+  kindAllowsSpeaker,
+  pickerKinds,
+  renameKind,
+  setKindSpeaker,
+} from "./kinds.js";
+
+export {
+  TEMPLATE_ID_PATTERN,
+  addTemplateKind,
+  applyTemplate,
+  isValidTemplateId,
+  moveTemplateKind,
+  removeTemplateKind,
+  renameTemplateKind,
+  sanitizeTemplates,
+  setTemplateKindSpeaker,
+  stampTemplate,
+  templateIdFromLabel,
+  validateTemplates,
+} from "./templates.js";
+export type {
+  KindTemplate,
+  KindTemplatesFile,
+  TemplatesValidationResult,
+} from "./templates.js";
+
+export {
+  LEGACY_KINDS_TEMPLATE_ID,
+  migratePrayer,
+  planLibraryMigration,
+} from "./migrate.js";
+export type {
+  LibraryMigrationInput,
+  LibraryMigrationPlan,
+  MigratePrayerOptions,
+  PrayerMigration,
+} from "./migrate.js";
+
+export { normalizeFormatVersion } from "./formatVersion.js";
+
+export {
+  LEGACY_STYLE_FIELDS,
+  hasLegacyStyleFields,
+  legacyStyleFields,
+  removeStyleKey,
+  renameStyleKey,
+  stripLegacyStyleFields,
+  stylesFileObject,
+} from "./styleFile.js";
+export type { StylesFileOptions } from "./styleFile.js";
 
 export {
   DEFAULT_KIND_STYLES,
@@ -150,7 +213,6 @@ export {
   renameSpeaker,
   indexSpeakers,
   isValidSpeakerId,
-  normalizeFormatVersion,
   removeSpeaker,
   resolveSpeakerLabel,
   sanitizeSpeakerIdInput,

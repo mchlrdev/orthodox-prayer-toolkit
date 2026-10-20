@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  discoverKinds,
   isPrayerFilename,
+  renameKind,
   resolveStyles,
+  type KindDef,
+  type KindStyle,
   type LibraryManifest,
   type Prayer,
-  type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import { getToolkitApi, isBrowserDev } from "./api";
 import { scanLibraryCatalog } from "./catalog";
@@ -12,8 +15,20 @@ import type { LibraryEntry } from "./library";
 import {
   applyDiskChange,
   applyReloadedDrafts,
-  applyKindDelete,
+  addKindToPrayer,
   applyKindRename,
+  applyTemplateToPrayer,
+  createKindTemplate,
+  deleteKindInPrayer,
+  deleteKindTemplate,
+  dismissLibraryMigration,
+  libraryMigrationStatus,
+  migrateLibrary as migrateLibraryOp,
+  removeLibraryStyle as removeLibraryStyleOp,
+  setCreateTemplate as setCreateTemplateOp,
+  setPrayerKindSpeaker,
+  unusedLibraryStyles,
+  updateKindTemplate,
   applyCatalogChunk,
   beginCreatePrayer,
   cancelCreatePrayer,
@@ -26,23 +41,22 @@ import {
   dirtyDrafts,
   discardDirty,
   DRAFT_VALIDATE_DEBOUNCE_MS,
-  discoverKinds,
+  libraryKindSources,
   editDraft,
   emptySessionState,
   errorNotice,
   exportEntry,
   exportPrayerFile,
   importPrayerFile,
+  isLibraryMetaPath,
   hasUnsaved,
   keepLocalVersion,
   evictPreviousClean,
+  createLibraryOpQueue,
   mergeOpResult,
-  persistAppStyles as persistAppStylesOp,
-  persistLibraryStyles as persistLibraryStylesOp,
-  parseAppStyles,
+  patchLibraryKindStyle,
   putPrayerFromText,
   redoDraft,
-  requestKindDelete,
   requestKindRename,
   requestLeave,
   resetForLibrary,
@@ -61,9 +75,12 @@ import {
   type ExportFormat,
   type ExportOptions,
   type LeaveAction,
+  type LibraryMigrationReport,
   type PrayerSessionState,
   type SessionNotice,
+  type LibraryOpRunner,
   type SessionOpResult,
+  type TemplateEdit,
 } from "./session";
 import type { ActiveVariant } from "./variant";
 import {
@@ -78,14 +95,6 @@ import {
   hasUncommittedEdits,
   UNCOMMITTED_CHANGE_EVENT,
 } from "./appCommands";
-
-/** Library files that are not prayers but change how the library reads. */
-function isLibraryMetaPath(path: string): boolean {
-  return (
-    path === "manifest.json" ||
-    path === ".orthodox-prayer-toolkit/styles.json"
-  );
-}
 
 export function usePrayerSession(opts?: {
   onNotice?: (n: SessionNotice) => void;
@@ -130,6 +139,20 @@ export function usePrayerSession(opts?: {
     },
     [emit],
   );
+
+  const emitRef = useRef(emit);
+  emitRef.current = emit;
+  /** templates.json / styles.json / migration writes, one at a time. */
+  const runLibraryOpRef = useRef<LibraryOpRunner | null>(null);
+  runLibraryOpRef.current ??= createLibraryOpQueue({
+    get: () => stateRef.current,
+    set: (next) => {
+      stateRef.current = next;
+      setState(next);
+    },
+    emit: (notices) => emitRef.current(notices),
+  });
+  const runLibraryOp = runLibraryOpRef.current;
 
   const cancelDraftValidation = useCallback(() => {
     if (validateTimerRef.current !== null) {
@@ -253,29 +276,19 @@ export function usePrayerSession(opts?: {
   const busy = opBusy || awaitingCatalog;
   const activeVariant = visibleVariants[0] ?? null;
 
-  useEffect(() => {
-    void api
-      .readAppStyles()
-      .then((raw) => {
-        const styles = parseAppStyles(raw);
-        setState((prev) => {
-          const next = { ...prev, appStyles: styles };
-          stateRef.current = next;
-          return next;
-        });
-      })
-      .catch((err: unknown) => {
-        console.error("Failed to load app styles", err);
-      });
-  }, [api]);
+  /** Every kind the library knows (prayers, templates, style keys). */
+  const libraryKinds = useMemo(
+    () => discoverKinds(libraryKindSources(library, state.drafts)),
+    [library, state.drafts],
+  );
 
   const resolvedStyles = useMemo(
     () =>
       resolveStyles({
-        discoveredKinds: discoverKinds(library, state.drafts),
+        discoveredKinds: libraryKinds,
         libraryOverrides: library?.libraryStyles,
       }),
-    [library, state.drafts],
+    [library, libraryKinds],
   );
 
   useEffect(() => {
@@ -304,7 +317,7 @@ export function usePrayerSession(opts?: {
         commit(requestLeave(stateRef.current, { type: "open-folder", root }));
         return false;
       }
-      commit({ state: resetForLibrary(stateRef.current), notices: [] });
+      commit({ state: resetForLibrary(), notices: [] });
       await startCatalogScan(root);
       return true;
     },
@@ -588,66 +601,131 @@ export function usePrayerSession(opts?: {
     }
   };
 
-  const persistAppStyles = async (next: StyleMap) => {
-    commit(await persistAppStylesOp(stateRef.current, api, next), true);
+  /** Patch one kind's library style (queued; applied to the latest map). */
+  const patchKindStyle = async (kind: string, partial: Partial<KindStyle>) => {
+    await runLibraryOp((state) => patchLibraryKindStyle(state, api, kind, partial));
   };
 
-  const persistLibraryStyles = async (next: StyleMap) => {
-    commit(await persistLibraryStylesOp(stateRef.current, api, next), true);
-  };
+  /** Library-wide rename (queued with the other library-file ops). */
+  const renameRebase = (from: string, to: string) => (p: Prayer) =>
+    renameKind(p, from, to);
 
   const requestKindRenameFn = async (from: string, to: string) => {
     cancelDraftValidation();
     persistCurrentView();
     setKindRenameBusy(true);
     try {
-      commit(await requestKindRename(stateRef.current, api, from, to), true);
+      await runLibraryOp((state) => requestKindRename(state, api, from, to), {
+        // Applied right away (no confirm) when it rewrote anything.
+        rebaseDraft: () => renameRebase(from, to.trim()),
+      });
     } finally {
       setKindRenameBusy(false);
     }
   };
 
   const confirmKindRename = async () => {
-    const plan = stateRef.current.pendingKindRename;
-    if (!plan) return;
+    if (!stateRef.current.pendingKindRename) return;
     setKindRenameBusy(true);
     try {
       cancelDraftValidation();
       persistCurrentView();
-      commit(await applyKindRename(stateRef.current, api, plan), true);
+      await runLibraryOp(
+        (state) =>
+          state.pendingKindRename
+            ? applyKindRename(state, api, state.pendingKindRename)
+            : Promise.resolve({ state, notices: [] }),
+        {
+          rebaseDraft: (start) =>
+            start.pendingKindRename
+              ? renameRebase(start.pendingKindRename.from, start.pendingKindRename.to)
+              : undefined,
+        },
+      );
     } finally {
       setKindRenameBusy(false);
     }
   };
 
-  const requestKindDeleteFn = async (kind: string) => {
+  /** Sync per-prayer edit op on the selected draft (undoable, re-validated). */
+  const runDraftOp = (result: SessionOpResult) => {
+    emit(result.notices);
+    if (result.state === stateRef.current) return;
+    commit({ ...result, notices: [] });
+    if (result.state.selectedPath) {
+      scheduleDraftValidation(result.state.selectedPath);
+    }
+  };
+
+  const addKind = (id: string, options?: { speaker?: boolean }) => {
+    flushPendingEdits();
+    runDraftOp(addKindToPrayer(stateRef.current, id, options));
+  };
+
+  const deleteKind = (kind: string) => {
+    flushPendingEdits();
+    runDraftOp(deleteKindInPrayer(stateRef.current, kind));
+  };
+
+  const setKindSpeaker = (kind: string, allowed: boolean) => {
+    flushPendingEdits();
+    runDraftOp(setPrayerKindSpeaker(stateRef.current, kind, allowed));
+  };
+
+  const applyTemplate = (templateId: string) => {
+    flushPendingEdits();
+    runDraftOp(applyTemplateToPrayer(stateRef.current, templateId));
+  };
+
+  const setCreateTemplate = (templateId: string | null) => {
+    const next = setCreateTemplateOp(stateRef.current, templateId);
+    stateRef.current = next;
+    setState(next);
+  };
+
+  const createTemplate = async (input: {
+    label: string;
+    id?: string;
+    kinds?: KindDef[];
+  }): Promise<string | null> => {
+    const result = await runLibraryOp((state) =>
+      createKindTemplate(state, api, input),
+    );
+    return result.templateId;
+  };
+
+  /** Pass a function to edit the template as it is when the write runs. */
+  const updateTemplate = async (id: string, edit: TemplateEdit) => {
+    await runLibraryOp((state) => updateKindTemplate(state, api, id, edit));
+  };
+
+  const deleteTemplate = async (id: string) => {
+    await runLibraryOp((state) => deleteKindTemplate(state, api, id));
+  };
+
+  const removeLibraryStyle = async (kind: string) => {
+    await runLibraryOp((state) => removeLibraryStyleOp(state, api, kind));
+  };
+
+  /** Run the library migration; the report lists written / skipped / failed paths. */
+  const migrateLibrary = async (): Promise<LibraryMigrationReport | null> => {
+    flushPendingEdits();
     cancelDraftValidation();
-    persistCurrentView();
-    setKindRenameBusy(true);
+    setOpBusy(true);
     try {
-      commit(await requestKindDelete(stateRef.current, api, kind), true);
+      const result = await runLibraryOp(
+        (state) => migrateLibraryOp(state, api),
+        // The report notice comes first; the migration dialog shows the full report.
+        { notices: (r) => (r.report ? r.notices.slice(1) : r.notices) },
+      );
+      return result.report;
     } finally {
-      setKindRenameBusy(false);
-    }
-    const path = stateRef.current.selectedPath;
-    if (path) scheduleDraftValidation(path);
-  };
-
-  const confirmKindDelete = async () => {
-    const plan = stateRef.current.pendingKindDelete;
-    if (!plan) return;
-    setKindRenameBusy(true);
-    try {
-      cancelDraftValidation();
-      persistCurrentView();
-      commit(await applyKindDelete(stateRef.current, api, plan), true);
-    } finally {
-      setKindRenameBusy(false);
+      setOpBusy(false);
     }
   };
 
-  const cancelKindDelete = () => {
-    const next = { ...stateRef.current, pendingKindDelete: null };
+  const dismissMigration = () => {
+    const next = dismissLibraryMigration(stateRef.current);
     stateRef.current = next;
     setState(next);
   };
@@ -669,7 +747,7 @@ export function usePrayerSession(opts?: {
         }
         break;
       case "open-folder":
-        commit({ state: resetForLibrary(stateRef.current), notices: [] });
+        commit({ state: resetForLibrary(), notices: [] });
         await startCatalogScan(action.root);
         break;
       case "install-update":
@@ -818,6 +896,8 @@ export function usePrayerSession(opts?: {
     : null;
 
   const listEntries = useMemo(() => sidebarEntries(state), [state]);
+  const unusedStyleKeys = useMemo(() => unusedLibraryStyles(state), [state]);
+  const migrationStatus = useMemo(() => libraryMigrationStatus(state), [state]);
 
   return {
     library,
@@ -829,12 +909,12 @@ export function usePrayerSession(opts?: {
     visibleVariants,
     setVisibleVariants,
     activeVariant,
-    appStyles: state.appStyles,
     busy,
     dirty,
     unsavedCount,
     hasUnsaved: sessionHasUnsaved,
     resolvedStyles,
+    libraryKinds,
     folderBasename,
     folderLabel: folderBasename,
     sidebarEntries: listEntries,
@@ -891,8 +971,7 @@ export function usePrayerSession(opts?: {
     exportEntry: exportEntryFn,
     exportPrayerFile: exportPrayerFileFn,
     importPrayerFile: importPrayerFileFn,
-    persistAppStyles,
-    persistLibraryStyles,
+    patchKindStyle,
     handleLeaveSaveAll,
     handleLeaveDiscard,
     clearEditor: () => {
@@ -902,13 +981,25 @@ export function usePrayerSession(opts?: {
       setState(next);
     },
     pendingKindRename: state.pendingKindRename,
-    pendingKindDelete: state.pendingKindDelete,
     kindRenameBusy,
     requestKindRename: requestKindRenameFn,
     confirmKindRename,
     cancelKindRename,
-    requestKindDelete: requestKindDeleteFn,
-    confirmKindDelete,
-    cancelKindDelete,
+    addKind,
+    deleteKind,
+    setKindSpeaker,
+    applyTemplate,
+    templates: library?.templates ?? [],
+    templateErrors: library?.templateErrors ?? [],
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
+    createTemplateId: state.createTemplateId,
+    setCreateTemplate,
+    unusedStyleKeys,
+    removeLibraryStyle,
+    migrationStatus,
+    migrateLibrary,
+    dismissMigration,
   };
 }

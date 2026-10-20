@@ -4,7 +4,14 @@ export {
   type LibraryCatalog,
   type ScanLibraryCatalogOptions,
 } from "./types";
-export { collectCatalog, scanCatalogFile, scanLibraryCatalog } from "./scan";
+export {
+  collectCatalog,
+  parseLibraryStyles,
+  parseLibraryTemplates,
+  scanCatalogFile,
+  scanLibraryCatalog,
+} from "./scan";
+export { readPrayerText, type ReadPrayer } from "./build";
 export {
   entriesUsingKind,
   mergeCatalogs,

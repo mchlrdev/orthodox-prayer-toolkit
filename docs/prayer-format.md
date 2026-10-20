@@ -34,7 +34,8 @@ There is **no** top-level canonical `title`. Human-facing titles come from the a
 | `tone` | no | Oktoechos tone `1`–`8`, or `null` |
 | `description` | no | Short language-neutral summary |
 | `meta.custom` | no | Arbitrary string/number/boolean/null map |
-| `formatVersion` | no | `2` when the file uses speakers; omitted otherwise (missing = `1`). See [Format version](#format-version). |
+| `kinds` | no | Custom kinds this prayer declares. Omitted when there are none. See [Kinds](#kinds). |
+| `formatVersion` | no | `3` when `kinds` is non-empty, else `2` when the file uses speakers; omitted otherwise (missing = `1`). See [Format version](#format-version). |
 
 ## Variant registry
 
@@ -80,17 +81,35 @@ Kind-level direction (`dir`: `rtl` / `ltr`) lives in library `styles.json`, not 
 | Field | Role |
 |-------|------|
 | `id` | Stable within the prayer |
-| `kind` | Open semantic role string (not a closed schema enum) |
+| `kind` | Semantic role id: a preset kind or one declared in the prayer's `kinds` |
 | `translations[]` | `{ lang, variant, text? }` or `{ lang, variant, lines? }` |
 | `speaker` | Optional. Id of the Speaker who says the block (`priest`, `people`, …). Same for every Variant. See [Speakers](#speakers). |
 
-### Recommended kinds (editor presets)
+### Kinds
 
-Not enforced by schema — suggestions in the UI:
+Every prayer has the four **preset kinds** implicitly:
 
 `heading` · `subheading` · `annotation` · `verse`
 
-Custom kinds are allowed; library style maps discover them when the library opens.
+Presets are never listed in `kinds`; their ids and behaviour are fixed (not renameable or deletable). Any other kind must be **declared** in the prayer's top-level `kinds`:
+
+```json
+"kinds": [
+  { "id": "refrain", "speaker": true },
+  { "id": "tone-label" }
+]
+```
+
+| Rule | Detail |
+|------|--------|
+| Entry | `{ id, speaker? }`; no other keys |
+| `id` | Kind id pattern: letter first, then letters, digits, `_`, `-`; max 64 (`^[a-zA-Z][a-zA-Z0-9_-]{0,63}$`) |
+| `speaker` | `true` when blocks of this kind may carry a Speaker. Omit when false (never write `false`) |
+| Order | Array order is the order in the editor's kind picker, after the presets |
+| Empty | Omit the field when the prayer has no custom kinds (never write `"kinds": []`) |
+| Validation | Every block `kind` must be a preset or declared here (`kind-undeclared`). No duplicate ids, no preset ids in `kinds` |
+
+Styles stay library-wide per kind id (`styles.json`), not in the prayer. Library [Kind templates](library.md#kind-templates-templatesjson) can stamp a set of `kinds` into a new prayer; the prayer keeps no link to the template.
 
 Classify by **role**, not by print color or typeface — books often set genre labels and rubrics identically.
 
@@ -174,22 +193,26 @@ A **Speaker** marks who says a block (liturgical dialogue). The id is on the blo
 |------|--------|
 | Speaker id | Same pattern as kind ids: letter first, then letters, digits, `_`, `-`; max 64 |
 | Block `speaker` | Optional; one per block. Do not type the label into `text` / `lines` |
+| Allowed kinds | `verse` always; `heading`, `subheading`, `annotation` never; a custom kind only when its `kinds` entry has `speaker: true` |
 | Variant `speakers` | Map `{ [id]: { name?, short? } }`. Empty strings are not written; an entry with neither field is omitted; an empty map is omitted |
 | No registry | The Speakers of a prayer are the ids used on blocks plus the keys of `speakers` maps. There is no Library list |
 | Presets | `priest`, `deacon`, `bishop`, `reader`, `choir`, `people` are offered in the editor only. Core ships no translated labels |
-| Printed name fallback | `name` missing → the id, title-cased (`priest` → `Priest`, `my-cantor` → `My cantor`) |
-| Printed short fallback | `short` missing → first letter of the resolved name (`Priester` → `P`) |
+| Printed name fallback | `name` missing → the English variant’s `name` if present, else the id, title-cased (`priest` → `Priest`, `my-cantor` → `My cantor`) |
+| Printed short fallback | `short` missing → first letter of this variant’s `name`; else English `short` / first letter of English `name`; else first letter of the resolved name (`Priester` → `P`) |
 | Missing name | Validation warns (`speaker-name-missing`) when a used Speaker has no `name` in a Variant that has a translation for that block. The file stays valid |
 
 ### Format version
 
 | `formatVersion` | Meaning |
 |-----------------|---------|
-| missing | `1` — no speakers |
-| `2` | The file uses `speaker` or `speakers` |
+| missing | `1` — no speakers, no custom kinds |
+| `2` | The file uses `speaker` or `speakers`, and has no `kinds` |
+| `3` | The file has a non-empty `kinds` |
 | higher than the app supports | Validation fails with `format-version-newer`: the app asks for a newer version instead of showing schema errors |
 
-The app writes `formatVersion: 2` only while the file uses speakers and removes it when the last Speaker is gone. Older apps (≤ 0.2.3) reject unknown keys, so Speaker-free prayers stay openable there.
+The app derives the value on save: `3` iff `kinds` is non-empty; else `2` iff speakers are used; else the field is removed. Apps that only know version `2` show "needs a newer app" for version `3` files; apps ≤ 0.2.3 reject unknown keys. Keeping the lowest version means files without custom kinds (or speakers) stay openable there.
+
+Files written before `kinds` existed may use custom kinds without declaring them. The app migrates them on open (additive: missing kinds are declared, nothing else changes) — see [Library migration](library.md#migration-on-open).
 
 ## Minimal example
 
@@ -240,6 +263,44 @@ The app writes `formatVersion: 2` only while the file uses speakers and removes 
 
 See also `examples/tropar-prokopios.json` and `examples/ostergebete.json`.
 
+## Example with custom kinds
+
+```json
+{
+  "formatVersion": 3,
+  "id": "osterkanon-ode-1",
+  "type": "canon",
+  "kinds": [{ "id": "refrain", "speaker": true }],
+  "variants": [
+    {
+      "lang": "de",
+      "variant": "standard",
+      "title": "Osterkanon, 1. Ode",
+      "license": "unknown",
+      "source": "draft",
+      "speakers": { "choir": { "name": "Chor" } }
+    }
+  ],
+  "structure": [
+    {
+      "id": "v1",
+      "kind": "verse",
+      "translations": [
+        { "lang": "de", "variant": "standard", "lines": ["Tag der Auferstehung! Lasst uns erstrahlen, ihr Völker!"] }
+      ]
+    },
+    {
+      "id": "r1",
+      "kind": "refrain",
+      "speaker": "choir",
+      "translations": [
+        { "lang": "de", "variant": "standard", "text": "Christus ist auferstanden von den Toten." }
+      ]
+    }
+  ]
+}
+```
+
 ## What does **not** belong in prayer JSON
 
 - Fonts, colors, weights (use library / app kind styles)
@@ -269,10 +330,11 @@ Other exporters (`exportHtml`, `exportLayoutRtf`, `exportLayoutDocx`) take the s
 
 1. One file = one logical prayer; self-contained  
 2. `id` matches `{id}.json`; globally unique in the library  
-3. Every block has a stable `id`; `kind` is a meaningful open string  
+3. Every block has a stable `id`; `kind` is a preset or declared in `kinds` (presets never in `kinds`)  
 4. Prefer omitting missing translations over empty strings  
 5. License + source set on every variant  
 6. Keep layout out of the source file  
 7. Spoken doxologies are `verse`; glued rubric + spoken words use a `note` run  
 8. Extra languages on a monolingual page are sequential blocks of that variant; `/` stays in the string  
-9. Speakers: the role is on `speaker` and the labels are in `speakers`; the text has no "Priester:" prefix; `formatVersion` is `2` only when speakers are used  
+9. Speakers: the role is on `speaker` and the labels are in `speakers`; the text has no "Priester:" prefix; `formatVersion` is `2` only when speakers are used and there are no custom kinds  
+10. Custom kinds: declared in `kinds` (with `speaker: true` when their blocks carry Speakers); `formatVersion` is then `3`  

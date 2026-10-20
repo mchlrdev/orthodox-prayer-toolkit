@@ -42,11 +42,15 @@ Related: [affinity-bridge.md](affinity-bridge.md).
 | Sync across variants | no enforcement; missing translation = omit entry |
 | Display title | per variant; no separate canonical English `title` field |
 | Styles | not in prayer JSON; library `styles.json` over built-in defaults |
-| Kind vocabulary | open string; UI presets are suggestions, not schema enums |
+| Preset kinds | `heading`, `subheading`, `annotation`, `verse` — implicit in every prayer, immutable (not renameable/deletable), never listed in `kinds` |
+| Custom kinds | Declared per prayer in top-level `kinds` (file stays self-contained). A block kind must be a preset or declared; validation errors otherwise |
+| Kind templates | Library `templates.json`; stamps copied into a new prayer, no link back. Applying to an existing prayer is additive. Editing a template never touches prayers |
+| Kind rename | Library-wide with confirm (more than one prayer or any template): blocks and `kinds` of every prayer, all templates, style key. Never merges: the new id must not exist anywhere in the library |
+| Old-format migration | On open, in memory and additive; writing to disk only after the user confirms. Leftover library-wide kinds become template `legacy-kinds` ("Bisherige Kinds"). No data loss |
 | Speakers on blocks | Optional `speaker` id on a Block, shared by all Variants. Not typed into the text. |
-| Speaker labels | Per Variant, inside the prayer file (`variants[].speakers`). No Library templates, no app settings needed to read or export. |
-| Format version | `formatVersion` is written as `2` only when the file uses Speakers; missing = `1`. Newer than the app → "needs a newer app", not schema errors. |
-| Speaker allowance | Per Kind via the styles token `speaker`. Verse always; heading, subheading, annotation never; custom Kinds when enabled in the Library. |
+| Speaker labels | Per Variant, inside the prayer file (`variants[].speakers`). No Library speaker list or speaker templates, no app settings needed to read or export. |
+| Format version | `formatVersion` is `3` when the prayer declares `kinds`, else `2` when it uses Speakers, else omitted (missing = `1`). Newer than the app → "needs a newer app", not schema errors. |
+| Speaker allowance | Per Kind, on the prayer's kind entry (`kinds[].speaker: true`). Verse always; heading, subheading, annotation never; custom Kinds when their entry allows it. Not a style token. |
 
 ### Tech stack
 
@@ -72,7 +76,7 @@ examples/          Dev mini-library only
 ```
 
 - **Core** is the only business-logic seam (testable without UI).
-- **App** is thin: folder I/O, editor, preview, settings (including kind styles), export UI.
+- **App** is thin: folder I/O, editor, preview, settings (including kind templates and kind styles), export UI.
 - A future website loads a **foreign** library and renders with its own pipeline — outside this MVP.
 
 ---
@@ -83,7 +87,7 @@ Full field list and examples: [prayer-format.md](prayer-format.md).
 
 - **Model A:** shared `structure[]`; texts on block `translations[]` keyed by `(lang, variant)`.
 - **Variants:** objects `{ lang, variant, title, license, source }` — not slash-keys.
-- **Kinds:** open strings; built-in presets `heading`, `subheading`, `annotation`, `verse` are fixed in the editor (display labels capitalized; not renameable/deletable). Custom kinds may be added; styles remain editable for all kinds.
+- **Kinds:** built-in presets `heading`, `subheading`, `annotation`, `verse` exist in every prayer and are fixed (display labels capitalized; not renameable/deletable). Custom kinds are declared per prayer in `kinds` (optionally from a library Kind template); the kind picker shows presets plus that prayer's kinds. Styles stay library-wide per kind id and are editable for all kinds.
 - **Inline notes:** optional run arrays (`text` / `note`) inside `text` / `lines`.
 
 ---
@@ -103,9 +107,11 @@ Shipped and intended behaviour includes:
 - The open library folder is watched: unchanged prayers reload from disk, prayers with unsaved edits show "Changed on disk" / "Deleted on disk"
 - Refresh rescans the library and reloads the open prayer from disk; unsaved prayers are prompted first
 - Preview with kind styles (library `styles.json` over built-in defaults)
+- Old-format libraries: "N prayers use the old format — migrate now?" on open
 - App settings: appearance (light/dark/system) and editor text size (px). Kind-style sizes (S–XL, stored as rem) scale from that base in the editor; export HTML still uses the stored rem against the consuming page.
 - Export: flat JSON, HTML, layout RTF/DOCX, Word table (two variants; language gutter on by default; Own column also has a speaker gutter on by default; both optional; Word only). Options are remembered per Prayer (local), including the last format.
 - Optional manifest; id collision detection; kind rename across library with confirm
+- Kinds per prayer: Prayer settings → Kinds lists the presets plus the prayer's kinds — add (new id or a kind the library knows), delete (blocks fall back to verse, one undo step), Speaker toggle, "Apply template" (additive, undoable); the kind edit dialog in the picker also has the Speaker toggle and delete. New prayer modal picks a Kind template or "No template". Library settings → Kind templates manages templates; Library settings → Kind styles lists all kind styles (library-wide) and offers unused entries for removal
 - Auto-update against GitHub Releases ([RELEASE.md](RELEASE.md)); downloads in the background, and "Install and Restart" asks to save or discard unsaved prayers first
 
 ---
@@ -124,7 +130,7 @@ Semantic flags may be added later; pixels stay out.
 
 1. One file = one logical unit; self-contained  
 2. `id` / filename globally unique in the library  
-3. Stable block `id`s; open-string `kind`  
+3. Stable block `id`s; `kind` is a preset or declared in the prayer's `kinds`  
 4. `verse.lines` = content lines, not layout lines  
 5. Separate rubrics/annotations from prayer text via `kind`  
 6. No empty translation keys — omit missing ones  

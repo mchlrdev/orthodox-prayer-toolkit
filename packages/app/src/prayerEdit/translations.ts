@@ -36,7 +36,11 @@ export function translationEditorContent(
   return "";
 }
 
-/** Presets first (stable order), custom kinds sorted at the bottom. */
+/**
+ * Presets first (stable order), custom kinds sorted at the bottom. For
+ * library-wide lists (Kind styles); a prayer's picker keeps its `kinds` order
+ * (Core `pickerKinds`).
+ */
 export function orderKinds(options: Iterable<string>): string[] {
   const unique = [...new Set(options)];
   const presets = KIND_PRESETS.filter((k) => unique.includes(k));
@@ -46,18 +50,26 @@ export function orderKinds(options: Iterable<string>): string[] {
   return [...presets, ...custom];
 }
 
-export function kindOptions(
-  prayer: Prayer,
-  extra: readonly string[] = [],
-): string[] {
-  return orderKinds([
-    ...KIND_PRESETS,
-    ...prayer.structure.map((b) => b.kind),
-    ...extra,
-  ]);
+/**
+ * Why `id` cannot become a new custom kind, or null. `existing`: the kinds
+ * it must not collide with (a prayer's `kinds` when adding; the whole
+ * library when renaming).
+ */
+export function kindAddIssue(
+  id: string,
+  existing: Iterable<string>,
+): string | null {
+  const next = id.trim();
+  if (!next) return "Required";
+  if (!isValidKindId(next)) return "Use a letter, then letters, digits, _ or -";
+  if (isKindPreset(next)) return "That name is reserved";
+  for (const kind of existing) {
+    if (kind === next) return "Already exists";
+  }
+  return null;
 }
 
-/** Why a kind rename cannot proceed, or null if it is valid. */
+/** Why renaming `from` to `to` cannot proceed, or null if it is valid. */
 export function kindRenameIssue(
   from: string,
   to: string,
@@ -67,14 +79,7 @@ export function kindRenameIssue(
   if (!next) return "Required";
   if (next === from) return null;
   if (isKindPreset(from)) return "Built-in kinds cannot be renamed";
-  if (!isValidKindId(next)) {
-    return "Use a letter, then letters, digits, _ or -";
-  }
-  if (isKindPreset(next)) return "That name is reserved";
-  for (const kind of existing) {
-    if (kind === next) return "Already exists";
-  }
-  return null;
+  return kindAddIssue(next, existing);
 }
 
 export function getTranslation(

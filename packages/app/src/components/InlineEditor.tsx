@@ -33,9 +33,11 @@ import {
   isRunArray,
   kindAllowsSpeaker,
   kindDisplayLabel,
+  pickerKinds,
   plainText,
   resolveDir,
   setBlockSpeaker,
+  resolveSpeakerLabel,
   speakerChipLabel,
   toggleNoteRange,
   type InlineContent,
@@ -96,7 +98,6 @@ import {
   getTranslation,
   isBlockEmptyAcrossVariants,
   isTranslationFilled,
-  kindOptions,
   mergeBlocks,
   moveBlock as moveBlockInPrayer,
   moveRemainderToNext,
@@ -110,11 +111,11 @@ import {
 
 type StyleEditing = {
   resolved: StyleMap;
-  appStyles: StyleMap;
-  libraryStyles: StyleMap;
   libraryEnabled: boolean;
-  onChangeApp: (next: StyleMap) => void;
-  onChangeLibrary: (next: StyleMap) => void;
+  /** Every kind in the library: a rename must not collide with any. */
+  libraryKinds: string[];
+  /** Patch one kind's library style (applied to the latest styles.json). */
+  onPatchStyle: (kind: string, partial: Partial<KindStyle>) => void;
 };
 
 /** Validation problems of one block, for markers (from Core locateValidationErrors). */
@@ -133,10 +134,12 @@ type Props = {
   /** `coalesceKey`: typing in one cell merges into one undo step. */
   onChange: (prayer: Prayer, options?: { coalesceKey?: string }) => void;
   onRenameKind: (from: string, to: string) => void;
-  /** Delete a custom kind (library-wide, via the session). */
+  /** Delete a custom kind from this prayer (via the session; undoable). */
   onDeleteKind: (kind: string) => void;
+  /** Allow / disallow speakers for a custom kind of this prayer (undoable). */
+  onSetKindSpeaker: (kind: string, allowed: boolean) => void;
   /** "More speakers…" / "More kinds…": open Prayer settings on that pane. */
-  onOpenSettings?: (pane: "speakers" | "styles") => void;
+  onOpenSettings?: (pane: "speakers" | "kinds") => void;
 };
 
 /** Which block's Speaker dropdown is open, and what it hangs from. */
@@ -1034,6 +1037,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
       onChange,
       onRenameKind,
       onDeleteKind,
+      onSetKindSpeaker,
       onOpenSettings,
     },
     ref,
@@ -1049,10 +1053,10 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
   const kindUiBlockIdRef = useRef<string | null>(null);
   kindUiBlockIdRef.current = kindUiBlockId;
 
-  const kinds = useMemo(
-    () => kindOptions(prayer, Object.keys(styleEditing.resolved)),
-    [prayer, styleEditing.resolved],
-  );
+  // Presets + this prayer's declared kinds (in `kinds` order).
+  const kinds = useMemo(() => pickerKinds(prayer), [prayer]);
+  // The last added kind may have been deleted from this prayer since.
+  const nextAddKind = kinds.includes(lastAddedKind) ? lastAddedKind : "verse";
   const split = visibleVariants.length > 1;
   const firstCol = visibleVariants[0];
   const speakerOpts = useMemo(
@@ -1263,7 +1267,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
   };
 
   const openMoreKinds = onOpenSettings
-    ? () => onOpenSettings("styles")
+    ? () => onOpenSettings("kinds")
     : undefined;
 
   const openSpeakerMenu = useCallback((): boolean => {
@@ -1280,7 +1284,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     if (!block) return false;
     if (
       block.speaker === undefined &&
-      !kindAllowsSpeaker(block.kind, ctxRef.current.styles)
+      !kindAllowsSpeaker(block.kind, ctxRef.current.prayer)
     ) {
       return false;
     }
@@ -1501,7 +1505,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     focusEditor(next.block.id, col);
   };
 
-  const addBlock = (kind: string = lastAddedKind) => {
+  const addBlock = (kind: string = nextAddKind) => {
     const { prayer: p, onChange: change, visibleVariants: cols } = flushedCtx();
     const id = createBlockId(p.structure.length);
     const col = cols[0];
@@ -1577,13 +1581,13 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         value: kind,
         options: kinds,
         onSelect: (next) => {
-          const { prayer: p, onChange: change, styles: s } = flushedCtx();
-          change(setBlockKind(p, index, next, s));
+          const { prayer: p, onChange: change } = flushedCtx();
+          change(setBlockKind(p, index, next));
         },
         onMore: openMoreKinds,
       }),
     });
-    if (speaker !== undefined || kindAllowsSpeaker(kind, styles)) {
+    if (speaker !== undefined || kindAllowsSpeaker(kind, prayer)) {
       items.push({
         label: "Speaker",
         icon: <IconUser size={14} />,
@@ -1690,7 +1694,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
           const blockIssues = issues?.get(block.id);
           const showSpeakerTrigger =
             block.speaker !== undefined ||
-            kindAllowsSpeaker(block.kind, styles);
+            kindAllowsSpeaker(block.kind, prayer);
           const speakerOpt =
             block.speaker !== undefined
               ? speakerOpts.find((o) => o.id === block.speaker)
@@ -1702,7 +1706,17 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                   ? speakerChipLabel(prayer, firstCol, block.speaker)
                   : block.speaker.charAt(0).toUpperCase()))
               : null;
-          const chipName = speakerOpt?.name ?? block.speaker ?? null;
+          const chipName =
+            speakerOpt?.name ??
+            (block.speaker
+              ? resolveSpeakerLabel(
+                  prayer,
+                  firstCol ??
+                    prayer.variants[0] ?? { lang: "", variant: "" },
+                  block.speaker,
+                  "name",
+                )
+              : null);
 
           return (
             <div
@@ -1768,14 +1782,12 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                       onMore={openMoreSpeakers}
                     >
                       <SpeakerTrigger
-                        chip={chipText}
                         name={chipName}
                         onClick={() => toggleSpeakerUi(block.id, "chrome")}
                       />
                     </SpeakerMenu>
                   ) : (
                     <SpeakerTrigger
-                      chip={chipText}
                       name={chipName}
                       onClick={() => toggleSpeakerUi(block.id, "chrome")}
                     />
@@ -1791,15 +1803,16 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                     styleEditing={styleEditing}
                     onIdle={handleKindIdle}
                     onChange={(kind) => {
-                      const { prayer: p, onChange: change, styles: s } =
-                        flushedCtx();
-                      change(setBlockKind(p, index, kind, s));
+                      const { prayer: p, onChange: change } = flushedCtx();
+                      change(setBlockKind(p, index, kind));
                     }}
                     onMoreKinds={openMoreKinds}
                     onRename={(from, to) => {
                       onRenameKind(from, to);
                     }}
                     onDelete={onDeleteKind}
+                    kindDefs={prayer.kinds}
+                    onSpeakerChange={onSetKindSpeaker}
                   />
                 ) : (
                   <KindTrigger
@@ -1938,7 +1951,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
           onClick={() => addBlock()}
         >
           <IconPlus size={14} stroke={2.2} />
-          <span>Add {kindDisplayLabel(lastAddedKind)}</span>
+          <span>Add {kindDisplayLabel(nextAddKind)}</span>
         </button>
         <Menu shadow="md" width={180} position="bottom-start" withinPortal>
           <Menu.Target>
@@ -1955,7 +1968,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
               <Menu.Item
                 key={kind}
                 onClick={() => addBlock(kind)}
-                disabled={kind === lastAddedKind}
+                disabled={kind === nextAddKind}
               >
                 {kindDisplayLabel(kind)}
               </Menu.Item>

@@ -12,7 +12,7 @@ It is designed so a future website or print pipeline can **consume** a prayer li
 
 | Principle | Meaning |
 |-----------|---------|
-| Content ≠ design | Prayer JSON holds semantics (`kind`, structure, texts). Colors/fonts live in app or library styles. |
+| Content ≠ design | Prayer JSON holds semantics (`kind`, structure, texts). Colors/fonts live in the library's kind styles (`styles.json`). |
 | Self-contained files | A single `{id}.json` is valid alone — no database, no required manifest. |
 | Flat libraries | Taxonomy is fields on the prayer (`type`, `book`, `occasion`), not folder paths. |
 | Core as the test seam | Business rules live in `@orthodox-prayer-toolkit/core`. The app stays thin (I/O + UI). |
@@ -34,7 +34,8 @@ It is designed so a future website or print pipeline can **consume** a prayer li
                             │
 ┌───────────────────────────▼─────────────────────────────┐
 │  Library folder on disk                                 │
-│  {id}.json · optional manifest.json · styles.json       │
+│  {id}.json · optional manifest.json                     │
+│  .orthodox-prayer-toolkit/ styles.json · templates.json │
 └─────────────────────────────────────────────────────────┘
 ```
 

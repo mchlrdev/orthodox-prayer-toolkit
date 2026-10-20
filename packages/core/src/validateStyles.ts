@@ -1,8 +1,4 @@
-import type {
-  KindStyle,
-  StyleMap,
-  ValidationError,
-} from "./types.js";
+import type { KindStyle, StyleMap, ValidationError } from "./types.js";
 import { isAllowedHtmlTag } from "./htmlTags.js";
 import { normalizeStyleColor } from "./styleColor.js";
 
@@ -32,11 +28,18 @@ const ALLOWED_FIELDS = new Set([
   "fontStyle",
   "initialCap",
   "indicate",
-  "speaker",
   "htmlTag",
   "textAlign",
   "dir",
 ]);
+
+
+/**
+ * Retired style tokens: `sanitizeStyles` drops them silently so an old
+ * `styles.json` still parses. `speaker` moved to the prayer's `kinds` entry;
+ * library migration reads it from the raw file before stripping it.
+ */
+export const LEGACY_STYLE_FIELDS: ReadonlySet<string> = new Set(["speaker"]);
 
 const DANGEROUS = /url\s*\(|expression\s*\(|javascript:|@import|</i;
 
@@ -126,7 +129,6 @@ function validateField(
       return value.trim();
     case "initialCap":
     case "indicate":
-    case "speaker":
       if (value !== "true" && value !== "false") {
         errors.push(fieldError(kind, field, 'expected "true" or "false"'));
         return undefined;
@@ -202,10 +204,13 @@ export function sanitizeStyles(data: unknown): {
     }
 
     const entry: Record<string, string> = {};
+    const fields = Object.entries(rawStyle as Record<string, unknown>).filter(
+      ([field]) => !LEGACY_STYLE_FIELDS.has(field),
+    );
+    // Legacy-only entry: nothing left to style, not an error.
+    if (fields.length === 0 && Object.keys(rawStyle).length > 0) continue;
 
-    for (const [field, value] of Object.entries(
-      rawStyle as Record<string, unknown>,
-    )) {
+    for (const [field, value] of fields) {
       if (!ALLOWED_FIELDS.has(field)) {
         errors.push({
           path: `/${kind}/${field}`,
@@ -242,16 +247,4 @@ export function validateStyles(data: unknown): StyleValidationResult {
     return { ok: false, errors };
   }
   return { ok: true, styles };
-}
-
-/**
- * Whether blocks of a kind may take a speaker.
- * verse: always; heading/subheading/annotation: never; others: `speaker: "true"`.
- */
-export function kindAllowsSpeaker(kind: string, styles?: StyleMap): boolean {
-  if (kind === "verse") return true;
-  if (kind === "heading" || kind === "subheading" || kind === "annotation") {
-    return false;
-  }
-  return styles?.[kind]?.speaker === "true";
 }

@@ -1,7 +1,4 @@
-import type {
-  Prayer,
-  PreferredVariant,
-} from "@orthodox-prayer-toolkit/core";
+import type { Prayer } from "@orthodox-prayer-toolkit/core";
 import {
   entryFromPrayer,
   entryFromText,
@@ -10,17 +7,23 @@ import {
 } from "./build";
 import type { CatalogEntry, LibraryCatalog } from "./types";
 
+/**
+ * Patch one entry from an in-memory prayer. `needsMigration`: the file on
+ * disk is still in the old format (default false — e.g. just written).
+ */
 export function patchCatalogPrayer(
   catalog: LibraryCatalog,
   path: string,
   prayer: Prayer,
-  preferredVariant?: PreferredVariant | null,
+  options?: { needsMigration?: boolean },
 ): LibraryCatalog {
-  const preferred =
-    preferredVariant !== undefined
-      ? preferredVariant
-      : (catalog.manifest?.defaultVariant ?? null);
-  const entry = entryFromPrayer(path, prayer, preferred);
+  const preferred = catalog.manifest?.defaultVariant ?? null;
+  const entry = entryFromPrayer(
+    path,
+    prayer,
+    preferred,
+    options?.needsMigration ?? false,
+  );
   return recomputeCatalogIndex({
     ...catalog,
     entries: upsertEntry(catalog.entries, entry),
@@ -37,6 +40,7 @@ export function removeCatalogPath(
   });
 }
 
+/** Scanned entries whose prayer uses or declares `kind`. */
 export function entriesUsingKind(
   catalog: LibraryCatalog,
   kind: string,
@@ -51,7 +55,7 @@ export function patchCatalogText(
   text: string,
 ): LibraryCatalog {
   const preferred = catalog.manifest?.defaultVariant ?? null;
-  const entry = entryFromText(path, text, preferred);
+  const entry = entryFromText(path, text, preferred, catalog.libraryStylesRaw);
   return recomputeCatalogIndex({
     ...catalog,
     entries: upsertEntry(catalog.entries, entry),

@@ -9,10 +9,10 @@ function labels(items: ReturnType<typeof kindContextItems>): string[] {
 }
 
 describe("kindContextItems", () => {
-  it("lists presets first with title-case labels, then custom ids as-is", () => {
+  it("keeps the picker order (presets, then the prayer's kinds) with title-case preset labels", () => {
     const items = kindContextItems({
       value: "verse",
-      options: ["strophe", "verse", "heading", "annotation", "subheading"],
+      options: [...KIND_PRESETS, "strophe", "refrain", "strophe"],
       onSelect: () => undefined,
     });
     expect(labels(items)).toEqual([
@@ -21,6 +21,7 @@ describe("kindContextItems", () => {
       "Annotation",
       "Verse",
       "strophe",
+      "refrain",
     ]);
   });
 

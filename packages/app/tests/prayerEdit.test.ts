@@ -1,26 +1,19 @@
 import { describe, expect, it } from "vitest";
-import {
-  FALLBACK_KIND_STYLE,
-  type Prayer,
-  type StyleMap,
-} from "@orthodox-prayer-toolkit/core";
+import type { Prayer } from "@orthodox-prayer-toolkit/core";
 import {
   addBlock,
   applyCommittedContent,
   committedContentUnchanged,
   editorCommitUnchanged,
-  deleteKindWithStyles,
-  ensureKindStyle,
   fillPercent,
   getTranslation,
   insertBlockAfter,
   isBlockEmptyAcrossVariants,
   isTranslationFilled,
-  kindOptions,
+  kindAddIssue,
   kindRenameIssue,
   moveBlock,
   removeBlock,
-  renameKindWithStyles,
   setBlockKind,
   splitBlock,
   splitEditorContent,
@@ -325,20 +318,6 @@ describe("structure ops", () => {
   });
 });
 
-describe("kindOptions", () => {
-  it("includes presets, used kinds, and extra library style keys", () => {
-    const options = kindOptions(basePrayer(), ["strophe"]);
-    expect(options.slice(0, 4)).toEqual([
-      "heading",
-      "subheading",
-      "annotation",
-      "verse",
-    ]);
-    expect(options).toContain("rubric");
-    expect(options).toContain("strophe");
-  });
-});
-
 describe("kindRenameIssue", () => {
   it("allows a unique custom name", () => {
     expect(kindRenameIssue("rubric", "strophe", ["rubric", "verse"])).toBeNull();
@@ -371,74 +350,13 @@ describe("kindRenameIssue", () => {
   });
 });
 
-describe("kind + styles", () => {
-  it("renames kind across prayer and style maps", () => {
-    const appStyles: StyleMap = {
-      rubric: { fontSize: "1.2rem", color: "base" },
-    };
-    const libraryStyles: StyleMap = {
-      rubric: { fontSize: "1.4rem", color: "accent" },
-    };
-    const next = renameKindWithStyles(
-      basePrayer(),
-      appStyles,
-      libraryStyles,
-      "rubric",
-      "strophe",
-    );
-    expect(next.prayer.structure[1]?.kind).toBe("strophe");
-    expect(next.appStyles.strophe?.fontSize).toBe("1.2rem");
-    expect(next.libraryStyles.strophe?.fontSize).toBe("1.4rem");
-    expect(next.appStyles.rubric).toBeUndefined();
-  });
-
-  it("does not rename built-in preset kinds", () => {
-    const prayer = basePrayer();
-    const appStyles: StyleMap = {
-      verse: { fontSize: "1.2rem", color: "base" },
-    };
-    const next = renameKindWithStyles(
-      prayer,
-      appStyles,
-      {},
-      "verse",
-      "strophe",
-    );
-    expect(next.prayer).toBe(prayer);
-    expect(next.appStyles).toBe(appStyles);
-    expect(next.prayer.structure[0]?.kind).toBe("verse");
-  });
-
-  it("does not delete built-in preset kinds", () => {
-    const prayer = basePrayer();
-    const appStyles: StyleMap = {
-      verse: { fontSize: "1.2rem", color: "base" },
-    };
-    const next = deleteKindWithStyles(prayer, appStyles, {}, "verse");
-    expect(next.prayer).toBe(prayer);
-    expect(next.appStyles).toBe(appStyles);
-    expect(next.prayer.structure[0]?.kind).toBe("verse");
-    expect(next.appStyles.verse?.fontSize).toBe("1.2rem");
-  });
-
-  it("deletes kind styles with the kind", () => {
-    const next = deleteKindWithStyles(
-      basePrayer(),
-      { rubric: { color: "red" } },
-      { rubric: { color: "blue" } },
-      "rubric",
-    );
-    expect(next.prayer.structure.every((b) => b.kind !== "rubric")).toBe(true);
-    expect(next.appStyles.rubric).toBeUndefined();
-    expect(next.libraryStyles.rubric).toBeUndefined();
-  });
-
-  it("keeps a custom kind in library styles even when unused", () => {
-    const style = { ...FALLBACK_KIND_STYLE };
-    const next = ensureKindStyle({}, "strophe", style);
-    expect(next.strophe).toEqual(style);
-    expect(ensureKindStyle(next, "strophe", FALLBACK_KIND_STYLE)).toBe(next);
-    expect(ensureKindStyle({}, "verse", style)).toEqual({});
+describe("kindAddIssue", () => {
+  it("checks id shape, presets and collisions", () => {
+    expect(kindAddIssue("refrain", ["tone"])).toBeNull();
+    expect(kindAddIssue(" ", [])).toBe("Required");
+    expect(kindAddIssue("1x", [])).toBe("Use a letter, then letters, digits, _ or -");
+    expect(kindAddIssue("verse", [])).toBe("That name is reserved");
+    expect(kindAddIssue("tone", ["tone"])).toBe("Already exists");
   });
 });
 

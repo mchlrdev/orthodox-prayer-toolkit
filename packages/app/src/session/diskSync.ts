@@ -1,5 +1,8 @@
-import { validate } from "@orthodox-prayer-toolkit/core";
-import { patchCatalogText, removeCatalogPath } from "../catalog";
+import {
+  patchCatalogText,
+  readPrayerText,
+  removeCatalogPath,
+} from "../catalog";
 import { reconcileVisibleVariants } from "../variant";
 import { putPrayerFromText } from "./operations";
 import { resolveVisibleVariants } from "./visibleVariants";
@@ -33,13 +36,9 @@ export function takeDiskVersion(
   }
 
   const catalog = patchCatalogText(state.catalog, path, text);
-  let data: unknown = null;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    /* invalid JSON: catalog entry carries the error */
-  }
-  const result = data === null ? null : validate(data);
+  // Invalid JSON / prayer: the catalog entry carries the error.
+  const read = readPrayerText(text, state.catalog.libraryStylesRaw);
+  const result = read.json ? read.result : null;
   if (!result?.ok) {
     // The selected path without a draft shows the invalid-prayer screen.
     delete drafts[path];

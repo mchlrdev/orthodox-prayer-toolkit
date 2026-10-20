@@ -13,7 +13,7 @@ import {
   IconChevronLeft,
   IconChevronRight,
 } from "@tabler/icons-react";
-import { indexVariants, kindDisplayLabel } from "@orthodox-prayer-toolkit/core";
+import { indexVariants } from "@orthodox-prayer-toolkit/core";
 import { getToolkitApi, isBrowserDev } from "./api";
 import { PrayerList } from "./components/PrayerList";
 import { PrayerWorkspace } from "./components/PrayerWorkspace";
@@ -23,7 +23,11 @@ import {
   type PrayerSettingsPane,
 } from "./components/PrayerSettingsModal";
 import { NewPrayerModal } from "./components/NewPrayerModal";
-import { LibrarySettingsModal } from "./components/LibrarySettingsModal";
+import {
+  LibrarySettingsModal,
+  type LibrarySettingsPane,
+} from "./components/LibrarySettingsModal";
+import { LibraryMigrationDialog } from "./components/LibraryMigrationDialog";
 import { AppSettingsModal } from "./components/AppSettingsModal";
 import { ExportModal } from "./components/ExportModal";
 import { ConfirmDialog } from "./components/ConfirmDialog";
@@ -35,7 +39,11 @@ import { NewLibraryModal } from "./components/NewLibraryModal";
 import type { InlineEditorHandle } from "./components/InlineEditor";
 import type { LibraryEntry } from "./library";
 import { usePrayerSession } from "./usePrayerSession";
-import type { SessionNotice } from "./session";
+import {
+  kindRenameConfirmMessage,
+  type LibraryMigrationReport,
+  type SessionNotice,
+} from "./session";
 import { loadSidebarPrefs, saveSidebarPrefs } from "./sidebarPrefs";
 import {
   loadAppearancePrefs,
@@ -75,6 +83,14 @@ export function App() {
   const [settingsPane, setSettingsPane] =
     useState<PrayerSettingsPane>("prayer");
   const [librarySettingsOpen, setLibrarySettingsOpen] = useState(false);
+  const [librarySettingsPane, setLibrarySettingsPane] =
+    useState<LibrarySettingsPane>("library");
+  /** Migration dialog opened by hand (Library settings) after "Not now". */
+  const [migrationManual, setMigrationManual] = useState(false);
+  const [migrationReport, setMigrationReport] = useState<{
+    report: LibraryMigrationReport;
+    legacyTokensBefore: boolean;
+  } | null>(null);
   const [appSettingsOpen, setAppSettingsOpen] = useState(false);
   const [newLibraryOpen, setNewLibraryOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -242,7 +258,6 @@ export function App() {
     visibleVariants,
     setVisibleVariants,
     activeVariant,
-    appStyles,
     busy,
     dirty,
     unsavedCount,
@@ -450,12 +465,10 @@ export function App() {
                 styles={resolvedStyles}
                 styleEditing={{
                   resolved: resolvedStyles,
-                  appStyles,
-                  libraryStyles: library?.libraryStyles ?? {},
+                  libraryKinds: session.libraryKinds,
                   libraryEnabled: Boolean(library),
-                  onChangeApp: (next) => void session.persistAppStyles(next),
-                  onChangeLibrary: (next) =>
-                    void session.persistLibraryStyles(next),
+                  onPatchStyle: (kind, partial) =>
+                    void session.patchKindStyle(kind, partial),
                 }}
                 busy={busy}
                 dirty={dirty}
@@ -487,9 +500,8 @@ export function App() {
                 onRenameKind={(from, to) => {
                   void session.requestKindRename(from, to);
                 }}
-                onDeleteKind={(kind) => {
-                  void session.requestKindDelete(kind);
-                }}
+                onDeleteKind={session.deleteKind}
+                onSetKindSpeaker={session.setKindSpeaker}
               />
             ) : library ? (
               <div className="workspace-empty">
@@ -574,6 +586,9 @@ export function App() {
           activeVariant={createVariant}
           onChange={session.setCreateDraft}
           onActiveVariantChange={session.setCreateVariant}
+          templates={session.templates}
+          templateId={session.createTemplateId}
+          onTemplateChange={session.setCreateTemplate}
         />
       ) : draft && activeVariant ? (
         <PrayerSettingsModal
@@ -588,18 +603,19 @@ export function App() {
           onRenameKind={(from, to) => {
             void session.requestKindRename(from, to);
           }}
-          onRemoveKind={(kind) => {
-            void session.requestKindDelete(kind);
-          }}
+          onAddKind={(def) =>
+            session.addKind(def.id, { speaker: def.speaker === true })
+          }
+          onRemoveKind={session.deleteKind}
+          onSetKindSpeaker={session.setKindSpeaker}
+          onApplyTemplate={session.applyTemplate}
+          templates={session.templates}
           styles={{
-            kinds: Object.keys(resolvedStyles),
+            libraryKinds: session.libraryKinds,
             resolved: resolvedStyles,
-            appStyles,
-            libraryStyles: library?.libraryStyles ?? {},
             libraryEnabled: Boolean(library),
-            onChangeApp: (next) => void session.persistAppStyles(next),
-            onChangeLibrary: (next) =>
-              void session.persistLibraryStyles(next),
+            onPatchStyle: (kind, partial) =>
+              void session.patchKindStyle(kind, partial),
           }}
         />
       ) : null}
@@ -608,10 +624,62 @@ export function App() {
         <LibrarySettingsModal
           opened={librarySettingsOpen}
           onClose={() => setLibrarySettingsOpen(false)}
+          pane={librarySettingsPane}
+          onPaneChange={setLibrarySettingsPane}
           manifest={library.manifest}
           availableVariants={availableVariants}
           busy={busy}
           onSave={session.saveLibraryManifest}
+          migrationNeeded={
+            session.migrationStatus.prayers > 0 ||
+            session.migrationStatus.legacyTokens
+          }
+          migrationBlocked={session.migrationStatus.blocked}
+          onMigrate={() => setMigrationManual(true)}
+          templates={{
+            templates: session.templates,
+            templateErrors: session.templateErrors,
+            onCreate: session.createTemplate,
+            onUpdate: (id, edit) => void session.updateTemplate(id, edit),
+            onDelete: (id) => void session.deleteTemplate(id),
+          }}
+          styles={{
+            libraryKinds: session.libraryKinds,
+            resolved: resolvedStyles,
+            unusedStyleKeys: session.unusedStyleKeys,
+            onPatchStyle: (kind, partial) =>
+              void session.patchKindStyle(kind, partial),
+            onRemoveStyle: (kind) => void session.removeLibraryStyle(kind),
+          }}
+        />
+      ) : null}
+
+      {library ? (
+        <LibraryMigrationDialog
+          opened={
+            migrationReport !== null ||
+            (migrationManual && session.migrationStatus.blocked === null) ||
+            session.migrationStatus.pending
+          }
+          status={session.migrationStatus}
+          report={migrationReport?.report ?? null}
+          legacyTokensBefore={migrationReport?.legacyTokensBefore ?? false}
+          busy={busy}
+          onMigrate={() => {
+            const legacyTokensBefore = session.migrationStatus.legacyTokens;
+            void session.migrateLibrary().then((report) => {
+              setMigrationManual(false);
+              // Leftovers (failed / unsaved) are not asked again this session;
+              // Library settings offers "Migrate…".
+              session.dismissMigration();
+              if (report) setMigrationReport({ report, legacyTokensBefore });
+            });
+          }}
+          onClose={() => {
+            if (!migrationReport) session.dismissMigration();
+            setMigrationManual(false);
+            setMigrationReport(null);
+          }}
         />
       ) : null}
 
@@ -654,6 +722,8 @@ export function App() {
                 errors: draftErrors,
                 filenameMismatch: false,
                 kinds: [],
+                readable: true,
+                needsMigration: false,
                 variants: [],
                 scanned: true,
               },
@@ -693,26 +763,12 @@ export function App() {
         title="Rename kind in library?"
         message={
           session.pendingKindRename
-            ? `Rename “${kindDisplayLabel(session.pendingKindRename.from)}” to “${kindDisplayLabel(session.pendingKindRename.to)}” in ${session.pendingKindRename.affectedPaths.length} prayers? This writes those files now.`
+            ? kindRenameConfirmMessage(session.pendingKindRename)
             : ""
         }
         confirmLabel="Rename"
         loading={session.kindRenameBusy || busy}
         onConfirm={() => void session.confirmKindRename()}
-      />
-
-      <ConfirmDialog
-        opened={session.pendingKindDelete !== null}
-        onClose={session.cancelKindDelete}
-        title="Delete kind in library?"
-        message={
-          session.pendingKindDelete
-            ? `“${kindDisplayLabel(session.pendingKindDelete.kind)}” is used in ${session.pendingKindDelete.affectedPaths.length} prayers. Delete it everywhere? Its blocks become ${session.pendingKindDelete.kind === "verse" ? "annotation" : "verse"} and those files are written now.`
-            : ""
-        }
-        confirmLabel="Delete"
-        loading={session.kindRenameBusy || busy}
-        onConfirm={() => void session.confirmKindDelete()}
       />
 
       <WhatsNewDialog

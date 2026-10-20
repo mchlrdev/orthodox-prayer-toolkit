@@ -25,6 +25,7 @@ import {
   locateValidationErrors,
   resolveDisplayTitle,
   type Prayer,
+  type KindStyle,
   type StyleMap,
   type ValidationError,
   type VariantMeta,
@@ -55,11 +56,11 @@ import {
 
 type StyleEditing = {
   resolved: StyleMap;
-  appStyles: StyleMap;
-  libraryStyles: StyleMap;
   libraryEnabled: boolean;
-  onChangeApp: (next: StyleMap) => void;
-  onChangeLibrary: (next: StyleMap) => void;
+  /** Every kind in the library: a rename must not collide with any. */
+  libraryKinds: string[];
+  /** Patch one kind's library style (applied to the latest styles.json). */
+  onPatchStyle: (kind: string, partial: Partial<KindStyle>) => void;
 };
 
 type Props = {
@@ -84,10 +85,11 @@ type Props = {
   onVisibleVariantsChange: (cols: ActiveVariant[]) => void;
   onSave: () => void;
   /** Open Prayer settings, optionally on a pane ("More speakers…" / "More kinds…"). */
-  onSettings: (pane?: "speakers" | "styles") => void;
+  onSettings: (pane?: "speakers" | "kinds") => void;
   onExport: () => void;
   onRenameKind: (from: string, to: string) => void;
   onDeleteKind: (kind: string) => void;
+  onSetKindSpeaker: (kind: string, allowed: boolean) => void;
 };
 
 function assignRef<T>(ref: Ref<T> | undefined, value: T): void {
@@ -190,6 +192,7 @@ export function PrayerWorkspace({
   onExport,
   onRenameKind,
   onDeleteKind,
+  onSetKindSpeaker,
 }: Props) {
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const localEditorRef = useRef<InlineEditorHandle | null>(null);
@@ -609,6 +612,7 @@ export function PrayerWorkspace({
             onChange={onChange}
             onRenameKind={onRenameKind}
             onDeleteKind={onDeleteKind}
+            onSetKindSpeaker={onSetKindSpeaker}
             onOpenSettings={onSettings}
           />
         </div>
