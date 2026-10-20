@@ -26,7 +26,7 @@ That runs [bumpp](https://github.com/antfu-collective/bumpp): you pick **patch**
   included, not just the bumped `package.json` files) and tag `vX.Y.Z`
 - pushes `main` **and** the tag (`--push`)
 
-Non-interactive:
+Non-interactive (`--yes` is passed for you):
 
 ```bash
 pnpm release -- patch

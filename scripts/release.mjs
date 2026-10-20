@@ -169,6 +169,7 @@ const result = spawnSync(
     "exec",
     "bumpp",
     "-r",
+    "--yes",
     "--all",
     "--commit",
     "chore: release v%s",
