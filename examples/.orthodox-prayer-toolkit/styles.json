@@ -11,8 +11,9 @@
     "color": "accent",
     "fontWeight": "400",
     "fontStyle": "normal",
-    "htmlTag": "h2",
-    "textAlign": "left"
+    "htmlTag": "p",
+    "textAlign": "left",
+    "indicate": "true"
   },
   "verse": {
     "fontSize": "1rem",

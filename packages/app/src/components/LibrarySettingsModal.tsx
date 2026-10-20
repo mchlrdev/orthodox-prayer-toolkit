@@ -264,7 +264,7 @@ export function LibrarySettingsModal({
 
               <TextInput
                 label="Layout style prefix"
-                description="Stem only — underscore is added automatically (e.g. opt → opt_heading). Leave empty for the app default opt."
+                description="Leave empty for the app default (opt_)."
                 value={draft.stylePrefixStem}
                 onChange={(e) =>
                   setDraft((prev) => ({

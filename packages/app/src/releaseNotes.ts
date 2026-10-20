@@ -12,6 +12,12 @@ export type ReleaseNotesEntry = { version: string; items: string[] };
  */
 export const RELEASE_NOTES: ReleaseNotesEntry[] = [
   {
+    version: "0.3.6",
+    items: [
+      "UI fixes and improvements",
+    ],
+  },
+  {
     version: "0.3.5",
     items: [
       "Custom kinds now belong to each Prayer (Prayer settings → Kinds)",

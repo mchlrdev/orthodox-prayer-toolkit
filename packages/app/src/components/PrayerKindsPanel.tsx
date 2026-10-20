@@ -92,16 +92,13 @@ export function PrayerKindsPanel({
   return (
     <Stack gap="sm">
       <Group justify="space-between" align="flex-start" wrap="nowrap">
-        <Text size="xs" c="dimmed">
-          Kinds this prayer offers. Custom kinds are saved in the prayer;
-          styles apply library-wide.
-        </Text>
+        
         <Menu position="bottom-end" withinPortal={false}>
           <Menu.Target>
             <Button
-              size="compact-xs"
+              size="compact-sm"
               variant="default"
-              leftSection={<IconTemplate size={12} />}
+              leftSection={<IconTemplate size={14} />}
               rightSection={<IconChevronDown size={12} />}
               disabled={templates.length === 0}
               title={

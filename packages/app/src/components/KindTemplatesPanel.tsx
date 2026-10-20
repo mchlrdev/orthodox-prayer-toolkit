@@ -117,12 +117,6 @@ export function KindTemplatesPanel({
 
   return (
     <Stack gap="sm">
-      <Text size="xs" c="dimmed">
-        A kind template is a set of custom kinds for new prayers. Creating a
-        prayer with it copies the kinds; later edits here never change existing
-        prayers. Use “Apply template” in Prayer settings → Kinds to add a
-        template’s kinds to an existing prayer.
-      </Text>
 
       {locked ? (
         <Alert

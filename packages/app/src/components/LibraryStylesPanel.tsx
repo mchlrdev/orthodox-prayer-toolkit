@@ -42,10 +42,6 @@ export function LibraryStylesPanel({
 
   return (
     <Stack gap="sm">
-      <Text size="xs" c="dimmed">
-        Styles apply to a kind in every prayer of this library (styles.json).
-        Kinds are added in a prayer (Prayer settings → Kinds) or a kind template.
-      </Text>
       <Accordion
         className="settings-accordion"
         variant="separated"

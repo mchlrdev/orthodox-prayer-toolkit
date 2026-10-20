@@ -721,6 +721,8 @@ export function ExportModal({
         {format !== "docx-parallel" ? (
           <Checkbox
             label="Include blocks without translation"
+            mt="xs"
+            mb="sm"
             checked={includeBlocksWithoutTranslation}
             onChange={(e) =>
               setIncludeBlocksWithoutTranslation(e.currentTarget.checked)
