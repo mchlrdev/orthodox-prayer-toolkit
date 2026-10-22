@@ -20,11 +20,14 @@ import {
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  createFileExclusive,
   isUnderRoot,
   resolveUnderRoot,
   walkJsonFiles,
+  writeFileAtomic,
 } from "../nodeFs";
 import { createLibraryWatcher } from "./libraryWatch";
+import { createTrustedRoots, type TrustedRoots } from "./trustedRoots";
 import { startMacUpdateInstall } from "./macUpdateInstall";
 import {
   resolveUpdateCheck,
@@ -64,12 +67,27 @@ function resolveAppIconPath(): string | undefined {
 
 /** Library folders opened this session (dialog or startup). */
 const allowedLibraryRoots = new Set<string>();
+/** Folders the user ever picked in a dialog; reopening by path needs one. */
+let trustedRoots: TrustedRoots | null = null;
+function getTrustedRoots(): TrustedRoots {
+  trustedRoots ??= createTrustedRoots(
+    join(app.getPath("userData"), "trusted-libraries.json"),
+  );
+  return trustedRoots;
+}
 /** Absolute paths written via the export save dialog (reveal-in-folder). */
 const allowedRevealPaths = new Set<string>();
 
 function rememberLibraryRoot(root: string): string {
   const normalized = resolve(root);
   allowedLibraryRoots.add(normalized);
+  return normalized;
+}
+
+/** A folder the user chose in a native dialog: open now and trust later. */
+function rememberChosenLibraryRoot(root: string): string {
+  const normalized = rememberLibraryRoot(root);
+  getTrustedRoots().add(normalized);
   return normalized;
 }
 
@@ -217,9 +235,8 @@ function writeLibraryConfig(
 ): void {
   const root = assertAllowedLibraryRoot(libraryRoot);
   const path = resolveUnderRoot(root, relativePath);
-  mkdirSync(dirname(path), { recursive: true });
   libraryWatcher.noteWrite(root, relativePath, content);
-  writeFileSync(path, content, "utf8");
+  writeFileAtomic(path, content);
 }
 
 function registerIpc(): void {
@@ -237,7 +254,7 @@ function registerIpc(): void {
     if (result.canceled || result.filePaths.length === 0) return null;
     const chosen = result.filePaths[0];
     if (!chosen) return null;
-    return rememberLibraryRoot(chosen);
+    return rememberChosenLibraryRoot(chosen);
   });
 
   ipcMain.handle(
@@ -270,11 +287,11 @@ function registerIpc(): void {
       }
       mkdirSync(root, { recursive: true });
       writeFileSync(join(root, "manifest.json"), opts.manifestJson, "utf8");
-      return rememberLibraryRoot(root);
+      return rememberChosenLibraryRoot(root);
     },
   );
 
-  ipcMain.handle("library:openPath", (_evt, libraryRoot: string) => {
+  ipcMain.handle("library:openPath", async (event, libraryRoot: string) => {
     if (typeof libraryRoot !== "string" || !libraryRoot.trim()) {
       throw new Error("Invalid library path");
     }
@@ -282,7 +299,26 @@ function registerIpc(): void {
     if (!existsSync(normalized) || !statSync(normalized).isDirectory()) {
       throw new Error("Folder not found");
     }
-    return rememberLibraryRoot(normalized);
+    if (allowedLibraryRoots.has(normalized) || getTrustedRoots().has(normalized)) {
+      return rememberLibraryRoot(normalized);
+    }
+    // Not picked in a dialog yet (e.g. a recent folder from an older app
+    // version): the user confirms natively, so the renderer cannot grant
+    // itself access to arbitrary folders.
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const options: Electron.MessageBoxOptions = {
+      type: "question",
+      buttons: ["Open", "Cancel"],
+      defaultId: 0,
+      cancelId: 1,
+      message: "Open this library folder?",
+      detail: normalized,
+    };
+    const { response } = win
+      ? await dialog.showMessageBox(win, options)
+      : await dialog.showMessageBox(options);
+    if (response !== 0) throw new Error("Opening the folder was cancelled");
+    return rememberChosenLibraryRoot(normalized);
   });
 
   ipcMain.handle("library:watch", (_evt, libraryRoot: string | null) => {
@@ -347,9 +383,20 @@ function registerIpc(): void {
     (_evt, libraryRoot: string, relativePath: string, content: string) => {
       const root = assertAllowedLibraryRoot(libraryRoot);
       const full = resolveUnderRoot(root, relativePath);
-      mkdirSync(dirname(full), { recursive: true });
       libraryWatcher.noteWrite(root, relativePath, content);
-      writeFileSync(full, content, "utf8");
+      writeFileAtomic(full, content);
+    },
+  );
+
+  ipcMain.handle(
+    "fs:createText",
+    (_evt, libraryRoot: string, relativePath: string, content: string) => {
+      const root = assertAllowedLibraryRoot(libraryRoot);
+      const full = resolveUnderRoot(root, relativePath);
+      if (!createFileExclusive(full, content)) return false;
+      // Watcher events arrive asynchronously, after this synchronous note.
+      libraryWatcher.noteWrite(root, relativePath, content);
+      return true;
     },
   );
 
@@ -677,8 +724,8 @@ function requestInstallAndRestart(): void {
   installAndRestart();
 }
 
+/** Close guards are removed only once the install really starts. */
 function installAndRestart(): void {
-  allowWindowsToClose();
   if (process.platform === "darwin") {
     if (!downloadedUpdateFile) {
       void showUpdaterDialog({
@@ -707,9 +754,11 @@ function installAndRestart(): void {
       });
       return;
     }
+    allowWindowsToClose();
     app.quit();
     return;
   }
+  allowWindowsToClose();
   autoUpdater.quitAndInstall(false, true);
 }
 

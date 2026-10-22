@@ -12,6 +12,16 @@ export type ReleaseNotesEntry = { version: string; items: string[] };
  */
 export const RELEASE_NOTES: ReleaseNotesEntry[] = [
   {
+    version: "0.3.7",
+    items: [
+      "Typing while a save runs is no longer lost",
+      "Persian and Arabic text keeps its zero-width joiners when edited",
+      "Renaming a prayer id keeps the file in its folder and never overwrites another prayer",
+      "Files are saved safely: a crash or full disk cannot leave a half-written file",
+      "Speakers on headings and annotations are reported and removed when a kind stops taking them",
+    ],
+  },
+  {
     version: "0.3.6",
     items: [
       "UI fixes and improvements",

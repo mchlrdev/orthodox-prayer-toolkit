@@ -128,16 +128,33 @@ export function usePrayerSession(opts?: {
     [onNotice],
   );
 
+  /**
+   * Apply an op result. Pass `start` (the state an async op ran on) to merge
+   * only what the op changed, keeping edits that landed while it awaited I/O.
+   */
   const commit = useCallback(
-    (result: SessionOpResult, merge = false) => {
+    (result: SessionOpResult, start?: PrayerSessionState) => {
       emit(result.notices);
-      const next = merge
-        ? mergeOpResult(stateRef.current, result)
+      const next = start
+        ? mergeOpResult(stateRef.current, start, result)
         : result.state;
       stateRef.current = next;
       setState(next);
     },
     [emit],
+  );
+
+  /** Run an async session op on the current state and merge its result. */
+  const runOp = useCallback(
+    async <R extends SessionOpResult>(
+      op: (state: PrayerSessionState) => Promise<R>,
+    ): Promise<R> => {
+      const start = stateRef.current;
+      const result = await op(start);
+      commit(result, start);
+      return result;
+    },
+    [commit],
   );
 
   const emitRef = useRef(emit);
@@ -234,13 +251,10 @@ export function usePrayerSession(opts?: {
           if (scanGenRef.current !== gen) return;
           if (stateRef.current.selectedPath) cancelDraftValidation();
           const result = applyReloadedDrafts(stateRef.current, files);
-          commit(
-            {
-              ...result,
-              notices: [...readNotices, ...result.notices],
-            },
-            true,
-          );
+          commit({
+            ...result,
+            notices: [...readNotices, ...result.notices],
+          });
         }
       } catch (err) {
         if (scanGenRef.current !== gen) return;
@@ -393,12 +407,9 @@ export function usePrayerSession(opts?: {
   const saveLibraryManifest = async (manifest: LibraryManifest) => {
     setOpBusy(true);
     try {
-      const result = await saveLibraryManifestOp(
-        stateRef.current,
-        api,
-        manifest,
+      const result = await runOp((state) =>
+        saveLibraryManifestOp(state, api, manifest),
       );
-      commit(result, true);
       if (result.notices.some((n) => n.color === "accent")) {
         throw new Error(result.notices[0]?.message ?? "Could not save");
       }
@@ -516,7 +527,7 @@ export function usePrayerSession(opts?: {
     cancelDraftValidation();
     setOpBusy(true);
     try {
-      commit(await saveSelected(stateRef.current, api), true);
+      await runOp((state) => saveSelected(state, api));
     } finally {
       setOpBusy(false);
     }
@@ -527,8 +538,7 @@ export function usePrayerSession(opts?: {
     persistCurrentView();
     setOpBusy(true);
     try {
-      const result = await saveAllDirty(stateRef.current, api);
-      commit(result, true);
+      const result = await runOp((state) => saveAllDirty(state, api));
       return !result.notices.some((n) => n.color === "accent");
     } finally {
       setOpBusy(false);
@@ -536,7 +546,7 @@ export function usePrayerSession(opts?: {
   };
 
   const beginCreate = async () => {
-    commit(await beginCreatePrayer(stateRef.current, api), true);
+    await runOp((state) => beginCreatePrayer(state, api));
   };
 
   const cancelCreate = () => {
@@ -550,7 +560,7 @@ export function usePrayerSession(opts?: {
     persistCurrentView();
     setCreateBusy(true);
     try {
-      commit(await commitCreatePrayer(stateRef.current, api), true);
+      await runOp((state) => commitCreatePrayer(state, api));
     } finally {
       setCreateBusy(false);
     }
@@ -562,7 +572,7 @@ export function usePrayerSession(opts?: {
       if (stateRef.current.selectedPath === entry.path) {
         cancelDraftValidation();
       }
-      commit(await deletePrayer(stateRef.current, api, entry), true);
+      await runOp((state) => deletePrayer(state, api, entry));
     } finally {
       setDeleteBusy(false);
     }
@@ -595,7 +605,7 @@ export function usePrayerSession(opts?: {
     setOpBusy(true);
     try {
       persistCurrentView();
-      commit(await importPrayerFile(stateRef.current, api), true);
+      await runOp((state) => importPrayerFile(state, api));
     } finally {
       setOpBusy(false);
     }
@@ -790,7 +800,7 @@ export function usePrayerSession(opts?: {
           notices: [],
         });
       } else {
-        commit(await discardDirty(stateRef.current, api), true);
+        await runOp((state) => discardDirty(state, api));
         commit({
           state: clearPendingLeave(stateRef.current),
           notices: [],
@@ -880,7 +890,7 @@ export function usePrayerSession(opts?: {
           }
           if (stateRef.current.catalog?.root !== root) return;
           if (stateRef.current.selectedPath === path) cancelDraftValidation();
-          commit(applyDiskChange(stateRef.current, path, text), true);
+          commit(applyDiskChange(stateRef.current, path, text));
         }
       })();
     });

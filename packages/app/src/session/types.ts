@@ -82,4 +82,6 @@ export type SessionOpResult = {
   notices: SessionNotice[];
   /** Catalog paths this op removed; merge must not resurrect them. */
   dropCatalogPaths?: string[];
+  /** Drafts this op moved to a new path (from → to), e.g. rename on save. */
+  movedPaths?: Record<string, string>;
 };

@@ -174,7 +174,7 @@ export async function importPrayerFile(
   }
 
   try {
-    if (await api.exists(state.catalog.root, target.path)) {
+    if (!(await api.createText(state.catalog.root, target.path, picked.content))) {
       return {
         state,
         notices: [
@@ -186,7 +186,6 @@ export async function importPrayerFile(
         ],
       };
     }
-    await api.writeText(state.catalog.root, target.path, picked.content);
   } catch (err) {
     return {
       state,

@@ -8,6 +8,7 @@ import {
 } from "../src/session/draftEdit";
 import { persistPrayer } from "../src/session/persistPrayer";
 import {
+  deletePrayer,
   editDraft,
   emptySessionState,
   mergeOpResult,
@@ -61,6 +62,11 @@ function fakeApi(
         })),
       ),
     writeText: async () => undefined,
+    createText: async (root, path, content) => {
+      if (await api.exists(root, path)) return false;
+      await api.writeText(root, path, content);
+      return true;
+    },
     deleteFile: async () => undefined,
     renameFile: async () => undefined,
     exists: async () => false,
@@ -184,6 +190,50 @@ describe("persistPrayer", () => {
     if (!result.ok) {
       expect(result.message).toMatch(/collision/i);
     }
+  });
+});
+
+describe("persistPrayer folders and collisions", () => {
+  it("renames inside the prayer's folder", async () => {
+    const writeText = vi.fn(async () => undefined);
+    const deleteFile = vi.fn(async () => undefined);
+    const api = fakeApi({ writeText, deleteFile });
+    const prayer = samplePrayer();
+    prayer.id = "evening";
+    const result = await persistPrayer(api, "/lib", "sub/morning.json", prayer);
+    expect(result).toEqual({ ok: true, path: "sub/evening.json" });
+    expect(writeText.mock.calls[0]?.[1]).toBe("sub/evening.json");
+    expect(deleteFile).toHaveBeenCalledWith("/lib", "sub/morning.json");
+  });
+
+  it("blocks a rename onto an id that lives in another folder", async () => {
+    const writeText = vi.fn(async () => undefined);
+    const api = fakeApi({ writeText });
+    const prayer = samplePrayer();
+    prayer.id = "evening";
+    const result = await persistPrayer(api, "/lib", "sub/morning.json", prayer, [
+      { path: "sub/morning.json", id: "morning" },
+      { path: "other/evening.json", id: "evening" },
+    ]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.message).toContain("other/evening.json");
+    expect(writeText).not.toHaveBeenCalled();
+  });
+
+  it("does not overwrite a file that appears during the rename", async () => {
+    const writeText = vi.fn(async () => undefined);
+    const deleteFile = vi.fn(async () => undefined);
+    const api = fakeApi({
+      writeText,
+      deleteFile,
+      createText: async () => false,
+    });
+    const prayer = samplePrayer();
+    prayer.id = "evening";
+    const result = await persistPrayer(api, "/lib", "morning.json", prayer);
+    expect(result.ok).toBe(false);
+    expect(writeText).not.toHaveBeenCalled();
+    expect(deleteFile).not.toHaveBeenCalled();
   });
 });
 
@@ -349,13 +399,133 @@ describe("session operations", () => {
     state = editDraft(state, edited).state;
     const before = state;
     const result = await saveSelected(state, api);
-    state = mergeOpResult(before, result);
+    state = mergeOpResult(before, before, result);
 
     expect(state.catalog?.entries.map((e) => e.path)).toEqual(["evening.json"]);
     expect(sidebarEntries(state).map((e) => e.id)).toEqual(["evening"]);
     expect(state.selectedPath).toBe("evening.json");
     expect(state.drafts["morning.json"]).toBeUndefined();
     expect(state.drafts["evening.json"]?.dirty).toBe(false);
+  });
+
+  it("keeps typing that lands while a save awaits the disk", async () => {
+    const files: Record<string, Prayer> = { "a.json": prayerAt("a", "A") };
+    const api = fakeApi({
+      readText: async (_root, path) => JSON.stringify(files[path]),
+    });
+    let state = stateWithCatalog(catalogOf(files));
+    const entry = state.catalog!.entries.find((e) => e.path === "a.json")!;
+    state = (await openPrayer(state, api, entry)).state;
+    const first = structuredClone(state.drafts["a.json"]!.prayer);
+    first.variants[0]!.title = "Saved title";
+    state = editDraft(state, first).state;
+
+    const start = state;
+    const result = await saveSelected(start, api);
+    const typed = structuredClone(first);
+    typed.variants[0]!.title = "Typed meanwhile";
+    const current = editDraft(start, typed).state;
+    state = mergeOpResult(current, start, result);
+
+    const draft = state.drafts["a.json"]!;
+    expect(draft.prayer.variants[0]!.title).toBe("Typed meanwhile");
+    expect(draft.dirty).toBe(true);
+    expect(draft.saved?.variants[0]!.title).toBe("Saved title");
+    expect(
+      state.catalog?.entries.find((e) => e.path === "a.json")?.title,
+    ).toBe("Saved title");
+  });
+
+  it("moves an edit made during a rename-on-save to the new path", async () => {
+    const files: Record<string, Prayer> = {
+      "morning.json": prayerAt("morning", "Morgen"),
+    };
+    const api = fakeApi({
+      readText: async (_root, path) => JSON.stringify(files[path]),
+    });
+    let state = stateWithCatalog(catalogOf(files));
+    const entry = state.catalog!.entries.find((e) => e.path === "morning.json")!;
+    state = (await openPrayer(state, api, entry)).state;
+    const renamed = structuredClone(state.drafts["morning.json"]!.prayer);
+    renamed.id = "evening";
+    state = editDraft(state, renamed).state;
+
+    const start = state;
+    const result = await saveSelected(start, api);
+    const typed = structuredClone(renamed);
+    typed.variants[0]!.title = "Abend";
+    const current = editDraft(start, typed).state;
+    state = mergeOpResult(current, start, result);
+
+    expect(state.selectedPath).toBe("evening.json");
+    expect(state.drafts["morning.json"]).toBeUndefined();
+    expect(state.drafts["evening.json"]?.prayer.variants[0]!.title).toBe("Abend");
+    expect(state.drafts["evening.json"]?.dirty).toBe(true);
+    expect(state.catalog?.entries.map((e) => e.path)).toEqual(["evening.json"]);
+  });
+
+  it("keeps library styles written while a save was running", async () => {
+    const files: Record<string, Prayer> = { "a.json": prayerAt("a", "A") };
+    const api = fakeApi({
+      readText: async (_root, path) => JSON.stringify(files[path]),
+    });
+    let state = stateWithCatalog(catalogOf(files));
+    const entry = state.catalog!.entries.find((e) => e.path === "a.json")!;
+    state = (await openPrayer(state, api, entry)).state;
+    const edited = structuredClone(state.drafts["a.json"]!.prayer);
+    edited.variants[0]!.title = "A2";
+    state = editDraft(state, edited).state;
+
+    const start = state;
+    const result = await saveSelected(start, api);
+    const libraryStyles = { verse: { color: "#112233" } };
+    const current = {
+      ...start,
+      catalog: { ...start.catalog!, libraryStyles },
+    };
+    state = mergeOpResult(current, start, result);
+
+    expect(state.catalog?.libraryStyles).toBe(libraryStyles);
+    expect(state.drafts["a.json"]?.dirty).toBe(false);
+  });
+
+  it("removes a deleted prayer's draft even if it was edited meanwhile", async () => {
+    const files: Record<string, Prayer> = { "a.json": prayerAt("a", "A") };
+    const api = fakeApi({
+      readText: async (_root, path) => JSON.stringify(files[path]),
+    });
+    let state = stateWithCatalog(catalogOf(files));
+    const entry = state.catalog!.entries.find((e) => e.path === "a.json")!;
+    state = (await openPrayer(state, api, entry)).state;
+
+    const start = state;
+    const result = await deletePrayer(start, api, entry);
+    const typed = structuredClone(start.drafts["a.json"]!.prayer);
+    typed.variants[0]!.title = "Typed";
+    const current = editDraft(start, typed).state;
+    state = mergeOpResult(current, start, result);
+
+    expect(state.drafts["a.json"]).toBeUndefined();
+    expect(state.selectedPath).toBeNull();
+    expect(state.catalog?.entries).toEqual([]);
+  });
+
+  it("drops an op result when the library changed while it ran", async () => {
+    const files: Record<string, Prayer> = { "a.json": prayerAt("a", "A") };
+    const api = fakeApi({
+      readText: async (_root, path) => JSON.stringify(files[path]),
+    });
+    let state = stateWithCatalog(catalogOf(files));
+    const entry = state.catalog!.entries.find((e) => e.path === "a.json")!;
+    state = (await openPrayer(state, api, entry)).state;
+    const edited = structuredClone(state.drafts["a.json"]!.prayer);
+    edited.variants[0]!.title = "A2";
+    state = editDraft(state, edited).state;
+
+    const start = state;
+    const result = await saveSelected(start, api);
+    const other = stateWithCatalog({ ...catalogOf({}), root: "/other" });
+    expect(mergeOpResult(other, start, result)).toBe(other);
   });
 
   it("opens a stub with one-file read and does not wait for other files", async () => {

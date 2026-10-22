@@ -30,6 +30,12 @@ export type PrayerToolkitApi = {
     relativePath: string,
     content: string,
   ) => Promise<void>;
+  /** Create a new file; false (nothing written) when the path already exists. */
+  createText: (
+    libraryRoot: string,
+    relativePath: string,
+    content: string,
+  ) => Promise<boolean>;
   deleteFile: (libraryRoot: string, relativePath: string) => Promise<void>;
   renameFile: (
     libraryRoot: string,
@@ -95,6 +101,8 @@ const api: PrayerToolkitApi = {
     ipcRenderer.invoke("fs:readTexts", libraryRoot, relativePaths),
   writeText: (libraryRoot, relativePath, content) =>
     ipcRenderer.invoke("fs:writeText", libraryRoot, relativePath, content),
+  createText: (libraryRoot, relativePath, content) =>
+    ipcRenderer.invoke("fs:createText", libraryRoot, relativePath, content),
   deleteFile: (libraryRoot, relativePath) =>
     ipcRenderer.invoke("fs:delete", libraryRoot, relativePath),
   renameFile: (libraryRoot, fromRelative, toRelative) =>

@@ -73,6 +73,15 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
       });
     },
 
+    createText: async (libraryRoot, relativePath, content) => {
+      const data = await getJson<{ created: boolean }>(`${PREFIX}/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ root: libraryRoot, path: relativePath, content }),
+      });
+      return data.created;
+    },
+
     deleteFile: async (libraryRoot, relativePath) => {
       await getJson(`${PREFIX}/delete`, {
         method: "POST",

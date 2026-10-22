@@ -58,6 +58,8 @@ import type {
 } from "./types";
 import { resolveVisibleVariants } from "./visibleVariants";
 
+export { mergeOpResult } from "./opMerge";
+
 export const DESKTOP_REQUIRED_NOTICE: SessionNotice = {
   color: "dark",
   title: "Desktop app required",
@@ -211,26 +213,6 @@ export function applyCatalogChunk(
     state: { ...state, catalog: nextCatalog, drafts, selectedPath },
     notices: catalogOpenNotices(nextCatalog, previousForNotices),
   };
-}
-
-/** Apply an async op result without resurrecting paths that op dropped. */
-export function mergeOpResult(
-  current: PrayerSessionState,
-  result: SessionOpResult,
-): PrayerSessionState {
-  if (
-    current.catalog &&
-    result.state.catalog &&
-    current.catalog.root === result.state.catalog.root
-  ) {
-    return {
-      ...result.state,
-      catalog: mergeCatalogs(result.state.catalog, current.catalog, {
-        omitPaths: result.dropCatalogPaths,
-      }),
-    };
-  }
-  return result.state;
 }
 
 export type EditOptions = {
@@ -524,6 +506,7 @@ export async function saveSelected(
     state.catalog.root,
     path,
     draft.prayer,
+    state.catalog.entries,
   );
   if (!result.ok) {
     return {
@@ -551,6 +534,7 @@ export async function saveSelected(
       },
     ],
     dropCatalogPaths: result.path !== path ? [path] : undefined,
+    movedPaths: result.path !== path ? { [path]: result.path } : undefined,
   };
 }
 
@@ -564,13 +548,18 @@ export async function saveAllDirty(
 
   let next = state;
   const dropCatalogPaths: string[] = [];
+  const movedPaths: Record<string, string> = {};
+  const moves = () => ({
+    dropCatalogPaths: dropCatalogPaths.length > 0 ? dropCatalogPaths : undefined,
+    movedPaths: dropCatalogPaths.length > 0 ? movedPaths : undefined,
+  });
   for (const [path, draft] of entries) {
     const blocked = saveBlockedReason(next, path);
     if (blocked) {
       return {
         state: next,
         notices: [{ color: "accent", title: "Cannot save all", message: blocked }],
-        dropCatalogPaths: dropCatalogPaths.length > 0 ? dropCatalogPaths : undefined,
+        ...moves(),
       };
     }
     const result = await persistPrayer(
@@ -578,10 +567,12 @@ export async function saveAllDirty(
       next.catalog!.root,
       path,
       draft.prayer,
+      next.catalog!.entries,
     );
     if (!result.ok) {
+      const { errors, warnings } = validationFor(draft.prayer);
       return {
-        state: setDraftErrors(next, path, draft.errors, draft.warnings),
+        state: setDraftErrors(next, path, errors, warnings),
         notices: [
           {
             color: "accent",
@@ -589,9 +580,13 @@ export async function saveAllDirty(
             message: result.message,
           },
         ],
+        ...moves(),
       };
     }
-    if (result.path !== path) dropCatalogPaths.push(path);
+    if (result.path !== path) {
+      dropCatalogPaths.push(path);
+      movedPaths[path] = result.path;
+    }
     next = applyPersistedPath(
       next,
       path,
@@ -614,7 +609,7 @@ export async function saveAllDirty(
             : `${entries.length} prayers saved`,
       },
     ],
-    dropCatalogPaths: dropCatalogPaths.length > 0 ? dropCatalogPaths : undefined,
+    ...moves(),
   };
 }
 
@@ -725,26 +720,27 @@ export async function commitCreatePrayer(
   }
 
   const path = prayerFilename(state.createDraft.id);
-  const exists = await api.exists(state.catalog.root, path);
-  if (exists) {
-    return {
-      state,
-      notices: [
-        {
-          color: "accent",
-          title: "Id collision",
-          message: `File ${path} already exists. Choose another id.`,
-        },
-      ],
-    };
-  }
+  const createId = state.createDraft.id;
+  const clash = state.catalog.entries.find((e) => e.id === createId);
+  const collision = (where: string): SessionOpResult => ({
+    state,
+    notices: [
+      {
+        color: "accent",
+        title: "Id collision",
+        message: `${where} already exists. Choose another id.`,
+      },
+    ],
+  });
+  if (clash) return collision(`“${createId}” (${clash.path})`);
 
   try {
-    await api.writeText(
+    const created = await api.createText(
       state.catalog.root,
       path,
       prayerFileText(state.createDraft),
     );
+    if (!created) return collision(`File ${path}`);
     const prayer = structuredClone(state.createDraft);
     const variant = state.createVariant;
     const evicted = evictPreviousClean(state, path);

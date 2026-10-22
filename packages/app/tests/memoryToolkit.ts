@@ -34,6 +34,11 @@ export function memoryToolkit(initial: Record<string, string>) {
     readTexts: async (_root, paths) =>
       paths.map((path) => ({ path, text: read(path) })),
     writeText: async (_root, path, content) => write(path, content),
+    createText: async (_root, path, content) => {
+      if (path in files) return false;
+      write(path, content);
+      return true;
+    },
     deleteFile: async (_root, path) => {
       delete files[path];
     },

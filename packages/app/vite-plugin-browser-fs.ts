@@ -9,7 +9,7 @@ import {
 } from "node:fs";
 import { dirname, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { resolveUnderRoot, walkJsonFiles } from "./nodeFs";
+import { createFileExclusive, resolveUnderRoot, walkJsonFiles } from "./nodeFs";
 
 const PREFIX = "/__ptk";
 
@@ -129,6 +129,21 @@ export function prayerToolkitBrowserFs(toolkitRoot: string): Plugin {
             mkdirSync(dirname(full), { recursive: true });
             writeFileSync(full, body.content, "utf8");
             sendJson(res, 200, { ok: true });
+            return;
+          }
+
+          if (route === "/create" && req.method === "POST") {
+            const body = JSON.parse(await readBody(req)) as {
+              root: string;
+              path: string;
+              content: string;
+            };
+            if (resolve(body.root) !== resolve(examplesRoot)) {
+              sendJson(res, 403, { error: "Only examples library allowed in browser dev" });
+              return;
+            }
+            const full = resolveUnderRoot(body.root, body.path);
+            sendJson(res, 200, { created: createFileExclusive(full, body.content) });
             return;
           }
 

@@ -119,12 +119,18 @@ Older files may use custom kinds without declaring them (kinds and the `speaker`
 ## Id / filename behaviour (editor)
 
 - On save, the file is written as `{id}.json`.
-- Renaming `id` renames the file; if the target exists, save is blocked.
+- Renaming `id` renames the file in its folder (`sub/a.json` → `sub/b.json`); save is blocked when another prayer in the library already has that id or a file exists at the target. New files (create, import, rename) are created exclusively, so a file that appears meanwhile is never overwritten.
+- Files are written atomically (temp file + rename), so a crash or a full disk never leaves a half-written prayer, `styles.json` or `templates.json`.
 - Deleting a prayer removes its file and patches the Library catalog (no full rescan).
 - **Export prayer JSON** (right-click a sidebar row) writes the complete `{id}.json` source file via a save dialog. Unsaved draft changes are included.
 - The editor **Export** dialog can write a two-column **Word table** (order of two variants; language gutter and, for Own column, speaker gutter are checked by default and can be turned off; Speakers default to Own column). That file is for Microsoft Word; Affinity Place cannot flow tables as story text. Export options are remembered per Prayer (local), including the last format.
 - **Import prayer JSON** (library menu) copies a picked `.json` into the library root as `{id}.json`. The file is copied byte for byte and migrated in memory (undeclared kinds declared; the catalog flags it for the migration prompt); saving an edit writes the new format. Existing ids/filenames are not overwritten.
 - The editor has no block paste / import between prayers yet. Core `declareBlockKinds` is the helper for that (declares missing kinds, carrying `speaker` from the source prayer when known); text pasted into a cell never changes kinds.
+
+## Opening folders (editor)
+
+- A folder becomes usable after you pick it in a native dialog (Open, Create). The app remembers picked folders in its app data folder (`trusted-libraries.json`), so recent libraries reopen without a dialog.
+- A recent folder the app has not seen picked (e.g. from an older version) asks once for confirmation in a native dialog. The renderer cannot grant itself access to other folders.
 
 ## External changes (editor)
 

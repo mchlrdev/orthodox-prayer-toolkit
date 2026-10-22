@@ -1,8 +1,21 @@
-import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { isUnderRoot, resolveUnderRoot, walkJsonFiles } from "../nodeFs";
+import {
+  createFileExclusive,
+  isUnderRoot,
+  resolveUnderRoot,
+  walkJsonFiles,
+  writeFileAtomic,
+} from "../nodeFs";
 
 function makeLibrary(): string {
   const root = mkdtempSync(join(tmpdir(), "ptk-lib-"));
@@ -73,5 +86,25 @@ describe("walkJsonFiles", () => {
     const out: string[] = [];
     walkJsonFiles(root, root, out);
     expect(out.sort()).toEqual(["a.json", "nested/b.json"]);
+  });
+});
+
+describe("writeFileAtomic / createFileExclusive", () => {
+  it("replaces a file and leaves no temp files behind", () => {
+    const root = makeLibrary();
+    writeFileAtomic(join(root, "a.json"), '{"v":2}');
+    expect(readFileSync(join(root, "a.json"), "utf8")).toBe('{"v":2}');
+    writeFileAtomic(join(root, "new", "c.json"), "{}");
+    expect(readFileSync(join(root, "new", "c.json"), "utf8")).toBe("{}");
+    expect(readdirSync(root).filter((n) => n.endsWith(".tmp"))).toEqual([]);
+  });
+
+  it("creates a new file but never overwrites an existing one", () => {
+    const root = makeLibrary();
+    expect(createFileExclusive(join(root, "c.json"), '{"c":1}')).toBe(true);
+    expect(readFileSync(join(root, "c.json"), "utf8")).toBe('{"c":1}');
+    expect(createFileExclusive(join(root, "a.json"), '{"x":1}')).toBe(false);
+    expect(readFileSync(join(root, "a.json"), "utf8")).toBe("{}");
+    expect(readdirSync(root).filter((n) => n.endsWith(".tmp"))).toEqual([]);
   });
 });

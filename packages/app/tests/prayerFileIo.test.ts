@@ -52,6 +52,11 @@ function fakeApi(
         })),
       ),
     writeText: async () => undefined,
+    createText: async (root, path, content) => {
+      if (await api.exists(root, path)) return false;
+      await api.writeText(root, path, content);
+      return true;
+    },
     deleteFile: async () => undefined,
     renameFile: async () => undefined,
     exists: async () => false,
