@@ -39,13 +39,14 @@ export function plainText(content: InlineContent): string {
 
 /**
  * Peel leading/trailing whitespace out of note runs into adjacent text,
- * drop empties / zero-width-only text, merge adjacent same-role runs,
- * and coalesce notes that are only separated by whitespace into one note.
+ * drop empties and editor artefacts (ZWSP, BOM), merge adjacent same-role
+ * runs, and coalesce notes that are only separated by whitespace into one note.
+ * ZWNJ / ZWJ are kept: they are spelling in Persian, Arabic, Syriac, Indic.
  */
 export function normalizeRuns(runs: TextRun[]): TextRun[] {
   const stripped = runs.map((run) => ({
     t: run.t,
-    v: run.v.replace(/[\u200B\u200C\u200D\uFEFF]/g, ""),
+    v: run.v.replace(/[\u200B\uFEFF]/g, ""),
   }));
 
   const peeled: TextRun[] = [];
@@ -154,7 +155,8 @@ export function markRangeAsNote(
   start: number,
   end: number,
 ): InlineContent {
-  const runs = toRuns(content);
+  // Offsets address the normalized text (what packInline stores).
+  const runs = normalizeRuns(toRuns(content));
   const plain = plainText(runs);
   const range = trimRange(plain, start, end);
   if (range.start >= range.end) {
@@ -203,7 +205,7 @@ export function unmarkRange(
   start: number,
   end: number,
 ): InlineContent {
-  const runs = toRuns(content);
+  const runs = normalizeRuns(toRuns(content));
   const plain = plainText(runs);
   const range = trimRange(plain, start, end);
   if (range.start >= range.end) {
@@ -339,7 +341,7 @@ export function replaceRangeInInline(
     pos = next;
   }
 
-  const { before, after } = splitInline(content, from, to);
+  const { before, after } = splitInline(runs, from, to);
   const pieces: TextRun[] = [...toRuns(before ?? "")];
   if (replacement.length > 0) {
     pieces.push({ t: replaceRole, v: replacement });

@@ -273,3 +273,34 @@ describe("validate + inline notes", () => {
     expect(result.ok).toBe(false);
   });
 });
+
+describe("zero-width characters", () => {
+  it("keeps ZWNJ and ZWJ (spelling in RTL / Indic scripts)", () => {
+    expect(packInline([{ t: "text", v: "می‌خواهم" }])).toBe("می‌خواهم");
+    expect(packInline([{ t: "text", v: "क्‍ष" }])).toBe("क्‍ष");
+  });
+
+  it("drops ZWSP and BOM editor artefacts", () => {
+    expect(packInline([{ t: "text", v: "﻿a​b" }])).toBe("ab");
+  });
+
+  it("marks a note without losing text next to zero-width artefacts", () => {
+    expect(markRangeAsNote("a​bc d", 0, 1)).toEqual([
+      { t: "note", v: "a" },
+      { t: "text", v: "bc d" },
+    ]);
+    expect(markRangeAsNote("a‌bc d", 0, 1)).toEqual([
+      { t: "note", v: "a" },
+      { t: "text", v: "‌bc d" },
+    ]);
+  });
+
+  it("unmarks and replaces on the same offsets as stored text", () => {
+    const content: InlineContent = [
+      { t: "note", v: "x​y" },
+      { t: "text", v: " z" },
+    ];
+    expect(unmarkRange(content, 0, 2)).toBe("xy z");
+    expect(replaceRangeInInline("​ab cd", 3, 5, "XY")).toBe("ab XY");
+  });
+});
