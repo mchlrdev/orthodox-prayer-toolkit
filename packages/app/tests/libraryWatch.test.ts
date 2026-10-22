@@ -35,7 +35,13 @@ describe("createLibraryWatcher", () => {
       writeFileSync(join(dir, "own.json"), "{}\n");
       writeFileSync(join(dir, "other.json"), "{}\n");
       writeFileSync(join(dir, "note.txt"), "x");
-      await new Promise((r) => setTimeout(r, 400));
+      // FSEvents latency varies under load: wait for the external write, then
+      // a little longer so a wrongly reported own write would arrive too.
+      const deadline = Date.now() + 3000;
+      while (!seen.flat().includes("other.json") && Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 25));
+      }
+      await new Promise((r) => setTimeout(r, 150));
     } finally {
       watcher.stop();
     }
