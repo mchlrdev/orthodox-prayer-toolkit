@@ -60,24 +60,45 @@ function isWholeWordMatch(
   return true;
 }
 
+/**
+ * Lowercase `text` per code point, with a map from each folded index back to
+ * its index in `text` (lowercasing can change length, e.g. "İ" → "i̇").
+ */
+function foldCase(text: string): { folded: string; origin: number[] } {
+  let folded = "";
+  const origin: number[] = [];
+  let index = 0;
+  for (const ch of text) {
+    const lower = ch.toLocaleLowerCase();
+    for (let i = 0; i < lower.length; i += 1) origin.push(index);
+    folded += lower;
+    index += ch.length;
+  }
+  origin.push(text.length);
+  return { folded, origin };
+}
+
 function findInText(
   text: string,
   query: string,
   options: FindReplaceOptions,
 ): Array<{ start: number; end: number }> {
   if (query.length === 0) return [];
-  const haystack = options.matchCase ? text : text.toLocaleLowerCase();
+  const { folded: haystack, origin } = options.matchCase
+    ? { folded: text, origin: null }
+    : foldCase(text);
   const needle = options.matchCase ? query : query.toLocaleLowerCase();
   const hits: Array<{ start: number; end: number }> = [];
   let from = 0;
   while (from <= haystack.length - needle.length) {
     const index = haystack.indexOf(needle, from);
     if (index === -1) break;
-    const end = index + needle.length;
-    if (!options.wholeWord || isWholeWordMatch(text, index, end)) {
-      hits.push({ start: index, end });
+    const start = origin ? origin[index]! : index;
+    const end = origin ? origin[index + needle.length]! : index + needle.length;
+    if (!options.wholeWord || isWholeWordMatch(text, start, end)) {
+      hits.push({ start, end });
     }
-    from = index + (needle.length === 0 ? 1 : needle.length);
+    from = index + needle.length;
   }
   return hits;
 }

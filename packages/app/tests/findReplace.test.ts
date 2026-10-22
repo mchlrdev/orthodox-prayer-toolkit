@@ -97,6 +97,31 @@ describe("findMatchesInPrayer", () => {
   });
 });
 
+describe("case-insensitive offsets", () => {
+  it("maps matches back to the original text when lowercasing changes length", () => {
+    const turkish: Prayer = {
+      ...prayer,
+      structure: [
+        {
+          id: "v1",
+          kind: "verse",
+          translations: [
+            { lang: "de", variant: "standard", text: "İsa ve Meryem" },
+          ],
+        },
+      ],
+    };
+    const matches = findMatchesInPrayer(
+      turkish,
+      [{ lang: "de", variant: "standard" }],
+      "meryem",
+      { matchCase: false, wholeWord: true },
+    );
+    expect(matches).toHaveLength(1);
+    expect(matches[0]).toMatchObject({ start: 7, end: 13 });
+  });
+});
+
 describe("replaceMatchInPrayer", () => {
   it("replaces inside a note run without flattening notes", () => {
     const match = findMatchesInPrayer(
