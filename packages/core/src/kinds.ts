@@ -115,6 +115,28 @@ export function kindAllowsSpeaker(
 }
 
 /**
+ * Remove `speaker` from blocks whose kind does not allow one
+ * ({@link kindAllowsSpeaker}). Same prayer when nothing is dropped.
+ */
+export function dropDisallowedSpeakers(prayer: Prayer): Prayer {
+  if (
+    !prayer.structure.some(
+      (b) => b.speaker !== undefined && !kindAllowsSpeaker(b.kind, prayer),
+    )
+  ) {
+    return prayer;
+  }
+  const structure = prayer.structure.map((block) => {
+    if (block.speaker === undefined || kindAllowsSpeaker(block.kind, prayer)) {
+      return block;
+    }
+    const { speaker: _speaker, ...rest } = block;
+    return rest;
+  });
+  return normalizeFormatVersion({ ...prayer, structure });
+}
+
+/**
  * Declare custom kinds in a prayer: appends missing ids (presets skipped,
  * existing entries unchanged). Returns the same prayer when nothing is added.
  */
@@ -140,7 +162,7 @@ export function declareBlockKinds(
 
 /**
  * Set or clear the speaker flag of a declared custom kind. Presets and
- * undeclared kinds are ignored. Block speakers are left untouched.
+ * undeclared kinds are ignored. Clearing it drops the speakers of its blocks.
  */
 export function setKindSpeaker(
   prayer: Prayer,
@@ -150,16 +172,19 @@ export function setKindSpeaker(
   const list = prayer.kinds ?? [];
   const current = list.find((k) => k.id === kind);
   if (!current || (current.speaker === true) === allowed) return prayer;
-  return setKinds(
-    prayer,
-    list.map((k) => (k.id === kind ? kindDef(kind, allowed) : k)),
+  return dropDisallowedSpeakers(
+    setKinds(
+      prayer,
+      list.map((k) => (k.id === kind ? kindDef(kind, allowed) : k)),
+    ),
   );
 }
 
 /**
  * Rename a kind within a single prayer: blocks and the `kinds` entry
  * (does not touch other prayers). Presets cannot be renamed. When blocks are
- * renamed, `to` ends up declared (unless it is a preset).
+ * renamed, `to` ends up declared (unless it is a preset). Speakers are
+ * dropped when `to` is a preset that takes none (heading, …).
  */
 export function renameKind(prayer: Prayer, from: string, to: string): Prayer {
   if (from === to || isKindPreset(from)) return prayer;
@@ -174,13 +199,14 @@ export function renameKind(prayer: Prayer, from: string, to: string): Prayer {
     list,
     kindDefsUsedBy(structure.filter((b) => b.kind === to), () => false),
   );
-  return setKinds({ ...prayer, structure }, list);
+  return dropDisallowedSpeakers(setKinds({ ...prayer, structure }, list));
 }
 
 /**
  * Remove a kind from a prayer: drops its `kinds` entry and reassigns its
  * blocks to `fallback` when that is a preset or declared kind (other than
  * `kind`); otherwise to `verse` (`annotation` when deleting verse).
+ * Speakers are dropped where the new kind takes none.
  */
 export function deleteKind(
   prayer: Prayer,
@@ -206,5 +232,7 @@ export function deleteKind(
         ),
       }
     : prayer;
-  return setKinds(reassigned, declared ? list.filter((k) => k.id !== kind) : list);
+  return dropDisallowedSpeakers(
+    setKinds(reassigned, declared ? list.filter((k) => k.id !== kind) : list),
+  );
 }

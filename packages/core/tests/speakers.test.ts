@@ -112,11 +112,12 @@ describe("schema", () => {
     expect(bad((p) => (p.formatVersion = 1.5))).toBe(false);
   });
 
-  it("allows a speaker on any kind", () => {
+  it("allows a speaker only on kinds that take one", () => {
     const p = base();
-    p.structure[0]!.kind = "heading";
     p.structure[0]!.speaker = "priest";
     expect(validate(p).ok).toBe(true);
+    p.structure[0]!.kind = "heading";
+    expect(validate(p).ok).toBe(false);
   });
 });
 

@@ -102,7 +102,7 @@ See also [Affinity bridge](affinity-bridge.md).
 
 ## Kinds
 
-Every prayer has the four preset kinds (`KIND_PRESETS`) implicitly; custom kinds are declared in the prayer's `kinds` (`KindDef[]`: `{ id, speaker?: true }`). `validate` errors with `code` `kind-undeclared` (block kind neither preset nor declared), `kind-duplicate` and `kind-preset-declared`.
+Every prayer has the four preset kinds (`KIND_PRESETS`) implicitly; custom kinds are declared in the prayer's `kinds` (`KindDef[]`: `{ id, speaker?: true }`). `validate` errors with `code` `kind-undeclared` (block kind neither preset nor declared), `kind-duplicate`, `kind-preset-declared` and `speaker-kind-not-allowed` (a block `speaker` on a kind that takes none, see `kindAllowsSpeaker`). `setKindSpeaker(…, false)`, `renameKind` and `deleteKind` drop speakers that the new kind does not take; `dropDisallowedSpeakers(prayer)` does the same for a whole prayer.
 
 ```ts
 import {
@@ -253,7 +253,9 @@ resolveDisplayTitle(prayer, { lang: "de", variant: "standard" });
 
 For editors that toggle note spans:
 
-`toRuns`, `plainText`, `packInline`, `splitInline`, `markRangeAsNote`, `toggleNoteRange`, `unmarkRange`, …
+`toRuns`, `plainText`, `packInline`, `splitInline`, `markRangeAsNote`, `toggleNoteRange`, `unmarkRange`, `replaceRangeInInline`, …
+
+`normalizeRuns` / `packInline` drop the editor artefacts ZWSP (U+200B) and BOM (U+FEFF) but keep ZWNJ (U+200C) and ZWJ (U+200D), which are spelling in Persian, Arabic, Syriac and Indic scripts. Range offsets address the normalized text (what is stored).
 
 ## Types to know
 

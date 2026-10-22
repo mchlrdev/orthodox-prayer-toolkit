@@ -193,7 +193,7 @@ A **Speaker** marks who says a block (liturgical dialogue). The id is on the blo
 |------|--------|
 | Speaker id | Same pattern as kind ids: letter first, then letters, digits, `_`, `-`; max 64 |
 | Block `speaker` | Optional; one per block. Do not type the label into `text` / `lines` |
-| Allowed kinds | `verse` always; `heading`, `subheading`, `annotation` never; a custom kind only when its `kinds` entry has `speaker: true` |
+| Allowed kinds | `verse` always; `heading`, `subheading`, `annotation` never; a custom kind only when its `kinds` entry has `speaker: true`. Otherwise `validate` errors (`speaker-kind-not-allowed`) |
 | Variant `speakers` | Map `{ [id]: { name?, short? } }`. Empty strings are not written; an entry with neither field is omitted; an empty map is omitted |
 | No registry | The Speakers of a prayer are the ids used on blocks plus the keys of `speakers` maps. There is no Library list |
 | Presets | `priest`, `deacon`, `bishop`, `reader`, `choir`, `people` are offered in the editor only. Core ships no translated labels |

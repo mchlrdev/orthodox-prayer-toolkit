@@ -114,6 +114,7 @@ export {
   declareBlockKinds,
   declareKinds,
   deleteKind,
+  dropDisallowedSpeakers,
   kindAllowsSpeaker,
   pickerKinds,
   renameKind,

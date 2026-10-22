@@ -7,6 +7,7 @@ import {
   declareBlockKinds,
   declareKinds,
   deleteKind,
+  dropDisallowedSpeakers,
   indexKinds,
   isPrayerFilename,
   isValidTemplateId,
@@ -25,6 +26,7 @@ import {
   stampTemplate,
   validate,
   validateTemplates,
+  type Prayer,
   discoverKinds,
   hasLegacyStyleFields,
   legacyStyleFields,
@@ -745,5 +747,71 @@ describe("template kind list editing", () => {
     expect(moveTemplateKind(t, "refrain", -1)).toBe(t);
     expect(moveTemplateKind(t, "tone-label", 1)).toBe(t);
     expect(moveTemplateKind(t, "missing", 1)).toBe(t);
+  });
+});
+
+describe("speakers only on kinds that take them", () => {
+  const withSpeakerBlocks = (): Prayer => ({
+    id: "dialog",
+    type: "prayer",
+    formatVersion: 3,
+    variants: [
+      { lang: "en", variant: "standard", title: "Dialog", license: "unknown", source: "test" },
+    ],
+    kinds: [{ id: "refrain", speaker: true }, { id: "plain" }],
+    structure: [
+      {
+        id: "b1",
+        kind: "refrain",
+        speaker: "priest",
+        translations: [{ lang: "en", variant: "standard", text: "Blessed is our God." }],
+      },
+      {
+        id: "b2",
+        kind: "verse",
+        speaker: "people",
+        translations: [{ lang: "en", variant: "standard", text: "Amen." }],
+      },
+    ],
+    meta: {},
+  });
+
+  it("validate rejects a speaker on a kind that takes none", () => {
+    const p = withSpeakerBlocks();
+    p.structure[1] = { ...p.structure[1]!, kind: "heading" };
+    const result = validate(p);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors.map((e) => e.code)).toContain("speaker-kind-not-allowed");
+    }
+    p.structure[0] = { ...p.structure[0]!, kind: "plain" };
+    p.structure[1] = { ...p.structure[1]!, kind: "verse" };
+    expect(validate(p).ok).toBe(false);
+  });
+
+  it("setKindSpeaker(false) drops the speakers of that kind", () => {
+    const off = setKindSpeaker(withSpeakerBlocks(), "refrain", false);
+    expect(off.structure[0]!.speaker).toBeUndefined();
+    expect(off.structure[1]!.speaker).toBe("people");
+    expect(validate(off).ok).toBe(true);
+  });
+
+  it("deleteKind and renameKind onto a preset without speakers drop them", () => {
+    const deleted = deleteKind(withSpeakerBlocks(), "refrain", "annotation");
+    expect(deleted.structure[0]!.kind).toBe("annotation");
+    expect(deleted.structure[0]!.speaker).toBeUndefined();
+    expect(validate(deleted).ok).toBe(true);
+
+    const renamed = renameKind(withSpeakerBlocks(), "refrain", "heading");
+    expect(renamed.structure[0]!.speaker).toBeUndefined();
+    expect(validate(renamed).ok).toBe(true);
+
+    const toVerse = renameKind(withSpeakerBlocks(), "refrain", "verse");
+    expect(toVerse.structure[0]!.speaker).toBe("priest");
+  });
+
+  it("dropDisallowedSpeakers keeps a prayer without stray speakers as is", () => {
+    const p = withSpeakerBlocks();
+    expect(dropDisallowedSpeakers(p)).toBe(p);
   });
 });

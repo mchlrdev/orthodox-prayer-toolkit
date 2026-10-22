@@ -11,6 +11,7 @@ import {
 import { isInlineContent, normalizeRuns, toRuns } from "./textRuns.js";
 import { normalizePrayerVariants } from "./resolveDir.js";
 import { speakerDisplayLabel } from "./speakers.js";
+import { kindAllowsSpeaker } from "./kinds.js";
 
 const ajv = new Ajv2020({
   allErrors: true,
@@ -98,6 +99,15 @@ function semanticChecks(prayer: Prayer): ValidationError[] {
         path: `/structure/${i}/kind`,
         message: `Kind "${block.kind}" is not declared in kinds`,
         code: "kind-undeclared",
+      });
+    } else if (
+      block.speaker !== undefined &&
+      !kindAllowsSpeaker(block.kind, prayer)
+    ) {
+      errors.push({
+        path: `/structure/${i}/speaker`,
+        message: `Kind "${block.kind}" does not take a speaker`,
+        code: "speaker-kind-not-allowed",
       });
     }
 
