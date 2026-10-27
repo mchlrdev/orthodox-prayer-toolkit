@@ -204,6 +204,12 @@ export function draftBlockGroup(draft: ImportDraft, block: DraftBlock): string |
   return groupOf(contextOf(draft), block);
 }
 
+/** Visible blocks whose style group is `group` — what a group `setKind` changes. */
+export function draftBlocksInGroup(draft: ImportDraft, group: string): DraftBlock[] {
+  const ctx = contextOf(draft);
+  return draft.blocks.filter((b) => isVisible(ctx, b) && groupOf(ctx, b) === group);
+}
+
 /**
  * The Prayer the draft stands for. Blocks with no visible text are left out;
  * missing translations are omitted. Run it through `validate()` before saving.

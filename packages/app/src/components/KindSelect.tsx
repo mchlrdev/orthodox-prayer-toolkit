@@ -62,6 +62,21 @@ type Props = {
   onIdle?: () => void;
   /** "More kinds…": kinds are created in Prayer settings → Kinds. */
   onMoreKinds?: () => void;
+  /** Offer "whole style group" next to "this block" (Import draft). */
+  groupScope?: KindGroupScope | null;
+};
+
+/** The block's style group, for setting the kind of all its blocks at once. */
+export type KindGroupScope = {
+  /** Label of the single-block side, e.g. "Segment 4". */
+  blockLabel: string;
+  /** Short group mark (A, B, …). */
+  letter: string;
+  /** Blocks the group change touches. */
+  count: number;
+  /** A few texts of the group, to show what "looks the same" means. */
+  samples: string[];
+  onChangeGroup: (kind: string) => void;
 };
 
 function styleForKind(kind: string, editing: StyleEditing): KindStyle {
@@ -151,8 +166,11 @@ export function KindSelect({
   defaultOpen = false,
   onIdle,
   onMoreKinds,
+  groupScope,
 }: Props) {
   const [opened, setOpened] = useState(defaultOpen);
+  const [scope, setScope] = useState<"block" | "group">("block");
+  const groupMode = scope === "group" && groupScope != null;
   const [editingKind, setEditingKind] = useState<string | null>(null);
   const [renameTo, setRenameTo] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -334,21 +352,57 @@ export function KindSelect({
             }
           }}
         >
+          {groupScope ? (
+            <div className="kind-scope">
+              <div className="kind-scope-switch" role="radiogroup" aria-label="Apply to">
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={scope === "block"}
+                  data-active={scope === "block"}
+                  onClick={() => setScope("block")}
+                >
+                  {groupScope.blockLabel}
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={scope === "group"}
+                  data-active={scope === "group"}
+                  onClick={() => setScope("group")}
+                >
+                  <span className="import-source-badge">{groupScope.letter}</span>
+                  Group · {groupScope.count}
+                </button>
+              </div>
+              {groupMode && groupScope.samples.length > 0 ? (
+                <div className="kind-scope-samples">
+                  Looks the same: {groupScope.samples.map((t) => `“${t}”`).join(", ")}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
           <OptionList>
             {all.map((kind) => {
-              const active = kind === value;
+              const active = !groupMode && kind === value;
               return (
                 <div key={kind} className="option-row-with-edit">
                   <OptionRow
                     active={active}
+                    hint={
+                      groupMode
+                        ? `for ${groupScope!.count} ${groupScope!.count === 1 ? "segment" : "segments"}`
+                        : undefined
+                    }
                     onClick={() => {
-                      onChange(kind);
+                      if (groupMode) groupScope!.onChangeGroup(kind);
+                      else onChange(kind);
                       setOpen(false);
                     }}
                   >
                     {kindDisplayLabel(kind)}
                   </OptionRow>
-                  {canEdit ? (
+                  {canEdit && !groupMode ? (
                     <ActionIcon
                       className="option-row-edit"
                       variant="subtle"

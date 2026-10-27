@@ -51,6 +51,9 @@ export function memoryToolkit(initial: Record<string, string>) {
       write(TEMPLATES_PATH, content),
     saveExport: async () => null,
     pickPrayerJson: async () => null,
+    fetchSource: async () => {
+      throw new Error("No network in tests");
+    },
     showItem: async () => undefined,
     basename: async (p) => p.split("/").pop() ?? p,
     onFindRequested: () => () => undefined,

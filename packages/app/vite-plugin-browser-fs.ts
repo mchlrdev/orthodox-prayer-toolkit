@@ -10,6 +10,7 @@ import {
 import { dirname, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createFileExclusive, resolveUnderRoot, walkJsonFiles } from "./nodeFs";
+import { fetchSource } from "./sourceFetch";
 
 const PREFIX = "/__ptk";
 
@@ -47,6 +48,17 @@ export function prayerToolkitBrowserFs(toolkitRoot: string): Plugin {
         try {
           const url = new URL(req.url, "http://localhost");
           const route = url.pathname.slice(PREFIX.length);
+
+          if (route === "/fetch" && req.method === "GET") {
+            try {
+              sendJson(res, 200, await fetchSource(url.searchParams.get("url") ?? ""));
+            } catch (err) {
+              sendJson(res, 400, {
+                error: err instanceof Error ? err.message : String(err),
+              });
+            }
+            return;
+          }
 
           if (route === "/startup" && req.method === "GET") {
             sendJson(res, 200, {

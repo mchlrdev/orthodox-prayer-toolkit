@@ -68,6 +68,8 @@ type RowProps = {
   active?: boolean;
   /** Fixed-width leading slot (e.g. a speaker chip); omit for none. */
   leading?: ReactNode;
+  /** Quiet right-hand hint, shown on hover (not on the active row). */
+  hint?: ReactNode;
   children: ReactNode;
   onClick: () => void;
   "aria-label"?: string;
@@ -77,6 +79,7 @@ type RowProps = {
 export function OptionRow({
   active = false,
   leading,
+  hint,
   children,
   onClick,
   ...rest
@@ -97,6 +100,10 @@ export function OptionRow({
       {active ? (
         <div className={Menu.classes.itemSection} data-position="right">
           <IconCheck size={14} />
+        </div>
+      ) : hint !== undefined ? (
+        <div className={`${Menu.classes.itemSection} option-row-hint`} data-position="right">
+          {hint}
         </div>
       ) : null}
     </UnstyledButton>

@@ -139,6 +139,15 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
       });
     },
 
+    fetchSource: async (address) => {
+      const params = new URLSearchParams({ url: address });
+      return getJson(`${PREFIX}/fetch?${params}`) as Promise<{
+        url: string;
+        contentType: string;
+        text: string;
+      }>;
+    },
+
     pickPrayerJson: () =>
       new Promise((resolve) => {
         const input = document.createElement("input");

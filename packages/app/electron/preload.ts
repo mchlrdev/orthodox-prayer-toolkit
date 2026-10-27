@@ -54,6 +54,10 @@ export type PrayerToolkitApi = {
   ) => Promise<string | null>;
   /** Open-file dialog; returns basename + file text, or null if cancelled. */
   pickPrayerJson: () => Promise<{ name: string; content: string } | null>;
+  /** Fetch a web page for the import (http/https, size-capped). */
+  fetchSource: (
+    url: string,
+  ) => Promise<{ url: string; contentType: string; text: string }>;
   showItem: (fullPath: string) => Promise<void>;
   basename: (path: string) => Promise<string>;
   /** Electron only: subscribe to Edit → Find. Returns unsubscribe. */
@@ -120,6 +124,7 @@ const api: PrayerToolkitApi = {
   saveExport: (defaultName, content) =>
     ipcRenderer.invoke("dialog:saveExport", defaultName, content),
   pickPrayerJson: () => ipcRenderer.invoke("dialog:pickPrayerJson"),
+  fetchSource: (url: string) => ipcRenderer.invoke("import:fetchSource", url),
   showItem: (fullPath) => ipcRenderer.invoke("shell:showItem", fullPath),
   basename: (path) => ipcRenderer.invoke("path:basename", path),
   onCloseRequested: (cb) => {

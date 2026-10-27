@@ -2,11 +2,14 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import {
   applyImportOps,
   createImportDraft,
+  draftBlockGroup,
+  draftBlockPlainText,
+  draftBlocksInGroup,
   importDraftToPrayer,
-  readText,
   type ImportDraft,
   type ImportOp,
   type Prayer,
+  type Source,
 } from "@orthodox-prayer-toolkit/core";
 import type { EditorEdits } from "../components/InlineEditor";
 import { getTranslation, translationEditorContent } from "../prayerEdit";
@@ -18,6 +21,7 @@ import {
   type DraftHistory,
 } from "../session/history";
 import { variantKey, type ActiveVariant } from "../variant";
+import { groupLetters, sample, segmentIndex, sourceParts } from "./sourceView";
 import {
   commitOps,
   joinOps,
@@ -27,7 +31,8 @@ import {
 } from "./editorOps";
 
 export type StartImportInput = {
-  text: string;
+  /** What a Reader made of the pasted text, file or page. */
+  source: Source;
   /** Where the text comes from (Variant `source`, e.g. a site name). */
   origin: string;
   variant: ActiveVariant;
@@ -136,13 +141,35 @@ export function useImportDraft(): ImportDraftSession {
       move: (blockId, dir) => {
         apply(moveOps(draft(), blockId, dir));
       },
+      kindGroup: (blockId) => {
+        const d = draft();
+        const block = d.blocks.find((b) => b.id === blockId);
+        const group = block ? draftBlockGroup(d, block) : undefined;
+        if (!block || !group) return null;
+        const members = draftBlocksInGroup(d, group);
+        if (members.length < 2) return null;
+        const key = d.variants[0]!.key;
+        const n = sourceParts(block, segmentIndex(d))[0]?.n;
+        return {
+          blockLabel: n !== undefined ? `Segment ${n}` : "This block",
+          letter: groupLetters(d).get(group) ?? "",
+          count: members.length,
+          samples: members
+            .filter((b) => b.id !== blockId)
+            .slice(0, 2)
+            .map((b) => sample(draftBlockPlainText(d, b, key), 20)),
+          onChangeGroup: (kind) => {
+            apply([{ op: "setKind", target: { group }, kind }]);
+          },
+        };
+      },
     };
   }, [apply]);
 
   const start = useCallback(
-    ({ text, origin, variant }: StartImportInput) => {
+    ({ source, origin, variant }: StartImportInput) => {
       const draft = createImportDraft({
-        sources: [readText(text)],
+        sources: [source],
         variant: { ...variant, source: origin.trim() },
       });
       commit({ draft, history: emptyHistory<ImportDraft>() });

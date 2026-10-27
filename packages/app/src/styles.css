@@ -2441,6 +2441,40 @@ body,
   align-items: flex-start;
   gap: 10px;
   min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.import-source-row:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--opt-accent) 45%, transparent);
+  outline-offset: 2px;
+}
+
+/* Same style group as the block holding the caret. */
+.import-source-row[data-group-peer="true"] .import-source-badge {
+  background: color-mix(in srgb, var(--opt-accent) 16%, transparent);
+  color: var(--opt-accent);
+}
+
+.import-source-text[data-bold="true"] {
+  font-weight: 600;
+}
+
+.import-source-text[data-italic="true"] {
+  font-style: italic;
+  color: var(--opt-text-secondary);
+}
+
+.import-source-text[data-large="true"] {
+  font-size: 14px;
 }
 
 .import-source-n {
@@ -2574,4 +2608,80 @@ body,
     --import-source-width: minmax(0, 0.8fr);
     --import-column-gap: 20px;
   }
+}
+
+/* Kind picker: this block vs. its whole style group (Import draft). */
+.kind-scope {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 2px;
+}
+
+.kind-scope-switch {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--opt-hover-strong);
+}
+
+.kind-scope-switch > button {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--opt-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.kind-scope-switch > button[data-active="true"] {
+  background: var(--opt-surface-solid);
+  color: var(--opt-text);
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.kind-scope-switch .import-source-badge {
+  height: 14px;
+  font-size: 9px;
+  line-height: 14px;
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+.kind-scope-samples {
+  padding: 6px 9px 4px;
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--opt-text-secondary);
+}
+
+.option-row-hint {
+  font-size: 11px;
+  color: var(--opt-text-secondary);
+  opacity: 0;
+  transition: opacity 100ms ease;
+}
+
+.option-row:hover .option-row-hint,
+.option-row:focus-visible .option-row-hint {
+  opacity: 1;
+}
+
+.import-drop {
+  border-radius: var(--mantine-radius-sm);
+  transition: box-shadow 120ms ease;
+}
+
+.import-drop[data-over="true"] {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--opt-accent) 45%, transparent);
 }

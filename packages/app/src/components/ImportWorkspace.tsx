@@ -1,4 +1,4 @@
-import { useMemo, useState, type Ref } from "react";
+import { useCallback, useMemo, useRef, useState, type Ref } from "react";
 import { ActionIcon, Button, Tooltip } from "@mantine/core";
 import {
   IconAlertTriangle,
@@ -8,10 +8,10 @@ import {
   IconCircleOff,
 } from "@tabler/icons-react";
 import {
+  draftBlockGroup,
   draftBlockVisible,
   locateValidationErrors,
   type DraftBlock,
-  type DraftSpan,
   type ImportDraft,
   type ImportOp,
   type Prayer,
@@ -26,9 +26,40 @@ import {
 import { ConfirmDialog } from "./ConfirmDialog";
 import { shortcutLabel } from "../appCommands";
 import { importContentErrors } from "../importDraft/contentErrors";
+import {
+  groupLetters,
+  segmentIndex,
+  sourceParts,
+  type SegmentInfo,
+} from "../importDraft/sourceView";
 import { variantKey, type ActiveVariant } from "../variant";
 
 type StyleEditing = Parameters<typeof InlineEditor>[0]["styleEditing"];
+
+function assignRef<T>(ref: Ref<T> | undefined, value: T): void {
+  if (!ref) return;
+  if (typeof ref === "function") ref(value);
+  else (ref as { current: T }).current = value;
+}
+
+function pxSize(look: SegmentInfo["look"]): number | null {
+  const n = typeof look.size === "string" ? Number.parseFloat(look.size) : NaN;
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Source-like emphasis for the segment text: weight, style, larger size. */
+function lookAttrs(look: SegmentInfo["look"], bodySize: number | null) {
+  const size = pxSize(look);
+  const tag = typeof look.tag === "string" ? look.tag : "";
+  return {
+    "data-bold": look.weight === "bold" ? "true" : undefined,
+    "data-italic": look.style === "italic" || look.style === "oblique" ? "true" : undefined,
+    "data-large":
+      (size !== null && bodySize !== null && size >= bodySize * 1.15) || /^h[1-3]$/.test(tag)
+        ? "true"
+        : undefined,
+  } as const;
+}
 
 type Props = {
   draft: ImportDraft;
@@ -48,56 +79,6 @@ type Props = {
   onDiscard: () => void;
   onSave: () => void;
 };
-
-function segmentIndex(draft: ImportDraft): Map<string, { n: number; text: string; group?: string }> {
-  const out = new Map<string, { n: number; text: string; group?: string }>();
-  let n = 0;
-  for (const source of draft.sources) {
-    for (const seg of source.segments) {
-      n += 1;
-      out.set(seg.id, { n, text: seg.text, group: seg.group });
-    }
-  }
-  return out;
-}
-
-function groupLetter(draft: ImportDraft, group: string | undefined): string | null {
-  if (!group) return null;
-  const groups: string[] = [];
-  for (const source of draft.sources) {
-    for (const seg of source.segments) {
-      if (seg.group && !groups.includes(seg.group)) groups.push(seg.group);
-    }
-  }
-  const i = groups.indexOf(group);
-  return i < 0 ? null : String.fromCharCode(65 + (i % 26));
-}
-
-type SourcePart = { n: number; text: string; group?: string };
-
-/** The Source text a block points at, per segment (first Variant with text). */
-function sourceParts(
-  block: DraftBlock,
-  segments: ReturnType<typeof segmentIndex>,
-): SourcePart[] {
-  const spans: DraftSpan[] =
-    Object.values(block.content).find((s) => s.some((x) => "seg" in x)) ?? [];
-  // One part per run of spans into the same segment: its text from the first
-  // span's start to the last span's end, as the Source has it.
-  const runs: Array<{ seg: string; start: number; end: number }> = [];
-  for (const span of spans) {
-    if (!("seg" in span)) continue;
-    const last = runs[runs.length - 1];
-    if (last && last.seg === span.seg && span.start >= last.end) last.end = span.end;
-    else runs.push({ seg: span.seg, start: span.start, end: span.end });
-  }
-  return runs.flatMap((run) => {
-    const seg = segments.get(run.seg);
-    if (!seg) return [];
-    const text = seg.text.slice(run.start, run.end).trim();
-    return [{ n: seg.n, text, group: seg.group }];
-  });
-}
 
 export function ImportWorkspace({
   draft,
@@ -125,6 +106,29 @@ export function ImportWorkspace({
     [col.lang, col.variant],
   );
   const segments = useMemo(() => segmentIndex(draft), [draft.sources]);
+  const letters = useMemo(() => groupLetters(draft), [draft.sources]);
+  // Most common font size = body text; larger segments read as headings.
+  const bodySize = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const seg of segments.values()) {
+      const size = pxSize(seg.look);
+      if (size !== null) counts.set(size, (counts.get(size) ?? 0) + seg.text.length);
+    }
+    let best: number | null = null;
+    for (const [size, n] of counts) if (best === null || n > counts.get(best)!) best = size;
+    return best;
+  }, [segments]);
+
+  const localEditorRef = useRef<InlineEditorHandle | null>(null);
+  const setEditorRef = useCallback(
+    (handle: InlineEditorHandle | null) => {
+      localEditorRef.current = handle;
+      assignRef(editorRef, handle);
+    },
+    [editorRef],
+  );
+  /** Block holding the caret: its row and its style group are marked. */
+  const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const segmentCount = segments.size;
   const groupCount = new Set(
     [...segments.values()].map((s) => s.group).filter(Boolean),
@@ -167,6 +171,18 @@ export function ImportWorkspace({
     return out;
   }, [draft]);
 
+  const activeBlock = activeBlockId ? byId.get(activeBlockId) : undefined;
+  const activeGroup = activeBlock ? draftBlockGroup(draft, activeBlock) : undefined;
+
+  const selectBlock = (blockId: string) => {
+    localEditorRef.current?.revealBlock(blockId, {
+      scroll: "nearest",
+      focusCol: col,
+      flash: false,
+      caret: "start",
+    });
+  };
+
   const leadCell = (blockId: string) => {
     const block = byId.get(blockId);
     if (!block) return null;
@@ -174,16 +190,29 @@ export function ImportWorkspace({
     if (parts.length === 0) {
       return <div className="import-source-row" data-typed="true" />;
     }
+    const peer =
+      activeGroup !== undefined &&
+      blockId !== activeBlockId &&
+      draftBlockGroup(draft, block) === activeGroup;
     return parts.map((part, i) => {
-      const letter = groupLetter(draft, part.group);
+      const letter = part.group ? letters.get(part.group) : undefined;
       return (
-        <div key={`${part.n}-${i}`} className="import-source-row">
+        <button
+          type="button"
+          key={`${part.n}-${i}`}
+          className="import-source-row"
+          data-group-peer={peer ? "true" : undefined}
+          title={letter ? `Style group ${letter}` : undefined}
+          onClick={() => selectBlock(blockId)}
+        >
           <span className="import-source-n">{part.n}</span>
           <span className="import-source-group">
             {letter ? <span className="import-source-badge">{letter}</span> : null}
           </span>
-          <span className="import-source-text">{part.text}</span>
-        </div>
+          <span className="import-source-text" {...lookAttrs(part.look, bodySize)}>
+            {part.text}
+          </span>
+        </button>
       );
     });
   };
@@ -203,7 +232,9 @@ export function ImportWorkspace({
               <div key={`${part.n}-${i}`} className="import-source-row" data-excluded="true">
                 <span className="import-source-n">{part.n}</span>
                 <span className="import-source-group" />
-                <span className="import-source-text">{part.text}</span>
+                <span className="import-source-text" {...lookAttrs(part.look, bodySize)}>
+                  {part.text}
+                </span>
               </div>
             ))}
             <div className="import-excluded-actions">
@@ -304,15 +335,21 @@ export function ImportWorkspace({
 
       <div
         className="workspace-body"
-        ref={(el) => {
-          if (!scrollRootRef) return;
-          if (typeof scrollRootRef === "function") scrollRootRef(el);
-          else scrollRootRef.current = el;
+        ref={(el) => assignRef(scrollRootRef, el)}
+        onFocusCapture={(e) => {
+          const row = (e.target as HTMLElement).closest<HTMLElement>("[data-block-id]");
+          if (row?.dataset.blockId && (e.target as HTMLElement).isContentEditable) {
+            setActiveBlockId(row.dataset.blockId);
+          }
+        }}
+        onBlurCapture={(e) => {
+          const next = e.relatedTarget as HTMLElement | null;
+          if (!next?.isContentEditable) setActiveBlockId(null);
         }}
       >
         <div className="workspace-body-inner import-body">
           <InlineEditor
-            ref={editorRef}
+            ref={setEditorRef}
             prayer={prayer}
             visibleVariants={visibleVariants}
             styles={styles}

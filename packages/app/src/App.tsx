@@ -99,10 +99,10 @@ export function App() {
   const importing = importDraft.draft !== null;
   const [importTextOpen, setImportTextOpen] = useState(false);
   const [importSaveOpen, setImportSaveOpen] = useState(false);
-  /** Library entry picked while an Import draft is open (asks to discard). */
-  const [leaveImportFor, setLeaveImportFor] = useState<LibraryEntry | null>(
-    null,
-  );
+  /** What waits for "discard the open Import draft?": a prayer or a new import. */
+  const [leaveImportFor, setLeaveImportFor] = useState<
+    LibraryEntry | "new-import" | null
+  >(null);
   const { setColorScheme } = useMantineColorScheme();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPane, setSettingsPane] =
@@ -519,7 +519,10 @@ export function App() {
               onLibrarySettings={() => setLibrarySettingsOpen(true)}
               onAppSettings={() => setAppSettingsOpen(true)}
               onImportPrayer={() => void session.importPrayerFile()}
-              onImportText={() => setImportTextOpen(true)}
+              onImportText={() => {
+                if (importing) setLeaveImportFor("new-import");
+                else setImportTextOpen(true);
+              }}
               onExportPrayer={(entry) => void session.exportPrayerFile(entry)}
               onDelete={(entry) => setPendingDelete(entry)}
             />
@@ -836,13 +839,18 @@ export function App() {
         opened={leaveImportFor !== null}
         onClose={() => setLeaveImportFor(null)}
         title="Discard import draft?"
-        message="Opening another prayer drops the import draft and every change to it."
+        message={
+          leaveImportFor === "new-import"
+            ? "A new import replaces the open import draft and every change to it."
+            : "Opening another prayer drops the import draft and every change to it."
+        }
         confirmLabel="Discard"
         onConfirm={() => {
-          const entry = leaveImportFor;
+          const next = leaveImportFor;
           setLeaveImportFor(null);
           importDraft.discard();
-          if (entry) void session.openEntry(entry);
+          if (next === "new-import") setImportTextOpen(true);
+          else if (next) void session.openEntry(next);
         }}
       />
 

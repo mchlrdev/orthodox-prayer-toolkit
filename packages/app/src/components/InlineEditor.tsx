@@ -48,7 +48,12 @@ import {
   type StyleMap,
 } from "@orthodox-prayer-toolkit/core";
 import { styleColorToCss } from "../colors";
-import { KindSelect, KindTrigger, kindContextItems } from "./KindSelect";
+import {
+  KindSelect,
+  KindTrigger,
+  kindContextItems,
+  type KindGroupScope,
+} from "./KindSelect";
 import { kindFontSizeToEditor } from "../kindFontSize";
 import { useContextMenu, type ContextMenuItem } from "./ContextMenu";
 import { getToolkitApi } from "../api";
@@ -211,6 +216,8 @@ export type EditorEdits = {
   setSpeaker: (blockId: string, speaker: string | null) => void;
   remove: (blockId: string) => void;
   move: (blockId: string, dir: -1 | 1) => void;
+  /** The block's style group for the Kind picker's "whole group" side. */
+  kindGroup?: (blockId: string) => KindGroupScope | null;
 };
 
 export type InlineEditorHandle = {
@@ -1602,6 +1609,18 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     change(setBlockKind(p, index, kind));
   };
 
+  const groupScopeFor = (blockId: string): KindGroupScope | null => {
+    const scope = edits?.kindGroup?.(blockId) ?? null;
+    if (!scope) return null;
+    return {
+      ...scope,
+      onChangeGroup: (kind) => {
+        flushedCtx();
+        scope.onChangeGroup(kind);
+      },
+    };
+  };
+
   const insertBlockAfter = (index: number, kind: string) => {
     const { prayer: p, onChange: change, visibleVariants: cols } = flushedCtx();
     const id = createBlockId(p.structure.length);
@@ -1886,6 +1905,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                     styleEditing={styleEditing}
                     onIdle={handleKindIdle}
                     onChange={(kind) => changeKind(index, kind)}
+                    groupScope={groupScopeFor(block.id)}
                     onMoreKinds={openMoreKinds}
                     onRename={(from, to) => {
                       onRenameKind(from, to);

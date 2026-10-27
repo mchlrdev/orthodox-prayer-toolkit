@@ -5,6 +5,7 @@ import {
   createImportDraft,
   draftBlockHasTypedText,
   draftBlockPlainText,
+  draftBlocksInGroup,
   draftBlockVisible,
   freePrayerId,
   prayerIdFromTitle,
@@ -432,5 +433,24 @@ describe("prayer ids", () => {
     expect(freePrayerId("a", [])).toBe("a");
     expect(freePrayerId("a", ["a", "a-2"])).toBe("a-3");
     expect(freePrayerId("psalm-50", ["psalm-50"])).toBe("psalm-50-2");
+  });
+});
+
+describe("style groups in the draft", () => {
+  it("lists the visible blocks of a group", () => {
+    const source: Source = assignStyleGroups({
+      id: "s1",
+      format: "html",
+      name: "page",
+      segments: [
+        { id: "a", text: "Titel", look: { tag: "h2" } },
+        { id: "b", text: "Vers", look: { tag: "p" } },
+        { id: "c", text: "Zweiter Titel", look: { tag: "h2" } },
+      ],
+    });
+    const d = createImportDraft({ sources: [source], variant: { lang: "de", variant: "standard" } });
+    expect(draftBlocksInGroup(d, "s1-g1").map((b) => b.id)).toEqual(["b1", "b3"]);
+    const hidden = run(d, { op: "setExcluded", segments: ["c"], excluded: true });
+    expect(draftBlocksInGroup(hidden, "s1-g1").map((b) => b.id)).toEqual(["b1"]);
   });
 });

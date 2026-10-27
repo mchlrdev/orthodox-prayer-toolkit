@@ -5,6 +5,7 @@ import {
   globalShortcut,
   ipcMain,
   Menu,
+  net,
   shell,
 } from "electron";
 import electronUpdater from "electron-updater";
@@ -27,6 +28,7 @@ import {
   writeFileAtomic,
 } from "../nodeFs";
 import { createLibraryWatcher } from "./libraryWatch";
+import { fetchSource } from "../sourceFetch";
 import { createTrustedRoots, type TrustedRoots } from "./trustedRoots";
 import { startMacUpdateInstall } from "./macUpdateInstall";
 import {
@@ -507,6 +509,11 @@ function registerIpc(): void {
       return saved;
     },
   );
+
+  ipcMain.handle("import:fetchSource", async (_evt, url: unknown) => {
+    if (typeof url !== "string") throw new Error("Invalid address");
+    return fetchSource(url, (input, init) => net.fetch(String(input), init));
+  });
 
   ipcMain.handle("dialog:pickPrayerJson", async () => {
     const result = await dialog.showOpenDialog({

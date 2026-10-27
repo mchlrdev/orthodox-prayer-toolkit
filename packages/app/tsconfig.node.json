@@ -11,5 +11,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["electron", "nodeFs.ts", "vite.config.ts", "vite-plugin-browser-fs.ts"]
+  "include": ["electron", "nodeFs.ts", "sourceFetch.ts", "vite.config.ts", "vite-plugin-browser-fs.ts"]
 }

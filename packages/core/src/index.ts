@@ -244,6 +244,7 @@ export {
   draftBlockHasTypedText,
   draftBlockPlainText,
   draftBlockSegments,
+  draftBlocksInGroup,
   draftBlockVisible,
   importDraftToPrayer,
   validateImportDraft,
