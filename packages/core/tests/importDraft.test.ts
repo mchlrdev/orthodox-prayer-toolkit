@@ -7,7 +7,9 @@ import {
   draftBlockPlainText,
   draftBlocksInGroup,
   draftBlockVisible,
+  draftBlocksInColumn,
   freePrayerId,
+  freeSourceId,
   prayerIdFromTitle,
   importDraftToPrayer,
   readText,
@@ -490,5 +492,128 @@ describe("Reader hints in the first draft", () => {
     const split = run(d, { op: "split", block: "b2", variant: "v1", at: 22 });
     expect(texts(split)).toEqual([["und denen in den Gräbe"], ["rn das Leben geschenkt."]]);
     expect(texts(run(split, { op: "merge", block: "b2" }))).toEqual(texts(d));
+  });
+});
+
+describe("multilingual import", () => {
+  const DE = "Christus ist auferstanden.\n\nWahrhaft auferstanden.\n\nAmen.";
+  const CU = "Христосъ воскресе.\n\nВоистину воскресе.\n\nАминь.";
+
+  it("adds a second Source in another language and pairs it by order", () => {
+    const d0 = draft(DE);
+    const id = freeSourceId(d0);
+    expect(id).toBe("s2");
+    const d = run(
+      d0,
+      {
+        op: "addVariant",
+        variant: { lang: "cu", variant: "standard", title: "Тропарь", license: "CC0", source: "Test" },
+      },
+      { op: "addSource", source: readText(CU, { id }), variant: "v2" },
+      { op: "pairByOrder", variant: "v2" },
+    );
+    expect(d.variants.map((v) => [v.key, v.lang, v.title])).toEqual([
+      ["v1", "de", "Ostertroparion"],
+      ["v2", "cu", "Тропарь"],
+    ]);
+    const prayer = importDraftToPrayer(d);
+    expect(prayer.structure.map((b) => b.translations.map((t) => t.lines![0]))).toEqual([
+      ["Christus ist auferstanden.", "Христосъ воскресе."],
+      ["Wahrhaft auferstanden.", "Воистину воскресе."],
+      ["Amen.", "Аминь."],
+    ]);
+    expect(prayer.variants.map((v) => v.lang)).toEqual(["de", "cu"]);
+    expect(validateImportDraft(d).ok).toBe(true);
+  });
+
+  it("leaves extra blocks alone and omits the missing translation", () => {
+    const d = run(
+      draft(DE),
+      { op: "addVariant", variant: { lang: "cu", variant: "standard" } },
+      { op: "addSource", source: readText("Христосъ воскресе.", { id: "s2" }), variant: "v2" },
+      { op: "pairByOrder", variant: "v2" },
+    );
+    const prayer = importDraftToPrayer(d);
+    expect(prayer.structure.map((b) => b.translations.map((t) => t.lang))).toEqual([
+      ["de", "cu"],
+      ["de"],
+      ["de"],
+    ]);
+    expect(JSON.stringify(prayer)).not.toContain('"lines":[]');
+  });
+
+  it("splits a two-column Source into two Variants", () => {
+    const seg = (id: string, text: string, column: number) => ({
+      id,
+      text,
+      look: { column },
+    });
+    const source: Source = {
+      id: "s1",
+      format: "docx",
+      name: "parallel.docx",
+      segments: [
+        seg("s1-1", "Herr, erbarme dich.", 1),
+        seg("s1-2", "Господи, помилуй.", 2),
+        seg("s1-3", "Gewähre, o Herr.", 1),
+        seg("s1-4", "Подай, Господи.", 2),
+      ],
+    };
+    const d0 = createImportDraft({ sources: [source], variant: { lang: "de", variant: "standard" } });
+    const right = draftBlocksInColumn(d0, 1, "v1").map((b) => b.id);
+    expect(right).toEqual(["b2", "b4"]);
+    const d = run(
+      d0,
+      { op: "addVariant", variant: { lang: "ru", variant: "standard" } },
+      { op: "assignVariant", blocks: right, from: "v1", to: "v2" },
+      { op: "pairByOrder", variant: "v2" },
+    );
+    expect(importDraftToPrayer(d).structure.map((b) => b.translations.map((t) => t.lines![0]))).toEqual([
+      ["Herr, erbarme dich.", "Господи, помилуй."],
+      ["Gewähre, o Herr.", "Подай, Господи."],
+    ]);
+  });
+
+  it("refuses a duplicate Variant, Source or segment", () => {
+    const d = draft(DE);
+    expect(
+      applyImportOps(d, [{ op: "addVariant", variant: { lang: "de", variant: "standard" } }]).ok,
+    ).toBe(false);
+    expect(
+      applyImportOps(d, [
+        { op: "addVariant", variant: { lang: "cu", variant: "standard" } },
+        { op: "addSource", source: readText(CU), variant: "v2" },
+      ]).ok,
+    ).toBe(false);
+    expect(
+      applyImportOps(d, [{ op: "assignVariant", blocks: ["b1"], from: "v1", to: "v9" }]).ok,
+    ).toBe(false);
+  });
+
+  it("an unpaired translation can be paired with another block", () => {
+    const d1 = run(
+      draft(DE),
+      { op: "addVariant", variant: { lang: "cu", variant: "standard" } },
+      { op: "addSource", source: readText(CU, { id: "s2" }), variant: "v2" },
+      { op: "pairByOrder", variant: "v2" },
+      { op: "unpairVariant", block: "b3", variant: "v2" },
+      { op: "unpairVariant", block: "b2", variant: "v2" },
+    );
+    // Each unpaired translation sits in a lone block right after its old partner.
+    expect(d1.blocks.map((b) => [b.id, Object.keys(b.content)])).toEqual([
+      ["b1", ["v1", "v2"]],
+      ["b2", ["v1"]],
+      ["b8", ["v2"]],
+      ["b3", ["v1"]],
+      ["b7", ["v2"]],
+    ]);
+    // "Воистину" belongs to "Amen" here: pair it there; "Аминь" stays alone.
+    const d2 = run(d1, { op: "pairVariant", block: "b3", variant: "v2", from: "b8" });
+    expect(importDraftToPrayer(d2).structure.map((b) => b.translations.map((t) => t.lines![0]))).toEqual([
+      ["Christus ist auferstanden.", "Христосъ воскресе."],
+      ["Wahrhaft auferstanden."],
+      ["Amen.", "Воистину воскресе."],
+      ["Аминь."],
+    ]);
   });
 });

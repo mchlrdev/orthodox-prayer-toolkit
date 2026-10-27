@@ -237,6 +237,36 @@ export function draftBlocksInGroup(draft: ImportDraft, group: string): DraftBloc
 }
 
 /**
+ * Text column of a segment, 0-based: a PDF column (`area.column`) or a
+ * table column (`look.column`, 1-based from the Reader). Undefined when the
+ * Source has no columns.
+ */
+export function segmentColumn(segment: SourceSegment): number | undefined {
+  if (segment.area?.column !== undefined) return segment.area.column;
+  const col = segment.look.column;
+  return typeof col === "number" && col >= 1 ? col - 1 : undefined;
+}
+
+/** Blocks whose text in `variantKey` comes only from segments in `column`. */
+export function draftBlocksInColumn(
+  draft: ImportDraft,
+  column: number,
+  variantKey: string,
+): DraftBlock[] {
+  const ctx = contextOf(draft);
+  return draft.blocks.filter((b) => {
+    const spans = b.content[variantKey]?.filter((s) => "seg" in s) ?? [];
+    return (
+      spans.length > 0 &&
+      spans.every((s) => {
+        const seg = "seg" in s ? ctx.segment(s.seg) : undefined;
+        return seg !== undefined && segmentColumn(seg) === column;
+      })
+    );
+  });
+}
+
+/**
  * The Prayer the draft stands for. Blocks with no visible text are left out;
  * missing translations are omitted. Run it through `validate()` before saving.
  */
@@ -296,6 +326,13 @@ export type ImportOp =
   | { op: "setExcluded"; segments: string[]; excluded: boolean }
   | { op: "pairVariant"; block: string; variant: string; from: string }
   | { op: "unpairVariant"; block: string; variant: string }
+  | {
+      op: "addVariant";
+      variant: { lang: string; variant: string } & Partial<Omit<DraftVariant, "key" | "lang" | "variant">>;
+    }
+  | { op: "addSource"; source: Source; variant: string }
+  | { op: "assignVariant"; blocks: string[]; from: string; to: string }
+  | { op: "pairByOrder"; variant: string }
   | { op: "moveBlock"; block: string; to: number }
   | { op: "declareKind"; kind: KindDef }
   | { op: "setPrayerMeta"; patch: Partial<DraftPrayerMeta> }
@@ -329,6 +366,21 @@ function requireVariant(draft: ImportDraft, key: string): void {
 
 function kindIsAvailable(draft: ImportDraft, kind: string): boolean {
   return isKindPreset(kind) || draft.kinds.some((k) => k.id === kind);
+}
+
+function freeVariantKey(draft: ImportDraft): string {
+  const taken = new Set(draft.variants.map((v) => v.key));
+  let n = draft.variants.length + 1;
+  while (taken.has(`v${n}`)) n += 1;
+  return `v${n}`;
+}
+
+/** A Source id not used in the draft yet (`s1`, `s2`, …), for {@link ImportOp} addSource. */
+export function freeSourceId(draft: ImportDraft): string {
+  const taken = new Set(draft.sources.map((s) => s.id));
+  let n = draft.sources.length + 1;
+  while (taken.has(`s${n}`)) n += 1;
+  return `s${n}`;
 }
 
 function withBlocks(draft: ImportDraft, blocks: DraftBlock[]): ImportDraft {
@@ -646,6 +698,91 @@ function applyOne(draft: ImportDraft, op: ImportOp, origin: ImportOrigin): Impor
       const blocks = [...draft.blocks];
       blocks.splice(index, 1, { ...block, content: left }, lone);
       return { ...draft, blocks, nextBlock: draft.nextBlock + 1 };
+    }
+
+    case "addVariant": {
+      const { lang, variant, title = "", license = "", source = "", rtl, speakers } = op.variant;
+      if (!lang.trim() || !variant.trim()) fail("A Variant needs a language and an edition");
+      if (draft.variants.some((v) => v.lang === lang && v.variant === variant)) {
+        fail(`Variant ${lang} / ${variant} already exists`);
+      }
+      const added: DraftVariant = {
+        key: freeVariantKey(draft),
+        lang,
+        variant,
+        title,
+        license,
+        source,
+        ...(rtl ? { rtl } : {}),
+        ...(speakers && Object.keys(speakers).length > 0 ? { speakers } : {}),
+      };
+      return { ...draft, variants: [...draft.variants, added] };
+    }
+
+    case "addSource": {
+      requireVariant(draft, op.variant);
+      if (draft.sources.some((s) => s.id === op.source.id)) {
+        fail(`Source "${op.source.id}" is already in the draft`);
+      }
+      const known = new Set(draft.sources.flatMap((s) => s.segments.map((seg) => seg.id)));
+      for (const seg of op.source.segments) {
+        if (known.has(seg.id)) fail(`Duplicate source segment id "${seg.id}"`);
+        known.add(seg.id);
+      }
+      let next = draft.nextBlock;
+      const added: DraftBlock[] = op.source.segments.map((segment) => ({
+        id: `b${next++}`,
+        kind: "verse",
+        content: { [op.variant]: segmentSpans(segment) },
+        origin: { kind: { by: "reader" } },
+      }));
+      return {
+        ...draft,
+        sources: [...draft.sources, op.source],
+        blocks: [...draft.blocks, ...added],
+        excluded: [
+          ...draft.excluded,
+          ...op.source.segments.filter((s) => s.furniture).map((s) => s.id),
+        ],
+        nextBlock: next,
+      };
+    }
+
+    case "assignVariant": {
+      requireVariant(draft, op.from);
+      requireVariant(draft, op.to);
+      if (op.from === op.to) fail("Source and target Variant are the same");
+      const ids = new Set(op.blocks);
+      const blocks = draft.blocks.map((b) => {
+        if (!ids.has(b.id)) return b;
+        ids.delete(b.id);
+        const spans = b.content[op.from];
+        if (!spans) fail(`Block "${b.id}" has no text in variant "${op.from}"`);
+        if (b.content[op.to]) fail(`Block "${b.id}" already has text in variant "${op.to}"`);
+        const { [op.from]: _moved, ...rest } = b.content;
+        return { ...b, content: { ...rest, [op.to]: spans } };
+      });
+      if (ids.size > 0) fail(`No block "${[...ids][0]}"`);
+      return withBlocks(draft, blocks);
+    }
+
+    case "pairByOrder": {
+      requireVariant(draft, op.variant);
+      // Blocks with only this Variant, in order, go to the blocks without it.
+      const lone = draft.blocks.filter(
+        (b) => b.content[op.variant] && Object.keys(b.content).length === 1,
+      );
+      const open = draft.blocks.filter((b) => !b.content[op.variant]);
+      const pairs = new Map<string, DraftBlock>();
+      lone.slice(0, open.length).forEach((b, i) => pairs.set(open[i]!.id, b));
+      const moved = new Set([...pairs.values()].map((b) => b.id));
+      const blocks = draft.blocks.flatMap((b) => {
+        if (moved.has(b.id)) return [];
+        const from = pairs.get(b.id);
+        if (!from) return [b];
+        return [{ ...b, content: { ...b.content, [op.variant]: from.content[op.variant]! } }];
+      });
+      return withBlocks(draft, blocks);
     }
 
     case "moveBlock": {

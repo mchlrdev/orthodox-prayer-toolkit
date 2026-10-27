@@ -320,9 +320,13 @@ Turns a Source into a Prayer without retyping its text. Readers split a Source i
 | `setText` | Explicit text from the editor; unchanged characters keep their source. Allowed on a Variant the block has no text in yet (typed text) |
 | `setExcluded` | Hide or show Source segments |
 | `pairVariant` / `unpairVariant` | Move one Variant's text into another block / out into its own block |
+| `addVariant` | New Variant (language/edition, title, licence, source) with the next free key `v{n}` |
+| `addSource` | Second Source (id from `freeSourceId`) in a Variant: one Verse block per segment, appended |
+| `assignVariant` | Move the text of the given blocks from one Variant to another (a column of a parallel Source) |
+| `pairByOrder` | Pair blocks that have only this Variant, in order, with the blocks lacking it; leftovers stay alone |
 | `moveBlock`, `declareKind`, `setPrayerMeta`, `setVariantMeta` | As named; a Variant may not duplicate another's lang/variant |
 
-`importDraftToPrayer(draft)` builds the Prayer (blocks without visible text are left out, speakers only where the kind allows them); `validateImportDraft(draft)` runs it through `validate()`; `draftBlockVisible(draft, block)` tells whether a block is part of that Prayer; `draftBlocksInGroup(draft, group)` lists the visible blocks a group `setKind` changes. Saving and id-collision checks stay with the app's Library writer; `prayerIdFromTitle(title)` suggests an id and `freePrayerId(id, taken)` the first free `id-2`, `id-3`, ….
+`importDraftToPrayer(draft)` builds the Prayer (blocks without visible text are left out, speakers only where the kind allows them); `validateImportDraft(draft)` runs it through `validate()`; `draftBlockVisible(draft, block)` tells whether a block is part of that Prayer; `draftBlocksInGroup(draft, group)` lists the visible blocks a group `setKind` changes. `segmentColumn(segment)` gives a segment's 0-based text column (PDF `area.column` or a table's `look.column`), and `draftBlocksInColumn(draft, column, variantKey)` the blocks made only of that column — the input to `assignVariant` when a parallel Source becomes two Variants. Saving and id-collision checks stay with the app's Library writer; `prayerIdFromTitle(title)` suggests an id and `freePrayerId(id, taken)` the first free `id-2`, `id-3`, ….
 
 The HTML Reader lives in the app (`packages/app/src/importDraft/readHtml.ts`): the page is sanitized (no scripts, handlers or remote loads), laid out in a sandboxed frame with a `default-src 'none'` CSP, and every block element's own text becomes a segment whose look is its tag, class and computed weight, style, size, colour and alignment. Pasted HTML, dropped `.html` files and fetched web addresses all go through it; addresses are fetched in the main process (`sourceFetch.ts`), never in the renderer.
 
