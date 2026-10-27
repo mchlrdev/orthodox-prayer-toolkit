@@ -312,13 +312,16 @@ Turns a Source into a Prayer without retyping its text. Readers split a Source i
 |------|--------|
 | `setKind` | `target: { block }` or `{ group }` (every block whose first visible segment is in the style group). Kind must be a preset or declared. Drops a speaker the new kind does not take |
 | `split` | At a plain-text offset in one Variant; the new block gets only that Variant (like the editor). Both sides need text |
-| `merge` | Block with the next one, all Variants. `keep: "upper" \| "lower"` picks kind and id. Split-then-merge restores the text |
+| `merge` | Block with the next block that shows text, all Variants (hidden blocks in between stay right after it). `keep: "upper" \| "lower"` picks kind and id. Split-then-merge restores the text |
+| `deleteBlock` | Excludes the segments only this block uses (restorable with `setExcluded`); its share of segments other blocks use, and typed text, is dropped |
 | `setNote` | Mark or unmark `[start, end)` as a note run |
 | `setSpeaker` | Set or clear (`null`). Strip a printed prefix with `removeText` in the same batch |
 | `removeText` | Drop `[start, end)` from the block (the source keeps it) |
-| `setText` | Explicit text from the editor; unchanged characters keep their source |
+| `setText` | Explicit text from the editor; unchanged characters keep their source. Allowed on a Variant the block has no text in yet (typed text) |
 | `setExcluded` | Hide or show Source segments |
 | `pairVariant` / `unpairVariant` | Move one Variant's text into another block / out into its own block |
 | `moveBlock`, `declareKind`, `setPrayerMeta`, `setVariantMeta` | As named; a Variant may not duplicate another's lang/variant |
 
-`importDraftToPrayer(draft)` builds the Prayer (blocks without visible text are left out, speakers only where the kind allows them); `validateImportDraft(draft)` runs it through `validate()`. Saving and id-collision checks stay with the app's Library writer.
+`importDraftToPrayer(draft)` builds the Prayer (blocks without visible text are left out, speakers only where the kind allows them); `validateImportDraft(draft)` runs it through `validate()`; `draftBlockVisible(draft, block)` tells whether a block is part of that Prayer. Saving and id-collision checks stay with the app's Library writer; `prayerIdFromTitle(title)` suggests an id and `freePrayerId(id, taken)` the first free `id-2`, `id-3`, ….
+
+In the app the preview is the normal `InlineEditor`: its optional `edits` prop replaces the editor's own Prayer edits, so Enter, Backspace/Delete at a cell edge, typing, Kind, Speaker, move and delete become Import operations (`packages/app/src/importDraft/editorOps.ts`). Adding empty blocks is not offered there.

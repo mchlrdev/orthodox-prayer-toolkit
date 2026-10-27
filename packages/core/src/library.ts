@@ -29,6 +29,30 @@ export function prayerFilename(id: string): string {
 }
 
 /**
+ * Prayer id suggested for a title: lowercase ASCII letters and digits joined
+ * by "-" (accents dropped). Empty when the title has no such characters.
+ */
+export function prayerIdFromTitle(title: string): string {
+  return title
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/ß/g, "ss")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/** `id` when free, else the first free `id-2`, `id-3`, … */
+export function freePrayerId(id: string, taken: Iterable<string>): string {
+  const used = new Set(taken);
+  if (!used.has(id)) return id;
+  for (let n = 2; ; n++) {
+    const next = `${id}-${n}`;
+    if (!used.has(next)) return next;
+  }
+}
+
+/**
  * Detect duplicate ids and id/filename mismatches.
  * `entries` maps relative path → prayer id (from file contents when parseable).
  */

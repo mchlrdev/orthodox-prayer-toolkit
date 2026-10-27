@@ -36,6 +36,7 @@ import {
   clearPendingLeave,
   clearSelection,
   commitCreatePrayer,
+  createPrayerFile,
   deletePrayer,
   DESKTOP_REQUIRED_NOTICE,
   dirtyDrafts,
@@ -566,6 +567,24 @@ export function usePrayerSession(opts?: {
     }
   };
 
+  /** Save a finished prayer (e.g. an Import draft) as a new library file. */
+  const createPrayer = async (
+    prayer: Prayer,
+    variant: ActiveVariant,
+  ): Promise<boolean> => {
+    persistCurrentView();
+    setCreateBusy(true);
+    try {
+      const start = stateRef.current;
+      const result = await runOp((state) =>
+        createPrayerFile(state, api, prayer, variant),
+      );
+      return result.state !== start;
+    } finally {
+      setCreateBusy(false);
+    }
+  };
+
   const deleteEntry = async (entry: LibraryEntry) => {
     setDeleteBusy(true);
     try {
@@ -977,6 +996,7 @@ export function usePrayerSession(opts?: {
     beginCreatePrayer: beginCreate,
     cancelCreatePrayer: cancelCreate,
     commitCreatePrayer: commitCreate,
+    createPrayer,
     deleteEntry,
     exportEntry: exportEntryFn,
     exportPrayerFile: exportPrayerFileFn,

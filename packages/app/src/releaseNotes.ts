@@ -12,6 +12,13 @@ export type ReleaseNotesEntry = { version: string; items: string[] };
  */
 export const RELEASE_NOTES: ReleaseNotesEntry[] = [
   {
+    // Next tag (package is 0.3.7). Add bullets here before pushing user-visible UI/export work.
+    version: "0.3.8",
+    items: [
+      "Import text: paste a prayer, sort it into blocks in the normal editor beside the source, and save it to the library",
+    ],
+  },
+  {
     version: "0.3.7",
     items: [
       "Typing while a save runs is no longer lost",

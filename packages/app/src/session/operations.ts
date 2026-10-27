@@ -704,8 +704,38 @@ export async function commitCreatePrayer(
   if (!state.catalog || !state.createDraft || !state.createVariant) {
     return { state, notices: [] };
   }
+  const result = await createPrayerFile(
+    state,
+    api,
+    state.createDraft,
+    state.createVariant,
+  );
+  if (result.state === state) return result;
+  return {
+    ...result,
+    state: {
+      ...result.state,
+      createDraft: null,
+      createVariant: null,
+      createTemplateId: null,
+    },
+  };
+}
 
-  const result = validate(state.createDraft);
+/**
+ * Write a new prayer as `{id}.json`, add it to the catalog and open it.
+ * Refuses an invalid prayer and never overwrites (id or file collision):
+ * the state is returned unchanged with a notice.
+ */
+export async function createPrayerFile(
+  state: PrayerSessionState,
+  api: PrayerToolkitApi,
+  draft: Prayer,
+  variant: ActiveVariant,
+): Promise<SessionOpResult> {
+  if (!state.catalog) return { state, notices: [] };
+
+  const result = validate(draft);
   if (!result.ok) {
     return {
       state,
@@ -719,9 +749,8 @@ export async function commitCreatePrayer(
     };
   }
 
-  const path = prayerFilename(state.createDraft.id);
-  const createId = state.createDraft.id;
-  const clash = state.catalog.entries.find((e) => e.id === createId);
+  const path = prayerFilename(draft.id);
+  const clash = state.catalog.entries.find((e) => e.id === draft.id);
   const collision = (where: string): SessionOpResult => ({
     state,
     notices: [
@@ -732,17 +761,16 @@ export async function commitCreatePrayer(
       },
     ],
   });
-  if (clash) return collision(`“${createId}” (${clash.path})`);
+  if (clash) return collision(`“${draft.id}” (${clash.path})`);
 
   try {
     const created = await api.createText(
       state.catalog.root,
       path,
-      prayerFileText(state.createDraft),
+      prayerFileText(draft),
     );
     if (!created) return collision(`File ${path}`);
-    const prayer = structuredClone(state.createDraft);
-    const variant = state.createVariant;
+    const prayer = structuredClone(draft);
     const evicted = evictPreviousClean(state, path);
     const catalog = patchCatalogPrayer(evicted.catalog!, path, prayer);
     savePrayerView(catalog.root, path, [variant]);
@@ -762,9 +790,6 @@ export async function commitCreatePrayer(
             diskText: prayerFileText(prayer),
           },
         },
-        createDraft: null,
-        createVariant: null,
-        createTemplateId: null,
       },
       notices: [{ color: "dark", title: "Created", message: path }],
     };

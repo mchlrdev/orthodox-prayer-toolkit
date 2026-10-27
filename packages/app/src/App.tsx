@@ -13,7 +13,12 @@ import {
   IconChevronLeft,
   IconChevronRight,
 } from "@tabler/icons-react";
-import { indexVariants } from "@orthodox-prayer-toolkit/core";
+import {
+  applyImportOps,
+  importDraftToPrayer,
+  indexVariants,
+  type ImportOp,
+} from "@orthodox-prayer-toolkit/core";
 import { getToolkitApi, isBrowserDev } from "./api";
 import { PrayerList } from "./components/PrayerList";
 import { PrayerWorkspace } from "./components/PrayerWorkspace";
@@ -36,6 +41,13 @@ import { InvalidPrayerScreen } from "./components/InvalidPrayerScreen";
 import { UnsavedChangesDialog } from "./components/UnsavedChangesDialog";
 import { LibraryWelcome } from "./components/LibraryWelcome";
 import { NewLibraryModal } from "./components/NewLibraryModal";
+import { ImportWorkspace } from "./components/ImportWorkspace";
+import { ImportTextModal } from "./components/ImportTextModal";
+import {
+  ImportSaveModal,
+  type ImportSaveInput,
+} from "./components/ImportSaveModal";
+import { useImportDraft } from "./importDraft/useImportDraft";
 import type { InlineEditorHandle } from "./components/InlineEditor";
 import type { LibraryEntry } from "./library";
 import { usePrayerSession } from "./usePrayerSession";
@@ -83,6 +95,14 @@ export function App() {
     });
   }, []);
   const session = usePrayerSession({ onNotice });
+  const importDraft = useImportDraft();
+  const importing = importDraft.draft !== null;
+  const [importTextOpen, setImportTextOpen] = useState(false);
+  const [importSaveOpen, setImportSaveOpen] = useState(false);
+  /** Library entry picked while an Import draft is open (asks to discard). */
+  const [leaveImportFor, setLeaveImportFor] = useState<LibraryEntry | null>(
+    null,
+  );
   const { setColorScheme } = useMantineColorScheme();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsPane, setSettingsPane] =
@@ -138,10 +158,14 @@ export function App() {
   const handleSelectEntry = useCallback(
     (entry: LibraryEntry) => {
       flushPendingEdits();
+      if (importing) {
+        setLeaveImportFor(entry);
+        return;
+      }
       void session.openEntry(entry);
       if (overlayMode) setLibraryCollapsed(true);
     },
-    [overlayMode, session],
+    [overlayMode, session, importing],
   );
 
   const commandRef = useRef<(command: AppCommand, fromKey: boolean) => boolean>(
@@ -153,6 +177,10 @@ export function App() {
     switch (command) {
       case "save":
         flushPendingEdits();
+        if (importing) {
+          if (!dialogOpen) setImportSaveOpen(true);
+          return true;
+        }
         void session.saveDraft();
         return true;
       case "save-all":
@@ -187,6 +215,11 @@ export function App() {
         // Leave the cell so it re-renders from the restored prayer.
         if (active instanceof HTMLElement && active.isContentEditable) {
           active.blur();
+        }
+        if (importing) {
+          if (command === "undo") importDraft.undo();
+          else importDraft.redo();
+          return true;
         }
         if (command === "undo") session.undo();
         else session.redo();
@@ -375,6 +408,9 @@ export function App() {
     (!libraryCollapsed || !contentCollapsed);
 
   const workspaceView = useMemo(() => {
+    if (importing) {
+      return { key: "import", kind: "import" as const };
+    }
     if (selectedPath && !draft) {
       return { key: `invalid:${selectedPath}`, kind: "invalid" as const };
     }
@@ -385,7 +421,40 @@ export function App() {
       return { key: "pick", kind: "pick" as const };
     }
     return { key: "welcome", kind: "welcome" as const };
-  }, [selectedPath, draft, visibleVariants.length, library]);
+  }, [importing, selectedPath, draft, visibleVariants.length, library]);
+
+  const takenIds = useMemo(
+    () =>
+      new Set(
+        sidebarEntries.flatMap((e) => (e.id ? [e.id] : [])),
+      ),
+    [sidebarEntries],
+  );
+
+  const saveImport = async ({ meta, variant }: ImportSaveInput) => {
+    const current = importDraft.draft;
+    if (!current) return;
+    const key = current.variants[0]!.key;
+    const ops: ImportOp[] = [
+      { op: "setPrayerMeta", patch: meta },
+      { op: "setVariantMeta", variant: key, patch: variant },
+    ];
+    const result = applyImportOps(current, ops);
+    if (!result.ok) {
+      onNotice({ color: "accent", title: "Cannot save", message: result.error });
+      return;
+    }
+    // Keep what was typed in the dialog even when saving is refused.
+    importDraft.apply(ops);
+    const { lang, variant: edition } = result.draft.variants[0]!;
+    const saved = await session.createPrayer(importDraftToPrayer(result.draft), {
+      lang,
+      variant: edition,
+    });
+    if (!saved) return;
+    setImportSaveOpen(false);
+    importDraft.discard();
+  };
 
   return (
     <>
@@ -450,6 +519,7 @@ export function App() {
               onLibrarySettings={() => setLibrarySettingsOpen(true)}
               onAppSettings={() => setAppSettingsOpen(true)}
               onImportPrayer={() => void session.importPrayerFile()}
+              onImportText={() => setImportTextOpen(true)}
               onExportPrayer={(entry) => void session.exportPrayerFile(entry)}
               onDelete={(entry) => setPendingDelete(entry)}
             />
@@ -462,7 +532,34 @@ export function App() {
             key={workspaceView.key}
             data-view={workspaceView.kind}
           >
-            {selectedPath && !draft ? (
+            {importDraft.draft && importDraft.prayer ? (
+              <ImportWorkspace
+                draft={importDraft.draft}
+                prayer={importDraft.prayer}
+                styles={resolvedStyles}
+                styleEditing={{
+                  resolved: resolvedStyles,
+                  libraryKinds: session.libraryKinds,
+                  libraryEnabled: Boolean(library),
+                  onPatchStyle: (kind, partial) =>
+                    void session.patchKindStyle(kind, partial),
+                }}
+                edits={importDraft.edits}
+                canUndo={importDraft.canUndo}
+                canRedo={importDraft.canRedo}
+                takenIds={takenIds}
+                editorRef={editorRef}
+                scrollRootRef={scrollRootRef}
+                onApply={(ops) => importDraft.apply(ops)}
+                onUndo={() => importDraft.undo()}
+                onRedo={() => importDraft.redo()}
+                onDiscard={importDraft.discard}
+                onSave={() => {
+                  flushPendingEdits();
+                  setImportSaveOpen(true);
+                }}
+              />
+            ) : selectedPath && !draft ? (
               <InvalidPrayerScreen path={selectedPath} errors={draftErrors} />
             ) : draft && visibleVariants.length > 0 ? (
               <PrayerWorkspace
@@ -535,8 +632,15 @@ export function App() {
         >
           <div className="sidebar-inner" aria-hidden={contentCollapsed}>
             <ContentOutline
-              prayer={draft}
-              primary={visibleVariants[0] ?? null}
+              prayer={importDraft.prayer ?? draft}
+              primary={
+                importDraft.draft
+                  ? {
+                      lang: importDraft.draft.variants[0]!.lang,
+                      variant: importDraft.draft.variants[0]!.variant,
+                    }
+                  : (visibleVariants[0] ?? null)
+              }
               scrollRootRef={scrollRootRef}
               onJump={handleOutlineJump}
             />
@@ -698,6 +802,48 @@ export function App() {
         onColorSchemeChange={setColorSchemePref}
         editorFontSize={editorFontSize}
         onEditorFontSizeChange={setEditorFontSize}
+      />
+
+      <ImportTextModal
+        opened={importTextOpen}
+        variants={availableVariants.map((v) => ({
+          lang: v.lang,
+          variant: v.variant,
+        }))}
+        defaultVariant={library?.manifest?.defaultVariant ?? null}
+        onClose={() => setImportTextOpen(false)}
+        onCreate={(input) => {
+          flushPendingEdits();
+          importDraft.start(input);
+          setImportTextOpen(false);
+          if (overlayMode) setLibraryCollapsed(true);
+        }}
+      />
+
+      {importDraft.draft ? (
+        <ImportSaveModal
+          opened={importSaveOpen}
+          draft={importDraft.draft}
+          blockCount={importDraft.prayer?.structure.length ?? 0}
+          takenIds={takenIds}
+          busy={createBusy}
+          onClose={() => setImportSaveOpen(false)}
+          onSave={(input) => void saveImport(input)}
+        />
+      ) : null}
+
+      <ConfirmDialog
+        opened={leaveImportFor !== null}
+        onClose={() => setLeaveImportFor(null)}
+        title="Discard import draft?"
+        message="Opening another prayer drops the import draft and every change to it."
+        confirmLabel="Discard"
+        onConfirm={() => {
+          const entry = leaveImportFor;
+          setLeaveImportFor(null);
+          importDraft.discard();
+          if (entry) void session.openEntry(entry);
+        }}
       />
 
       <NewLibraryModal

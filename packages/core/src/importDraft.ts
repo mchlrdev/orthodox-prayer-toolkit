@@ -182,6 +182,15 @@ export function draftBlockHasTypedText(block: DraftBlock, variantKey: string): b
   return spansHaveTypedText(block.content[variantKey] ?? []);
 }
 
+function isVisible(ctx: ContentContext, block: DraftBlock): boolean {
+  return Object.values(block.content).some((spans) => hasVisibleText(buildPieces(spans, ctx)));
+}
+
+/** True when the block shows text in some Variant (it is part of the Prayer). */
+export function draftBlockVisible(draft: ImportDraft, block: DraftBlock): boolean {
+  return isVisible(contextOf(draft), block);
+}
+
 function groupOf(ctx: ContentContext, block: DraftBlock): string | undefined {
   for (const id of draftBlockSegments(block)) {
     if (ctx.excluded.has(id)) continue;
@@ -247,6 +256,7 @@ export type ImportOp =
   | { op: "setKind"; target: BlockRef | { group: string }; kind: string }
   | { op: "split"; block: string; variant: string; at: number }
   | { op: "merge"; block: string; keep?: "upper" | "lower" }
+  | { op: "deleteBlock"; block: string }
   | ({ op: "setNote"; start: number; end: number; note: boolean } & TextRef)
   | { op: "setSpeaker"; block: string; speaker: string | null }
   | ({ op: "removeText"; start: number; end: number } & TextRef)
@@ -314,11 +324,12 @@ function editPieces(
   draft: ImportDraft,
   ref: TextRef,
   edit: (pieces: Piece[], lineMode: boolean) => Piece[],
+  allowMissing = false,
 ): ImportDraft {
   const index = blockIndex(draft, ref.block);
   requireVariant(draft, ref.variant);
   const block = draft.blocks[index]!;
-  const spans = block.content[ref.variant];
+  const spans = block.content[ref.variant] ?? (allowMissing ? [] : undefined);
   if (!spans) fail(`Block "${ref.block}" has no text in variant "${ref.variant}"`);
   const ctx = contextOf(draft);
   const pieces = edit(buildPieces(spans, ctx), lineMode(block.kind));
@@ -452,9 +463,16 @@ function applyOne(draft: ImportDraft, op: ImportOp, origin: ImportOrigin): Impor
     }
 
     case "merge": {
+      // With the next block that shows text; hidden blocks in between stay
+      // right after the merged one.
       const index = blockIndex(draft, op.block);
       const upper = draft.blocks[index]!;
-      const lower = draft.blocks[index + 1];
+      const ctx = contextOf(draft);
+      let lowerIndex = index + 1;
+      while (lowerIndex < draft.blocks.length && !isVisible(ctx, draft.blocks[lowerIndex]!)) {
+        lowerIndex += 1;
+      }
+      const lower = draft.blocks[lowerIndex];
       if (!lower) fail(`Block "${op.block}" is the last block`);
       const keep = op.keep ?? "upper";
       const survivor = keep === "upper" ? upper : lower;
@@ -481,8 +499,31 @@ function applyOne(draft: ImportDraft, op: ImportOp, origin: ImportOrigin): Impor
         },
       };
       const blocks = [...draft.blocks];
-      blocks.splice(index, 2, merged);
+      const hidden = blocks.slice(index + 1, lowerIndex);
+      blocks.splice(index, lowerIndex - index + 1, merged, ...hidden);
       return withBlocks(draft, blocks);
+    }
+
+    case "deleteBlock": {
+      // Segments only this block uses are excluded (restorable); its share of
+      // segments other blocks also use, and typed text, is dropped.
+      const index = blockIndex(draft, op.block);
+      const block = draft.blocks[index]!;
+      const others = new Set(
+        draft.blocks.filter((_, i) => i !== index).flatMap((b) => draftBlockSegments(b)),
+      );
+      const own = draftBlockSegments(block).filter((id) => !others.has(id));
+      const content: Record<string, DraftSpan[]> = {};
+      for (const [key, spans] of Object.entries(block.content)) {
+        const kept = spans.filter((s) => "seg" in s && own.includes(s.seg));
+        if (kept.length > 0) content[key] = kept;
+      }
+      const blocks = [...draft.blocks];
+      if (Object.keys(content).length === 0) blocks.splice(index, 1);
+      else blocks[index] = { ...block, content };
+      const set = new Set([...draft.excluded, ...own]);
+      const order = draft.sources.flatMap((s) => s.segments.map((seg) => seg.id));
+      return { ...draft, blocks, excluded: order.filter((id) => set.has(id)) };
     }
 
     case "setNote":
@@ -500,7 +541,8 @@ function applyOne(draft: ImportDraft, op: ImportOp, origin: ImportOrigin): Impor
       });
 
     case "setText":
-      return editPieces(draft, op, (pieces, lines) => setText(pieces, lines, op.content));
+      // Typing into an empty translation cell starts typed text there.
+      return editPieces(draft, op, (pieces, lines) => setText(pieces, lines, op.content), true);
 
     case "setSpeaker": {
       const index = blockIndex(draft, op.block);

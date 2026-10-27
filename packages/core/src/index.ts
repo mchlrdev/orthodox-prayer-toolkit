@@ -187,6 +187,8 @@ export {
   isPrayerFilename,
   normalizeLibraryManifest,
   prayerFilename,
+  prayerIdFromTitle,
+  freePrayerId,
 } from "./library.js";
 
 export {
@@ -242,6 +244,7 @@ export {
   draftBlockHasTypedText,
   draftBlockPlainText,
   draftBlockSegments,
+  draftBlockVisible,
   importDraftToPrayer,
   validateImportDraft,
 } from "./importDraft.js";

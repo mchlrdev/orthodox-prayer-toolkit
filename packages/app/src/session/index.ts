@@ -98,6 +98,7 @@ export {
   clearPendingLeave,
   clearSelection,
   commitCreatePrayer,
+  createPrayerFile,
   deletePrayer,
   DESKTOP_REQUIRED_NOTICE,
   dirtyDrafts,

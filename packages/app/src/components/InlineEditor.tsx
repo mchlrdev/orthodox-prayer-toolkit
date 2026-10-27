@@ -1,5 +1,6 @@
 import {
   forwardRef,
+  Fragment,
   memo,
   useCallback,
   useEffect,
@@ -11,6 +12,7 @@ import {
   type CSSProperties,
   type FocusEvent,
   type MouseEvent as ReactMouseEvent,
+  type ReactNode,
 } from "react";
 import { ActionIcon, Group, Menu, Stack, Tooltip } from "@mantine/core";
 import {
@@ -140,6 +142,12 @@ type Props = {
   onSetKindSpeaker: (kind: string, allowed: boolean) => void;
   /** "More speakers…" / "More kinds…": open Prayer settings on that pane. */
   onOpenSettings?: (pane: "speakers" | "kinds") => void;
+  /** Replace the editor's own Prayer edits (see {@link EditorEdits}). */
+  edits?: EditorEdits;
+  /** Extra first cell of each block row (Import draft: its Source segments). */
+  leadCell?: (blockId: string) => ReactNode;
+  /** Full-width rows after a block (null = before the first block). */
+  rowsAfter?: (blockId: string | null) => ReactNode;
 };
 
 /** Which block's Speaker dropdown is open, and what it hangs from. */
@@ -165,12 +173,45 @@ export type BlockRevealOptions = {
 };
 
 /** What the parent did on Backspace at a cell's start / Delete at its end. */
-type JoinOutcome =
+export type JoinOutcome =
   | { kind: "removed" }
   | { kind: "merged"; content: InlineContent | InlineContent[]; caret: number }
   | null;
 
-type JoinDirection = "backward" | "forward";
+export type JoinDirection = "backward" | "forward";
+
+/** Cell content at Enter, with the plain-text selection (may be Infinity = end). */
+export type SplitPoint = {
+  content: InlineContent | InlineContent[] | null;
+  start: number;
+  end: number;
+};
+
+/**
+ * Edits the editor would otherwise make on the Prayer itself. Given, they
+ * replace those edits (the Import draft turns them into Import operations);
+ * adding blocks is then not offered.
+ */
+export type EditorEdits = {
+  /** Typing in one cell (coalesced into one undo step by the owner). */
+  commit: (
+    blockId: string,
+    col: ActiveVariant,
+    content: InlineContent | InlineContent[] | null,
+  ) => void;
+  /** Enter: id of the new lower block, or null when refused. */
+  split: (blockId: string, col: ActiveVariant, at: SplitPoint) => string | null;
+  join: (
+    blockId: string,
+    col: ActiveVariant,
+    direction: JoinDirection,
+    current: InlineContent | InlineContent[] | null,
+  ) => JoinOutcome;
+  setKind: (blockId: string, kind: string) => void;
+  setSpeaker: (blockId: string, speaker: string | null) => void;
+  remove: (blockId: string) => void;
+  move: (blockId: string, dir: -1 | 1) => void;
+};
 
 export type InlineEditorHandle = {
   revealBlock: (blockId: string, options: BlockRevealOptions) => void;
@@ -455,10 +496,12 @@ const EditableBlock = memo(function EditableBlock({
   dir?: "ltr" | "rtl";
   onCommit: (content: InlineContent | InlineContent[] | null) => void;
   onFocusChange?: (blockId: string, focused: boolean) => void;
+  /** Enter. `split` is the cell before splitting; false = refused, keep the text. */
   onInsertBelow?: (
     before: InlineContent | InlineContent[] | null,
     after: InlineContent | InlineContent[] | null,
-  ) => void;
+    split: SplitPoint,
+  ) => boolean | void;
   /** Ctrl/Cmd+Enter: remainder goes into the next existing Block, same column. */
   onSpillToNext?: (
     before: InlineContent | InlineContent[] | null,
@@ -921,17 +964,15 @@ const EditableBlock = memo(function EditableBlock({
           if (!onInsertBelow) return;
 
           e.preventDefault();
-          applyIdle({ type: "structural" });
-          skipBlurCommitRef.current = true;
           const content = readContent();
           const el = ref.current;
           const offsets = el ? getSelectionOffsets(el) : null;
-          const { before, after } = splitEditorContent(
-            content,
-            offsets?.start ?? Number.POSITIVE_INFINITY,
-            offsets?.end ?? Number.POSITIVE_INFINITY,
-            lineMode,
-          );
+          const start = offsets?.start ?? Number.POSITIVE_INFINITY;
+          const end = offsets?.end ?? Number.POSITIVE_INFINITY;
+          const { before, after } = splitEditorContent(content, start, end, lineMode);
+          if (onInsertBelow(before, after, { content, start, end }) === false) return;
+          applyIdle({ type: "structural" });
+          skipBlurCommitRef.current = true;
           // contenteditable keeps the full text while focused; write `before`
           // now so the remainder is not still visible in this block.
           if (el) {
@@ -939,7 +980,6 @@ const EditableBlock = memo(function EditableBlock({
             setDomEmpty(isDomEmpty(el));
             setUncommitted(false);
           }
-          onInsertBelow(before, after);
         }}
         onInput={(e) => {
           markDirty();
@@ -1039,6 +1079,9 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
       onDeleteKind,
       onSetKindSpeaker,
       onOpenSettings,
+      edits,
+      leadCell,
+      rowsAfter,
     },
     ref,
   ) {
@@ -1089,6 +1132,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     onRenameKind,
     visibleVariants,
     styles,
+    edits,
   });
   ctxRef.current = {
     prayer,
@@ -1097,6 +1141,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     onRenameKind,
     visibleVariants,
     styles,
+    edits,
   };
   const flushedCtx = () => snapshotAfterFlush(flushPendingEdits, ctxRef);
 
@@ -1107,7 +1152,8 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
       (
         before: InlineContent | InlineContent[] | null,
         after: InlineContent | InlineContent[] | null,
-      ) => void
+        split: SplitPoint,
+      ) => boolean | void
     >(),
     spill: new Map<
       string,
@@ -1254,9 +1300,10 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
   };
 
   const selectSpeaker = (blockId: string, id: string | null) => {
-    const { prayer: p, onChange: change } = flushedCtx();
+    const { prayer: p, onChange: change, edits: ed } = flushedCtx();
     const block = p.structure.find((b) => b.id === blockId);
     if (!block || (block.speaker ?? null) === id) return;
+    if (ed) return ed.setSpeaker(blockId, id);
     // No coalesce key: every speaker change is its own undo step.
     change(setBlockSpeaker(p, blockId, id));
   };
@@ -1323,7 +1370,9 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
 
   // No confirm: deleting is one undo step (Cmd/Ctrl+Z).
   const requestDeleteBlock = (index: number) => {
-    const { prayer: p, onChange: change } = flushedCtx();
+    const { prayer: p, onChange: change, edits: ed } = flushedCtx();
+    const id = p.structure[index]?.id;
+    if (ed) return void (id && ed.remove(id));
     change(removeBlock(p, index));
   };
 
@@ -1335,7 +1384,8 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     let fn = handlersRef.current.commit.get(key);
     if (!fn) {
       fn = (next) => {
-        const { prayer: p, onChange: change } = ctxRef.current;
+        const { prayer: p, onChange: change, edits: ed } = ctxRef.current;
+        if (ed) return ed.commit(blockId, col, next);
         const updated = applyCommittedContent(p, blockId, col, next);
         // Same-turn readers (Block menu after flush) must see this Prayer.
         rememberCtxPrayer(ctxRef, updated);
@@ -1352,18 +1402,25 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     const key = editorKey(blockId, col);
     let fn = handlersRef.current.insert.get(key);
     if (!fn) {
-      fn = (before, after) => {
-        const { prayer: p, onChange: change } = ctxRef.current;
+      fn = (before, after, at) => {
+        const { prayer: p, onChange: change, edits: ed } = ctxRef.current;
+        if (ed) {
+          const id = ed.split(blockId, col, at);
+          if (id === null) return false;
+          window.setTimeout(() => focusEditorRef.current(id, col, "start"), 0);
+          return true;
+        }
         const index = p.structure.findIndex((b) => b.id === blockId);
-        if (index < 0) return;
+        if (index < 0) return false;
         const current = p.structure[index];
-        if (!current) return;
+        if (!current) return false;
         const id = createBlockId(p.structure.length);
         const updated = splitBlockInPrayer(p, index, col, before, after, id);
         setLastAddedKind(current.kind);
         change(updated);
         const caret = after === null ? "end" : "start";
         window.setTimeout(() => focusEditorRef.current(id, col, caret), 0);
+        return true;
       };
       handlersRef.current.insert.set(key, fn);
     }
@@ -1425,7 +1482,22 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     let fn = handlersRef.current.join.get(key);
     if (!fn) {
       fn = (direction, current) => {
-        const { prayer: before, onChange: change } = ctxRef.current;
+        const { prayer: before, onChange: change, edits: ed } = ctxRef.current;
+        if (ed) {
+          const outcome = ed.join(blockId, col, direction, current);
+          if (outcome?.kind === "removed") {
+            const index = before.structure.findIndex((b) => b.id === blockId);
+            const up = direction === "backward" ? index > 0 : index === before.structure.length - 1;
+            const focusId = before.structure[up ? index - 1 : index + 1]?.id;
+            if (focusId) {
+              window.setTimeout(
+                () => focusEditorRef.current(focusId, col, up ? "end" : "start"),
+                0,
+              );
+            }
+          }
+          return outcome;
+        }
         const index = before.structure.findIndex((b) => b.id === blockId);
         if (index < 0) return null;
         const backward = direction === "backward";
@@ -1517,8 +1589,17 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
   };
 
   const moveBlock = (index: number, dir: -1 | 1) => {
-    const { prayer: p, onChange: change } = flushedCtx();
+    const { prayer: p, onChange: change, edits: ed } = flushedCtx();
+    const id = p.structure[index]?.id;
+    if (ed) return void (id && ed.move(id, dir));
     change(moveBlockInPrayer(p, index, dir));
+  };
+
+  const changeKind = (index: number, kind: string) => {
+    const { prayer: p, onChange: change, edits: ed } = flushedCtx();
+    const id = p.structure[index]?.id;
+    if (ed) return void (id && ed.setKind(id, kind));
+    change(setBlockKind(p, index, kind));
   };
 
   const insertBlockAfter = (index: number, kind: string) => {
@@ -1580,10 +1661,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
       submenu: kindContextItems({
         value: kind,
         options: kinds,
-        onSelect: (next) => {
-          const { prayer: p, onChange: change } = flushedCtx();
-          change(setBlockKind(p, index, next));
-        },
+        onSelect: (next) => changeKind(index, next),
         onMore: openMoreKinds,
       }),
     });
@@ -1600,13 +1678,15 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         }),
       });
     }
-    items.push(
-      { divider: true },
-      {
+    items.push({ divider: true });
+    if (!edits) {
+      items.push({
         label: `Add ${kindDisplayLabel(kind)} below`,
         icon: <IconRowInsertBottom size={14} />,
         onClick: () => insertBlockAfter(index, kind),
-      },
+      });
+    }
+    items.push(
       {
         label: "Move up",
         icon: <IconArrowUp size={14} />,
@@ -1686,6 +1766,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
           </div>
         ) : null}
 
+        {rowsAfter?.(null)}
         {prayer.structure.map((block, index) => {
           const lineMode = usesLines(block.kind);
           const styleCss =
@@ -1719,10 +1800,11 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
               : null);
 
           return (
+            <Fragment key={block.id}>
             <div
-              key={block.id}
               className="inline-block"
               data-block-id={block.id}
+              data-lead={leadCell ? "true" : undefined}
               data-invalid={blockIssues ? "true" : undefined}
               onContextMenu={(e) =>
                 openBlockMenu(e, index, block.kind, block.id, block.speaker)
@@ -1740,6 +1822,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
               onMouseDown={(e) => {
                 const target = e.target as HTMLElement;
                 if (target.closest(".inline-block-chrome")) return;
+                if (target.closest(".inline-lead")) return;
                 if (target.closest(".inline-content")) return;
                 if (target.closest(".inline-note-toolbar")) return;
                 if (target.closest(".speaker-chip")) return;
@@ -1802,10 +1885,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                     options={kinds}
                     styleEditing={styleEditing}
                     onIdle={handleKindIdle}
-                    onChange={(kind) => {
-                      const { prayer: p, onChange: change } = flushedCtx();
-                      change(setBlockKind(p, index, kind));
-                    }}
+                    onChange={(kind) => changeKind(index, kind)}
                     onMoreKinds={openMoreKinds}
                     onRename={(from, to) => {
                       onRenameKind(from, to);
@@ -1871,6 +1951,9 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                 </Group>
               </div>
 
+              {leadCell ? (
+                <div className="inline-lead">{leadCell(block.id)}</div>
+              ) : null}
               <div className="split-row">
                 {visibleVariants.map((col, colIndex) => {
                   const tr = getTranslation(prayer, block.id, col);
@@ -1931,7 +2014,9 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                         onFocusChange={handleFocusChange}
                         onCommit={getCommitHandler(block.id, col)}
                         onInsertBelow={getInsertHandler(block.id, col)}
-                        onSpillToNext={getSpillHandler(block.id, col)}
+                        onSpillToNext={
+                          edits ? undefined : getSpillHandler(block.id, col)
+                        }
                         onArrowLeave={getArrowLeaveHandler(block.id, col)}
                         onJoin={getJoinHandler(block.id, col)}
                       />
@@ -1940,10 +2025,13 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
                 })}
               </div>
             </div>
+            {rowsAfter?.(block.id)}
+            </Fragment>
           );
         })}
       </div>
 
+      {edits ? null : (
       <div className="add-block">
         <button
           type="button"
@@ -1976,6 +2064,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
           </Menu.Dropdown>
         </Menu>
       </div>
+      )}
 
       {contextMenu.menu}
     </Stack>

@@ -14,6 +14,7 @@ import {
   IconAdjustments,
   IconDots,
   IconFileExport,
+  IconClipboardText,
   IconFileImport,
   IconFolderOpen,
   IconFolderPlus,
@@ -54,6 +55,8 @@ type Props = {
   onLibrarySettings: () => void;
   onAppSettings: () => void;
   onImportPrayer: () => void;
+  /** Paste text and map it in an Import draft. */
+  onImportText: () => void;
   onExportPrayer: (entry: LibraryEntry) => void;
   onDelete: (entry: LibraryEntry) => void;
 };
@@ -79,6 +82,7 @@ export function PrayerList({
   onLibrarySettings,
   onAppSettings,
   onImportPrayer,
+  onImportText,
   onExportPrayer,
   onDelete,
 }: Props) {
@@ -106,6 +110,12 @@ export function PrayerList({
       shortcut: shortcutLabel("Mod+N"),
       disabled: busy,
       onClick: onCreate,
+    },
+    {
+      label: "Import text…",
+      icon: <IconClipboardText size={14} />,
+      disabled: busy,
+      onClick: onImportText,
     },
     {
       label: "Import prayer JSON…",
@@ -249,6 +259,13 @@ export function PrayerList({
                       onClick={onLibrarySettings}
                     >
                       Library settings
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<IconClipboardText size={14} />}
+                      onClick={onImportText}
+                      disabled={busy}
+                    >
+                      Import text…
                     </Menu.Item>
                     <Menu.Item
                       leftSection={<IconFileImport size={14} />}

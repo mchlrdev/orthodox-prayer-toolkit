@@ -5,6 +5,9 @@ import {
   createImportDraft,
   draftBlockHasTypedText,
   draftBlockPlainText,
+  draftBlockVisible,
+  freePrayerId,
+  prayerIdFromTitle,
   importDraftToPrayer,
   readText,
   validateImportDraft,
@@ -381,5 +384,53 @@ describe("Import draft with two Variants", () => {
       { op: "setVariantMeta", variant: "v2", patch: { lang: "de" } },
     ]);
     expect(result.ok).toBe(false);
+  });
+});
+
+describe("Import draft: blocks the editor cannot see", () => {
+  it("merges over a hidden block and keeps it after the merged one", () => {
+    const d = run(
+      draft(),
+      { op: "setExcluded", segments: ["s1-2"], excluded: true },
+      { op: "merge", block: "b1" },
+    );
+    expect(d.blocks.map((b) => b.id)).toEqual(["b1", "b2"]);
+    expect(draftBlockVisible(d, d.blocks[1]!)).toBe(false);
+    expect(texts(d)).toEqual([
+      ["Troparion im 4. Ton", "Priester: Ehre sei dem Vater und dem Sohne", "und dem Heiligen Geiste."],
+    ]);
+  });
+
+  it("deleteBlock excludes the block's own segments, restorable", () => {
+    const d = run(draft(), { op: "deleteBlock", block: "b1" });
+    expect(d.excluded).toEqual(["s1-1"]);
+    expect(texts(d)).toHaveLength(2);
+    const back = run(d, { op: "setExcluded", segments: ["s1-1"], excluded: false });
+    expect(importDraftToPrayer(back)).toEqual(importDraftToPrayer(draft()));
+  });
+
+  it("deleteBlock of one split half keeps the other half", () => {
+    const d = run(
+      draft(),
+      { op: "split", block: "b2", variant: "v1", at: 9 },
+      { op: "deleteBlock", block: "b4" },
+    );
+    expect(d.excluded).toEqual([]);
+    expect(d.blocks.map((b) => b.id)).toEqual(["b1", "b2", "b3"]);
+    expect(texts(d)[1]).toEqual(["Christus"]);
+  });
+});
+
+describe("prayer ids", () => {
+  it("suggests an id from a title", () => {
+    expect(prayerIdFromTitle("Ostertroparion")).toBe("ostertroparion");
+    expect(prayerIdFromTitle("  Großes Gebet – Ton 5! ")).toBe("grosses-gebet-ton-5");
+    expect(prayerIdFromTitle("Христос воскресе")).toBe("");
+  });
+
+  it("finds a free id without touching the original", () => {
+    expect(freePrayerId("a", [])).toBe("a");
+    expect(freePrayerId("a", ["a", "a-2"])).toBe("a-3");
+    expect(freePrayerId("psalm-50", ["psalm-50"])).toBe("psalm-50-2");
   });
 });
