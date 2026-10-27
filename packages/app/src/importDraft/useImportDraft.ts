@@ -23,12 +23,17 @@ import {
 import { variantKey, type ActiveVariant } from "../variant";
 import { groupLetters, sample, segmentIndex, sourceParts } from "./sourceView";
 import {
+  addColumnOps,
+  addLanguageOps,
   commitOps,
   joinOps,
   moveOps,
   splitOps,
   draftVariantKey,
 } from "./editorOps";
+
+export type { AddColumnInput } from "./editorOps";
+import type { AddColumnInput } from "./editorOps";
 
 export type StartImportInput = {
   /** What a Reader made of the pasted text, file or page. */
@@ -56,6 +61,10 @@ export type ImportDraftSession = {
   canUndo: boolean;
   canRedo: boolean;
   start: (input: StartImportInput) => void;
+  /** Second language from another Source, paired by order (one undo step). */
+  addLanguage: (input: StartImportInput) => boolean;
+  /** Second language from a column of a Source in the draft, paired row by row. */
+  addColumn: (input: AddColumnInput) => boolean;
   discard: () => void;
   /** Apply Import operations as one undo step; false when one is refused. */
   apply: (ops: ImportOp[], options?: { coalesceKey?: string }) => boolean;
@@ -95,6 +104,28 @@ export function useImportDraft(): ImportDraftSession {
       return true;
     },
     [commit],
+  );
+
+  const addLanguage = useCallback(
+    ({ source, file, origin, variant }: StartImportInput): boolean => {
+      const cur = stateRef.current;
+      if (!cur) return false;
+      const ok = apply(addLanguageOps(cur.draft, source, { ...variant, origin }));
+      if (ok && file) {
+        const next = stateRef.current!;
+        commit({ ...next, files: { ...next.files, [source.id]: file } });
+      }
+      return ok;
+    },
+    [apply, commit],
+  );
+
+  const addColumn = useCallback(
+    (input: AddColumnInput): boolean => {
+      const cur = stateRef.current;
+      return cur ? apply(addColumnOps(cur.draft, input)) : false;
+    },
+    [apply],
   );
 
   const step = useCallback(
@@ -202,6 +233,8 @@ export function useImportDraft(): ImportDraftSession {
     canUndo: (state?.history.past.length ?? 0) > 0,
     canRedo: (state?.history.future.length ?? 0) > 0,
     start,
+    addLanguage,
+    addColumn,
     discard: useCallback(() => commit(null), [commit]),
     apply,
     undo: useCallback(() => step(stepBack), [step]),

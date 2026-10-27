@@ -320,7 +320,7 @@ Turns a Source into a Prayer without retyping its text. Readers split a Source i
 | `setText` | Explicit text from the editor; unchanged characters keep their source. Allowed on a Variant the block has no text in yet (typed text) |
 | `setExcluded` | Hide or show Source segments |
 | `pairVariant` / `unpairVariant` | Move one Variant's text into another block / out into its own block |
-| `addVariant` | New Variant (language/edition, title, licence, source) with the next free key `v{n}` |
+| `addVariant` | New Variant (language/edition, title, licence, source) with the next free key `v{n}` (`freeVariantKey`) |
 | `addSource` | Second Source (id from `freeSourceId`) in a Variant: one Verse block per segment, appended |
 | `assignVariant` | Move the text of the given blocks from one Variant to another (a column of a parallel Source) |
 | `pairByOrder` | Pair blocks that have only this Variant, in order, with the blocks lacking it; leftovers stay alone |

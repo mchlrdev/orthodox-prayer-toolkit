@@ -17,9 +17,12 @@ import {
   type ImportDraft,
 } from "@orthodox-prayer-toolkit/core";
 
+type VariantFields = Pick<DraftVariant, "title" | "license" | "source">;
+
 export type ImportSaveInput = {
   meta: Partial<DraftPrayerMeta>;
-  variant: Pick<DraftVariant, "title" | "license" | "source">;
+  /** Per Variant key: each language keeps its own title, licence and source. */
+  variants: Record<string, VariantFields>;
 };
 
 type Props = {
@@ -45,7 +48,13 @@ export function ImportSaveModal({
   onSave,
 }: Props) {
   const variant = draft.variants[0]!;
+  const others = draft.variants.slice(1);
+  const multilingual = others.length > 0;
   const [title, setTitle] = useState("");
+  /** Title, licence and source of the other languages, by Variant key. */
+  const [extra, setExtra] = useState<Record<string, VariantFields>>({});
+  const setExtraField = (key: string, field: keyof VariantFields, value: string) =>
+    setExtra((cur) => ({ ...cur, [key]: { ...cur[key]!, [field]: value } }));
   const [id, setId] = useState("");
   const [idTouched, setIdTouched] = useState(false);
   const [type, setType] = useState("");
@@ -66,6 +75,15 @@ export function ImportSaveModal({
     setOccasion(draft.meta.occasion ?? "");
     setLicense(variant.license);
     setSource(variant.source);
+    setExtra(
+      Object.fromEntries(
+        others.map((v) => [
+          v.key,
+          // A language without its own licence/source starts from the first one's.
+          { title: v.title, license: v.license || variant.license, source: v.source || variant.source },
+        ]),
+      ),
+    );
     // Fill once per opening; later draft changes are this dialog's own.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened]);
@@ -86,7 +104,11 @@ export function ImportSaveModal({
     idError === null &&
     type.trim() !== "" &&
     license.trim() !== "" &&
-    source.trim() !== "";
+    source.trim() !== "" &&
+    others.every((v) => {
+      const f = extra[v.key];
+      return f !== undefined && f.title.trim() !== "" && f.license.trim() !== "" && f.source.trim() !== "";
+    });
 
   return (
     <Modal
@@ -100,8 +122,8 @@ export function ImportSaveModal({
     >
       <Stack gap="md">
         <Text size="xs" c="dimmed">
-          {blockCount} {blockCount === 1 ? "block" : "blocks"} · {variant.lang} /{" "}
-          {variant.variant}
+          {blockCount} {blockCount === 1 ? "block" : "blocks"} ·{" "}
+          {draft.variants.map((v) => `${v.lang} / ${v.variant}`).join(", ")}
         </Text>
         <TextInput
           label={`Title · ${variant.lang}`}
@@ -109,6 +131,14 @@ export function ImportSaveModal({
           data-autofocus
           onChange={(e) => setTitle(e.currentTarget.value)}
         />
+        {others.map((v) => (
+          <TextInput
+            key={v.key}
+            label={`Title · ${v.lang}`}
+            value={extra[v.key]?.title ?? ""}
+            onChange={(e) => setExtraField(v.key, "title", e.currentTarget.value)}
+          />
+        ))}
         <Stack gap={6}>
           <TextInput
             label="File name"
@@ -174,16 +204,30 @@ export function ImportSaveModal({
         </Group>
         <Group grow>
           <TextInput
-            label="License"
+            label={multilingual ? `License · ${variant.lang}` : "License"}
             value={license}
             onChange={(e) => setLicense(e.currentTarget.value)}
           />
           <TextInput
-            label="Source"
+            label={multilingual ? `Source · ${variant.lang}` : "Source"}
             value={source}
             onChange={(e) => setSource(e.currentTarget.value)}
           />
         </Group>
+        {others.map((v) => (
+          <Group grow key={v.key}>
+            <TextInput
+              label={`License · ${v.lang}`}
+              value={extra[v.key]?.license ?? ""}
+              onChange={(e) => setExtraField(v.key, "license", e.currentTarget.value)}
+            />
+            <TextInput
+              label={`Source · ${v.lang}`}
+              value={extra[v.key]?.source ?? ""}
+              onChange={(e) => setExtraField(v.key, "source", e.currentTarget.value)}
+            />
+          </Group>
+        ))}
         <Group justify="flex-end" gap="xs">
           <Button variant="subtle" color="gray" onClick={onClose} disabled={busy}>
             Cancel
@@ -201,10 +245,21 @@ export function ImportSaveModal({
                   book: book.trim(),
                   occasion: occasion.trim(),
                 },
-                variant: {
-                  title: title.trim(),
-                  license: license.trim(),
-                  source: source.trim(),
+                variants: {
+                  [variant.key]: {
+                    title: title.trim(),
+                    license: license.trim(),
+                    source: source.trim(),
+                  },
+                  ...Object.fromEntries(
+                    others.map((v) => {
+                      const f = extra[v.key]!;
+                      return [
+                        v.key,
+                        { title: f.title.trim(), license: f.license.trim(), source: f.source.trim() },
+                      ];
+                    }),
+                  ),
                 },
               })
             }

@@ -15,6 +15,9 @@ import {
 } from "@tabler/icons-react";
 import {
   applyImportOps,
+  draftBlocksInColumn,
+  draftBlockVisible,
+  freeSourceId,
   importDraftToPrayer,
   indexVariants,
   type ImportOp,
@@ -42,7 +45,8 @@ import { UnsavedChangesDialog } from "./components/UnsavedChangesDialog";
 import { LibraryWelcome } from "./components/LibraryWelcome";
 import { NewLibraryModal } from "./components/NewLibraryModal";
 import { ImportWorkspace } from "./components/ImportWorkspace";
-import { ImportTextModal } from "./components/ImportTextModal";
+import { ImportTextModal, type AddLanguageTarget } from "./components/ImportTextModal";
+import { draftColumns } from "./importDraft/sourceView";
 import {
   ImportSaveModal,
   type ImportSaveInput,
@@ -99,6 +103,7 @@ export function App() {
   const importing = importDraft.draft !== null;
   const [importTextOpen, setImportTextOpen] = useState(false);
   const [importSaveOpen, setImportSaveOpen] = useState(false);
+  const [addLanguageOpen, setAddLanguageOpen] = useState(false);
   /** What waits for "discard the open Import draft?": a prayer or a new import. */
   const [leaveImportFor, setLeaveImportFor] = useState<
     LibraryEntry | "new-import" | null
@@ -431,13 +436,31 @@ export function App() {
     [sidebarEntries],
   );
 
-  const saveImport = async ({ meta, variant }: ImportSaveInput) => {
+  const addLanguageTarget = useMemo<AddLanguageTarget | null>(() => {
+    const d = importDraft.draft;
+    if (!d) return null;
+    const first = d.variants[0]!;
+    return {
+      title: first.title,
+      firstLang: first.lang,
+      blockCount: d.blocks.filter((b) => draftBlockVisible(d, b) && b.content[first.key]).length,
+      firstColumnCount: draftBlocksInColumn(d, 0, first.key).length,
+      columns: draftColumns(d),
+      taken: d.variants.map((v) => ({ lang: v.lang, variant: v.variant })),
+      sourceId: freeSourceId(d),
+    };
+  }, [importDraft.draft]);
+
+  const saveImport = async ({ meta, variants }: ImportSaveInput) => {
     const current = importDraft.draft;
     if (!current) return;
-    const key = current.variants[0]!.key;
     const ops: ImportOp[] = [
       { op: "setPrayerMeta", patch: meta },
-      { op: "setVariantMeta", variant: key, patch: variant },
+      ...Object.entries(variants).map(([key, patch]) => ({
+        op: "setVariantMeta" as const,
+        variant: key,
+        patch,
+      })),
     ];
     const result = applyImportOps(current, ops);
     if (!result.ok) {
@@ -558,6 +581,7 @@ export function App() {
                 onUndo={() => importDraft.undo()}
                 onRedo={() => importDraft.redo()}
                 onDiscard={importDraft.discard}
+                onAddLanguage={() => setAddLanguageOpen(true)}
                 onSave={() => {
                   flushPendingEdits();
                   setImportSaveOpen(true);
@@ -821,6 +845,25 @@ export function App() {
           importDraft.start(input);
           setImportTextOpen(false);
           if (overlayMode) setLibraryCollapsed(true);
+        }}
+      />
+
+      <ImportTextModal
+        opened={addLanguageOpen && importDraft.draft !== null}
+        addTo={addLanguageTarget}
+        variants={availableVariants.map((v) => ({
+          lang: v.lang,
+          variant: v.variant,
+        }))}
+        defaultVariant={null}
+        onClose={() => setAddLanguageOpen(false)}
+        onCreate={(input) => {
+          if (importDraft.addLanguage(input)) setAddLanguageOpen(false);
+          else onNotice({ color: "accent", title: "Cannot add language", message: "The language is already in the draft." });
+        }}
+        onAddColumn={(input) => {
+          if (importDraft.addColumn(input)) setAddLanguageOpen(false);
+          else onNotice({ color: "accent", title: "Cannot add language", message: "The language is already in the draft." });
         }}
       />
 

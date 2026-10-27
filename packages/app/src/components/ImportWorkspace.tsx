@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type Ref } from "react";
-import { ActionIcon, Button, Tooltip } from "@mantine/core";
+import { ActionIcon, Button, Menu, Tooltip } from "@mantine/core";
 import {
   IconAlertTriangle,
   IconArrowBackUp,
   IconArrowForwardUp,
   IconCheck,
+  IconChevronDown,
   IconCircleOff,
+  IconLink,
 } from "@tabler/icons-react";
 import {
   draftBlockGroup,
@@ -32,6 +34,7 @@ import {
   groupLetters,
   segmentIndex,
   markedPieces,
+  sample,
   sourceParts,
   type SourcePart,
   type SegmentInfo,
@@ -104,6 +107,8 @@ type Props = {
   onRedo: () => void;
   onDiscard: () => void;
   onSave: () => void;
+  /** "Add language from source…": a second Variant from a column or another text. */
+  onAddLanguage: () => void;
 };
 
 export function ImportWorkspace({
@@ -123,9 +128,21 @@ export function ImportWorkspace({
   onRedo,
   onDiscard,
   onSave,
+  onAddLanguage,
 }: Props) {
   const [confirmDiscard, setConfirmDiscard] = useState(false);
-  const variant = draft.variants[0]!;
+  /** The Variant the preview shows; the others are checked through the dropdown. */
+  const [shownKey, setShownKey] = useState(draft.variants[0]!.key);
+  const variant = draft.variants.find((v) => v.key === shownKey) ?? draft.variants[0]!;
+  const multilingual = draft.variants.length > 1;
+  // A language just added is the one to check first.
+  const variantCount = draft.variants.length;
+  const lastKey = draft.variants[variantCount - 1]!.key;
+  const seenCount = useRef(variantCount);
+  useEffect(() => {
+    if (variantCount > seenCount.current) setShownKey(lastKey);
+    seenCount.current = variantCount;
+  }, [variantCount, lastKey]);
   const col: ActiveVariant = { lang: variant.lang, variant: variant.variant };
   const visibleVariants = useMemo(
     () => [col],
@@ -210,38 +227,136 @@ export function ImportWorkspace({
     });
   };
 
+  const langOf = (key: string) => draft.variants.find((v) => v.key === key)?.lang ?? key;
+  const firstN = (block: DraftBlock) =>
+    (sourceParts(block, segments, variant.key)[0] ?? sourceParts(block, segments)[0])?.n;
+
+  /** Nearest visible block above that can take this lone block's only Variant. */
+  const pairTarget = (block: DraftBlock): DraftBlock | undefined => {
+    const own = Object.keys(block.content);
+    if (own.length !== 1) return undefined;
+    const index = draft.blocks.indexOf(block);
+    for (let i = index - 1; i >= 0; i--) {
+      const b = draft.blocks[i]!;
+      if (draftBlockVisible(draft, b) && !b.content[own[0]!]) return b;
+    }
+    return undefined;
+  };
+
+  const pairRow = (block: DraftBlock, active: boolean) => {
+    if (!multilingual || !draftBlockVisible(draft, block)) return null;
+    const missing = draft.variants.filter((v) => !block.content[v.key]);
+    const paired = draft.variants.filter((v) => v.key !== variant.key && block.content[v.key]);
+    if (missing.length === 0 && !(active && block.content[variant.key])) return null;
+    const target = missing.length > 0 ? pairTarget(block) : undefined;
+    const targetN = target ? firstN(target) : undefined;
+    return (
+      // Keep the caret in the editor: its block stays active while a pair action runs.
+      <div className="import-pair-row" onMouseDown={(e) => e.preventDefault()}>
+        {missing.length > 0 ? (
+          <>
+            <span className="import-chip" data-tone="warning">
+              <span className="import-chip-dot" />
+              No counterpart in {missing.map((v) => v.lang).join(", ")}
+            </span>
+            {target ? (
+              <button
+                type="button"
+                className="import-chip"
+                data-action="true"
+                onClick={() =>
+                  onApply([
+                    {
+                      op: "pairVariant",
+                      block: target.id,
+                      variant: Object.keys(block.content)[0]!,
+                      from: block.id,
+                    },
+                  ])
+                }
+              >
+                Pair with {targetN ?? "the block above"}
+              </button>
+            ) : null}
+          </>
+        ) : (
+          paired.map((v) => {
+            const part = sourceParts(block, segments, v.key)[0];
+            return (
+              <span key={v.key} className="import-pair-item">
+                <span className="import-chip">
+                  <IconLink size={11} stroke={1.6} />
+                  Paired with {v.lang}
+                  {part ? ` ${part.n} · ${sample(part.text, 18)}` : ""}
+                </span>
+                <button
+                  type="button"
+                  className="import-link"
+                  onClick={() => onApply([{ op: "unpairVariant", block: block.id, variant: v.key }])}
+                >
+                  Unpair
+                </button>
+              </span>
+            );
+          })
+        )}
+      </div>
+    );
+  };
+
   const leadCell = (blockId: string) => {
     const block = byId.get(blockId);
     if (!block) return null;
-    const parts = sourceParts(block, segments);
+    const shown = sourceParts(block, segments, multilingual ? variant.key : undefined);
+    // A block without the shown language: its other language's source, dimmed.
+    const parts = shown.length > 0 ? shown : multilingual ? sourceParts(block, segments) : [];
+    const other = shown.length === 0 && parts.length > 0;
+    const pairs = pairRow(block, blockId === activeBlockId);
     if (parts.length === 0) {
-      return <div className="import-source-row" data-typed="true" />;
+      return (
+        <>
+          <div className="import-source-row" data-typed="true" />
+          {pairs}
+        </>
+      );
     }
     const peer =
       activeGroup !== undefined &&
       blockId !== activeBlockId &&
       draftBlockGroup(draft, block) === activeGroup;
-    return parts.map((part, i) => {
-      const letter = part.group ? letters.get(part.group) : undefined;
-      return (
-        <button
-          type="button"
-          key={`${part.n}-${i}`}
-          className="import-source-row"
-          data-group-peer={peer ? "true" : undefined}
-          title={letter ? `Style group ${letter}` : undefined}
-          onClick={() => selectBlock(blockId)}
-        >
-          <span className="import-source-n">{part.n}</span>
-          <span className="import-source-group">
-            {letter ? <span className="import-source-badge">{letter}</span> : null}
-          </span>
-          <span className="import-source-text" {...lookAttrs(part.look, bodySize)}>
-            <MarkedText part={part} />
-          </span>
-        </button>
-      );
-    });
+    return (
+      <>
+        {parts.map((part, i) => {
+          const letter = part.group ? letters.get(part.group) : undefined;
+          return (
+            <button
+              type="button"
+              key={`${part.n}-${i}`}
+              className="import-source-row"
+              data-group-peer={peer ? "true" : undefined}
+              data-other={other ? "true" : undefined}
+              title={
+                other
+                  ? `Only in ${Object.keys(block.content).map(langOf).join(", ")}`
+                  : letter
+                    ? `Style group ${letter}`
+                    : undefined
+              }
+              onClick={() => selectBlock(blockId)}
+            >
+              <span className="import-source-n">{part.n}</span>
+              <span className="import-source-group">
+                {letter ? <span className="import-source-badge">{letter}</span> : null}
+              </span>
+              <span className="import-source-text" {...lookAttrs(part.look, bodySize)}>
+                <MarkedText part={part} />
+              </span>
+            </button>
+          );
+        })}
+        {pairs}
+      </>
+    );
   };
 
   const rowsAfter = (blockId: string | null) => {
@@ -346,6 +461,17 @@ export function ImportWorkspace({
   };
 
   const visibleCount = prayer.structure.length;
+  const variantCounts = new Map(
+    draft.variants.map((v) => [
+      v.key,
+      prayer.structure.filter((b) =>
+        b.translations.some((t) => t.lang === v.lang && t.variant === v.variant),
+      ).length,
+    ]),
+  );
+  const pairedCount = prayer.structure.filter(
+    (b) => b.translations.length === draft.variants.length,
+  ).length;
   const id = draft.meta.id;
 
   return (
@@ -353,7 +479,7 @@ export function ImportWorkspace({
       <div className="workspace-header">
         <div className="workspace-header-top">
           <div className="import-title-row">
-            <h1 className="workspace-title">{variant.title || "Untitled"}</h1>
+            <h1 className="workspace-title">{draft.variants[0]!.title || "Untitled"}</h1>
             <span className="import-subtitle">
               Import draft · {source?.name ?? "Source"} ·{" "}
               {pdfData
@@ -412,11 +538,42 @@ export function ImportWorkspace({
           </div>
           <div className="import-column-label">
             <span className="import-caps">Preview</span>
-            <span className="import-variant-chip">
-              <span className="split-chip-lang">{col.lang}</span>
-              <span className="split-chip-sep">/</span>
-              <span className="split-chip-variant">{col.variant}</span>
-            </span>
+            <Menu shadow="md" width={240} position="bottom-end" withinPortal>
+              <Menu.Target>
+                <button type="button" className="import-variant-chip" aria-label="Shown language">
+                  <span className="split-chip-lang">{col.lang}</span>
+                  <span className="split-chip-sep">/</span>
+                  <span className="split-chip-variant">{col.variant}</span>
+                  <IconChevronDown size={11} stroke={1.8} className="import-variant-caret" />
+                </button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                {draft.variants.map((v) => (
+                  <Menu.Item
+                    key={v.key}
+                    onClick={() => setShownKey(v.key)}
+                    rightSection={
+                      <span className="import-variant-count">
+                        {variantCounts.get(v.key) ?? 0} of {visibleCount}
+                        {v.key === variant.key ? <IconCheck size={13} stroke={2} /> : null}
+                      </span>
+                    }
+                  >
+                    <span className="split-chip-lang">{v.lang}</span>{" "}
+                    <span className="split-chip-sep">/</span>{" "}
+                    <span className="split-chip-variant">{v.variant}</span>
+                  </Menu.Item>
+                ))}
+                <Menu.Divider />
+                <Menu.Item onClick={onAddLanguage}>Add language from source…</Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+            {multilingual ? (
+              <span className="import-pair-status">
+                <IconLink size={12} stroke={1.6} />
+                {pairedCount} paired · {visibleCount - pairedCount} open
+              </span>
+            ) : null}
           </div>
         </div>
       </div>

@@ -1,3 +1,8 @@
+import {
+  draftBlockPlainText,
+  draftBlocksInColumn,
+  segmentColumn,
+} from "@orthodox-prayer-toolkit/core";
 import type {
   DraftBlock,
   DraftSpan,
@@ -46,13 +51,17 @@ export function groupLetters(draft: ImportDraft): Map<string, string> {
 
 export type SourcePart = SegmentInfo;
 
-/** The Source text a block points at, per segment (first Variant with text). */
+/** The Source text a block points at, per segment (first Variant with text, or the given one). */
 export function sourceParts(
   block: DraftBlock,
   segments: ReadonlyMap<string, SegmentInfo>,
+  /** Only this Variant's text (none when the block lacks it). */
+  variantKey?: string,
 ): SourcePart[] {
   const spans: DraftSpan[] =
-    Object.values(block.content).find((s) => s.some((x) => "seg" in x)) ?? [];
+    (variantKey !== undefined
+      ? block.content[variantKey]
+      : Object.values(block.content).find((s) => s.some((x) => "seg" in x))) ?? [];
   // One part per run of spans into the same segment: its text from the first
   // span's start to the last span's end, as the Source has it.
   const runs: Array<{ seg: string; start: number; end: number }> = [];
@@ -100,4 +109,31 @@ export function markedPieces(text: string, marks: readonly SegmentMark[] | undef
   }
   if (at < text.length) out.push({ text: text.slice(at) });
   return out;
+}
+
+export type ColumnInfo = { column: number; sourceName: string; text: string; count: number };
+
+/**
+ * Columns past the first in the first Variant's blocks (a parallel PDF or
+ * table): each can become a second language.
+ */
+export function draftColumns(draft: ImportDraft): ColumnInfo[] {
+  const key = draft.variants[0]!.key;
+  const out: ColumnInfo[] = [];
+  const columns = new Set<number>();
+  for (const source of draft.sources) {
+    for (const seg of source.segments) {
+      const c = segmentColumn(seg);
+      if (c !== undefined && c > 0 && !columns.has(c)) {
+        columns.add(c);
+        out.push({ column: c, sourceName: source.name, text: "", count: 0 });
+      }
+    }
+  }
+  for (const info of out) {
+    const blocks = draftBlocksInColumn(draft, info.column, key);
+    info.count = blocks.length;
+    info.text = blocks.map((b) => draftBlockPlainText(draft, b, key)).join("\n");
+  }
+  return out.filter((c) => c.count > 0).sort((a, b) => a.column - b.column);
 }

@@ -1,5 +1,8 @@
 import {
   applyImportOps,
+  draftBlocksInColumn,
+  freeVariantKey,
+  type Source,
   draftBlockPlainText,
   draftBlockVisible,
   type ImportDraft,
@@ -150,4 +153,44 @@ export function moveOps(
   const to = visibleNeighbour(draft, index, dir);
   if (to < 0) return [];
   return [{ op: "moveBlock", block: blockId, to }];
+}
+
+export type AddColumnInput = {
+  /** 0-based text column (`segmentColumn`). */
+  column: number;
+  origin: string;
+  variant: ActiveVariant;
+};
+
+/** Second language from another Source: new Variant, its blocks, paired by order. */
+export function addLanguageOps(
+  draft: ImportDraft,
+  source: Source,
+  { origin, ...variant }: ActiveVariant & { origin: string },
+): ImportOp[] {
+  const key = freeVariantKey(draft);
+  return [
+    { op: "addVariant", variant: { ...variant, source: origin.trim() } },
+    { op: "addSource", source, variant: key },
+    { op: "pairByOrder", variant: key },
+  ];
+}
+
+/**
+ * Second language from a column of the draft's Source: the column's blocks
+ * move to a new Variant and pair row by row with the first column's blocks.
+ * Blocks outside both columns (a heading across the page) stay as they are.
+ */
+export function addColumnOps(draft: ImportDraft, { column, origin, variant }: AddColumnInput): ImportOp[] {
+  const from = draft.variants[0]!.key;
+  const key = freeVariantKey(draft);
+  const first = draftBlocksInColumn(draft, 0, from);
+  const moved = draftBlocksInColumn(draft, column, from);
+  return [
+    { op: "addVariant", variant: { ...variant, source: origin.trim() } },
+    { op: "assignVariant", blocks: moved.map((b) => b.id), from, to: key },
+    ...moved.slice(0, first.length).map(
+      (b, i): ImportOp => ({ op: "pairVariant", block: first[i]!.id, variant: key, from: b.id }),
+    ),
+  ];
 }

@@ -249,6 +249,7 @@ export {
   draftBlocksInColumn,
   draftBlocksInGroup,
   freeSourceId,
+  freeVariantKey,
   segmentColumn,
   draftBlockVisible,
   importDraftToPrayer,

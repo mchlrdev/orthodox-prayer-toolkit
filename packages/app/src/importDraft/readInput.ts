@@ -39,10 +39,13 @@ function pageName(url: URL): string {
 export async function readImportInput(
   input: ImportInput,
   fetchSource: Fetch,
+  /** Source id (`s2` … when the draft already has a Source). */
+  options: { id?: string } = {},
 ): Promise<ReadInputResult> {
+  const id = options.id !== undefined ? { id: options.id } : {};
   if (input.html !== null) {
     const name = input.fileName ?? "Pasted text";
-    return { source: await readHtml(input.html, { name }), originHint: input.fileName };
+    return { source: await readHtml(input.html, { ...id, name }), originHint: input.fileName };
   }
   const url = inputUrl(input.text);
   if (url) {
@@ -50,13 +53,13 @@ export async function readImportInput(
     const final = new URL(page.url || url.href);
     const name = pageName(final);
     const source = /^text\/plain/i.test(page.contentType)
-      ? readText(page.text, { name })
-      : await readHtml(page.text, { name });
+      ? readText(page.text, { ...id, name })
+      : await readHtml(page.text, { ...id, name });
     if (source.segments.length === 0) throw new Error("The page has no text");
     return { source, originHint: final.hostname };
   }
   return {
-    source: readText(input.text, input.fileName ? { name: input.fileName } : {}),
+    source: readText(input.text, input.fileName ? { ...id, name: input.fileName } : id),
     originHint: input.fileName,
   };
 }

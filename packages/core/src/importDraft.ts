@@ -368,7 +368,8 @@ function kindIsAvailable(draft: ImportDraft, kind: string): boolean {
   return isKindPreset(kind) || draft.kinds.some((k) => k.id === kind);
 }
 
-function freeVariantKey(draft: ImportDraft): string {
+/** Key the next `addVariant` gives (`v1`, `v2`, …). */
+export function freeVariantKey(draft: ImportDraft): string {
   const taken = new Set(draft.variants.map((v) => v.key));
   let n = draft.variants.length + 1;
   while (taken.has(`v${n}`)) n += 1;

@@ -6,8 +6,12 @@ import {
   readText,
   type ImportDraft,
   type ImportOp,
+  type Source,
 } from "@orthodox-prayer-toolkit/core";
+import { draftColumns } from "../src/importDraft/sourceView";
 import {
+  addColumnOps,
+  addLanguageOps,
   commitOps,
   joinOps,
   moveOps,
@@ -99,5 +103,57 @@ describe("Import preview edits → Import operations", () => {
     const d2 = run(d1, moveOps(d1, "b3", -1));
     expect(lines(d2)[0]).toEqual(["Quelle: Beispielseite"]);
     expect(moveOps(d2, "b3", -1)).toEqual([]);
+  });
+});
+
+describe("adding a language", () => {
+  const lines = (d: ImportDraft) =>
+    importDraftToPrayer(d).structure.map((b) => b.translations.map((t) => t.lines?.[0] ?? t.text));
+
+  it("pairs a pasted second language by order", () => {
+    const d0 = draft();
+    const cu = readText("Христосъ воскресе\n\nСлава Отцу", { id: "s2" });
+    const d = run(d0, addLanguageOps(d0, cu, { lang: "cu", variant: "standard", origin: "azbyka.ru" }));
+    expect(d.variants[1]).toMatchObject({ key: "v2", lang: "cu", source: "azbyka.ru" });
+    expect(lines(d)).toEqual([
+      ["Troparion im 4. Ton: Christus ist auferstanden", "Христосъ воскресе"],
+      ["Ehre sei dem Vater", "Слава Отцу"],
+      ["Quelle: Beispielseite"],
+    ]);
+  });
+
+  it("turns the second column of a parallel source into a language, row by row", () => {
+    const seg = (n: number, text: string, column?: number) => ({
+      id: `s1-${n}`,
+      text,
+      look: column === undefined ? {} : { column },
+    });
+    const source: Source = {
+      id: "s1",
+      format: "docx",
+      name: "parallel.docx",
+      segments: [
+        seg(1, "Ektenie"),
+        seg(2, "Herr, erbarme dich.", 1),
+        seg(3, "Господи, помилуй.", 2),
+        seg(4, "Gewähre, o Herr.", 1),
+        seg(5, "Подай, Господи.", 2),
+      ],
+    };
+    const d0 = createImportDraft({ sources: [source], variant: DE });
+    expect(draftColumns(d0)).toEqual([
+      { column: 1, sourceName: "parallel.docx", text: "Господи, помилуй.\nПодай, Господи.", count: 2 },
+    ]);
+    const d = run(
+      d0,
+      addColumnOps(d0, { column: 1, origin: "", variant: { lang: "ru", variant: "standard" } }),
+    );
+    // The heading across both columns stays German only.
+    expect(lines(d)).toEqual([
+      ["Ektenie"],
+      ["Herr, erbarme dich.", "Господи, помилуй."],
+      ["Gewähre, o Herr.", "Подай, Господи."],
+    ]);
+    expect(draftColumns(d)).toEqual([]);
   });
 });

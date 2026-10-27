@@ -20,6 +20,8 @@ export const RELEASE_NOTES: ReleaseNotesEntry[] = [
       "Same-looking paragraphs form style groups; set the kind of a whole group at once",
       "Import from PDF (with text): the page shows beside the editor with every paragraph framed; running heads start out excluded",
       "Import from Word (.docx): paragraph styles and formatting form style groups; differently formatted words are marked in the source",
+      "Import in two languages: add a second language from a column of the source or from another text; paragraphs pair in order, and you can unpair and pair them again",
+      "Import: choose a language the library does not have yet (Other language…)",
     ],
   },
   {
