@@ -22,6 +22,7 @@ export const RELEASE_NOTES: ReleaseNotesEntry[] = [
       "Import from Word (.docx): paragraph styles and formatting form style groups; differently formatted words are marked in the source",
       "Import in two languages: add a second language from a column of the source or from another text; paragraphs pair in order, and you can unpair and pair them again",
       "Import: choose a language the library does not have yet (Other language…)",
+      "Agent access (App settings, off by default): agents like Claude Code on this computer can import and sort prayers live in the app; saving always asks you first",
     ],
   },
   {

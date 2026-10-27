@@ -54,6 +54,15 @@ export type PrayerToolkitApi = {
   ) => Promise<string | null>;
   /** Open-file dialog; returns basename + file text, or null if cancelled. */
   pickPrayerJson: () => Promise<{ name: string; content: string } | null>;
+  /** Turn Agent access on or off; resolves to its port (null = off). */
+  setAgentAccess: (enabled: boolean) => Promise<number | null>;
+  /** Port of the running Agent access, or null. */
+  getAgentAccess: () => Promise<number | null>;
+  /** Requests from Agents for the Tool directory; answer with `respondAgentRequest`. */
+  onAgentRequest: (
+    cb: (id: number, request: { method: string; path: string; body: string }) => void,
+  ) => () => void;
+  respondAgentRequest: (id: number, answer: { status: number; body: unknown }) => void;
   /** Fetch a web page for the import (http/https, size-capped). */
   fetchSource: (
     url: string,
@@ -125,6 +134,22 @@ const api: PrayerToolkitApi = {
     ipcRenderer.invoke("dialog:saveExport", defaultName, content),
   pickPrayerJson: () => ipcRenderer.invoke("dialog:pickPrayerJson"),
   fetchSource: (url: string) => ipcRenderer.invoke("import:fetchSource", url),
+  setAgentAccess: (enabled) => ipcRenderer.invoke("agent:setEnabled", enabled),
+  getAgentAccess: () => ipcRenderer.invoke("agent:status"),
+  onAgentRequest: (cb) => {
+    const handler = (
+      _event: unknown,
+      id: number,
+      request: { method: string; path: string; body: string },
+    ) => cb(id, request);
+    ipcRenderer.on("agent:request", handler);
+    return () => {
+      ipcRenderer.removeListener("agent:request", handler);
+    };
+  },
+  respondAgentRequest: (id, answer) => {
+    ipcRenderer.send("agent:respond", id, answer);
+  },
   showItem: (fullPath) => ipcRenderer.invoke("shell:showItem", fullPath),
   basename: (path) => ipcRenderer.invoke("path:basename", path),
   onCloseRequested: (cb) => {

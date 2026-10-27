@@ -8,6 +8,7 @@ import {
   importDraftToPrayer,
   type ImportDraft,
   type ImportOp,
+  type ImportOrigin,
   type Prayer,
   type Source,
 } from "@orthodox-prayer-toolkit/core";
@@ -54,6 +55,8 @@ type ImportState = {
 
 export type ImportDraftSession = {
   draft: ImportDraft | null;
+  /** The draft right now, including changes made earlier in this turn. */
+  currentDraft: () => ImportDraft | null;
   /** Source files by Source id (PDF bytes for the page view). */
   files: Record<string, Uint8Array>;
   /** The Prayer the draft stands for (what the preview edits). */
@@ -67,7 +70,7 @@ export type ImportDraftSession = {
   addColumn: (input: AddColumnInput) => boolean;
   discard: () => void;
   /** Apply Import operations as one undo step; false when one is refused. */
-  apply: (ops: ImportOp[], options?: { coalesceKey?: string }) => boolean;
+  apply: (ops: ImportOp[], options?: { coalesceKey?: string; origin?: ImportOrigin }) => boolean;
   undo: () => boolean;
   redo: () => boolean;
   /** Editor actions in the preview, as Import operations. */
@@ -87,10 +90,10 @@ export function useImportDraft(): ImportDraftSession {
   }, []);
 
   const apply = useCallback(
-    (ops: ImportOp[], options: { coalesceKey?: string } = {}): boolean => {
+    (ops: ImportOp[], options: { coalesceKey?: string; origin?: ImportOrigin } = {}): boolean => {
       const cur = stateRef.current;
       if (!cur || ops.length === 0) return false;
-      const result = applyImportOps(cur.draft, ops);
+      const result = applyImportOps(cur.draft, ops, options.origin);
       if (!result.ok) return false;
       if (JSON.stringify(result.draft) === JSON.stringify(cur.draft)) return true;
       commit({
@@ -228,6 +231,7 @@ export function useImportDraft(): ImportDraftSession {
 
   return {
     draft: state?.draft ?? null,
+    currentDraft: useCallback(() => stateRef.current?.draft ?? null, []),
     files: state?.files ?? NO_FILES,
     prayer,
     canUndo: (state?.history.past.length ?? 0) > 0,

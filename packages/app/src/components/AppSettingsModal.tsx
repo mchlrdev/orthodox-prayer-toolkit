@@ -7,8 +7,11 @@ import {
   SegmentedControl,
   Slider,
   Stack,
+  Switch,
   Text,
 } from "@mantine/core";
+import { IconCopy } from "@tabler/icons-react";
+import { agentPrompt, type AgentAccess } from "../agentTools/useAgentAccess";
 import {
   EDITOR_FONT_SIZE_MAX,
   EDITOR_FONT_SIZE_MIN,
@@ -27,6 +30,7 @@ type Props = {
   onColorSchemeChange: (value: ColorSchemePreference) => void;
   editorFontSize: number;
   onEditorFontSizeChange: (value: number) => void;
+  agentAccess: AgentAccess;
 };
 
 export function AppSettingsModal({
@@ -36,7 +40,9 @@ export function AppSettingsModal({
   onColorSchemeChange,
   editorFontSize,
   onEditorFontSizeChange,
+  agentAccess,
 }: Props) {
+  const [copied, setCopied] = useState(false);
   const [version, setVersion] = useState<string | null>(null);
   const [update, setUpdate] = useState<AppUpdateCheckResult | null>(null);
   const [checking, setChecking] = useState(false);
@@ -145,6 +151,59 @@ export function AppSettingsModal({
             onChange={onEditorFontSizeChange}
             label={null}
           />
+        </Stack>
+
+        <Stack gap={8}>
+          <Group justify="space-between" align="center">
+            <Text size="sm" fw={600}>
+              Agent access
+            </Text>
+            <Switch
+              aria-label="Agent access"
+              checked={agentAccess.enabled}
+              disabled={!agentAccess.available}
+              onChange={(e) => agentAccess.setEnabled(e.currentTarget.checked)}
+            />
+          </Group>
+          <Text size="xs" c="dimmed">
+            Lets agents such as Claude Code or Cursor on this computer edit imports and the
+            library through the same tools.
+          </Text>
+          {!agentAccess.available ? (
+            <Text size="xs" c="dimmed">
+              Needs the desktop app.
+            </Text>
+          ) : agentAccess.error ? (
+            <Text size="xs" c="red">
+              {agentAccess.error}
+            </Text>
+          ) : agentAccess.enabled && agentAccess.port !== null ? (
+            <>
+              <Group gap={6} className="agent-status">
+                <span className="agent-status-dot" aria-hidden="true" />
+                <Text size="xs">Running on 127.0.0.1:{agentAccess.port}</Text>
+              </Group>
+              <div className="agent-prompt">
+                <code>{agentPrompt(agentAccess.port)}</code>
+                <Button
+                  size="xs"
+                  variant="default"
+                  leftSection={<IconCopy size={13} />}
+                  onClick={() => {
+                    void navigator.clipboard.writeText(agentPrompt(agentAccess.port!)).then(() => {
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 1500);
+                    });
+                  }}
+                >
+                  {copied ? "Copied" : "Copy prompt"}
+                </Button>
+              </div>
+              <Text size="xs" c="dimmed">
+                Saving, deleting and library-wide changes always ask in the app first.
+              </Text>
+            </>
+          ) : null}
         </Stack>
 
         <Stack gap={6}>

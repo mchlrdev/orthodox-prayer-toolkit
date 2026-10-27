@@ -21,6 +21,7 @@ import {
   importDraftToPrayer,
   indexVariants,
   type ImportOp,
+  type Prayer,
 } from "@orthodox-prayer-toolkit/core";
 import { getToolkitApi, isBrowserDev } from "./api";
 import { PrayerList } from "./components/PrayerList";
@@ -52,6 +53,9 @@ import {
   type ImportSaveInput,
 } from "./components/ImportSaveModal";
 import { useImportDraft } from "./importDraft/useImportDraft";
+import { readImportInput } from "./importDraft/readInput";
+import type { ToolHost } from "./agentTools/toolDirectory";
+import { useAgentAccess } from "./agentTools/useAgentAccess";
 import type { InlineEditorHandle } from "./components/InlineEditor";
 import type { LibraryEntry } from "./library";
 import { usePrayerSession } from "./usePrayerSession";
@@ -451,6 +455,60 @@ export function App() {
     };
   }, [importDraft.draft]);
 
+  /** A Tool call waiting for the user's yes (save, replace the draft). */
+  const [agentConfirm, setAgentConfirm] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    resolve: (ok: boolean) => void;
+  } | null>(null);
+  const agentHost: ToolHost = {
+    appVersion: runningVersion,
+    library: () =>
+      session.library
+        ? {
+            entries: session.library.entries.map(({ id, title, path, valid, kinds }) => ({
+              id,
+              title,
+              path,
+              valid,
+              kinds,
+            })),
+            variants: session.library.variants.map(({ lang, variant }) => ({ lang, variant })),
+          }
+        : null,
+    readPrayer: async (id) => {
+      const library = session.library;
+      const entry = library?.entries.find((e) => e.id === id);
+      if (!library || !entry) return null;
+      if (entry.path === session.selectedPath && session.draft) return session.draft;
+      return JSON.parse(await getToolkitApi().readText(library.root, entry.path)) as Prayer;
+    },
+    readSource: async (input, id) =>
+      readImportInput(
+        { text: input.url ?? input.text ?? "", html: input.html ?? null, fileName: input.name ?? null },
+        (address) => getToolkitApi().fetchSource(address),
+        { id },
+      ),
+    importDraft: () => importDraft.currentDraft(),
+    startImport: ({ source, origin, variant }) => {
+      flushPendingEdits();
+      importDraft.start({ source, origin, variant });
+      if (overlayMode) setLibraryCollapsed(true);
+    },
+    applyImportOps: (ops) => importDraft.apply(ops, { origin: { by: "agent" } }),
+    confirm: (request) =>
+      new Promise((resolve) => {
+        setAgentConfirm((prev) => {
+          prev?.resolve(false);
+          return { ...request, resolve };
+        });
+      }),
+    createPrayer: (prayer, variant) => session.createPrayer(prayer, variant),
+    closeImport: () => importDraft.discard(),
+  };
+  const agentAccess = useAgentAccess(agentHost);
+
   const saveImport = async ({ meta, variants }: ImportSaveInput) => {
     const current = importDraft.draft;
     if (!current) return;
@@ -830,6 +888,7 @@ export function App() {
         onColorSchemeChange={setColorSchemePref}
         editorFontSize={editorFontSize}
         onEditorFontSizeChange={setEditorFontSize}
+        agentAccess={agentAccess}
       />
 
       <ImportTextModal
@@ -878,6 +937,21 @@ export function App() {
           onSave={(input) => void saveImport(input)}
         />
       ) : null}
+
+      <ConfirmDialog
+        opened={agentConfirm !== null}
+        onClose={() => {
+          agentConfirm?.resolve(false);
+          setAgentConfirm(null);
+        }}
+        onConfirm={() => {
+          agentConfirm?.resolve(true);
+          setAgentConfirm(null);
+        }}
+        title={agentConfirm?.title ?? ""}
+        message={agentConfirm?.message ?? ""}
+        confirmLabel={agentConfirm?.confirmLabel ?? "OK"}
+      />
 
       <ConfirmDialog
         opened={leaveImportFor !== null}

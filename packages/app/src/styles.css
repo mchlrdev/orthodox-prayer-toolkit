@@ -3003,3 +3003,30 @@ body,
   line-height: 16px;
   color: var(--opt-text);
 }
+
+/* App settings: Agent access. */
+.agent-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--opt-success);
+}
+
+.agent-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--opt-hover);
+}
+
+.agent-prompt code {
+  align-self: stretch;
+  font-family: Menlo, ui-monospace, monospace;
+  font-size: 11.5px;
+  line-height: 18px;
+  white-space: pre-wrap;
+  color: var(--opt-text);
+}

@@ -28,6 +28,7 @@ import {
   writeFileAtomic,
 } from "../nodeFs";
 import { createLibraryWatcher } from "./libraryWatch";
+import { startAgentServer, type AgentServer } from "./agentServer";
 import { fetchSource } from "../sourceFetch";
 import { createTrustedRoots, type TrustedRoots } from "./trustedRoots";
 import { startMacUpdateInstall } from "./macUpdateInstall";
@@ -139,6 +140,59 @@ type AppCommand =
   | "undo"
   | "redo"
   | "assign-speaker";
+
+// --- Agent access ---------------------------------------------------------
+
+let agentServer: AgentServer | null = null;
+let agentNextId = 1;
+const agentPending = new Map<number, (answer: { status: number; body: unknown }) => void>();
+/** A confirmation in the app may take a while; an Agent should not wait forever. */
+const AGENT_TIMEOUT_MS = 5 * 60 * 1000;
+
+/** Discovery file: Agents (and the copied prompt) find the port here. */
+function agentDiscoveryPath(): string {
+  return join(app.getPath("userData"), "agent-access.json");
+}
+
+async function startAgentAccess(): Promise<void> {
+  if (agentServer) return;
+  agentServer = await startAgentServer(
+    (request) =>
+      new Promise((resolve) => {
+        const win = BrowserWindow.getAllWindows()[0];
+        if (!win) {
+          resolve({ status: 503, body: { ok: false, error: "The app has no open window" } });
+          return;
+        }
+        const id = agentNextId++;
+        const timer = setTimeout(() => {
+          agentPending.delete(id);
+          resolve({ status: 504, body: { ok: false, error: "The app did not answer in time" } });
+        }, AGENT_TIMEOUT_MS);
+        agentPending.set(id, (answer) => {
+          clearTimeout(timer);
+          resolve(answer);
+        });
+        win.webContents.send("agent:request", id, request);
+      }),
+  );
+  const url = `http://127.0.0.1:${agentServer.port}/`;
+  writeFileSync(
+    agentDiscoveryPath(),
+    `${JSON.stringify({ url, port: agentServer.port, pid: process.pid }, null, 2)}\n`,
+  );
+}
+
+async function stopAgentAccess(): Promise<void> {
+  const server = agentServer;
+  agentServer = null;
+  rmSync(agentDiscoveryPath(), { force: true });
+  for (const [id, pending] of agentPending) {
+    agentPending.delete(id);
+    pending({ status: 503, body: { ok: false, error: "Agent access was turned off" } });
+  }
+  await server?.close();
+}
 
 function sendCommand(command: AppCommand): void {
   const win =
@@ -513,6 +567,20 @@ function registerIpc(): void {
   ipcMain.handle("import:fetchSource", async (_evt, url: unknown) => {
     if (typeof url !== "string") throw new Error("Invalid address");
     return fetchSource(url, (input, init) => net.fetch(String(input), init));
+  });
+
+  ipcMain.handle("agent:setEnabled", async (_evt, enabled: unknown) => {
+    if (enabled === true) await startAgentAccess();
+    else await stopAgentAccess();
+    return agentServer?.port ?? null;
+  });
+  ipcMain.handle("agent:status", () => agentServer?.port ?? null);
+  ipcMain.on("agent:respond", (_evt, id: unknown, answer: unknown) => {
+    if (typeof id !== "number") return;
+    const pending = agentPending.get(id);
+    if (!pending) return;
+    agentPending.delete(id);
+    pending(answer as { status: number; body: unknown });
   });
 
   ipcMain.handle("dialog:pickPrayerJson", async () => {
@@ -1120,6 +1188,7 @@ app.whenReady().then(() => {
 
 app.on("will-quit", () => {
   globalShortcut.unregisterAll();
+  void stopAgentAccess();
 });
 
 app.on("window-all-closed", () => {

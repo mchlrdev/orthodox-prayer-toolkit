@@ -11,6 +11,7 @@ Guides for people using or extending the Orthodox Prayer Toolkit, and for agents
 | Encode a prayer with an LLM | [LLM ingest skill](../skills/encode-prayer/SKILL.md) |
 | Set up a library folder | [Library layout](library.md) |
 | Call Core from code | [Core API](core-api.md) |
+| Let a local agent work in the app | [Agent access](agent-access.md) |
 | Hack on the repo | [Development](development.md) |
 | Speak the domain language | [Glossary](glossary.md) |
 | Ship a desktop build | [Releasing](RELEASE.md) |

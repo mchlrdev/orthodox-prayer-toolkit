@@ -26,6 +26,8 @@ Shared domain language for humans and agents. Prefer these terms in UI, docs, an
 | **Style group** | Source segments with the same look. Target of group corrections. | category, class |
 | **Import draft** | Provisional Prayer from one or more Sources; its Blocks point at Source segments instead of holding text. Lives in the session until saved as `{id}.json`. | preview file, intermediate JSON |
 | **Import operation** | A named change to an Import draft (set kind, split, merge, mark note, exclude, …), the same for the user, the Built-in model and agents. | edit, patch |
+| **Tool** | One entry in the Tool directory (read the Library, start an import, apply Import operations, save, …) with purpose, parameter schema and example; the same for agents and, later, the Built-in model. | command (those are app menu commands), endpoint |
+| **Agent access** | Local HTTP interface on `127.0.0.1` to the Tool directory, off by default, switched in App settings. No key; only this computer, no web pages. | API server, MCP |
 | **Structure (model A)** | Shared block skeleton; texts hang off per-variant translations on each block. | parallel files per language |
 
 ## Related

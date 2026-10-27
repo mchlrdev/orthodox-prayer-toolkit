@@ -148,6 +148,12 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
       }>;
     },
 
+    // Agent access needs the desktop app (a local server in the main process).
+    setAgentAccess: async () => null,
+    getAgentAccess: async () => null,
+    onAgentRequest: () => () => undefined,
+    respondAgentRequest: () => undefined,
+
     pickPrayerJson: () =>
       new Promise((resolve) => {
         const input = document.createElement("input");
