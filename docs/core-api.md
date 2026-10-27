@@ -298,3 +298,27 @@ Inline output uses one character style per Speaker, `styleNameWithPrefix(stem, "
 `exportLayoutDocxParallel` takes `speakers?: { placement, form, separator }` with `placement` `column` (default) · `inline-left` · `inline-both` · `off`. `column` adds a Speaker column on the left (labels from the left variant, including the separator via `inlineSpeakerText`); rows without a speaker still emit an empty Speaker cell so the grid stays aligned. Default: `DEFAULT_PARALLEL_SPEAKER_EXPORT` = `{ placement: "column", form: "name", separator: ": " }`. Word table treats the Speaker column as a first-class option, so the default is Own column: `Speaker | [speaker gutter] | Left | [language gutter] | Right` when both gutters are on (`gutterColumn` and `speakerGutterColumn` default on; `speakerGutterColumn` is ignored unless placement is `column`).
 
 Pure helpers (return new Prayers, `formatVersion` normalized): `normalizeFormatVersion` (`3` iff `kinds` is non-empty, else `2` iff speakers are used, else omitted), `indexSpeakers`, `setBlockSpeaker(prayer, blockId, id | null)`, `setSpeakerLabel(prayer, {lang, variant}, id, {name?, short?})`, `removeSpeaker`. Labels: `resolveSpeakerLabel(prayer, ref, id, "name" | "short")` (this variant, else the English variant, else title-cased id / first letter), `speakerChipLabel` (same as `short`), `speakerDisplayLabel`. Ids: `SPEAKER_PRESETS`, `isValidSpeakerId`, `sanitizeSpeakerIdInput`. Which kinds may carry a speaker: `kindAllowsSpeaker(kind, prayer)` (see [Kinds](#kinds)).
+
+## Import
+
+Turns a Source into a Prayer without retyping its text. Readers split a Source into Source segments; an Import draft holds blocks whose text is a list of spans into those segments; Import operations change the draft. Everything is pure and lives in Core so the app, the Built-in model and external agents share one path.
+
+- **Readers.** `readText(text, { id?, name? })` makes one segment per paragraph (blank lines separate). Lossless: `text.slice(seg.start, seg.end) === seg.text` and everything between segments is whitespace. Format Readers (HTML, PDF, Word) live outside Core but return the same `Source` type and call `assignStyleGroups(source)`: segments with an equal `look` share a style group (`{sourceId}-g{n}`); an empty `look` gets none.
+- **Draft.** `createImportDraft({ sources, variant, meta? })` → one Verse block per segment in Variant key `v1` (the Reader's result, valid once title, license, source and id are set). Blocks hold `content[variantKey]: DraftSpan[]`; a missing key means no translation. `excluded` lists hidden segment ids: excluding hides text, never removes it.
+- **Text.** `draftBlockPlainText(draft, block, variantKey)` is the plain text Import operations address: verse lines joined by `\n`, text kinds joined by a space (lines from the source become a space). Offsets are UTF-16 code units, like the editor's. Lines are trimmed and empty lines dropped. Typed characters become `text` spans; `draftBlockHasTypedText` tells the UI to mark them.
+- **Operations.** `applyImportOp(draft, op, origin?)` / `applyImportOps(draft, ops, origin?)` → `{ ok: true, draft } | { ok: false, error }`. A batch is atomic. `origin` (`{ by: "reader" | "model" | "human" | "agent" | "memory", confidence? }`, default human) is recorded on kind and speaker decisions.
+
+| `op` | Effect |
+|------|--------|
+| `setKind` | `target: { block }` or `{ group }` (every block whose first visible segment is in the style group). Kind must be a preset or declared. Drops a speaker the new kind does not take |
+| `split` | At a plain-text offset in one Variant; the new block gets only that Variant (like the editor). Both sides need text |
+| `merge` | Block with the next one, all Variants. `keep: "upper" \| "lower"` picks kind and id. Split-then-merge restores the text |
+| `setNote` | Mark or unmark `[start, end)` as a note run |
+| `setSpeaker` | Set or clear (`null`). Strip a printed prefix with `removeText` in the same batch |
+| `removeText` | Drop `[start, end)` from the block (the source keeps it) |
+| `setText` | Explicit text from the editor; unchanged characters keep their source |
+| `setExcluded` | Hide or show Source segments |
+| `pairVariant` / `unpairVariant` | Move one Variant's text into another block / out into its own block |
+| `moveBlock`, `declareKind`, `setPrayerMeta`, `setVariantMeta` | As named; a Variant may not duplicate another's lang/variant |
+
+`importDraftToPrayer(draft)` builds the Prayer (blocks without visible text are left out, speakers only where the kind allows them); `validateImportDraft(draft)` runs it through `validate()`. Saving and id-collision checks stay with the app's Library writer.

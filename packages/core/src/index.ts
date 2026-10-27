@@ -223,3 +223,37 @@ export {
   speakerDisplayLabel,
 } from "./speakers.js";
 export type { SpeakerPreset, SpeakerSummary, VariantRef } from "./speakers.js";
+
+export { assignStyleGroups, readText } from "./importSource.js";
+export type {
+  ReadTextOptions,
+  SegmentLook,
+  Source,
+  SourceFormat,
+  SourceSegment,
+} from "./importSource.js";
+
+export {
+  applyImportOp,
+  applyImportOps,
+  createImportDraft,
+  draftBlockContent,
+  draftBlockGroup,
+  draftBlockHasTypedText,
+  draftBlockPlainText,
+  draftBlockSegments,
+  importDraftToPrayer,
+  validateImportDraft,
+} from "./importDraft.js";
+export type {
+  CreateImportDraftOptions,
+  DraftBlock,
+  DraftPrayerMeta,
+  DraftSpan,
+  DraftVariant,
+  ImportActor,
+  ImportDraft,
+  ImportOp,
+  ImportOpResult,
+  ImportOrigin,
+} from "./importDraft.js";

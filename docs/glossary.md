@@ -20,6 +20,12 @@ Shared domain language for humans and agents. Prefer these terms in UI, docs, an
 | **Format version** | Top-level `formatVersion` integer. Missing means `1`; written as `3` when the Prayer declares `kinds`, else `2` when it uses Speakers, else omitted. A file with a newer version than the app supports shows "needs a newer app". | schema version, file version |
 | **Flat export** | Single-variant derived document from `exportVariant`. | “compile”, “render” |
 | **Word table export** | Two-variant DOCX as a default Word table (one structure block per row). Language gutter (empty middle column) is on by default. When Placement is Own column, a speaker gutter (empty column after Speaker) is also on by default. Both optional. Word needs cell widths so empty columns stay. When the prayer has Speakers, a Speaker column is on by default (Placement: Own column). Word only; not Affinity Place. | newspaper columns, bilingual layout |
+| **Source** | Something being imported (pasted text, file, web page, image) with its origin. | document, input |
+| **Source segment** | Smallest addressable piece of a Source: verbatim text, look, stable id. Made by a Reader, never by a model. | chunk, line (ambiguous) |
+| **Reader** | Deterministic splitter of one format into Source segments. Understands no content. | parser |
+| **Style group** | Source segments with the same look. Target of group corrections. | category, class |
+| **Import draft** | Provisional Prayer from one or more Sources; its Blocks point at Source segments instead of holding text. Lives in the session until saved as `{id}.json`. | preview file, intermediate JSON |
+| **Import operation** | A named change to an Import draft (set kind, split, merge, mark note, exclude, …), the same for the user, the Built-in model and agents. | edit, patch |
 | **Structure (model A)** | Shared block skeleton; texts hang off per-variant translations on each block. | parallel files per language |
 
 ## Related
