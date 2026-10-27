@@ -538,6 +538,7 @@ export function App() {
             {importDraft.draft && importDraft.prayer ? (
               <ImportWorkspace
                 draft={importDraft.draft}
+                files={importDraft.files}
                 prayer={importDraft.prayer}
                 styles={resolvedStyles}
                 styleEditing={{

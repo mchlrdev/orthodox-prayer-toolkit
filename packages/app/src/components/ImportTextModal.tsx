@@ -10,6 +10,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import type { StartImportInput } from "../importDraft/useImportDraft";
+import type { Source } from "@orthodox-prayer-toolkit/core";
 import { getToolkitApi } from "../api";
 import { inputUrl, readImportInput } from "../importDraft/readInput";
 import { readHtmlDocument, sanitizeHtml } from "../importDraft/readHtml";
@@ -32,6 +33,7 @@ function htmlPreviewText(html: string): string {
 }
 
 const HTML_FILE = /\.(html?|xhtml)$/i;
+const PDF_FILE = /\.pdf$/i;
 
 /**
  * "Import prayer": paste text (formatting from a web page is kept), paste a
@@ -52,6 +54,10 @@ export function ImportTextModal({
   const [edition, setEdition] = useState("standard");
   /** HTML behind the text and the text it produced (dropped once edited). */
   const [html, setHtml] = useState<{ html: string; text: string } | null>(null);
+  /** A dropped PDF, already read (its text shows in the field). */
+  const [pdf, setPdf] = useState<{ data: Uint8Array; source: Source; text: string } | null>(
+    null,
+  );
   const [fileName, setFileName] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +68,7 @@ export function ImportTextModal({
     setText("");
     setOrigin("");
     setHtml(null);
+    setPdf(null);
     setFileName(null);
     setBusy(false);
     setError(null);
@@ -77,10 +84,20 @@ export function ImportTextModal({
         : null;
   const ready = text.trim().length > 0 && chosen !== null && !busy;
   const keptHtml = html !== null && html.text === text ? html.html : null;
-  const url = keptHtml === null ? inputUrl(text) : null;
+  const keptPdf = pdf !== null && pdf.text === text ? pdf : null;
+  const url = keptHtml === null && keptPdf === null ? inputUrl(text) : null;
 
   const create = async () => {
     if (!chosen) return;
+    if (keptPdf) {
+      onCreate({
+        source: keptPdf.source,
+        file: keptPdf.data,
+        origin: origin.trim() || (fileName ?? ""),
+        variant: chosen,
+      });
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -98,9 +115,31 @@ export function ImportTextModal({
   };
 
   const dropFile = async (file: File) => {
-    const content = await file.text();
     setFileName(file.name);
     setError(null);
+    setHtml(null);
+    setPdf(null);
+    if (PDF_FILE.test(file.name) || file.type === "application/pdf") {
+      setBusy(true);
+      try {
+        const data = new Uint8Array(await file.arrayBuffer());
+        const { readPdf } = await import("../importDraft/readPdf");
+        const source = await readPdf(data, { name: file.name });
+        const preview = source.segments
+          .filter((s) => !s.furniture)
+          .map((s) => s.text)
+          .join("\n\n");
+        setText(preview);
+        setPdf({ data, source, text: preview });
+      } catch (err) {
+        setText("");
+        setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+    const content = await file.text();
     if (HTML_FILE.test(file.name) || file.type === "text/html") {
       const preview = htmlPreviewText(content);
       setText(preview);
@@ -115,7 +154,7 @@ export function ImportTextModal({
     <Modal opened={opened} onClose={onClose} title="Import prayer" size="lg" centered>
       <Stack gap="md">
         <Text size="xs" c="dimmed">
-          Paste text or a web address, or drop an HTML or text file here.
+          Paste text or a web address, or drop a PDF, HTML or text file here.
         </Text>
         <div
           className="import-drop"
@@ -154,12 +193,14 @@ export function ImportTextModal({
             }}
           />
         </div>
-        {keptHtml !== null || url || error ? (
+        {keptHtml !== null || keptPdf || url || error ? (
           <Text size="xs" c={error ? "accent" : "dimmed"} mt={-8}>
             {error ??
-              (keptHtml !== null
-                ? `Formatting kept${fileName ? ` from ${fileName}` : ""}: same-looking paragraphs form style groups.`
-                : `The page at ${url!.hostname} is read when you create the draft.`)}
+              (keptPdf
+                ? `${fileName}: ${keptPdf.source.segments.length} segments on ${new Set(keptPdf.source.segments.map((s) => s.area?.page)).size} pages. Running heads and page numbers start out excluded.`
+                : keptHtml !== null
+                  ? `Formatting kept${fileName ? ` from ${fileName}` : ""}: same-looking paragraphs form style groups.`
+                  : `The page at ${url!.hostname} is read when you create the draft.`)}
           </Text>
         ) : null}
         <Group grow align="flex-start">

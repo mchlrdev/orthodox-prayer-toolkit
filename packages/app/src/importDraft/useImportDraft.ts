@@ -33,6 +33,8 @@ import {
 export type StartImportInput = {
   /** What a Reader made of the pasted text, file or page. */
   source: Source;
+  /** The file itself when the Source view draws it (PDF pages). */
+  file?: Uint8Array;
   /** Where the text comes from (Variant `source`, e.g. a site name). */
   origin: string;
   variant: ActiveVariant;
@@ -41,10 +43,14 @@ export type StartImportInput = {
 type ImportState = {
   draft: ImportDraft;
   history: DraftHistory<ImportDraft>;
+  /** Source files by Source id; not part of the draft or its undo. */
+  files: Record<string, Uint8Array>;
 };
 
 export type ImportDraftSession = {
   draft: ImportDraft | null;
+  /** Source files by Source id (PDF bytes for the page view). */
+  files: Record<string, Uint8Array>;
   /** The Prayer the draft stands for (what the preview edits). */
   prayer: Prayer | null;
   canUndo: boolean;
@@ -58,6 +64,8 @@ export type ImportDraftSession = {
   /** Editor actions in the preview, as Import operations. */
   edits: EditorEdits;
 };
+
+const NO_FILES: Record<string, Uint8Array> = {};
 
 export function useImportDraft(): ImportDraftSession {
   const [state, setState] = useState<ImportState | null>(null);
@@ -77,6 +85,7 @@ export function useImportDraft(): ImportDraftSession {
       if (!result.ok) return false;
       if (JSON.stringify(result.draft) === JSON.stringify(cur.draft)) return true;
       commit({
+        ...cur,
         draft: result.draft,
         history: recordEdit(cur.history, cur.draft, {
           coalesceKey: options.coalesceKey ?? null,
@@ -94,7 +103,7 @@ export function useImportDraft(): ImportDraftSession {
       if (!cur) return false;
       const moved = fn(cur.history, cur.draft);
       if (!moved) return false;
-      commit({ draft: moved.prayer, history: moved.history });
+      commit({ ...cur, draft: moved.prayer, history: moved.history });
       return true;
     },
     [commit],
@@ -167,12 +176,16 @@ export function useImportDraft(): ImportDraftSession {
   }, [apply]);
 
   const start = useCallback(
-    ({ source, origin, variant }: StartImportInput) => {
+    ({ source, file, origin, variant }: StartImportInput) => {
       const draft = createImportDraft({
         sources: [source],
         variant: { ...variant, source: origin.trim() },
       });
-      commit({ draft, history: emptyHistory<ImportDraft>() });
+      commit({
+        draft,
+        history: emptyHistory<ImportDraft>(),
+        files: file ? { [source.id]: file } : {},
+      });
     },
     [commit],
   );
@@ -184,6 +197,7 @@ export function useImportDraft(): ImportDraftSession {
 
   return {
     draft: state?.draft ?? null,
+    files: state?.files ?? NO_FILES,
     prayer,
     canUndo: (state?.history.past.length ?? 0) > 0,
     canRedo: (state?.history.future.length ?? 0) > 0,

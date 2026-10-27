@@ -33,6 +33,7 @@
     "@orthodox-prayer-toolkit/core": "workspace:*",
     "@tabler/icons-react": "^3.31.0",
     "electron-updater": "^6.8.9",
+    "pdfjs-dist": "^5.7.284",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

@@ -18,6 +18,7 @@ export const RELEASE_NOTES: ReleaseNotesEntry[] = [
       "Import text: paste a prayer, sort it into blocks in the normal editor beside the source, and save it to the library",
       "Import from a web page: paste its address, paste copied text with its formatting, or drop an HTML file",
       "Same-looking paragraphs form style groups; set the kind of a whole group at once",
+      "Import from PDF (with text): the page shows beside the editor with every paragraph framed; running heads start out excluded",
     ],
   },
   {

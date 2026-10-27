@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, type Ref } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type Ref } from "react";
 import { ActionIcon, Button, Tooltip } from "@mantine/core";
 import {
   IconAlertTriangle,
@@ -9,6 +9,7 @@ import {
 } from "@tabler/icons-react";
 import {
   draftBlockGroup,
+  draftBlockSegments,
   draftBlockVisible,
   locateValidationErrors,
   type DraftBlock,
@@ -24,6 +25,7 @@ import {
   type InlineEditorHandle,
 } from "./InlineEditor";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { PdfSourcePane } from "./PdfSourcePane";
 import { shortcutLabel } from "../appCommands";
 import { importContentErrors } from "../importDraft/contentErrors";
 import {
@@ -63,6 +65,8 @@ function lookAttrs(look: SegmentInfo["look"], bodySize: number | null) {
 
 type Props = {
   draft: ImportDraft;
+  /** Source files by Source id (PDF bytes for the page view). */
+  files: Record<string, Uint8Array>;
   prayer: Prayer;
   styles: StyleMap;
   styleEditing: StyleEditing;
@@ -82,6 +86,7 @@ type Props = {
 
 export function ImportWorkspace({
   draft,
+  files,
   prayer,
   styles,
   styleEditing,
@@ -260,18 +265,78 @@ export function ImportWorkspace({
     });
   };
 
+  // --- PDF: the page itself is the Source column ----------------------------
+  const pdfData = source?.format === "pdf" ? files[source.id] : undefined;
+  const allSegments = useMemo(() => draft.sources.flatMap((s) => s.segments), [draft.sources]);
+  const excludedSet = useMemo(() => new Set(draft.excluded), [draft.excluded]);
+  const [pdfPage, setPdfPage] = useState(1);
+  const [range, setRange] = useState<{ anchor: string; ids: Set<string> } | null>(null);
+  const activeSegs = useMemo(
+    () => new Set(activeBlock ? draftBlockSegments(activeBlock) : []),
+    [activeBlock],
+  );
+  const pageCount = Math.max(1, ...allSegments.map((s) => s.area?.page ?? 1));
+
+  // Follow the caret: show the page of the block being edited.
+  useEffect(() => {
+    if (!pdfData || !activeBlock) return;
+    const first = draftBlockSegments(activeBlock)
+      .map((id) => allSegments.find((s) => s.id === id))
+      .find((s) => s?.area);
+    if (first?.area) setPdfPage(first.area.page);
+  }, [pdfData, activeBlock, allSegments]);
+
+  const blockOfSegment = (segId: string) =>
+    draft.blocks.find(
+      (b) => draftBlockVisible(draft, b) && draftBlockSegments(b).includes(segId),
+    );
+
+  const onSegmentClick = (segId: string, extend: boolean) => {
+    if (extend && range) {
+      const a = allSegments.findIndex((s) => s.id === range.anchor);
+      const b = allSegments.findIndex((s) => s.id === segId);
+      const [from, to] = a <= b ? [a, b] : [b, a];
+      setRange({ anchor: range.anchor, ids: new Set(allSegments.slice(from, to + 1).map((s) => s.id)) });
+      return;
+    }
+    const block = excludedSet.has(segId) ? undefined : blockOfSegment(segId);
+    if (block) {
+      setRange({ anchor: segId, ids: new Set() });
+      selectBlock(block.id);
+    } else {
+      setRange({ anchor: segId, ids: new Set([segId]) });
+    }
+  };
+
+  const rangeIds = range ? [...range.ids] : [];
+  const rangeHasExcluded = rangeIds.some((id) => excludedSet.has(id));
+  const rangeHasIncluded = rangeIds.some((id) => !excludedSet.has(id));
+  const applyRange = (ops: ImportOp[]) => {
+    onApply(ops);
+    setRange(null);
+  };
+  const importFromHere = () => {
+    const first = allSegments.findIndex((s) => range?.ids.has(s.id));
+    if (first <= 0) return;
+    applyRange([
+      { op: "setExcluded", segments: allSegments.slice(0, first).map((s) => s.id), excluded: true },
+    ]);
+  };
+
   const visibleCount = prayer.structure.length;
   const id = draft.meta.id;
 
   return (
-    <div className="workspace import-workspace">
+    <div className="workspace import-workspace" data-pdf={pdfData ? "true" : undefined}>
       <div className="workspace-header">
         <div className="workspace-header-top">
           <div className="import-title-row">
             <h1 className="workspace-title">{variant.title || "Untitled"}</h1>
             <span className="import-subtitle">
-              Import draft · {source?.name ?? "Source"} · {segmentCount}{" "}
-              {segmentCount === 1 ? "segment" : "segments"}
+              Import draft · {source?.name ?? "Source"} ·{" "}
+              {pdfData
+                ? `Page ${pdfPage} of ${pageCount}`
+                : `${segmentCount} ${segmentCount === 1 ? "segment" : "segments"}`}
             </span>
           </div>
           <div className="import-actions">
@@ -316,6 +381,7 @@ export function ImportWorkspace({
         <div className="import-columns">
           <div className="import-column-label">
             <span className="import-caps">Source</span>
+            {pdfData ? <span>· Page {pdfPage}</span> : null}
             {groupCount > 0 ? (
               <span>
                 · {groupCount} style {groupCount === 1 ? "group" : "groups"}
@@ -347,7 +413,58 @@ export function ImportWorkspace({
           if (!next?.isContentEditable) setActiveBlockId(null);
         }}
       >
-        <div className="workspace-body-inner import-body">
+        <div
+          className="workspace-body-inner import-body"
+          data-pdf={pdfData ? "true" : undefined}
+        >
+          {pdfData ? (
+            <div className="import-pdf-side">
+              <PdfSourcePane
+                data={pdfData}
+                segments={allSegments}
+                page={pdfPage}
+                onPageChange={(p) => {
+                  setPdfPage(p);
+                  setRange(null);
+                }}
+                letters={letters}
+                excluded={excludedSet}
+                active={activeSegs}
+                selected={range?.ids ?? new Set()}
+                onSegmentClick={onSegmentClick}
+              />
+              {rangeIds.length > 0 ? (
+                <div className="pdf-range-actions" role="toolbar" aria-label="Selected segments">
+                  {rangeHasIncluded ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        applyRange([{ op: "setExcluded", segments: rangeIds, excluded: true }])
+                      }
+                    >
+                      Exclude
+                    </button>
+                  ) : null}
+                  {rangeHasExcluded ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        applyRange([{ op: "setExcluded", segments: rangeIds, excluded: false }])
+                      }
+                    >
+                      Include
+                    </button>
+                  ) : null}
+                  <button type="button" onClick={importFromHere}>
+                    Import from here
+                  </button>
+                  <button type="button" className="pdf-range-clear" onClick={() => setRange(null)}>
+                    Clear
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
           <InlineEditor
             ref={setEditorRef}
             prayer={prayer}
@@ -356,8 +473,8 @@ export function ImportWorkspace({
             styleEditing={styleEditing}
             issues={issues}
             edits={edits}
-            leadCell={leadCell}
-            rowsAfter={rowsAfter}
+            leadCell={pdfData ? undefined : leadCell}
+            rowsAfter={pdfData ? undefined : rowsAfter}
             onChange={() => {}}
             onRenameKind={() => {}}
             onDeleteKind={() => {}}

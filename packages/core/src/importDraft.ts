@@ -113,14 +113,13 @@ export function createImportDraft(options: CreateImportDraftOptions): ImportDraf
     }
   }
   const { lang, variant, title = "", license = "", source = "", rtl } = options.variant;
-  const blocks: DraftBlock[] = options.sources
-    .flatMap((s) => s.segments)
-    .map((segment, i) => ({
-      id: `b${i + 1}`,
-      kind: "verse",
-      content: { v1: [{ seg: segment.id, start: 0, end: segment.text.length }] },
-      origin: { kind: { by: "reader" } },
-    }));
+  const segments = options.sources.flatMap((s) => s.segments);
+  const blocks: DraftBlock[] = segments.map((segment, i) => ({
+    id: `b${i + 1}`,
+    kind: "verse",
+    content: { v1: segmentSpans(segment) },
+    origin: { kind: { by: "reader" } },
+  }));
   return {
     sources: options.sources,
     meta: { id: "", type: "prayer", ...options.meta },
@@ -129,9 +128,36 @@ export function createImportDraft(options: CreateImportDraftOptions): ImportDraf
     ],
     kinds: [],
     blocks,
-    excluded: [],
+    excluded: segments.filter((s) => s.furniture).map((s) => s.id),
     nextBlock: blocks.length + 1,
   };
+}
+
+/** Whole segment, minus the ranges the Reader marked to drop (joined up). */
+function segmentSpans(segment: SourceSegment): DraftSpan[] {
+  const drops = [...(segment.drop ?? [])]
+    .filter((d) => d.start < d.end && d.start >= 0 && d.end <= segment.text.length)
+    .sort((a, b) => a.start - b.start);
+  const spans: DraftSpan[] = [];
+  let at = 0;
+  for (const d of drops) {
+    if (d.start > at) {
+      spans.push(
+        spans.length > 0
+          ? { seg: segment.id, start: at, end: d.start, join: true }
+          : { seg: segment.id, start: at, end: d.start },
+      );
+    }
+    at = Math.max(at, d.end);
+  }
+  if (at < segment.text.length || spans.length === 0) {
+    spans.push(
+      spans.length > 0
+        ? { seg: segment.id, start: at, end: segment.text.length, join: true }
+        : { seg: segment.id, start: at, end: segment.text.length },
+    );
+  }
+  return spans;
 }
 
 function contextOf(draft: ImportDraft): ContentContext {

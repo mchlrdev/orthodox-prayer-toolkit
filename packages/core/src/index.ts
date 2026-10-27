@@ -229,6 +229,7 @@ export type { SpeakerPreset, SpeakerSummary, VariantRef } from "./speakers.js";
 export { assignStyleGroups, readText } from "./importSource.js";
 export type {
   ReadTextOptions,
+  SegmentArea,
   SegmentLook,
   Source,
   SourceFormat,

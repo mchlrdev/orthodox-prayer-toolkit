@@ -454,3 +454,41 @@ describe("style groups in the draft", () => {
     expect(draftBlocksInGroup(hidden, "s1-g1").map((b) => b.id)).toEqual(["b1"]);
   });
 });
+
+describe("Reader hints in the first draft", () => {
+  const source: Source = {
+    id: "p",
+    format: "pdf",
+    name: "buch.pdf",
+    segments: [
+      { id: "p-1", text: "PASCHA 12", look: {}, furniture: true },
+      {
+        id: "p-2",
+        text: "und denen in den Grä-bern das Le-ben geschenkt.",
+        look: {},
+        drop: [
+          { start: 20, end: 21 },
+          { start: 32, end: 33 },
+        ],
+      },
+    ],
+  };
+  const d = createImportDraft({ sources: [source], variant: { lang: "de", variant: "standard" } });
+
+  it("leaves out dropped hyphens but keeps them in the source", () => {
+    expect(texts(d)).toEqual([["und denen in den Gräbern das Leben geschenkt."]]);
+    expect(source.segments[1]!.text).toContain("Grä-bern");
+  });
+
+  it("excludes running heads, restorable", () => {
+    expect(d.excluded).toEqual(["p-1"]);
+    const shown = run(d, { op: "setExcluded", segments: ["p-1"], excluded: false });
+    expect(texts(shown)[0]).toEqual(["PASCHA 12"]);
+  });
+
+  it("splitting and merging across a dropped hyphen round-trips", () => {
+    const split = run(d, { op: "split", block: "b2", variant: "v1", at: 22 });
+    expect(texts(split)).toEqual([["und denen in den Gräbe"], ["rn das Leben geschenkt."]]);
+    expect(texts(run(split, { op: "merge", block: "b2" }))).toEqual(texts(d));
+  });
+});

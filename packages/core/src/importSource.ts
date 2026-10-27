@@ -25,6 +25,27 @@ export type SourceSegment = {
   group?: string;
   /** Language hint from the Reader (column, `lang` attribute). */
   lang?: string;
+  /** Where the segment sits on a page (PDF, scan): points, origin top-left. */
+  area?: SegmentArea;
+  /**
+   * Ranges of `text` the Reader suggests leaving out of the block, e.g. a
+   * hyphen where a word was broken across lines. The text itself keeps
+   * them; the first draft skips them (and the user can see why).
+   */
+  drop?: Array<{ start: number; end: number }>;
+  /** Running head, page number, footer: excluded in the first draft. */
+  furniture?: true;
+};
+
+export type SegmentArea = {
+  /** 1-based page number. */
+  page: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** Text column on the page (0 = first), when the page has several. */
+  column?: number;
 };
 
 export type Source = {
