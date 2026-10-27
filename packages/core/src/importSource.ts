@@ -35,7 +35,14 @@ export type SourceSegment = {
   drop?: Array<{ start: number; end: number }>;
   /** Running head, page number, footer: excluded in the first draft. */
   furniture?: true;
+  /**
+   * Inline runs of `text` that look different from the segment (a red or
+   * bold word inside a paragraph): hints for Note runs. Sorted, disjoint.
+   */
+  marks?: SegmentMark[];
 };
+
+export type SegmentMark = { start: number; end: number; look: SegmentLook };
 
 export type SegmentArea = {
   /** 1-based page number. */

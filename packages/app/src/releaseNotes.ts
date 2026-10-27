@@ -19,6 +19,7 @@ export const RELEASE_NOTES: ReleaseNotesEntry[] = [
       "Import from a web page: paste its address, paste copied text with its formatting, or drop an HTML file",
       "Same-looking paragraphs form style groups; set the kind of a whole group at once",
       "Import from PDF (with text): the page shows beside the editor with every paragraph framed; running heads start out excluded",
+      "Import from Word (.docx): paragraph styles and formatting form style groups; differently formatted words are marked in the source",
     ],
   },
   {

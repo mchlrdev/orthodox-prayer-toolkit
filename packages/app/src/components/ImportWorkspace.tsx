@@ -31,7 +31,9 @@ import { importContentErrors } from "../importDraft/contentErrors";
 import {
   groupLetters,
   segmentIndex,
+  markedPieces,
   sourceParts,
+  type SourcePart,
   type SegmentInfo,
 } from "../importDraft/sourceView";
 import { variantKey, type ActiveVariant } from "../variant";
@@ -61,6 +63,26 @@ function lookAttrs(look: SegmentInfo["look"], bodySize: number | null) {
         ? "true"
         : undefined,
   } as const;
+}
+
+/** Segment text with its marks (inline runs that look different) drawn in. */
+function MarkedText({ part }: { part: SourcePart }) {
+  return markedPieces(part.text, part.marks).map((piece, i) =>
+    piece.mark ? (
+      <span
+        key={i}
+        className="import-source-mark"
+        data-bold={piece.mark.look.weight === "bold" ? "true" : undefined}
+        data-italic={piece.mark.look.style === "italic" ? "true" : undefined}
+        data-colored={piece.mark.look.color ? "true" : undefined}
+        title="Formatted differently in the source: maybe a note"
+      >
+        {piece.text}
+      </span>
+    ) : (
+      piece.text
+    ),
+  );
 }
 
 type Props = {
@@ -215,7 +237,7 @@ export function ImportWorkspace({
             {letter ? <span className="import-source-badge">{letter}</span> : null}
           </span>
           <span className="import-source-text" {...lookAttrs(part.look, bodySize)}>
-            {part.text}
+            <MarkedText part={part} />
           </span>
         </button>
       );
@@ -238,7 +260,7 @@ export function ImportWorkspace({
                 <span className="import-source-n">{part.n}</span>
                 <span className="import-source-group" />
                 <span className="import-source-text" {...lookAttrs(part.look, bodySize)}>
-                  {part.text}
+                  <MarkedText part={part} />
                 </span>
               </div>
             ))}

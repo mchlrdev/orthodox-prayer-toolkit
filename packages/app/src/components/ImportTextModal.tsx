@@ -34,6 +34,7 @@ function htmlPreviewText(html: string): string {
 
 const HTML_FILE = /\.(html?|xhtml)$/i;
 const PDF_FILE = /\.pdf$/i;
+const DOCX_FILE = /\.docx$/i;
 
 /**
  * "Import prayer": paste text (formatting from a web page is kept), paste a
@@ -54,8 +55,8 @@ export function ImportTextModal({
   const [edition, setEdition] = useState("standard");
   /** HTML behind the text and the text it produced (dropped once edited). */
   const [html, setHtml] = useState<{ html: string; text: string } | null>(null);
-  /** A dropped PDF, already read (its text shows in the field). */
-  const [pdf, setPdf] = useState<{ data: Uint8Array; source: Source; text: string } | null>(
+  /** A dropped PDF or Word file, already read (its text shows in the field). */
+  const [read, setRead] = useState<{ data: Uint8Array; source: Source; text: string } | null>(
     null,
   );
   const [fileName, setFileName] = useState<string | null>(null);
@@ -68,7 +69,7 @@ export function ImportTextModal({
     setText("");
     setOrigin("");
     setHtml(null);
-    setPdf(null);
+    setRead(null);
     setFileName(null);
     setBusy(false);
     setError(null);
@@ -84,15 +85,17 @@ export function ImportTextModal({
         : null;
   const ready = text.trim().length > 0 && chosen !== null && !busy;
   const keptHtml = html !== null && html.text === text ? html.html : null;
-  const keptPdf = pdf !== null && pdf.text === text ? pdf : null;
-  const url = keptHtml === null && keptPdf === null ? inputUrl(text) : null;
+  const keptRead = read !== null && read.text === text ? read : null;
+  const keptPdf = keptRead?.source.format === "pdf" ? keptRead : null;
+  const url = keptHtml === null && keptRead === null ? inputUrl(text) : null;
 
   const create = async () => {
     if (!chosen) return;
-    if (keptPdf) {
+    if (keptRead) {
       onCreate({
-        source: keptPdf.source,
-        file: keptPdf.data,
+        source: keptRead.source,
+        // The page view draws PDF pages; a Word file is not needed again.
+        ...(keptPdf ? { file: keptPdf.data } : {}),
         origin: origin.trim() || (fileName ?? ""),
         variant: chosen,
       });
@@ -118,19 +121,22 @@ export function ImportTextModal({
     setFileName(file.name);
     setError(null);
     setHtml(null);
-    setPdf(null);
-    if (PDF_FILE.test(file.name) || file.type === "application/pdf") {
+    setRead(null);
+    const pdfFile = PDF_FILE.test(file.name) || file.type === "application/pdf";
+    if (pdfFile || DOCX_FILE.test(file.name)) {
       setBusy(true);
       try {
         const data = new Uint8Array(await file.arrayBuffer());
-        const { readPdf } = await import("../importDraft/readPdf");
-        const source = await readPdf(data, { name: file.name });
+        const source = pdfFile
+          ? await (await import("../importDraft/readPdf")).readPdf(data, { name: file.name })
+          : await (await import("../importDraft/readDocx")).readDocx(data, { name: file.name });
+        if (source.segments.length === 0) throw new Error("No text found");
         const preview = source.segments
           .filter((s) => !s.furniture)
           .map((s) => s.text)
           .join("\n\n");
         setText(preview);
-        setPdf({ data, source, text: preview });
+        setRead({ data, source, text: preview });
       } catch (err) {
         setText("");
         setError(err instanceof Error ? err.message : String(err));
@@ -154,7 +160,7 @@ export function ImportTextModal({
     <Modal opened={opened} onClose={onClose} title="Import prayer" size="lg" centered>
       <Stack gap="md">
         <Text size="xs" c="dimmed">
-          Paste text or a web address, or drop a PDF, HTML or text file here.
+          Paste text or a web address, or drop a PDF, Word, HTML or text file here.
         </Text>
         <div
           className="import-drop"
@@ -193,12 +199,14 @@ export function ImportTextModal({
             }}
           />
         </div>
-        {keptHtml !== null || keptPdf || url || error ? (
+        {keptHtml !== null || keptRead || url || error ? (
           <Text size="xs" c={error ? "accent" : "dimmed"} mt={-8}>
             {error ??
               (keptPdf
                 ? `${fileName}: ${keptPdf.source.segments.length} segments on ${new Set(keptPdf.source.segments.map((s) => s.area?.page)).size} pages. Running heads and page numbers start out excluded.`
-                : keptHtml !== null
+                : keptRead
+                  ? `${fileName}: ${keptRead.source.segments.length} paragraphs. Formatting kept: same-looking paragraphs form style groups.`
+                  : keptHtml !== null
                   ? `Formatting kept${fileName ? ` from ${fileName}` : ""}: same-looking paragraphs form style groups.`
                   : `The page at ${url!.hostname} is read when you create the draft.`)}
           </Text>

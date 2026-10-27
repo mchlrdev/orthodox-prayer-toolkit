@@ -2482,6 +2482,24 @@ body,
   font-size: 14px;
 }
 
+.import-source-mark {
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--opt-accent) 10%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--opt-accent) 10%, transparent);
+}
+
+.import-source-mark[data-bold="true"] {
+  font-weight: 600;
+}
+
+.import-source-mark[data-italic="true"] {
+  font-style: italic;
+}
+
+.import-source-mark[data-colored="true"] {
+  color: var(--opt-accent);
+}
+
 .import-source-n {
   flex: 0 0 20px;
   font-size: 11px;

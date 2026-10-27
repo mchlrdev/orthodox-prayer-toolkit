@@ -230,6 +230,7 @@ export { assignStyleGroups, readText } from "./importSource.js";
 export type {
   ReadTextOptions,
   SegmentArea,
+  SegmentMark,
   SegmentLook,
   Source,
   SourceFormat,

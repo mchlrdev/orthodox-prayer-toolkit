@@ -3,11 +3,19 @@ import type {
   DraftSpan,
   ImportDraft,
   SegmentLook,
+  SegmentMark,
 } from "@orthodox-prayer-toolkit/core";
 
 /** What the Source column shows: segment numbers, group marks, source text. */
 
-export type SegmentInfo = { n: number; text: string; group?: string; look: SegmentLook };
+export type SegmentInfo = {
+  n: number;
+  text: string;
+  group?: string;
+  look: SegmentLook;
+  /** Inline runs that look different (Note run hints), offsets in `text`. */
+  marks?: readonly SegmentMark[];
+};
 
 /** Segments by id, numbered 1… across all Sources. */
 export function segmentIndex(draft: ImportDraft): Map<string, SegmentInfo> {
@@ -16,7 +24,7 @@ export function segmentIndex(draft: ImportDraft): Map<string, SegmentInfo> {
   for (const source of draft.sources) {
     for (const seg of source.segments) {
       n += 1;
-      out.set(seg.id, { n, text: seg.text, group: seg.group, look: seg.look });
+      out.set(seg.id, { n, text: seg.text, group: seg.group, look: seg.look, marks: seg.marks });
     }
   }
   return out;
@@ -57,7 +65,17 @@ export function sourceParts(
   return runs.flatMap((run) => {
     const seg = segments.get(run.seg);
     if (!seg) return [];
-    return [{ ...seg, text: seg.text.slice(run.start, run.end).trim() }];
+    const raw = seg.text.slice(run.start, run.end);
+    const from = run.start + (raw.length - raw.trimStart().length);
+    const text = raw.trim();
+    const marks = seg.marks
+      ?.map((m) => ({
+        ...m,
+        start: Math.max(0, m.start - from),
+        end: Math.min(text.length, m.end - from),
+      }))
+      .filter((m) => m.end > m.start);
+    return [{ ...seg, text, marks: marks?.length ? marks : undefined }];
   });
 }
 
@@ -65,4 +83,21 @@ export function sourceParts(
 export function sample(text: string, max = 28): string {
   const line = text.replace(/\s+/g, " ").trim();
   return line.length > max ? `${line.slice(0, max - 1)}…` : line;
+}
+
+export type TextPiece = { text: string; mark?: SegmentMark };
+
+/** Text cut at its marks, for drawing them. */
+export function markedPieces(text: string, marks: readonly SegmentMark[] | undefined): TextPiece[] {
+  if (!marks?.length) return [{ text }];
+  const out: TextPiece[] = [];
+  let at = 0;
+  for (const mark of marks) {
+    if (mark.start < at) continue;
+    if (mark.start > at) out.push({ text: text.slice(at, mark.start) });
+    out.push({ text: text.slice(mark.start, mark.end), mark });
+    at = mark.end;
+  }
+  if (at < text.length) out.push({ text: text.slice(at) });
+  return out;
 }
