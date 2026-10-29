@@ -24,14 +24,19 @@ export function emptyHistory<T = Prayer>(): DraftHistory<T> {
 export function recordEdit<T = Prayer>(
   history: DraftHistory<T> | undefined,
   previous: T,
-  options: { coalesceKey?: string | null; now: number },
+  options: {
+    coalesceKey?: string | null;
+    now: number;
+    /** Longest pause that still joins the previous step (default HISTORY_COALESCE_MS). */
+    maxGap?: number;
+  },
 ): DraftHistory<T> {
   const h = history ?? emptyHistory<T>();
   const key = options.coalesceKey ?? null;
   if (
     key !== null &&
     key === h.coalesceKey &&
-    options.now - h.at <= HISTORY_COALESCE_MS &&
+    options.now - h.at <= (options.maxGap ?? HISTORY_COALESCE_MS) &&
     h.past.length > 0
   ) {
     return { ...h, future: [], at: options.now };

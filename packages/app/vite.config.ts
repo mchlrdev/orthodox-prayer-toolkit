@@ -22,7 +22,7 @@ export default defineConfig({
       ? [
           electron({
             main: {
-              entry: "electron/main.ts",
+              entry: ["electron/main.ts", "electron/modelWorker.ts"],
               onstart(args) {
                 // Cursor/agent shells set ELECTRON_RUN_AS_NODE=1; if inherited,
                 // Electron boots as plain Node and crashes on `import "electron"`.
@@ -36,7 +36,7 @@ export default defineConfig({
                   rollupOptions: {
                     // Keep Electron and updater as Node requires so electron-builder
                     // can ship them from node_modules inside the asar.
-                    external: ["electron", "electron-updater"],
+                    external: ["electron", "electron-updater", "node-llama-cpp"],
                   },
                 },
               },

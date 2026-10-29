@@ -1,6 +1,14 @@
 # Built-in model
 
-The app can download one local model that runs offline. It is optional: import, editing and Agent access work without it. (Running it — first drafts and chat — comes in later releases; this page covers getting and keeping it.)
+The app can download one local model that runs offline. It is optional: import, editing and Agent access work without it.
+
+## First draft
+
+When the model is installed, loading a Source (Import text…) starts it at once. It answers Decisions (see [core-api.md](core-api.md#decisions-first-draft)) block by block and the preview changes as it goes; a banner shows progress and **Stop**. You can edit meanwhile: blocks you change keep your decision. The whole run is one undo step.
+
+Each model decision keeps its confidence. Below 70 % the block shows **Kind uncertain · n %** (click it to keep the kind) and the status bar counts **open decisions**; clicking that jumps to the next one. Adding a language checks the pairs the same way. Agents can start the same run with the `import.firstDraft` tool.
+
+The model runs in its own process (Electron utility process, node-llama-cpp with Metal on Apple silicon), so the window stays responsive. It loads on the first run (a few seconds) and is unloaded after three idle minutes. About 0.2 s per block on an M-series Mac.
 
 ## The model
 
@@ -24,4 +32,8 @@ An app update that bumps the entry's `version` shows "A new version is available
 
 ## Browser dev
 
-`pnpm dev` (no Electron) shows a stand-in model instead of a download.
+`pnpm dev` (no Electron) shows a stand-in model instead of a download; first drafts there use fixed rules (`standInModel.ts`), as do the tests.
+
+## Measuring
+
+`pnpm --filter @orthodox-prayer-toolkit/app measure:model [library-dir] [model.gguf]` treats each prayer JSON in the folder as the expected result, imports `<id>.txt` next to it (or plain text made from the prayer), lets the model decide and prints per prayer: blocks found with the exact text, kind and speaker hits, time.

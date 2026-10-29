@@ -53,6 +53,7 @@ import {
   type ImportSaveInput,
 } from "./components/ImportSaveModal";
 import { useImportDraft } from "./importDraft/useImportDraft";
+import { useFirstDraft } from "./builtInModel/useFirstDraft";
 import { readImportInput } from "./importDraft/readInput";
 import type { ToolHost } from "./agentTools/toolDirectory";
 import { useAgentAccess } from "./agentTools/useAgentAccess";
@@ -104,6 +105,7 @@ export function App() {
   }, []);
   const session = usePrayerSession({ onNotice });
   const importDraft = useImportDraft();
+  const firstDraft = useFirstDraft(importDraft);
   const importing = importDraft.draft !== null;
   const [importTextOpen, setImportTextOpen] = useState(false);
   const [importSaveOpen, setImportSaveOpen] = useState(false);
@@ -506,6 +508,7 @@ export function App() {
       }),
     createPrayer: (prayer, variant) => session.createPrayer(prayer, variant),
     closeImport: () => importDraft.discard(),
+    runFirstDraft: () => firstDraft.start(),
   };
   const agentAccess = useAgentAccess(agentHost);
 
@@ -640,6 +643,7 @@ export function App() {
                 onRedo={() => importDraft.redo()}
                 onDiscard={importDraft.discard}
                 onAddLanguage={() => setAddLanguageOpen(true)}
+                firstDraft={firstDraft}
                 onSave={() => {
                   flushPendingEdits();
                   setImportSaveOpen(true);
@@ -902,6 +906,7 @@ export function App() {
         onCreate={(input) => {
           flushPendingEdits();
           importDraft.start(input);
+          firstDraft.startIfAvailable();
           setImportTextOpen(false);
           if (overlayMode) setLibraryCollapsed(true);
         }}
@@ -917,11 +922,17 @@ export function App() {
         defaultVariant={null}
         onClose={() => setAddLanguageOpen(false)}
         onCreate={(input) => {
-          if (importDraft.addLanguage(input)) setAddLanguageOpen(false);
+          if (importDraft.addLanguage(input)) {
+            setAddLanguageOpen(false);
+            firstDraft.startIfAvailable({ only: ["pair"] });
+          }
           else onNotice({ color: "accent", title: "Cannot add language", message: "The language is already in the draft." });
         }}
         onAddColumn={(input) => {
-          if (importDraft.addColumn(input)) setAddLanguageOpen(false);
+          if (importDraft.addColumn(input)) {
+            setAddLanguageOpen(false);
+            firstDraft.startIfAvailable({ only: ["pair"] });
+          }
           else onNotice({ color: "accent", title: "Cannot add language", message: "The language is already in the draft." });
         }}
       />

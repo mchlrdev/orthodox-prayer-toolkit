@@ -19,6 +19,10 @@ files:
   - package.json
 
 asar: true
+# The Built-in model's runtime loads native binaries; they cannot run from inside the asar.
+asarUnpack:
+  - node_modules/node-llama-cpp/**
+  - node_modules/@node-llama-cpp/**
 
 # electron-updater reads these from GitHub Releases (latest*.yml).
 publish:

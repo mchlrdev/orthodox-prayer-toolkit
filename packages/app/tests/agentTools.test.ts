@@ -14,6 +14,8 @@ import {
   type ToolHost,
 } from "../src/agentTools/toolDirectory";
 import { prayerFileText } from "../src/session/persistPrayer";
+import { runFirstDraft } from "../src/builtInModel/firstDraft";
+import { standInRuntime } from "../src/builtInModel/standInModel";
 
 const EXISTING: Prayer = {
   id: "ostergebete",
@@ -68,6 +70,17 @@ function memoryHost(options: { confirm?: boolean } = {}) {
     closeImport: () => {
       draft = null;
     },
+    runFirstDraft: () =>
+      runFirstDraft({
+        draft: draft!,
+        runtime: standInRuntime(),
+        current: () => draft,
+        apply: (step) => {
+          const result = applyImportOps(draft!, step.ops, step.origin);
+          if (result.ok) draft = result.draft;
+        },
+        signal: new AbortController().signal,
+      }),
   };
   return { host, files, steps, asked, draft: () => draft };
 }
@@ -91,6 +104,7 @@ describe("Tool directory", () => {
       "import.read",
       "import.apply",
       "import.addLanguage",
+      "import.firstDraft",
       "import.save",
     ]);
     for (const tool of tools) {
@@ -154,6 +168,33 @@ describe("Tool directory", () => {
     });
     // One undo step per call that changed the draft (apply, then the save metadata).
     expect(steps).toHaveLength(2);
+  });
+
+  it("the Built-in model's first draft (stand-in) becomes the expected prayer", async () => {
+    const { host, files } = memoryHost();
+    await call(host, "import.start", {
+      text: "Troparion im 4. Ton: Dein Märtyrer, Herr, hat die Krone empfangen.\n\nPriester: Gesegnet ist unser Gott.\n\nDreimal.\n\nSeite drucken",
+      lang: "de",
+      variant: "standard",
+      origin: "x",
+    });
+    const view = await call(host, "import.firstDraft");
+    expect((view.blocks as Array<{ origin: string; confidence?: number }>)[0]).toMatchObject({
+      origin: "model",
+      confidence: 0.8,
+    });
+    await call(host, "import.save", {
+      meta: { id: "prokopios", type: "troparion" },
+      variants: { v1: { title: "Prokopios", license: "CC0" } },
+    });
+    const saved = JSON.parse(files["prokopios.json"]!) as Prayer;
+    expect(saved.variants[0]!.speakers).toEqual({ priest: { name: "Priester" } });
+    expect(saved.structure.map((b) => [b.kind, b.speaker ?? null, b.translations[0]!.text ?? b.translations[0]!.lines])).toEqual([
+      ["heading", null, "Troparion im 4. Ton"],
+      ["verse", null, ["Dein Märtyrer, Herr, hat die Krone empfangen."]],
+      ["verse", "priest", ["Gesegnet ist unser Gott."]],
+      ["annotation", null, "Dreimal."],
+    ]);
   });
 
   it("saving waits for the user: declined → nothing written", async () => {
@@ -241,7 +282,7 @@ describe("Agent HTTP routes", () => {
     const { host } = memoryHost();
     const index = await handleAgentRequest(host, { method: "GET", path: "/", body: "" });
     expect(index.status).toBe(200);
-    expect((index.body as { tools: unknown[] }).tools).toHaveLength(8);
+    expect((index.body as { tools: unknown[] }).tools).toHaveLength(9);
     const list = await handleAgentRequest(host, { method: "POST", path: "/tools/library.list", body: "{}" });
     expect(list.status).toBe(200);
     expect(await handleAgentRequest(host, { method: "POST", path: "/tools/library.list", body: "{" })).toMatchObject({

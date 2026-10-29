@@ -29,8 +29,10 @@ import {
 } from "../nodeFs";
 import { createLibraryWatcher } from "./libraryWatch";
 import { startAgentServer, type AgentServer } from "./agentServer";
+import type { DecisionPrompt } from "@orthodox-prayer-toolkit/core";
 import { BUILT_IN_MODEL } from "./modelCatalog";
 import { createModelStore, type ModelStore } from "./modelStore";
+import { createModelProcess } from "./modelProcess";
 import { fetchSource } from "../sourceFetch";
 import { createTrustedRoots, type TrustedRoots } from "./trustedRoots";
 import { startMacUpdateInstall } from "./macUpdateInstall";
@@ -211,6 +213,8 @@ function builtInModel(): ModelStore {
   });
   return modelStore;
 }
+
+const modelProcess = createModelProcess(join(__dirname, "modelWorker.js"));
 
 function sendCommand(command: AppCommand): void {
   const win =
@@ -606,7 +610,24 @@ function registerIpc(): void {
     void builtInModel().download();
   });
   ipcMain.handle("model:cancel", () => builtInModel().cancel());
-  ipcMain.handle("model:remove", () => builtInModel().remove());
+  ipcMain.handle("model:remove", () => {
+    modelProcess.stop();
+    builtInModel().remove();
+  });
+  ipcMain.handle("model:decide", (event, job: unknown, prompt: unknown) => {
+    if (typeof job !== "number" || typeof prompt !== "object" || prompt === null) {
+      throw new Error("Invalid Decision request");
+    }
+    const files = builtInModel().installedFiles();
+    if (!files) throw new Error("The Built-in model is not installed");
+    const sender = event.sender;
+    modelProcess.decide(job, files[0]!, prompt as DecisionPrompt, (message) => {
+      if (!sender.isDestroyed()) sender.send("model:decision", message);
+    });
+  });
+  ipcMain.handle("model:cancelDecide", (_evt, job: unknown) => {
+    if (typeof job === "number") modelProcess.cancel(job);
+  });
 
   ipcMain.handle("dialog:pickPrayerJson", async () => {
     const result = await dialog.showOpenDialog({
@@ -1215,6 +1236,7 @@ app.on("will-quit", () => {
   globalShortcut.unregisterAll();
   void stopAgentAccess();
   modelStore?.cancel();
+  modelProcess.stop();
 });
 
 app.on("window-all-closed", () => {

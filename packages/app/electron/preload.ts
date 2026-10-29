@@ -4,10 +4,13 @@ import type {
   AppUpdateCheckResult,
 } from "./updateCheck";
 
+import type { DecisionPrompt } from "@orthodox-prayer-toolkit/core";
 import type { ModelStatus } from "./modelStore";
+import type { ModelWorkerMessage } from "./modelWorker";
 
 export type { AppInfo, AppUpdateCheckResult } from "./updateCheck";
 export type { ModelStatus } from "./modelStore";
+export type { ModelWorkerMessage } from "./modelWorker";
 
 export type CreateLibraryOptions = {
   name: string;
@@ -72,6 +75,10 @@ export type PrayerToolkitApi = {
   cancelModelDownload: () => Promise<void>;
   removeModel: () => Promise<void>;
   onModelStatus: (cb: (status: ModelStatus) => void) => () => void;
+  /** Decisions on the Built-in model (in its own process); answers arrive per item. */
+  startDecision: (job: number, prompt: DecisionPrompt) => Promise<void>;
+  cancelDecision: (job: number) => Promise<void>;
+  onDecision: (cb: (message: ModelWorkerMessage) => void) => () => void;
   /** Fetch a web page for the import (http/https, size-capped). */
   fetchSource: (
     url: string,
@@ -168,6 +175,15 @@ const api: PrayerToolkitApi = {
     ipcRenderer.on("model:status", handler);
     return () => {
       ipcRenderer.removeListener("model:status", handler);
+    };
+  },
+  startDecision: (job, prompt) => ipcRenderer.invoke("model:decide", job, prompt),
+  cancelDecision: (job) => ipcRenderer.invoke("model:cancelDecide", job),
+  onDecision: (cb) => {
+    const handler = (_event: unknown, message: ModelWorkerMessage) => cb(message);
+    ipcRenderer.on("model:decision", handler);
+    return () => {
+      ipcRenderer.removeListener("model:decision", handler);
     };
   },
   showItem: (fullPath) => ipcRenderer.invoke("shell:showItem", fullPath),

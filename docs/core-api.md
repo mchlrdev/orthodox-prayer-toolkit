@@ -334,4 +334,18 @@ The PDF Reader (`pdfLayout.ts` + `pdfText.ts`, pdf.js) turns text items into lin
 
 The Word Reader (`readDocx.ts`, JSZip) reads `word/document.xml` with `word/styles.xml`: one segment per body paragraph, table cells row by row (look `column`, 1-based, so each column forms its own style groups). The look is the paragraph style name (`paragraphStyle`), alignment, and the run formatting (weight, style, size in pt, colour, caps, underline) that covers most letters; runs that look different become `marks` (`SegmentMark`: offsets in the segment text plus their look), a hint for Note runs. Styles resolve along `basedOn`; character styles apply to their runs. Links, tracked insertions and content controls are read; deletions, field codes, headers, footers and footnotes are not. The language comes from the runs or the paragraph style, never from the document defaults.
 
+### Decisions (first draft)
+
+The Built-in model never writes text or JSON: it answers **Decisions**, questions with a fixed set of options, and the answer is the probability of each option. `importDecisions.ts` owns the questions as data (rules from the `encode-prayer` skill):
+
+| Function | Does |
+|----------|------|
+| `firstDraftBatches(draft)` | The first-draft questions as `DecisionBatch`es: `role` of every visible block (heading, subheading, annotation, verse, not part of the prayer), `prefix` for blocks starting with "Label:" (genre label → split off as heading, instruction → Note run, speaker, spoken text), `pair` for blocks paired by order (same passage or not) |
+| `speakerBatch(prefix, items)` | Follow-up for "who speaks" labels that `speakerForLabel` does not know ("Priester" → `priest` is known) |
+| `decisionPrompts(batch, maxItems)` | Prompt text (rules, options with letters, worked examples, numbered items); the runtime reads item *i*'s letter right after `decisionItemPrefix(i)` |
+| `decisionStep(draft, batch, item, answer)` | The Import operations for one answer against the draft as it is now, with origin `{ by: "model", confidence }`; null when nothing changes or someone other than the reader already decided the block (user edits win) |
+| `uncertainDecisions(block)` | Model decisions below `UNCERTAIN_BELOW` (0.7), for "open decisions" |
+
+The app runs them in `packages/app/src/builtInModel/` (`runFirstDraft`, a stand-in model with fixed rules for browser dev and tests); the model itself runs in its own process (`electron/modelWorker.ts`, node-llama-cpp). `pnpm --filter @orthodox-prayer-toolkit/app measure:model [library-dir]` measures hit rates against a folder of prayers.
+
 In the app the preview is the normal `InlineEditor`: its optional `edits` prop replaces the editor's own Prayer edits, so Enter, Backspace/Delete at a cell edge, typing, Kind, Speaker, move and delete become Import operations (`packages/app/src/importDraft/editorOps.ts`). Adding empty blocks is not offered there.

@@ -25,6 +25,7 @@ It also writes `agent-access.json` (`url`, `port`, `pid`) to the app's data fold
 | `import.read` | The draft: Variant keys, Source segments (id, text, look, style group), blocks (id, kind, speaker, text per Variant, segments, who decided) and validity |
 | `import.apply` | Import operations ([core-api.md](core-api.md#import)) as one undo step |
 | `import.addLanguage` | A second language from another text or from a column of the Source, paired in order |
+| `import.firstDraft` | Let the Built-in model sort the draft (roles, "Label:" starts, speakers, pairs); `import.read` then shows each decision's `confidence` |
 | `import.save` | Save the draft as `{id}.json` after the user confirms in the app; never overwrites |
 
 Every change an agent makes is an Import operation with origin `agent`, one undo step per call. Saving asks in the app first; the agent gets `"The user declined saving"` when the user says no.

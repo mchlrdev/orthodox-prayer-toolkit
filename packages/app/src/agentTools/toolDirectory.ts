@@ -51,6 +51,12 @@ export type ToolHost = {
   createPrayer(prayer: Prayer, variant: ActiveVariantRef): Promise<boolean>;
   /** Close the Import draft after it was saved. */
   closeImport(): void;
+  /**
+   * Let the Built-in model make the first draft of the open Import draft
+   * (shown live in the app); resolves when it is done. Rejects when the
+   * model is not installed.
+   */
+  runFirstDraft(): Promise<void>;
 };
 
 export class ToolError extends Error {}
@@ -124,6 +130,10 @@ export function draftView(draft: ImportDraft) {
         ...new Set(Object.values(block.content).flat().flatMap((s) => ("seg" in s ? [s.seg] : []))),
       ],
       origin: block.origin.kind.by,
+      ...(block.origin.kind.confidence !== undefined ? { confidence: block.origin.kind.confidence } : {}),
+      ...(block.origin.speaker?.confidence !== undefined
+        ? { speakerConfidence: block.origin.speaker.confidence }
+        : {}),
     })),
     valid: validation.ok,
     problems: validation.ok ? [] : validation.errors.map((e) => e.message),
@@ -269,6 +279,22 @@ const TOOLS: Tool[] = [
       const result = applyImportOps(draft, ops, AGENT);
       if (!result.ok) throw new ToolError(result.error);
       if (!host.applyImportOps(ops)) throw new ToolError("The draft changed meanwhile; read it again");
+      return draftView(needDraft(host));
+    },
+  },
+  {
+    name: "import.firstDraft",
+    purpose:
+      "Let the app's Built-in model make a first draft of the open Import draft: roles of all blocks, \"Label:\" starts (genre label, instruction, speaker) and language pairs. Blocks someone already decided keep their decision. import.read then shows each model decision's confidence (0–1); check low ones first.",
+    params: { type: "object", properties: {} },
+    example: {},
+    run: async (host) => {
+      needDraft(host);
+      try {
+        await host.runFirstDraft();
+      } catch (error) {
+        throw new ToolError(error instanceof Error ? error.message : String(error));
+      }
       return draftView(needDraft(host));
     },
   },

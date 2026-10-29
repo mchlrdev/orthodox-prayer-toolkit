@@ -3092,3 +3092,80 @@ body,
     transition: none;
   }
 }
+
+/* Import: the Built-in model's first draft. */
+.import-model-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--opt-hover);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--opt-text);
+}
+
+.import-model-banner-hint {
+  flex: 1;
+  min-width: 0;
+  color: var(--opt-text-secondary);
+}
+
+.import-model-banner-action {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  color: var(--opt-text);
+  cursor: pointer;
+}
+
+.import-model-banner-action:hover {
+  text-decoration: underline;
+}
+
+.import-spinner {
+  flex-shrink: 0;
+  animation: import-spin 0.9s linear infinite;
+}
+
+@keyframes import-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .import-spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+.import-chip[data-muted="true"] {
+  gap: 5px;
+  color: var(--opt-text-secondary);
+}
+
+.import-status-open {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--opt-text-secondary);
+  cursor: pointer;
+}
+
+.import-status-open:hover {
+  color: var(--opt-text);
+}
+
+/* Status items sit left (validity, open decisions); the id stays right. */
+.import-status {
+  justify-content: flex-start;
+}
+
+.import-status-id {
+  margin-left: auto;
+}

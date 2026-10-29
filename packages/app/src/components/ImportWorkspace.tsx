@@ -8,12 +8,15 @@ import {
   IconChevronDown,
   IconCircleOff,
   IconLink,
+  IconUser,
 } from "@tabler/icons-react";
 import {
   draftBlockGroup,
   draftBlockSegments,
   draftBlockVisible,
+  kindDisplayLabel,
   locateValidationErrors,
+  uncertainDecisions,
   type DraftBlock,
   type ImportDraft,
   type ImportOp,
@@ -40,6 +43,17 @@ import {
   type SegmentInfo,
 } from "../importDraft/sourceView";
 import { variantKey, type ActiveVariant } from "../variant";
+import type { FirstDraft } from "../builtInModel/useFirstDraft";
+
+/** Small progress ring for the model's work. */
+function Spinner({ size = 12 }: { size?: number }) {
+  return (
+    <svg className="import-spinner" width={size} height={size} viewBox="0 0 12 12" aria-hidden="true">
+      <circle cx="6" cy="6" r="4.5" fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1.6" />
+      <path d="M6 1.5a4.5 4.5 0 014.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 type StyleEditing = Parameters<typeof InlineEditor>[0]["styleEditing"];
 
@@ -109,6 +123,8 @@ type Props = {
   onSave: () => void;
   /** "Add language from source…": a second Variant from a column or another text. */
   onAddLanguage: () => void;
+  /** The Built-in model's first draft: progress, uncertain decisions. */
+  firstDraft: FirstDraft;
 };
 
 export function ImportWorkspace({
@@ -129,6 +145,7 @@ export function ImportWorkspace({
   onDiscard,
   onSave,
   onAddLanguage,
+  firstDraft,
 }: Props) {
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   /** The Variant the preview shows; the others are checked through the dropdown. */
@@ -304,6 +321,49 @@ export function ImportWorkspace({
     );
   };
 
+  /** What the model decided about a block: pending, speaker taken from a label, uncertain. */
+  const modelRow = (block: DraftBlock) => {
+    const pending = firstDraft.progress?.pending === block.id;
+    const uncertain = uncertainDecisions(block);
+    const speakerByModel = block.speaker !== undefined && block.origin.speaker?.by === "model";
+    const uncertainKind = uncertain.find((u) => u.what === "kind");
+    const uncertainSpeaker = uncertain.find((u) => u.what === "speaker");
+    if (!pending && !speakerByModel && !uncertainKind) return null;
+    const speakerName = speakerByModel
+      ? (draft.variants.find((v) => v.speakers?.[block.speaker!])?.speakers?.[block.speaker!]?.name ?? block.speaker)
+      : null;
+    return (
+      <div className="import-pair-row" onMouseDown={(e) => e.preventDefault()}>
+        {pending ? (
+          <span className="import-chip" data-muted="true">
+            <Spinner size={10} />
+            Model checking …
+          </span>
+        ) : null}
+        {speakerByModel ? (
+          <span className="import-chip" data-tone={uncertainSpeaker ? "warning" : undefined}>
+            <IconUser size={11} stroke={1.6} />
+            „{speakerName}:“ → Speaker
+            {uncertainSpeaker ? ` · ${Math.round(uncertainSpeaker.confidence * 100)} %` : ""}
+          </span>
+        ) : null}
+        {uncertainKind ? (
+          <button
+            type="button"
+            className="import-chip"
+            data-tone="warning"
+            data-action="true"
+            title={`Keep ${kindDisplayLabel(block.kind)}`}
+            onClick={() => onApply([{ op: "setKind", target: { block: block.id }, kind: block.kind }])}
+          >
+            <span className="import-chip-dot" />
+            Kind uncertain · {Math.round(uncertainKind.confidence * 100)} %
+          </button>
+        ) : null}
+      </div>
+    );
+  };
+
   const leadCell = (blockId: string) => {
     const block = byId.get(blockId);
     if (!block) return null;
@@ -312,10 +372,12 @@ export function ImportWorkspace({
     const parts = shown.length > 0 ? shown : multilingual ? sourceParts(block, segments) : [];
     const other = shown.length === 0 && parts.length > 0;
     const pairs = pairRow(block, blockId === activeBlockId);
+    const decided = modelRow(block);
     if (parts.length === 0) {
       return (
         <>
           <div className="import-source-row" data-typed="true" />
+          {decided}
           {pairs}
         </>
       );
@@ -354,6 +416,7 @@ export function ImportWorkspace({
             </button>
           );
         })}
+        {decided}
         {pairs}
       </>
     );
@@ -458,6 +521,24 @@ export function ImportWorkspace({
     applyRange([
       { op: "setExcluded", segments: allSegments.slice(0, first).map((s) => s.id), excluded: true },
     ]);
+  };
+
+  const uncertainBlocks = draft.blocks.filter(
+    (b) => draftBlockVisible(draft, b) && uncertainDecisions(b).length > 0,
+  );
+  /** "Uncertain first": the next uncertain block after the one being edited. */
+  const nextUncertain = () => {
+    if (uncertainBlocks.length === 0) return;
+    const order = draft.blocks.map((b) => b.id);
+    const at = activeBlockId ? order.indexOf(activeBlockId) : -1;
+    const next =
+      uncertainBlocks.find((b) => order.indexOf(b.id) > at) ?? uncertainBlocks[0]!;
+    localEditorRef.current?.revealBlock(next.id, {
+      scroll: "smooth-center",
+      focusCol: col,
+      flash: true,
+      caret: "start",
+    });
   };
 
   const visibleCount = prayer.structure.length;
@@ -576,6 +657,29 @@ export function ImportWorkspace({
             ) : null}
           </div>
         </div>
+        {firstDraft.progress ? (
+          <div className="import-model-banner" role="status">
+            <Spinner />
+            <span>
+              Model is sorting
+              {firstDraft.progress.total > 0
+                ? ` · ${firstDraft.progress.done} of ${firstDraft.progress.total}`
+                : " …"}
+            </span>
+            <span className="import-model-banner-hint">You can already edit; your changes win.</span>
+            <button type="button" className="import-model-banner-action" onClick={firstDraft.stop}>
+              Stop
+            </button>
+          </div>
+        ) : firstDraft.error ? (
+          <div className="import-model-banner" role="alert">
+            <IconAlertTriangle size={12} stroke={2} className="import-bad" />
+            <span className="import-model-banner-hint">The model stopped: {firstDraft.error}</span>
+            <button type="button" className="import-model-banner-action" onClick={firstDraft.dismissError}>
+              Dismiss
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div
@@ -676,6 +780,17 @@ export function ImportWorkspace({
             </>
           )}
         </span>
+        {uncertainBlocks.length > 0 ? (
+          <button
+            type="button"
+            className="import-status-item import-status-open"
+            title="Go to the next uncertain decision"
+            onClick={nextUncertain}
+          >
+            <span className="import-chip-dot" />
+            {uncertainBlocks.length} open {uncertainBlocks.length === 1 ? "decision" : "decisions"}
+          </button>
+        ) : null}
         {id ? (
           <span className="import-status-id">
             ID {id} · {takenIds.has(id) ? "taken" : "free"}

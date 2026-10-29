@@ -69,6 +69,24 @@ async function buildMain() {
   });
 }
 
+async function buildModelWorker() {
+  console.log("[build-electron] model worker…");
+  await buildElectronEntry({
+    entry: resolve(appRoot, "electron/modelWorker.ts"),
+    vite: {
+      root: appRoot,
+      build: {
+        outDir: "dist-electron",
+        emptyOutDir: false,
+        rollupOptions: {
+          // Native module: shipped from node_modules (unpacked from the asar).
+          external: ["electron", "node-llama-cpp"],
+        },
+      },
+    },
+  });
+}
+
 async function buildPreload() {
   console.log("[build-electron] preload…");
   const config = withExternalBuiltins(
@@ -101,6 +119,7 @@ async function main() {
   process.chdir(appRoot);
   await buildRenderer();
   await buildMain();
+  await buildModelWorker();
   await buildPreload();
   console.log("[build-electron] done");
   // Ensure CI shells exit even if a stray handle remains.

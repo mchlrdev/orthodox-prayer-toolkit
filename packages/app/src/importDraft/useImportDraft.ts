@@ -70,7 +70,10 @@ export type ImportDraftSession = {
   addColumn: (input: AddColumnInput) => boolean;
   discard: () => void;
   /** Apply Import operations as one undo step; false when one is refused. */
-  apply: (ops: ImportOp[], options?: { coalesceKey?: string; origin?: ImportOrigin }) => boolean;
+  apply: (
+    ops: ImportOp[],
+    options?: { coalesceKey?: string; origin?: ImportOrigin; coalesceAlways?: boolean },
+  ) => boolean;
   undo: () => boolean;
   redo: () => boolean;
   /** Editor actions in the preview, as Import operations. */
@@ -90,7 +93,15 @@ export function useImportDraft(): ImportDraftSession {
   }, []);
 
   const apply = useCallback(
-    (ops: ImportOp[], options: { coalesceKey?: string; origin?: ImportOrigin } = {}): boolean => {
+    (
+      ops: ImportOp[],
+      options: {
+        coalesceKey?: string;
+        origin?: ImportOrigin;
+        /** Join every step with the same coalesceKey, however long apart (a model run). */
+        coalesceAlways?: boolean;
+      } = {},
+    ): boolean => {
       const cur = stateRef.current;
       if (!cur || ops.length === 0) return false;
       const result = applyImportOps(cur.draft, ops, options.origin);
@@ -102,6 +113,7 @@ export function useImportDraft(): ImportDraftSession {
         history: recordEdit(cur.history, cur.draft, {
           coalesceKey: options.coalesceKey ?? null,
           now: Date.now(),
+          maxGap: options.coalesceAlways ? Number.POSITIVE_INFINITY : undefined,
         }),
       });
       return true;

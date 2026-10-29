@@ -5,3 +5,5 @@ allowBuilds:
   electron: true
   electron-winstaller: true
   esbuild: true
+  # Prebuilt binaries come as optional packages; no build from source on install.
+  node-llama-cpp: false

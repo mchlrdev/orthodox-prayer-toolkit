@@ -24,6 +24,7 @@ export const RELEASE_NOTES: ReleaseNotesEntry[] = [
       "Import: choose a language the library does not have yet (Other language…)",
       "Agent access (App settings, off by default): agents like Claude Code on this computer can import and sort prayers live in the app; saving always asks you first",
       "Built-in model (App settings, optional): download it once with progress; cancel and resume any time, also after a restart; delete it to free the space",
+      "Built-in model sorts an import: headings, instructions, speakers and labels like “Troparion im 4. Ton:” are decided as it goes; uncertain ones are marked and “open decisions” jumps to them",
     ],
   },
   {
