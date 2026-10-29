@@ -4,7 +4,10 @@ import type {
   AppUpdateCheckResult,
 } from "./updateCheck";
 
+import type { ModelStatus } from "./modelStore";
+
 export type { AppInfo, AppUpdateCheckResult } from "./updateCheck";
+export type { ModelStatus } from "./modelStore";
 
 export type CreateLibraryOptions = {
   name: string;
@@ -63,6 +66,12 @@ export type PrayerToolkitApi = {
     cb: (id: number, request: { method: string; path: string; body: string }) => void,
   ) => () => void;
   respondAgentRequest: (id: number, answer: { status: number; body: unknown }) => void;
+  /** The Built-in model: status, download (resumes), cancel (keeps the partial file), delete. */
+  getModelStatus: () => Promise<ModelStatus>;
+  downloadModel: () => Promise<void>;
+  cancelModelDownload: () => Promise<void>;
+  removeModel: () => Promise<void>;
+  onModelStatus: (cb: (status: ModelStatus) => void) => () => void;
   /** Fetch a web page for the import (http/https, size-capped). */
   fetchSource: (
     url: string,
@@ -149,6 +158,17 @@ const api: PrayerToolkitApi = {
   },
   respondAgentRequest: (id, answer) => {
     ipcRenderer.send("agent:respond", id, answer);
+  },
+  getModelStatus: () => ipcRenderer.invoke("model:status"),
+  downloadModel: () => ipcRenderer.invoke("model:download"),
+  cancelModelDownload: () => ipcRenderer.invoke("model:cancel"),
+  removeModel: () => ipcRenderer.invoke("model:remove"),
+  onModelStatus: (cb) => {
+    const handler = (_event: unknown, status: ModelStatus) => cb(status);
+    ipcRenderer.on("model:status", handler);
+    return () => {
+      ipcRenderer.removeListener("model:status", handler);
+    };
   },
   showItem: (fullPath) => ipcRenderer.invoke("shell:showItem", fullPath),
   basename: (path) => ipcRenderer.invoke("path:basename", path),

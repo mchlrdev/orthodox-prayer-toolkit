@@ -3030,3 +3030,65 @@ body,
   white-space: pre-wrap;
   color: var(--opt-text);
 }
+
+/* App settings: Built-in model. */
+.model-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--opt-border);
+  border-radius: 10px;
+}
+
+.model-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--opt-border);
+  overflow: hidden;
+}
+
+.model-progress-bar {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--opt-text);
+  transition: width 250ms linear;
+}
+
+.model-discard {
+  align-self: flex-start;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--opt-text-secondary);
+}
+
+.model-installed {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--opt-hover);
+}
+
+.model-installed .agent-status-dot {
+  flex-shrink: 0;
+}
+
+.model-installed-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.model-delete {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--mantine-color-red-8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .model-progress-bar {
+    transition: none;
+  }
+}

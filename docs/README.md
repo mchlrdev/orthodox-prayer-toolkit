@@ -12,6 +12,7 @@ Guides for people using or extending the Orthodox Prayer Toolkit, and for agents
 | Set up a library folder | [Library layout](library.md) |
 | Call Core from code | [Core API](core-api.md) |
 | Let a local agent work in the app | [Agent access](agent-access.md) |
+| Download or remove the Built-in model | [Built-in model](built-in-model.md) |
 | Hack on the repo | [Development](development.md) |
 | Speak the domain language | [Glossary](glossary.md) |
 | Ship a desktop build | [Releasing](RELEASE.md) |

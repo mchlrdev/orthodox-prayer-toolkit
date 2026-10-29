@@ -1,8 +1,14 @@
-import type { PrayerToolkitApi } from "../electron/preload";
+import type { ModelStatus, PrayerToolkitApi } from "../electron/preload";
 import { newestNotesVersion, RELEASE_NOTES } from "./releaseNotes";
 import { viteAppVersion } from "./viteAppVersion";
 
 const PREFIX = "/__ptk";
+
+const STAND_IN_MODEL: ModelStatus = {
+  model: { name: "Stand-in model", version: "dev", size: 0 },
+  state: "stand-in",
+  received: 0,
+};
 
 async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
@@ -153,6 +159,13 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
     getAgentAccess: async () => null,
     onAgentRequest: () => () => undefined,
     respondAgentRequest: () => undefined,
+
+    // The Built-in model lives in the desktop app; browser dev uses a stand-in.
+    getModelStatus: async () => STAND_IN_MODEL,
+    downloadModel: async () => undefined,
+    cancelModelDownload: async () => undefined,
+    removeModel: async () => undefined,
+    onModelStatus: () => () => undefined,
 
     pickPrayerJson: () =>
       new Promise((resolve) => {

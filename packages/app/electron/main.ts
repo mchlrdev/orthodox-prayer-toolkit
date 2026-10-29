@@ -29,6 +29,8 @@ import {
 } from "../nodeFs";
 import { createLibraryWatcher } from "./libraryWatch";
 import { startAgentServer, type AgentServer } from "./agentServer";
+import { BUILT_IN_MODEL } from "./modelCatalog";
+import { createModelStore, type ModelStore } from "./modelStore";
 import { fetchSource } from "../sourceFetch";
 import { createTrustedRoots, type TrustedRoots } from "./trustedRoots";
 import { startMacUpdateInstall } from "./macUpdateInstall";
@@ -192,6 +194,22 @@ async function stopAgentAccess(): Promise<void> {
     pending({ status: 503, body: { ok: false, error: "Agent access was turned off" } });
   }
   await server?.close();
+}
+
+// --- Built-in model -------------------------------------------------------
+
+let modelStore: ModelStore | null = null;
+
+function builtInModel(): ModelStore {
+  modelStore ??= createModelStore({
+    root: join(app.getPath("userData"), "models"),
+    entry: BUILT_IN_MODEL,
+    fetch: (input, init) => net.fetch(String(input), init),
+    onChange: (status) => {
+      for (const win of BrowserWindow.getAllWindows()) win.webContents.send("model:status", status);
+    },
+  });
+  return modelStore;
 }
 
 function sendCommand(command: AppCommand): void {
@@ -582,6 +600,13 @@ function registerIpc(): void {
     agentPending.delete(id);
     pending(answer as { status: number; body: unknown });
   });
+
+  ipcMain.handle("model:status", () => builtInModel().status());
+  ipcMain.handle("model:download", () => {
+    void builtInModel().download();
+  });
+  ipcMain.handle("model:cancel", () => builtInModel().cancel());
+  ipcMain.handle("model:remove", () => builtInModel().remove());
 
   ipcMain.handle("dialog:pickPrayerJson", async () => {
     const result = await dialog.showOpenDialog({
@@ -1189,6 +1214,7 @@ app.whenReady().then(() => {
 app.on("will-quit", () => {
   globalShortcut.unregisterAll();
   void stopAgentAccess();
+  modelStore?.cancel();
 });
 
 app.on("window-all-closed", () => {

@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import { IconCopy } from "@tabler/icons-react";
 import { agentPrompt, type AgentAccess } from "../agentTools/useAgentAccess";
+import { BuiltInModelSection } from "./BuiltInModelSection";
 import {
   EDITOR_FONT_SIZE_MAX,
   EDITOR_FONT_SIZE_MIN,
@@ -152,6 +153,8 @@ export function AppSettingsModal({
             label={null}
           />
         </Stack>
+
+        <BuiltInModelSection active={opened} />
 
         <Stack gap={8}>
           <Group justify="space-between" align="center">
