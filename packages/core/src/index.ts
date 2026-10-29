@@ -267,3 +267,23 @@ export type {
   ImportOpResult,
   ImportOrigin,
 } from "./importDraft.js";
+export {
+  UNCERTAIN_BELOW,
+  decisionItemPrefix,
+  decisionPrompts,
+  decisionStep,
+  describeLook,
+  firstDraftBatches,
+  speakerBatch,
+  speakerForLabel,
+  uncertainDecisions,
+} from "./importDecisions.js";
+export type {
+  DecisionAnswer,
+  DecisionBatch,
+  DecisionItem,
+  DecisionKind,
+  DecisionOption,
+  DecisionPrompt,
+  DecisionStep,
+} from "./importDecisions.js";
