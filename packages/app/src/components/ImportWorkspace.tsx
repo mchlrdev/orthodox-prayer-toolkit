@@ -102,6 +102,17 @@ function MarkedText({ part }: { part: SourcePart }) {
   );
 }
 
+export type ChatHighlight = {
+  answer: number;
+  /** Changed block → what changed ("Speaker Priest · label removed"). */
+  lines: ReadonlyMap<string, string>;
+  /** The answer changed wording, not just structure. */
+  wording: boolean;
+  canUndo: boolean;
+  onUndo: () => void;
+  onHide: () => void;
+};
+
 type Props = {
   draft: ImportDraft;
   /** Source files by Source id (PDF bytes for the page view). */
@@ -125,6 +136,8 @@ type Props = {
   onAddLanguage: () => void;
   /** The Built-in model's first draft: progress, uncertain decisions. */
   firstDraft: FirstDraft;
+  /** The chat answer whose changes are marked (null = none). */
+  chatHighlight?: ChatHighlight | null;
 };
 
 export function ImportWorkspace({
@@ -146,6 +159,7 @@ export function ImportWorkspace({
   onSave,
   onAddLanguage,
   firstDraft,
+  chatHighlight = null,
 }: Props) {
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   /** The Variant the preview shows; the others are checked through the dropdown. */
@@ -325,7 +339,11 @@ export function ImportWorkspace({
   const modelRow = (block: DraftBlock) => {
     const pending = firstDraft.progress?.pending === block.id;
     const uncertain = uncertainDecisions(block);
-    const speakerByModel = block.speaker !== undefined && block.origin.speaker?.by === "model";
+    // From a printed label in the first draft (the chat's changes carry no confidence).
+    const speakerByModel =
+      block.speaker !== undefined &&
+      block.origin.speaker?.by === "model" &&
+      block.origin.speaker.confidence !== undefined;
     const uncertainKind = uncertain.find((u) => u.what === "kind");
     const uncertainSpeaker = uncertain.find((u) => u.what === "speaker");
     if (!pending && !speakerByModel && !uncertainKind) return null;
@@ -364,6 +382,19 @@ export function ImportWorkspace({
     );
   };
 
+  const markedBlocks = useMemo(
+    () => (chatHighlight ? new Set(chatHighlight.lines.keys()) : undefined),
+    [chatHighlight],
+  );
+  const answerLine = (blockId: string) => {
+    const line = chatHighlight?.lines.get(blockId);
+    return line ? (
+      <div className="import-answer-line">
+        Answer {chatHighlight!.answer} · {line}
+      </div>
+    ) : null;
+  };
+
   const leadCell = (blockId: string) => {
     const block = byId.get(blockId);
     if (!block) return null;
@@ -378,6 +409,7 @@ export function ImportWorkspace({
         <>
           <div className="import-source-row" data-typed="true" />
           {decided}
+          {answerLine(blockId)}
           {pairs}
         </>
       );
@@ -417,6 +449,7 @@ export function ImportWorkspace({
           );
         })}
         {decided}
+        {answerLine(blockId)}
         {pairs}
       </>
     );
@@ -431,7 +464,11 @@ export function ImportWorkspace({
         .flat()
         .flatMap((s) => ("seg" in s && draft.excluded.includes(s.seg) ? [s.seg] : []));
       return (
-        <div key={block.id} className="import-excluded-row">
+        <div
+          key={block.id}
+          className="import-excluded-row"
+          data-marked={chatHighlight?.lines.has(block.id) ? "true" : undefined}
+        >
           <div className="inline-lead">
             {parts.map((part, i) => (
               <div key={`${part.n}-${i}`} className="import-source-row" data-excluded="true">
@@ -459,6 +496,7 @@ export function ImportWorkspace({
                 Include
               </button>
             </div>
+            {answerLine(block.id)}
           </div>
         </div>
       );
@@ -671,6 +709,31 @@ export function ImportWorkspace({
               Stop
             </button>
           </div>
+        ) : chatHighlight ? (
+          <div className="import-model-banner" data-tone="answer" role="status">
+            <span className="import-answer-mark" />
+            <span>
+              Answer {chatHighlight.answer} changed {chatHighlight.lines.size}{" "}
+              {chatHighlight.lines.size === 1 ? "section" : "sections"}
+            </span>
+            <span className="import-model-banner-hint">
+              {chatHighlight.wording ? "Wording changed" : "Text unchanged"}
+            </span>
+            {chatHighlight.canUndo ? (
+              <button type="button" className="import-model-banner-action" onClick={chatHighlight.onUndo}>
+                <IconArrowBackUp size={12} stroke={1.8} />
+                Undo
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="import-model-banner-action"
+              data-muted="true"
+              onClick={chatHighlight.onHide}
+            >
+              Hide
+            </button>
+          </div>
         ) : firstDraft.error ? (
           <div className="import-model-banner" role="alert">
             <IconAlertTriangle size={12} stroke={2} className="import-bad" />
@@ -757,6 +820,7 @@ export function ImportWorkspace({
             issues={issues}
             edits={edits}
             leadCell={pdfData ? undefined : leadCell}
+            markedBlocks={markedBlocks}
             rowsAfter={pdfData ? undefined : rowsAfter}
             onChange={() => {}}
             onRenameKind={() => {}}

@@ -24,7 +24,8 @@ import {
   type Prayer,
 } from "@orthodox-prayer-toolkit/core";
 import { getToolkitApi, isBrowserDev } from "./api";
-import { PrayerList } from "./components/PrayerList";
+import { PrayerList, type SidebarMode } from "./components/PrayerList";
+import { ChatPane } from "./components/ChatPane";
 import { PrayerWorkspace } from "./components/PrayerWorkspace";
 import { ContentOutline } from "./components/ContentOutline";
 import {
@@ -54,8 +55,13 @@ import {
 } from "./components/ImportSaveModal";
 import { useImportDraft } from "./importDraft/useImportDraft";
 import { useFirstDraft } from "./builtInModel/useFirstDraft";
+import { useChat, type ChatChip } from "./builtInModel/useChat";
+import { useBuiltInModel } from "./builtInModel/useBuiltInModel";
+import { chatBlockLabel, chatSpeakerName } from "./builtInModel/chatLabels";
+import { changeLines, changedWording } from "./builtInModel/changeLines";
+import { applyBlockEdits } from "./prayerEdit/blockEdits";
 import { readImportInput } from "./importDraft/readInput";
-import type { ToolHost } from "./agentTools/toolDirectory";
+import type { ConfirmRequest, ToolHost } from "./agentTools/toolDirectory";
 import { useAgentAccess } from "./agentTools/useAgentAccess";
 import type { InlineEditorHandle } from "./components/InlineEditor";
 import type { LibraryEntry } from "./library";
@@ -458,12 +464,7 @@ export function App() {
   }, [importDraft.draft]);
 
   /** A Tool call waiting for the user's yes (save, replace the draft). */
-  const [agentConfirm, setAgentConfirm] = useState<{
-    title: string;
-    message: string;
-    confirmLabel: string;
-    resolve: (ok: boolean) => void;
-  } | null>(null);
+  const [agentConfirm, setAgentConfirm] = useState<(ConfirmRequest & { resolve: (ok: boolean) => void }) | null>(null);
   const agentHost: ToolHost = {
     appVersion: runningVersion,
     library: () =>
@@ -509,8 +510,53 @@ export function App() {
     createPrayer: (prayer, variant) => session.createPrayer(prayer, variant),
     closeImport: () => importDraft.discard(),
     runFirstDraft: () => firstDraft.start(),
+    selectedPrayer: () => (importDraft.draft ? null : session.draft),
+    editPrayers: async (list) => {
+      const entries = session.library?.entries ?? [];
+      const changes = list.flatMap(({ prayer, edits }) => {
+        const path = entries.find((e) => e.id === prayer)?.path;
+        return path ? [{ path, edit: (p: Prayer) => applyBlockEdits(p, edits) }] : [];
+      });
+      return (await session.editPrayersAt(changes)).length;
+    },
   };
   const agentAccess = useAgentAccess(agentHost);
+
+  // --- Chat pane (assistant mode of the left sidebar) -------------------
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>("library");
+  const chat = useChat(agentHost, importDraft);
+  const builtInModel = useBuiltInModel(sidebarMode === "assistant");
+  const chatView = importing ? "import" : session.draft ? "prayer" : "library";
+  const chatTarget = { importDraft: importDraft.draft, prayer: importing ? null : session.draft };
+  /** The block last focused in the editor: the chat's chip. */
+  const [chatBlocks, setChatBlocks] = useState<string[]>([]);
+  useEffect(() => setChatBlocks([]), [chatView, selectedPath]);
+  const chatChips: ChatChip[] = chatBlocks.flatMap((block) => {
+    const label = chatBlockLabel(chatTarget, block);
+    return label ? [{ block, label: `${label.word} ${label.n}` }] : [];
+  });
+  const chatTitle = importing
+    ? importDraft.draft?.variants[0]?.title || "Import draft"
+    : session.draft
+      ? (sidebarEntries.find((e) => e.path === selectedPath)?.title ?? selectedPath ?? "Prayer")
+      : (folderLabel ?? "Library");
+  const highlightedAnswer = chat.messages.find((m) => m.id === chat.highlighted);
+  const chatHighlight =
+    importing && highlightedAnswer?.role === "assistant" && highlightedAnswer.outcome?.kind === "import"
+      ? {
+          answer: highlightedAnswer.answer ?? 0,
+          lines: new Map(
+            changeLines(highlightedAnswer.outcome.changes, (id) => chatSpeakerName(chatTarget, id)).map((l) => [
+              l.block,
+              l.text,
+            ]),
+          ),
+          wording: changedWording(highlightedAnswer.outcome.changes),
+          canUndo: chat.canUndo(highlightedAnswer.id),
+          onUndo: () => chat.undo(highlightedAnswer.id),
+          onHide: chat.hideHighlight,
+        }
+      : null;
 
   const saveImport = async ({ meta, variants }: ImportSaveInput) => {
     const current = importDraft.draft;
@@ -609,11 +655,34 @@ export function App() {
               }}
               onExportPrayer={(entry) => void session.exportPrayerFile(entry)}
               onDelete={(entry) => setPendingDelete(entry)}
+              mode={sidebarMode}
+              onModeChange={setSidebarMode}
+              assistant={
+                <ChatPane
+                  chat={chat}
+                  view={chatView}
+                  title={chatTitle}
+                  model={builtInModel}
+                  chips={chatChips}
+                  onRemoveChip={(block) => setChatBlocks((list) => list.filter((b) => b !== block))}
+                  onSent={() => setChatBlocks([])}
+                  blockNumber={(block) => String(chatBlockLabel(chatTarget, block)?.n ?? "")}
+                  speakerName={(id) => chatSpeakerName(chatTarget, id)}
+                />
+              }
             />
           </div>
         </aside>
 
-        <main className="workspace-main">
+        <main
+          className="workspace-main"
+          onFocusCapture={(e) => {
+            const target = e.target as HTMLElement;
+            if (!target.isContentEditable) return;
+            const block = target.closest<HTMLElement>("[data-block-id]")?.dataset.blockId;
+            if (block) setChatBlocks([block]);
+          }}
+        >
           <div
             className="workspace-content"
             key={workspaceView.key}
@@ -644,6 +713,7 @@ export function App() {
                 onDiscard={importDraft.discard}
                 onAddLanguage={() => setAddLanguageOpen(true)}
                 firstDraft={firstDraft}
+                chatHighlight={chatHighlight}
                 onSave={() => {
                   flushPendingEdits();
                   setImportSaveOpen(true);
@@ -960,7 +1030,11 @@ export function App() {
           setAgentConfirm(null);
         }}
         title={agentConfirm?.title ?? ""}
-        message={agentConfirm?.message ?? ""}
+        message={
+          agentConfirm
+            ? [agentConfirm.message, ...(agentConfirm.items ?? []).map((i) => `${i.label}: ${i.count}`)].join("\n")
+            : ""
+        }
         confirmLabel={agentConfirm?.confirmLabel ?? "OK"}
       />
 

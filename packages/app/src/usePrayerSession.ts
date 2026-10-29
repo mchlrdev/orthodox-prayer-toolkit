@@ -44,6 +44,7 @@ import {
   DRAFT_VALIDATE_DEBOUNCE_MS,
   libraryKindSources,
   editDraft,
+  editDraftAt,
   emptySessionState,
   errorNotice,
   exportEntry,
@@ -473,6 +474,38 @@ export function usePrayerSession(opts?: {
     if (result.state.selectedPath) {
       scheduleDraftValidation(result.state.selectedPath);
     }
+  };
+
+  /**
+   * Edit prayers by path (opened in the background when not yet open) as
+   * unsaved changes, one undo step each. Returns the paths that changed.
+   */
+  const editPrayersAt = async (
+    changes: Array<{ path: string; edit: (prayer: Prayer) => Prayer }>,
+  ): Promise<string[]> => {
+    const root = stateRef.current.catalog?.root;
+    if (!root) return [];
+    const texts = new Map<string, string>();
+    for (const { path } of changes) {
+      if (!stateRef.current.drafts[path]) texts.set(path, await api.readText(root, path));
+    }
+    let next = stateRef.current;
+    const changed: string[] = [];
+    for (const { path, edit } of changes) {
+      const text = texts.get(path);
+      if (!next.drafts[path] && text !== undefined) {
+        next = putPrayerFromText(next, path, text, { select: false }).state;
+      }
+      const current = next.drafts[path];
+      if (!current) continue;
+      const edited = edit(current.prayer);
+      if (edited === current.prayer) continue;
+      next = editDraftAt(next, path, edited).state;
+      changed.push(path);
+    }
+    commit({ state: next, notices: [] });
+    for (const path of changed) scheduleDraftValidation(path);
+    return changed;
   };
 
   const stepHistory = (step: typeof undoDraft): boolean => {
@@ -931,6 +964,7 @@ export function usePrayerSession(opts?: {
   return {
     library,
     selectedPath,
+    editPrayersAt,
     draft,
     draftErrors,
     draftWarnings,

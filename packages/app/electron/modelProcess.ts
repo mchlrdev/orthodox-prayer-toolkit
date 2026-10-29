@@ -1,6 +1,6 @@
 import { utilityProcess, type UtilityProcess } from "electron";
 import type { DecisionPrompt } from "@orthodox-prayer-toolkit/core";
-import type { ModelWorkerMessage, ModelWorkerRequest } from "./modelWorker";
+import type { GenerateRequest, ModelWorkerMessage, ModelWorkerRequest } from "./modelWorker";
 
 /** Unload the model (about 3 GB of memory) after this long without a job. */
 const IDLE_MS = 3 * 60 * 1000;
@@ -34,7 +34,7 @@ export function createModelProcess(workerPath: string) {
     proc.on("message", (message: ModelWorkerMessage) => {
       const listener = running.get(message.job);
       if (!listener) return;
-      if (message.type !== "item") running.delete(message.job);
+      if (message.type !== "item" && message.type !== "text") running.delete(message.job);
       listener(message);
       touch();
     });
@@ -54,6 +54,11 @@ export function createModelProcess(workerPath: string) {
       running.set(job, listener);
       touch();
       start().postMessage({ type: "decide", job, modelPath, prompt } satisfies ModelWorkerRequest);
+    },
+    generate(job: number, modelPath: string, request: GenerateRequest, listener: Listener) {
+      running.set(job, listener);
+      touch();
+      start().postMessage({ type: "generate", job, modelPath, request } satisfies ModelWorkerRequest);
     },
     cancel(job: number) {
       child?.postMessage({ type: "cancel", job } satisfies ModelWorkerRequest);

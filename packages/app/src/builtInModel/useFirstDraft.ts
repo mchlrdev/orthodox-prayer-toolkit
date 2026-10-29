@@ -19,7 +19,7 @@ export type FirstDraft = {
 };
 
 /** Browser dev: the stand-in model. Desktop: the Built-in model when installed. */
-async function availableRuntime(): Promise<DecisionRuntime | null> {
+export async function availableRuntime(): Promise<DecisionRuntime | null> {
   if (isBrowserDev()) return standInRuntime();
   const status = await getToolkitApi().getModelStatus();
   return status.state === "installed" ? builtInModelRuntime() : null;

@@ -226,7 +226,16 @@ export function editDraft(
   next: Prayer,
   options: EditOptions = {},
 ): SessionOpResult {
-  const path = state.selectedPath;
+  return editDraftAt(state, state.selectedPath, next, options);
+}
+
+/** Edit the open draft at `path` (selected or not), one undo step. */
+export function editDraftAt(
+  state: PrayerSessionState,
+  path: string | null,
+  next: Prayer,
+  options: EditOptions = {},
+): SessionOpResult {
   if (!path) return { state, notices: [] };
   const current = state.drafts[path];
   if (!current) return { state, notices: [] };
@@ -340,8 +349,14 @@ export function putPrayerFromText(
   state: PrayerSessionState,
   path: string,
   text: string,
+  options: { select?: boolean } = {},
 ): SessionOpResult {
   if (!state.catalog) return { state, notices: [] };
+  if (options.select === false) {
+    // Load a draft in the background (a Tool edits it); the selection stays.
+    const result = putPrayerFromText(state, path, text);
+    return { ...result, state: { ...result.state, selectedPath: state.selectedPath } };
+  }
 
   // Old-format files are migrated in memory (Core `migratePrayer`); the disk
   // bytes stay as they are until a save or the library migration writes them.

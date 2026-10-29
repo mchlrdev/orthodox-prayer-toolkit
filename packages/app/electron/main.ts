@@ -625,6 +625,23 @@ function registerIpc(): void {
       if (!sender.isDestroyed()) sender.send("model:decision", message);
     });
   });
+  ipcMain.handle("model:generate", (event, job: unknown, request: unknown) => {
+    const r = request as { system?: unknown; user?: unknown; maxTokens?: unknown } | null;
+    if (typeof job !== "number" || typeof r?.system !== "string" || typeof r.user !== "string") {
+      throw new Error("Invalid generate request");
+    }
+    const files = builtInModel().installedFiles();
+    if (!files) throw new Error("The Built-in model is not installed");
+    const sender = event.sender;
+    modelProcess.generate(
+      job,
+      files[0]!,
+      { system: r.system, user: r.user, maxTokens: typeof r.maxTokens === "number" ? r.maxTokens : undefined },
+      (message) => {
+        if (!sender.isDestroyed()) sender.send("model:decision", message);
+      },
+    );
+  });
   ipcMain.handle("model:cancelDecide", (_evt, job: unknown) => {
     if (typeof job === "number") modelProcess.cancel(job);
   });

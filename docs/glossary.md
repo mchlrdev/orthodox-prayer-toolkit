@@ -30,6 +30,7 @@ Shared domain language for humans and agents. Prefer these terms in UI, docs, an
 | **Agent access** | Local HTTP interface on `127.0.0.1` to the Tool directory, off by default, switched in App settings. No key; only this computer, no web pages. | API server, MCP |
 | **Built-in model** | The one local model the app downloads on request (App settings), keeps in its data folder until a model update, and runs offline. Optional: import works without it. | AI, LLM, assistant |
 | **Decision** | A question to the Built-in model with a fixed set of answers (role of a block, what a "Label:" is, …); the model gives each answer a probability, nothing else. Below 70 % a decision counts as open. | prompt, classification |
+| **Chat pane** | The Assistant mode of the left sidebar (Library \| Assistant): instructions in plain words, run by the Built-in model through the Tool directory. Import changes show as a card with Undo and are marked in the draft; changes to other prayers ask first. | chat, copilot |
 | **Structure (model A)** | Shared block skeleton; texts hang off per-variant translations on each block. | parallel files per language |
 
 ## Related

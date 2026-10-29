@@ -170,6 +170,9 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
     startDecision: async () => {
       throw new Error("The Built-in model needs the desktop app");
     },
+    startGenerate: async () => {
+      throw new Error("The Built-in model needs the desktop app");
+    },
     cancelDecision: async () => undefined,
     onDecision: () => () => undefined,
 

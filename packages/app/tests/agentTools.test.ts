@@ -13,77 +13,7 @@ import {
   handleAgentRequest,
   type ToolHost,
 } from "../src/agentTools/toolDirectory";
-import { prayerFileText } from "../src/session/persistPrayer";
-import { runFirstDraft } from "../src/builtInModel/firstDraft";
-import { standInRuntime } from "../src/builtInModel/standInModel";
-
-const EXISTING: Prayer = {
-  id: "ostergebete",
-  type: "prayer",
-  variants: [{ lang: "de", variant: "standard", title: "Ostergebete", license: "CC0", source: "Test" }],
-  structure: [
-    { id: "b1", kind: "verse", translations: [{ lang: "de", variant: "standard", lines: ["Christus ist erstanden!"] }] },
-  ],
-};
-
-/** The session an Agent talks to: an in-memory Library plus the open Import draft. */
-function memoryHost(options: { confirm?: boolean } = {}) {
-  const files: Record<string, string> = { "ostergebete.json": prayerFileText(EXISTING) };
-  let draft: ImportDraft | null = null;
-  const steps: ImportDraft[] = [];
-  const asked: string[] = [];
-  const host: ToolHost = {
-    appVersion: "0.3.8",
-    library: () => ({
-      entries: Object.entries(files).map(([path, text]) => {
-        const p = JSON.parse(text) as Prayer;
-        return { id: p.id, title: p.variants[0]!.title, path, valid: true, kinds: ["verse"] };
-      }),
-      variants: [{ lang: "de", variant: "standard" }],
-    }),
-    readPrayer: async (id) => {
-      const text = files[`${id}.json`];
-      return text ? (JSON.parse(text) as Prayer) : null;
-    },
-    readSource: async (input, id) => ({ source: readText(input.text ?? "", { id }), originHint: null }),
-    importDraft: () => draft,
-    startImport: ({ source, origin, variant }) => {
-      draft = createImportDraft({ sources: [source], variant: { ...variant, source: origin } });
-    },
-    applyImportOps: (ops: ImportOp[]) => {
-      const result = applyImportOps(draft!, ops, { by: "agent" });
-      if (!result.ok) return false;
-      steps.push(draft!);
-      draft = result.draft;
-      return true;
-    },
-    confirm: async ({ title }) => {
-      asked.push(title);
-      return options.confirm ?? true;
-    },
-    createPrayer: async (prayer) => {
-      const path = `${prayer.id}.json`;
-      if (path in files) return false;
-      files[path] = prayerFileText(prayer);
-      return true;
-    },
-    closeImport: () => {
-      draft = null;
-    },
-    runFirstDraft: () =>
-      runFirstDraft({
-        draft: draft!,
-        runtime: standInRuntime(),
-        current: () => draft,
-        apply: (step) => {
-          const result = applyImportOps(draft!, step.ops, step.origin);
-          if (result.ok) draft = result.draft;
-        },
-        signal: new AbortController().signal,
-      }),
-  };
-  return { host, files, steps, asked, draft: () => draft };
-}
+import { memoryHost } from "./fixtures/memoryToolHost";
 
 async function call(host: ToolHost, name: string, args: unknown = {}) {
   const answer = await callTool(host, name, args);
@@ -105,6 +35,7 @@ describe("Tool directory", () => {
       "import.apply",
       "import.addLanguage",
       "import.firstDraft",
+      "prayers.edit",
       "import.save",
     ]);
     for (const tool of tools) {
@@ -282,7 +213,7 @@ describe("Agent HTTP routes", () => {
     const { host } = memoryHost();
     const index = await handleAgentRequest(host, { method: "GET", path: "/", body: "" });
     expect(index.status).toBe(200);
-    expect((index.body as { tools: unknown[] }).tools).toHaveLength(9);
+    expect((index.body as { tools: unknown[] }).tools).toHaveLength(10);
     const list = await handleAgentRequest(host, { method: "POST", path: "/tools/library.list", body: "{}" });
     expect(list.status).toBe(200);
     expect(await handleAgentRequest(host, { method: "POST", path: "/tools/library.list", body: "{" })).toMatchObject({

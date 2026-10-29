@@ -104,6 +104,7 @@ export {
   dirtyDrafts,
   discardDirty,
   editDraft,
+  editDraftAt,
   emptySessionState,
   errorNotice,
   evictPreviousClean,

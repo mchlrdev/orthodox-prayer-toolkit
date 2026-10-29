@@ -16,6 +16,7 @@ import {
   type Source,
 } from "@orthodox-prayer-toolkit/core";
 import { addColumnOps, addLanguageOps } from "../importDraft/editorOps";
+import { applyBlockEdits, type BlockEdit } from "../prayerEdit/blockEdits";
 import { groupLetters, segmentIndex } from "../importDraft/sourceView";
 import { checkArgs, type ParamSchema } from "./schema";
 
@@ -43,10 +44,17 @@ export type ToolHost = {
   readSource(input: SourceInput, sourceId: string): Promise<{ source: Source; originHint: string | null }>;
   importDraft(): ImportDraft | null;
   startImport(input: { source: Source; origin: string; variant: ActiveVariantRef }): void;
-  /** Apply as one undo step with origin "agent"; false when refused. */
-  applyImportOps(ops: ImportOp[]): boolean;
+  /** Apply as one undo step (origin "agent" unless given); false when refused. */
+  applyImportOps(ops: ImportOp[], origin?: ImportOrigin): boolean;
   /** Ask the user in the app; resolves false when they decline. */
-  confirm(request: { title: string; message: string; confirmLabel: string }): Promise<boolean>;
+  confirm(request: ConfirmRequest): Promise<boolean>;
+  /** The prayer open in the editor, or null (none, or the import view). */
+  selectedPrayer(): Prayer | null;
+  /**
+   * Apply block edits to prayers of the Library as unsaved changes (each
+   * prayer's own undo); resolves to the number of prayers changed.
+   */
+  editPrayers(edits: Array<{ prayer: string; edits: BlockEdit[] }>): Promise<number>;
   /** Write a new prayer file (never overwrites); false when refused. */
   createPrayer(prayer: Prayer, variant: ActiveVariantRef): Promise<boolean>;
   /** Close the Import draft after it was saved. */
@@ -57,6 +65,14 @@ export type ToolHost = {
    * model is not installed.
    */
   runFirstDraft(): Promise<void>;
+};
+
+export type ConfirmRequest = {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  /** What is affected, e.g. prayers with their number of blocks. */
+  items?: Array<{ label: string; count: number }>;
 };
 
 export class ToolError extends Error {}
@@ -296,6 +312,69 @@ const TOOLS: Tool[] = [
         throw new ToolError(error instanceof Error ? error.message : String(error));
       }
       return draftView(needDraft(host));
+    },
+  },
+  {
+    name: "prayers.edit",
+    purpose:
+      "Change the kind and/or speaker of blocks in prayers of the Library (by prayer id and block id, from prayer.read). Changes stay unsaved in the app until the user saves; each prayer can be undone. Changing more than the prayer open in the editor asks the user first.",
+    params: {
+      type: "object",
+      properties: {
+        edits: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              prayer: { type: "string", description: "Prayer id." },
+              block: { type: "string", description: "Block id." },
+              kind: { type: "string" },
+              speaker: { type: "string", description: "Speaker id, or omit; use removeSpeaker to clear." },
+              removeSpeaker: { type: "boolean" },
+            },
+            required: ["prayer", "block"],
+          },
+        },
+      },
+      required: ["edits"],
+    },
+    example: { edits: [{ prayer: "ostergebete", block: "b3", speaker: "priest" }] },
+    run: async (host, args) => {
+      const raw = args.edits as Array<{ prayer: string; block: string; kind?: string; speaker?: string; removeSpeaker?: boolean }>;
+      if (raw.length === 0) throw new ToolError("edits is empty");
+      const byPrayer = new Map<string, BlockEdit[]>();
+      for (const e of raw) {
+        const edit: BlockEdit = { block: e.block };
+        if (e.kind !== undefined) edit.kind = e.kind;
+        if (e.removeSpeaker) edit.speaker = null;
+        else if (e.speaker !== undefined) edit.speaker = e.speaker;
+        byPrayer.set(e.prayer, [...(byPrayer.get(e.prayer) ?? []), edit]);
+      }
+      // Check every edit before anything changes or the user is asked.
+      const titles = new Map<string, string>();
+      for (const [id, edits] of byPrayer) {
+        const prayer = await host.readPrayer(id);
+        if (!prayer) throw new ToolError(`No prayer "${id}" in the Library`);
+        try {
+          applyBlockEdits(prayer, edits);
+        } catch (error) {
+          throw new ToolError(error instanceof Error ? error.message : String(error));
+        }
+        titles.set(id, prayer.variants[0]?.title || id);
+      }
+      const open = host.selectedPrayer()?.id;
+      if (byPrayer.size > 1 || !byPrayer.has(open ?? "\u0000")) {
+        const blocks = raw.length;
+        const ok = await host.confirm({
+          title: `Change ${blocks} ${blocks === 1 ? "block" : "blocks"} in ${byPrayer.size} ${byPrayer.size === 1 ? "prayer" : "prayers"}?`,
+          message: "Text stays unchanged. The prayers stay unsaved until you save them, and each can be undone.",
+          confirmLabel: "Change",
+          items: [...byPrayer].map(([id, edits]) => ({ label: titles.get(id)!, count: edits.length })),
+        });
+        if (!ok) throw new ToolError("The user declined the change");
+      }
+      const changed = await host.editPrayers([...byPrayer].map(([prayer, edits]) => ({ prayer, edits })));
+      return { changed, blocks: raw.length };
     },
   },
   {

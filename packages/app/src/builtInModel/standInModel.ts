@@ -33,7 +33,51 @@ function choose(batch: DecisionBatch, item: DecisionItem): [string, number] {
       return ["other", 0.6];
     case "pair":
       return ["same", 0.8];
+    case "action":
+      return [chatAction(batch, text), 0.8];
+    case "choice":
+      return [chatChoice(batch, text), 0.8];
+    case "scope":
+      return [/(allen gebeten|alle gebete|überall|every prayer|all prayers|whole library)/iu.test(text) ? "library" : "this", 0.8];
+    case "target":
+      return ["no", 0.6];
   }
+}
+
+/** Keyword rules for the Chat pane's first question (what to do). */
+function chatAction(batch: DecisionBatch, text: string): string {
+  const offered = (id: string) => batch.options.some((o) => o.id === id);
+  const rules: Array<[RegExp, string]> = [
+    [/(gehört nicht|nicht dazu|weglassen|ausschließen|exclude|leave out|not part)/iu, "exclude"],
+    [/(wieder (rein|aufnehmen|einschließen)|einschließen|include|take .* back)/iu, "include"],
+    [/(tippfehler|typo|korrigier|correct|ersetze|replace)/iu, "editText"],
+    [/(sprecher|speaker).*(entfern|weg|remove|ohne)|(entfern|remove).*(sprecher|speaker)/iu, "removeSpeaker"],
+    [/(sprecher|speaker)/iu, "setSpeaker"],
+    [/(überschrift|heading|anmerkung|annotation|rubrik|\bvers\b|\bverse\b|kind)/iu, "setKind"],
+  ];
+  for (const [re, id] of rules) if (re.test(text) && offered(id)) return id;
+  return "answer";
+}
+
+const CHOICE_WORDS: Record<string, RegExp> = {
+  subheading: /(unterüberschrift|subheading)/iu,
+  heading: /((?<!unter)überschrift|(?<!sub)heading)/iu,
+  annotation: /(anmerkung|annotation|rubrik|anweisung)/iu,
+  verse: /(\bvers\b|\bverse\b)/iu,
+  priest: /(priester|priest)/iu,
+  deacon: /(diakon|deacon)/iu,
+  bishop: /(bischof|bishop)/iu,
+  reader: /(leser|reader)/iu,
+  cantor: /(kantor|cantor|sänger)/iu,
+  choir: /(chor|choir)/iu,
+  people: /(volk|people)/iu,
+  all: /(\balle\b|everyone)/iu,
+};
+
+/** The option the instruction names (first match), else the first option. */
+function chatChoice(batch: DecisionBatch, text: string): string {
+  const hit = batch.options.find((o) => (CHOICE_WORDS[o.id] ?? new RegExp(`\\b${o.id}\\b`, "iu")).test(text));
+  return (hit ?? batch.options[0]!).id;
 }
 
 /** One-hot-ish answer: `p` for the chosen option, the rest shared. */
@@ -45,6 +89,7 @@ export function answerFor(batch: DecisionBatch, choice: string, p: number): numb
 
 export function standInRuntime(
   override?: (batch: DecisionBatch, item: DecisionItem) => [string, number] | undefined,
+  standInText?: (user: string) => string | undefined,
 ): DecisionRuntime {
   return {
     async decide(batch, prompt, onItem, signal) {
@@ -56,6 +101,11 @@ export function standInRuntime(
         // Let the window paint between answers, like the real model.
         await new Promise((r) => setTimeout(r, 0));
       }
+    },
+    async generate(request, onText) {
+      const text = standInText?.(request.user) ?? `Stand-in model: no answer in browser dev. (${request.user.split("\n")[0]!.slice(0, 60)})`;
+      onText(text);
+      return text;
     },
   };
 }

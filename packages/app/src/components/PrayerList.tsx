@@ -1,4 +1,4 @@
-import { useMemo, useState, type MouseEvent } from "react";
+import { useMemo, useState, type MouseEvent, type ReactNode } from "react";
 import {
   ActionIcon,
   Alert,
@@ -18,6 +18,8 @@ import {
   IconFileImport,
   IconFolderOpen,
   IconFolderPlus,
+  IconList,
+  IconMessage,
   IconPlus,
   IconRefresh,
   IconSearch,
@@ -59,7 +61,14 @@ type Props = {
   onImportText: () => void;
   onExportPrayer: (entry: LibraryEntry) => void;
   onDelete: (entry: LibraryEntry) => void;
+  /** Sidebar mode: the prayer list or the Chat pane. */
+  mode: SidebarMode;
+  onModeChange: (mode: SidebarMode) => void;
+  /** The Chat pane, shown in place of search and list in assistant mode. */
+  assistant: ReactNode;
 };
+
+export type SidebarMode = "library" | "assistant";
 
 export function PrayerList({
   folderLabel,
@@ -85,6 +94,9 @@ export function PrayerList({
   onImportText,
   onExportPrayer,
   onDelete,
+  mode,
+  onModeChange,
+  assistant,
 }: Props) {
   const [query, setQuery] = useState("");
   const [menuOpenPath, setMenuOpenPath] = useState<string | null>(null);
@@ -300,9 +312,32 @@ export function PrayerList({
             {description}
           </Text>
         ) : null}
+        <div className="sidebar-mode" role="tablist" aria-label="Sidebar">
+          {(
+            [
+              ["library", "Library", <IconList key="i" size={13} stroke={1.6} />],
+              ["assistant", "Assistant", <IconMessage key="i" size={13} stroke={1.6} />],
+            ] as const
+          ).map(([value, label, icon]) => (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              aria-selected={mode === value}
+              className="sidebar-mode-item"
+              data-active={mode === value ? "true" : undefined}
+              onClick={() => onModeChange(value)}
+            >
+              {icon}
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {libraryOpen ? (
+      {mode === "assistant" ? (
+        assistant
+      ) : libraryOpen ? (
         <Group gap={6} wrap="nowrap" align="center">
           <TextInput
             className="sidebar-search"
@@ -327,13 +362,13 @@ export function PrayerList({
         </Group>
       ) : null}
 
-      {collisions.length > 0 ? (
+      {mode === "assistant" ? null : collisions.length > 0 ? (
         <Alert color="accent" title="Duplicate ids" p="xs">
           <Text size="xs">{collisions.map((c) => c.id).join(", ")}</Text>
         </Alert>
       ) : null}
 
-      {!libraryOpen ? (
+      {mode === "assistant" ? null : !libraryOpen ? (
         <Stack gap="xs" p="xs" style={{ flex: 1, justifyContent: "center" }}>
           <Text size="sm" c="dimmed">
             Open or create a library to list prayers.

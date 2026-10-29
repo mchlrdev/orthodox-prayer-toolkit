@@ -17,6 +17,15 @@ export type Decider = {
     onItem: (index: number, probabilities: number[]) => void,
     signal?: AbortSignal,
   ) => Promise<void>;
+  /**
+   * Free text (chat answers, translations, an explicit text change). Greedy,
+   * stops at the end of the answer or after `maxTokens`.
+   */
+  generate: (
+    request: { system: string; user: string; maxTokens?: number },
+    onText: (text: string) => void,
+    signal?: AbortSignal,
+  ) => Promise<string>;
   dispose: () => Promise<void>;
 };
 
@@ -60,6 +69,24 @@ export async function createDecider(modelPath: string, contextSize = 8192): Prom
         for (let k = 1; k < answer.length; k++) if (answer[k]! > answer[best]!) best = k;
         input = [letters[best]!, ...model.tokenize(`\n${decisionItemPrefix(i + 1)}`)];
       }
+    },
+    async generate(request, onText, signal) {
+      await sequence.clearHistory();
+      const tokens = model.tokenize(chatPrompt(request.system, request.user), true);
+      const out: Token[] = [];
+      let text = "";
+      for await (const token of sequence.evaluate(tokens, { temperature: 0 })) {
+        if (signal?.aborted || model.isEogToken(token)) break;
+        out.push(token);
+        const next = model.detokenize(out);
+        if (next.includes("<|im_end|>")) break;
+        if (next.length > text.length) {
+          onText(next.slice(text.length));
+          text = next;
+        }
+        if (out.length >= (request.maxTokens ?? 600)) break;
+      }
+      return text.trim();
     },
     async dispose() {
       await context.dispose();

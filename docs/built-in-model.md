@@ -10,6 +10,14 @@ Each model decision keeps its confidence. Below 70 % the block shows **Kind unce
 
 The model runs in its own process (Electron utility process, node-llama-cpp with Metal on Apple silicon), so the window stays responsive. It loads on the first run (a few seconds) and is unloaded after three idle minutes. About 0.2 s per block on an M-series Mac.
 
+## Chat pane
+
+The sidebar's **Assistant** mode takes instructions in plain words: "Abschnitt 7 gehört nicht dazu", "Gib Abschnitt 3 den Speaker Priester", "Was ist ein Kontakion?". The block last clicked in the editor comes along as a chip (Section n in an import, Block n in a prayer); × drops it.
+
+An instruction is a few Decisions, not free text: what to do (kind, speaker, exclude, include, change wording, answer), then which kind or speaker, then which blocks: chips first, then section numbers, then a quoted text, else one yes/no Decision per block. Plain wording skips the model ("Speaker"/"Sprecher" with a known speaker, "in allen Gebeten"). Only answers and an explicitly asked wording change generate text.
+
+Changes run through the Tool directory like an agent's: `import.apply` (origin model, one undo step) or `prayers.edit`. In an import the answer shows a change card with Undo, and the draft marks the changed sections with "Answer n · …" plus a banner (Undo, Hide). Changes to prayers stay unsaved; a change beyond the open prayer needs a quoted text and asks with a card first. Wording changes work only in an import.
+
 ## The model
 
 **Qwen3.5 4B** (Apache-2.0) in 4-bit GGUF, with its vision projector for scans: 3.4 GB in total, fine on a computer with 8 GB of memory. The entry lives in `packages/app/electron/modelCatalog.ts`: name, version and per file a fixed address (pinned to a repository commit), sha256 and size. It is kept as data so a list or a user's own file can replace it later.

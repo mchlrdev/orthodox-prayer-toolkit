@@ -7,13 +7,17 @@ import { createDecider, type Decider } from "./modelRuntime";
  * main process. One job runs at a time.
  */
 
+export type GenerateRequest = { system: string; user: string; maxTokens?: number };
+
 export type ModelWorkerRequest =
   | { type: "decide"; job: number; modelPath: string; prompt: DecisionPrompt }
+  | { type: "generate"; job: number; modelPath: string; request: GenerateRequest }
   | { type: "cancel"; job: number };
 
 export type ModelWorkerMessage =
   | { type: "item"; job: number; index: number; probabilities: number[] }
-  | { type: "done"; job: number }
+  | { type: "text"; job: number; text: string }
+  | { type: "done"; job: number; text?: string }
   | { type: "error"; job: number; message: string };
 
 const port = process.parentPort;
@@ -42,6 +46,15 @@ port.on("message", ({ data }: { data: ModelWorkerRequest }) => {
     try {
       if (abort.signal.aborted) return;
       const d = await decider(data.modelPath);
+      if (data.type === "generate") {
+        const text = await d.generate(
+          data.request,
+          (chunk) => send({ type: "text", job: data.job, text: chunk }),
+          abort.signal,
+        );
+        send({ type: "done", job: data.job, text });
+        return;
+      }
       await d.decide(
         data.prompt,
         (index, probabilities) => send({ type: "item", job: data.job, index, probabilities }),

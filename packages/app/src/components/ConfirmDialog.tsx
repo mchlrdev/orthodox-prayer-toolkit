@@ -34,7 +34,9 @@ export function ConfirmDialog({
       withinPortal={withinPortal}
     >
       <Stack gap="md">
-        <Text size="sm">{message}</Text>
+        <Text size="sm" style={{ whiteSpace: "pre-line" }}>
+          {message}
+        </Text>
         <Group justify="flex-end" gap="xs">
           <Button variant="default" onClick={onClose} disabled={loading}>
             Cancel

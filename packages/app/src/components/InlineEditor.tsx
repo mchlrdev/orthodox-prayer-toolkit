@@ -153,6 +153,8 @@ type Props = {
   leadCell?: (blockId: string) => ReactNode;
   /** Full-width rows after a block (null = before the first block). */
   rowsAfter?: (blockId: string | null) => ReactNode;
+  /** Blocks to mark (what one Chat pane answer changed or would change). */
+  markedBlocks?: ReadonlySet<string>;
 };
 
 /** Which block's Speaker dropdown is open, and what it hangs from. */
@@ -1089,6 +1091,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
       edits,
       leadCell,
       rowsAfter,
+      markedBlocks,
     },
     ref,
   ) {
@@ -1824,6 +1827,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
               className="inline-block"
               data-block-id={block.id}
               data-lead={leadCell ? "true" : undefined}
+              data-marked={markedBlocks?.has(block.id) ? "true" : undefined}
               data-invalid={blockIssues ? "true" : undefined}
               onContextMenu={(e) =>
                 openBlockMenu(e, index, block.kind, block.id, block.speaker)
