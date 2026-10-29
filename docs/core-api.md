@@ -348,4 +348,19 @@ The Built-in model never writes text or JSON: it answers **Decisions**, question
 
 The app runs them in `packages/app/src/builtInModel/` (`runFirstDraft`, a stand-in model with fixed rules for browser dev and tests); the model itself runs in its own process (`electron/modelWorker.ts`, node-llama-cpp). `pnpm --filter @orthodox-prayer-toolkit/app measure:model [library-dir]` measures hit rates against a folder of prayers.
 
+### Decisions (Chat pane)
+
+`chatDecisions.ts` turns one chat instruction into a few Decisions; the app (`builtInModel/chatInstruction.ts`) runs them and calls Tools.
+
+| Function | Does |
+|----------|------|
+| `actionBatch(view, instruction)` | What to do: set kind, set or remove speaker, exclude, include, change wording, answer (options depend on the view: import, prayer, library) |
+| `choiceBatch(question, options, instruction)` | One pick from a list (which kind, which speaker) |
+| `scopeBatch(instruction)` | The open prayer only, or every prayer |
+| `targetBatch(instruction, blocks)` | Yes/no per block: does the instruction mean it? |
+| `plainAction(instruction)`, `plainScope(instruction)` | The answer without the model when the wording leaves no doubt ("Speaker Priester", "in allen Gebeten") |
+| `sectionNumbers(instruction)`, `quotedText(instruction)` | Section numbers ("Abschnitt 3 und 7") and a quoted text ("„Ehre sei …“") named in the instruction |
+| `speakerNamedIn(text)` | The speaker preset a sentence names ("Diakon" → `deacon`; "all" is skipped) |
+| `draftChanges(before, after)` | What changed per block between two Import drafts (kind, speaker, excluded, included, added, removed, text), for the chat's change card |
+
 In the app the preview is the normal `InlineEditor`: its optional `edits` prop replaces the editor's own Prayer edits, so Enter, Backspace/Delete at a cell edge, typing, Kind, Speaker, move and delete become Import operations (`packages/app/src/importDraft/editorOps.ts`). Adding empty blocks is not offered there.

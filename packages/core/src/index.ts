@@ -276,8 +276,23 @@ export {
   firstDraftBatches,
   speakerBatch,
   speakerForLabel,
+  speakerNamedIn,
   uncertainDecisions,
 } from "./importDecisions.js";
+export {
+  actionBatch,
+  chatActions,
+  choiceBatch,
+  quotedText,
+  plainScope,
+  plainAction,
+  scopeBatch,
+  sectionNumbers,
+  targetBatch,
+} from "./chatDecisions.js";
+export type { ChatAction, ChatView } from "./chatDecisions.js";
+export { draftChanges } from "./importChanges.js";
+export type { DraftChange } from "./importChanges.js";
 export type {
   DecisionAnswer,
   DecisionBatch,

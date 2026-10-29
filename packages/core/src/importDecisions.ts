@@ -16,7 +16,7 @@ import {
 import type { SegmentLook } from "./importSource.js";
 import { isValidSpeakerId, SPEAKER_PRESETS } from "./speakers.js";
 
-export type DecisionKind = "role" | "prefix" | "speaker" | "pair";
+export type DecisionKind = "role" | "prefix" | "speaker" | "pair" | "action" | "choice" | "scope" | "target";
 
 export type DecisionOption = { id: string; label: string };
 
@@ -208,6 +208,20 @@ export function firstDraftBatches(draft: ImportDraft): DecisionBatch[] {
 /** The preset a printed speaker label names ("Priester" → priest), if known. */
 export function speakerForLabel(label: string): string | undefined {
   return SPEAKER_LABELS[label.trim().toLowerCase()];
+}
+
+/**
+ * The preset a sentence names by a speaker word ("Abschnitt 5 hat den Speaker
+ * Diakon" → deacon), first match. "All" is skipped: "in all prayers" is scope.
+ */
+export function speakerNamedIn(text: string): string | undefined {
+  for (const word of text.toLowerCase().split(/[^\p{L}]+/u)) {
+    for (const form of [word, word.replace(/(en|es|s|n)$/u, "")]) {
+      const id = SPEAKER_LABELS[form];
+      if (id && id !== "all") return id;
+    }
+  }
+  return undefined;
 }
 
 /**
