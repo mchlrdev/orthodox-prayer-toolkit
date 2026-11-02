@@ -38,6 +38,8 @@ export type DecisionBatch = {
   options: DecisionOption[];
   /** Worked examples shown before the items: text → option id. */
   examples?: Array<[string, string]>;
+  /** The editor's own rules in plain words (Library memory hints). */
+  hints?: string[];
   items: DecisionItem[];
 };
 
@@ -272,8 +274,9 @@ export function decisionPrompts(batch: DecisionBatch, maxItems = 60): DecisionPr
     const examples = batch.examples?.length
       ? `Examples:\n${batch.examples.map(([text, id]) => `${text} = ${letterOf(id)}`).join("\n")}\n\n`
       : "";
+    const hints = batch.hints?.length ? `\nThe editor's own rules (follow them):\n${batch.hints.map((h) => `- ${h}`).join("\n")}` : "";
     prompts.push({
-      system: RULES,
+      system: RULES + hints,
       user: `${batch.question}\n${options}\n\n${examples}Items:\n${list}\n\nAnswer one line per item as "number=letter", in order.`,
       letters,
       first,

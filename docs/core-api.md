@@ -363,4 +363,21 @@ The app runs them in `packages/app/src/builtInModel/` (`runFirstDraft`, a stand-
 | `speakerNamedIn(text)` | The speaker preset a sentence names ("Diakon" → `deacon`; "all" is skipped) |
 | `draftChanges(before, after)` | What changed per block between two Import drafts (kind, speaker, excluded, included, added, removed, text), for the chat's change card |
 
+### Library memory
+
+`libraryMemory.ts` owns the format of `.orthodox-prayer-toolkit/memory.json` ([library.md](library.md#library-memory-memoryjson)) and how it acts on imports.
+
+| Function | Does |
+|----------|------|
+| `sanitizeMemory(data)`, `memoryFileText(memory)`, `emptyMemory()` | Read the file as far as it is valid (with errors; a newer `formatVersion` keeps nothing), write it |
+| `addMemoryHint`, `removeMemoryEntry`, `dismissMemorySuggestion` | Edit hints and examples |
+| `sourceOrigin(source, fallback)`, `draftOrigin(draft)` | Where a Source came from: site host, else file name, else the Variant's `source` |
+| `draftCorrections(before, after)`, `mergeCorrections(pending, next)` | The user's corrections of model or memory decisions between two draft states (kind, exclude, include again); a block corrected twice keeps the model's first answer |
+| `learnCorrections(memory, draft, pending, now)` | On save: corrections that still hold become examples (same origin + look replaces) |
+| `memoryRuleSteps(draft, memory)` | Fixed rules: Import operations for blocks with the same origin and look as an example (origin `memory`) |
+| `withMemory(batch, memory, origin)` | A Decision with hints and similar examples as context (`DecisionBatch.hints`, extra `examples`) |
+| `hintSuggestions(memory)`, `hintForChanges(before, changes)` | Hint suggestions from repeated corrections, and from one Chat pane answer |
+
+`ImportDraft.excludedBy` records segments the model or memory excluded, so including them again counts as a correction.
+
 In the app the preview is the normal `InlineEditor`: its optional `edits` prop replaces the editor's own Prayer edits, so Enter, Backspace/Delete at a cell edge, typing, Kind, Speaker, move and delete become Import operations (`packages/app/src/importDraft/editorOps.ts`). Adding empty blocks is not offered there.

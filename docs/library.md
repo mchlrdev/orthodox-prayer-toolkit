@@ -10,6 +10,7 @@ my-prayer-library/
   .orthodox-prayer-toolkit/
     styles.json                 # optional kind-style overrides
     templates.json              # optional kind templates
+    memory.json                 # optional Library memory (Built-in model)
   trisagion.json
   tropar-prokopios.json
   …
@@ -21,6 +22,7 @@ my-prayer-library/
 | `manifest.json` | no | Collection meta only |
 | `.orthodox-prayer-toolkit/styles.json` | no | Kind styles for this library |
 | `.orthodox-prayer-toolkit/templates.json` | no | Kind templates for new prayers |
+| `.orthodox-prayer-toolkit/memory.json` | no | Library memory: hints and learned corrections for imports |
 
 ## Indexing rules
 
@@ -103,6 +105,47 @@ Named sets of custom kinds, used as **stamps** when creating a prayer:
 
 Templates are managed in Library settings → Kind templates (create from a label, the id derived with Core `templateIdFromLabel`; rename label; delete, edit the kind list incl. speaker flag and order; add a kind the library already knows or a new id). While `templates.json` has errors the list is read-only and the problems are shown; valid templates can still be picked for new prayers. "Apply template" is in Prayer settings → Kinds. Validate / sanitize via Core `validateTemplates` / `sanitizeTemplates`.
 
+## Library memory (`memory.json`)
+
+What the Built-in model learns from the user, kept with the Library so it travels with it (another computer, a colleague). Written by the app; the format belongs to Core (`libraryMemory.ts`).
+
+```json
+{
+  "formatVersion": 1,
+  "hints": [
+    { "id": "h1", "text": "Doxologien immer als Verse.", "from": "user", "added": "2026-11-02T10:00:00.000Z" }
+  ],
+  "examples": [
+    {
+      "id": "e1",
+      "text": "Dreimal.",
+      "look": { "italic": true, "color": "#888888" },
+      "origin": "orthodoxe-gebete.de",
+      "wrong": "subheading",
+      "right": "annotation",
+      "added": "2026-11-02T10:00:00.000Z"
+    }
+  ],
+  "dismissed": []
+}
+```
+
+| Part | Meaning |
+|------|---------|
+| `hints` | Rules in plain words, typed by the user (`from: "user"`) or an accepted suggestion (`"suggestion"`, with its `key`) |
+| `examples` | Corrections of the model's role decision: the paragraph (one line), its look, where the Source came from (`origin`: site host or file name, `""` when unknown), the model's answer and the user's. Answers are kind ids or `exclude`; `declare` holds a custom kind so a rule can declare it in a new draft. At most 500, oldest dropped |
+| `dismissed` | Suggestion keys the user turned down |
+
+How it works:
+
+- **Learning:** while an Import draft is open, the app collects the user's own corrections of model (or memory) decisions: another kind, excluding a block, including what the model left out. On save, those that still hold become examples (undone ones are dropped). A newer example with the same origin and look replaces the older one. Corrections by agents or by the Chat pane are not learned.
+- **Fixed rule:** a new import whose block has the same origin and the same look as an example (for text without a look: the same words) gets the user's answer before the model runs, with origin `memory`. It also applies without the model installed. Blocks the user or an agent decided keep their decision.
+- **Context:** every hint and up to six examples (same origin first, then the newest) go into each Decision prompt.
+- **Suggestions:** the same correction (wrong → right) on three different texts suggests a hint in the Assistant (Remember / No). An answer in the Assistant that changed an import can also suggest one ("A prefix like ‘Priester:’ names the speaker (Priest).").
+- **Agents** read hints and the latest 50 corrections with the `memory.read` tool.
+
+Library settings → Memory lists hints (+ Hint, × to remove) and learned corrections (newest first, × to remove), and **Reset memory …** clears everything after a confirmation. While `memory.json` has errors it is read as far as it is valid, shown read-only with the problems, and never rewritten; a file from a newer app (higher `formatVersion`) is left alone the same way. Changes from outside the app are picked up while it runs.
+
 ## Migration on open
 
 Older files may use custom kinds without declaring them (kinds and the `speaker` token used to be library-wide in `styles.json`).
@@ -137,7 +180,7 @@ Older files may use custom kinds without declaring them (kinds and the `speaker`
 - The app watches the open library folder for `.json` changes made outside it (another editor, git, sync tools).
 - A prayer without unsaved edits reloads from disk; new files appear in the list, deleted ones disappear.
 - A prayer with unsaved edits keeps them and shows **Changed on disk** or **Deleted on disk**: keep your version (the next save overwrites or recreates the file) or load the disk version.
-- Changes to `manifest.json`, `.orthodox-prayer-toolkit/styles.json` or `.orthodox-prayer-toolkit/templates.json` rescan the library.
+- Changes to `manifest.json`, `.orthodox-prayer-toolkit/styles.json` or `.orthodox-prayer-toolkit/templates.json` rescan the library; a change to `.orthodox-prayer-toolkit/memory.json` reloads the Library memory.
 - **Refresh** (library menu) rescans the catalog and reloads the open prayer from disk. Unsaved prayers are prompted first (save all, discard all, or cancel). Browser preview has no folder watcher, so use Refresh after external edits.
 
 ## Dev sample

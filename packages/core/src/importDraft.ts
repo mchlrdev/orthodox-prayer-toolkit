@@ -86,6 +86,12 @@ export type ImportDraft = {
   blocks: DraftBlock[];
   /** Excluded Source segment ids: their text is hidden, not removed. */
   excluded: string[];
+  /**
+   * Who excluded a segment, for the Built-in model and Library memory only
+   * (the user, an agent and the Reader are not listed). Lets a later
+   * "include" count as a correction of the model.
+   */
+  excludedBy?: Record<string, "model" | "memory">;
   /** Counter for new block ids (`b{n}`). */
   nextBlock: number;
 };
@@ -658,7 +664,17 @@ function applyOne(draft: ImportDraft, op: ImportOp, origin: ImportOrigin): Impor
         else set.delete(id);
       }
       const order = draft.sources.flatMap((s) => s.segments.map((seg) => seg.id));
-      return { ...draft, excluded: order.filter((id) => set.has(id)) };
+      const by = { ...draft.excludedBy };
+      for (const id of op.segments) {
+        if (op.excluded && (origin.by === "model" || origin.by === "memory")) by[id] = origin.by;
+        else delete by[id];
+      }
+      const { excludedBy: _by, ...rest } = draft;
+      return {
+        ...rest,
+        excluded: order.filter((id) => set.has(id)),
+        ...(Object.keys(by).length > 0 ? { excludedBy: by } : {}),
+      };
     }
 
     case "pairVariant": {
