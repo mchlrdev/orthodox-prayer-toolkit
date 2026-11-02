@@ -9,6 +9,7 @@
     "noUnusedParameters": true,
     "skipLibCheck": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "types": ["node"]
   },
   "include": ["electron", "nodeFs.ts", "sourceFetch.ts", "vite.config.ts", "vite-plugin-browser-fs.ts"]

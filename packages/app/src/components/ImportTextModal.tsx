@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Button,
   Group,
@@ -11,7 +11,10 @@ import {
 } from "@mantine/core";
 import type { AddColumnInput, StartImportInput } from "../importDraft/useImportDraft";
 import type { Source } from "@orthodox-prayer-toolkit/core";
-import { getToolkitApi } from "../api";
+import { getToolkitApi, isBrowserDev } from "../api";
+import { PdfWithoutTextError } from "../importDraft/pdfLayout";
+import { ocrPackFor, useOcrLanguages } from "../importDraft/useOcrLanguages";
+import { ScanImportPanel, type ScanStep } from "./ScanImportPanel";
 import { inputUrl, readImportInput } from "../importDraft/readInput";
 import { readHtmlDocument, sanitizeHtml } from "../importDraft/readHtml";
 import { parseVariantKey, variantKey, type ActiveVariant } from "../variant";
@@ -66,6 +69,19 @@ const OTHER_LANGUAGE = "__other";
 const HTML_FILE = /\.(html?|xhtml)$/i;
 const PDF_FILE = /\.pdf$/i;
 const DOCX_FILE = /\.docx$/i;
+const IMAGE_FILE = /\.(png|jpe?g|webp|bmp|gif)$/i;
+
+/** A dropped image or PDF without a text layer, waiting for text recognition. */
+type ScanInput = {
+  kind: "image" | "pdf";
+  file: Blob;
+  /** PDF bytes (the page view draws them). */
+  data: Uint8Array | null;
+  info: string;
+  thumb: string | null;
+};
+
+type ScanPhase = { phase: "download"; code: string } | { phase: "recognize"; progress: number };
 
 /**
  * "Import prayer": paste text (formatting from a web page is kept), paste a
@@ -96,6 +112,12 @@ export function ImportTextModal({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [scan, setScan] = useState<ScanInput | null>(null);
+  /** Languages picked for the scan; null: the chosen Variant's language. */
+  const [picks, setPicks] = useState<string[] | null>(null);
+  const [phase, setPhase] = useState<ScanPhase | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const ocr = useOcrLanguages(opened && scan !== null);
   /** Add language: a column of the draft's Source, or another text. */
   const [from, setFrom] = useState<number | "text">("text");
   const choices = addTo
@@ -111,6 +133,9 @@ export function ImportTextModal({
     setFileName(null);
     setBusy(false);
     setError(null);
+    setScan(null);
+    setPicks(null);
+    setPhase(null);
     setFrom(addTo?.columns[0]?.column ?? "text");
     const fallback = addTo ? (choices[0] ?? null) : (defaultVariant ?? variants[0] ?? null);
     setPicked(fallback ? variantKey(fallback) : null);
@@ -134,7 +159,81 @@ export function ImportTextModal({
     : picked
       ? parseVariantKey(picked)
       : null;
-  const ready = (column !== undefined || text.trim().length > 0) && chosen !== null && !busy;
+  const defaultPack = chosen ? ocrPackFor(chosen.lang) : null;
+  const scanLangs = picks ?? (defaultPack ? [defaultPack] : []);
+  const ready =
+    (scan ? scanLangs.length > 0 : column !== undefined || text.trim().length > 0) && chosen !== null && !busy;
+
+  useEffect(() => {
+    const url = scan?.thumb;
+    return () => {
+      if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
+    };
+  }, [scan]);
+
+  const scanStep: ScanStep | null =
+    phase?.phase === "download"
+      ? (() => {
+          const pack = ocr.languages.find((l) => l.code === phase.code);
+          return {
+            label: `Downloading the ${pack?.name.replace(/\s*\(.*\)$/, "") ?? phase.code} language pack …`,
+            progress: pack && pack.size > 0 ? pack.received / pack.size : 0,
+          };
+        })()
+      : phase?.phase === "recognize"
+        ? { label: "Recognising text …", progress: phase.progress }
+        : null;
+
+  const runScan = async (input: ScanInput, variant: ActiveVariant) => {
+    setBusy(true);
+    setError(null);
+    const abort = new AbortController();
+    abortRef.current = abort;
+    const api = getToolkitApi();
+    try {
+      for (const code of scanLangs) {
+        const before = (await api.getOcrLanguages()).find((l) => l.code === code);
+        if (before?.state === "installed") continue;
+        setPhase({ phase: "download", code });
+        await ocr.download(code);
+        if (abort.signal.aborted) return;
+        const after = (await api.getOcrLanguages()).find((l) => l.code === code);
+        if (after?.state !== "installed") {
+          throw new Error(after?.message ?? `The ${after?.name ?? code} language pack could not be downloaded.`);
+        }
+      }
+      setPhase({ phase: "recognize", progress: 0 });
+      const { readImageScan, readScannedPdf, ScanCancelled } = await import("../importDraft/readScan");
+      const options = {
+        ...(addTo ? { id: addTo.sourceId } : {}),
+        name: fileName ?? "Scan",
+        languages: scanLangs,
+        signal: abort.signal,
+        onProgress: (progress: number) => setPhase({ phase: "recognize", progress }),
+      };
+      try {
+        const { source, data } =
+          input.kind === "image"
+            ? await readImageScan(input.file, options)
+            : { source: await readScannedPdf(input.data!, options), data: input.data! };
+        onCreate({ source, file: data, origin: origin.trim() || (fileName ?? ""), variant });
+      } catch (err) {
+        if (err instanceof ScanCancelled) return;
+        throw err;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      abortRef.current = null;
+      setPhase(null);
+      setBusy(false);
+    }
+  };
+
+  const stopScan = () => {
+    abortRef.current?.abort();
+    if (phase?.phase === "download") void getToolkitApi().cancelOcrDownload(phase.code);
+  };
   const keptHtml = html !== null && html.text === text ? html.html : null;
   const keptRead = read !== null && read.text === text ? read : null;
   const keptPdf = keptRead?.source.format === "pdf" ? keptRead : null;
@@ -142,6 +241,10 @@ export function ImportTextModal({
 
   const create = async () => {
     if (!chosen) return;
+    if (scan) {
+      await runScan(scan, chosen);
+      return;
+    }
     if (column) {
       onAddColumn?.({ column: column.column, origin: origin.trim(), variant: chosen });
       return;
@@ -179,6 +282,23 @@ export function ImportTextModal({
     setError(null);
     setHtml(null);
     setRead(null);
+    setScan(null);
+    if (IMAGE_FILE.test(file.name) || (file.type.startsWith("image/") && file.type !== "image/svg+xml")) {
+      if (isBrowserDev()) {
+        setError("Text recognition of images needs the desktop app.");
+        return;
+      }
+      setText("");
+      try {
+        const bitmap = await createImageBitmap(file);
+        const info = `Scan · ${bitmap.width} × ${bitmap.height} px`;
+        bitmap.close();
+        setScan({ kind: "image", file, data: null, info, thumb: URL.createObjectURL(file) });
+      } catch {
+        setError("This image cannot be read.");
+      }
+      return;
+    }
     const pdfFile = PDF_FILE.test(file.name) || file.type === "application/pdf";
     if (pdfFile || DOCX_FILE.test(file.name)) {
       setBusy(true);
@@ -202,7 +322,24 @@ export function ImportTextModal({
         setRead({ data, source, text: preview });
       } catch (err) {
         setText("");
-        setError(err instanceof Error ? err.message : String(err));
+        if (err instanceof PdfWithoutTextError && !isBrowserDev()) {
+          try {
+            const data = new Uint8Array(await file.arrayBuffer());
+            const { pdfScanPreview } = await import("../importDraft/readScan");
+            const { pages, thumb } = await pdfScanPreview(data);
+            setScan({
+              kind: "pdf",
+              file,
+              data,
+              info: `PDF without text layer · ${pages} ${pages === 1 ? "page" : "pages"}`,
+              thumb,
+            });
+          } catch (inner) {
+            setError(inner instanceof Error ? inner.message : String(inner));
+          }
+        } else {
+          setError(err instanceof Error ? err.message : String(err));
+        }
       } finally {
         setBusy(false);
       }
@@ -247,7 +384,7 @@ export function ImportTextModal({
         <Text size="xs" c="dimmed">
           {addTo
             ? `Second language for “${addTo.title || "Untitled"}”. Its segments are paired with the blocks in order.`
-            : "Paste text or a web address, or drop a PDF, Word, HTML or text file here."}
+            : "Paste text or a web address, or drop a PDF, Word, HTML, text or image file here."}
         </Text>
         {addTo && addTo.columns.length > 0 ? (
           <div className="import-from" role="radiogroup" aria-label="Where from">
@@ -306,6 +443,20 @@ export function ImportTextModal({
             void dropFile(file);
           }}
         >
+          {scan ? (
+            <ScanImportPanel
+              name={fileName ?? "Scan"}
+              info={scan.info}
+              thumb={scan.thumb}
+              languages={ocr.languages}
+              picked={scanLangs}
+              busy={busy}
+              step={scanStep}
+              onToggle={(code) =>
+                setPicks(scanLangs.includes(code) ? scanLangs.filter((c) => c !== code) : [...scanLangs, code])
+              }
+            />
+          ) : (
           <Textarea
             aria-label="Text"
             placeholder="Paste text here"
@@ -325,9 +476,10 @@ export function ImportTextModal({
               }
             }}
           />
+          )}
         </div>
         )}
-        {!column && (keptHtml !== null || keptRead || url || error) ? (
+        {!column && (scan ? error : keptHtml !== null || keptRead || url || error) ? (
           <Text size="xs" c={error ? "accent" : "dimmed"} mt={-8}>
             {error ??
               (keptPdf
@@ -385,11 +537,16 @@ export function ImportTextModal({
             </div>
           ) : null}
           <Group gap="xs" wrap="nowrap">
-            <Button variant="subtle" color="gray" onClick={onClose} disabled={busy}>
+            <Button
+              variant="subtle"
+              color="gray"
+              onClick={scan && busy ? stopScan : onClose}
+              disabled={busy && !scan}
+            >
               Cancel
             </Button>
-            <Button color="dark" disabled={!ready} loading={busy} onClick={() => void create()}>
-              {addTo ? "Add" : "Create draft"}
+            <Button color="dark" disabled={!ready} loading={busy && !scan} onClick={() => void create()}>
+              {scan ? "Recognise text" : addTo ? "Add" : "Create draft"}
             </Button>
           </Group>
         </Group>

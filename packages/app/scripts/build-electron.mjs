@@ -62,7 +62,8 @@ async function buildMain() {
         outDir: "dist-electron",
         emptyOutDir: true,
         rollupOptions: {
-          external: ["electron", "electron-updater"],
+          // Tesseract starts its worker thread from a file in node_modules.
+          external: ["electron", "electron-updater", "tesseract.js"],
         },
       },
     },

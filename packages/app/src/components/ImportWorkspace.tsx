@@ -31,6 +31,7 @@ import {
 } from "./InlineEditor";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { PdfSourcePane } from "./PdfSourcePane";
+import { useUncertainWords } from "../importDraft/useUncertainWords";
 import { shortcutLabel } from "../appCommands";
 import { importContentErrors } from "../importDraft/contentErrors";
 import {
@@ -175,6 +176,8 @@ export function ImportWorkspace({
     seenCount.current = variantCount;
   }, [variantCount, lastKey]);
   const col: ActiveVariant = { lang: variant.lang, variant: variant.variant };
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const uncertain = useUncertainWords(bodyRef, draft, variant.key, variantKey(col));
   const visibleVariants = useMemo(
     () => [col],
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -504,8 +507,18 @@ export function ImportWorkspace({
   };
 
   // --- PDF: the page itself is the Source column ----------------------------
-  const pdfData = source?.format === "pdf" ? files[source.id] : undefined;
+  const pageFormat = source?.format === "pdf" || source?.format === "image" ? source.format : null;
+  const pdfData = pageFormat ? files[source!.id] : undefined;
   const allSegments = useMemo(() => draft.sources.flatMap((s) => s.segments), [draft.sources]);
+  // Text recognition (scans): how sure it was and how many words are in doubt.
+  const scanSummary = useMemo(() => {
+    const read = allSegments.filter((s) => s.confidence !== undefined);
+    if (read.length === 0) return null;
+    const chars = read.reduce((n, s) => n + s.text.length, 0);
+    const sure = chars > 0 ? read.reduce((n, s) => n + s.confidence! * s.text.length, 0) / chars : 0;
+    const doubtful = read.reduce((n, s) => n + (s.uncertain?.length ?? 0), 0);
+    return { sure: Math.round(sure * 100), doubtful };
+  }, [allSegments]);
   const excludedSet = useMemo(() => new Set(draft.excluded), [draft.excluded]);
   const [pdfPage, setPdfPage] = useState(1);
   const [range, setRange] = useState<{ anchor: string; ids: Set<string> } | null>(null);
@@ -601,7 +614,9 @@ export function ImportWorkspace({
             <h1 className="workspace-title">{draft.variants[0]!.title || "Untitled"}</h1>
             <span className="import-subtitle">
               Import draft · {source?.name ?? "Source"} ·{" "}
-              {pdfData
+              {pageFormat === "image"
+                ? "Text recognised"
+                : pdfData
                 ? `Page ${pdfPage} of ${pageCount}`
                 : `${segmentCount} ${segmentCount === 1 ? "segment" : "segments"}`}
             </span>
@@ -648,8 +663,13 @@ export function ImportWorkspace({
         <div className="import-columns">
           <div className="import-column-label">
             <span className="import-caps">Source</span>
-            {pdfData ? <span>· Page {pdfPage}</span> : null}
-            {groupCount > 0 ? (
+            {pdfData && pageFormat !== "image" ? <span>· Page {pdfPage}</span> : null}
+            {scanSummary ? (
+              <span>
+                · {scanSummary.sure} % sure
+                {scanSummary.doubtful > 0 ? ` · ${scanSummary.doubtful} uncertain` : ""}
+              </span>
+            ) : groupCount > 0 ? (
               <span>
                 · {groupCount} style {groupCount === 1 ? "group" : "groups"}
               </span>
@@ -747,7 +767,10 @@ export function ImportWorkspace({
 
       <div
         className="workspace-body"
-        ref={(el) => assignRef(scrollRootRef, el)}
+        ref={(el) => {
+          bodyRef.current = el;
+          assignRef(scrollRootRef, el);
+        }}
         onFocusCapture={(e) => {
           const row = (e.target as HTMLElement).closest<HTMLElement>("[data-block-id]");
           if (row?.dataset.blockId && (e.target as HTMLElement).isContentEditable) {
@@ -767,6 +790,7 @@ export function ImportWorkspace({
             <div className="import-pdf-side">
               <PdfSourcePane
                 data={pdfData}
+                format={pageFormat ?? "pdf"}
                 segments={allSegments}
                 page={pdfPage}
                 onPageChange={(p) => {
@@ -829,6 +853,20 @@ export function ImportWorkspace({
           />
         </div>
       </div>
+
+      {uncertain.hover ? (
+        <div
+          className="ocr-uncertain-tip"
+          role="tooltip"
+          style={{ left: uncertain.hover.left, top: uncertain.hover.top - 30 }}
+        >
+          <span>
+            Read with low confidence
+            {uncertain.hover.confidence !== undefined ? ` (${Math.round(uncertain.hover.confidence * 100)} %)` : ""}
+          </span>
+          <span className="ocr-uncertain-tip-hint">Check it against the scan</span>
+        </div>
+      ) : null}
 
       <div className="import-status">
         <span className="import-status-item">

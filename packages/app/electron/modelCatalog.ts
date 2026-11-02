@@ -18,7 +18,10 @@ const QWEN35_4B_COMMIT = "e87f176479d0855a907a41277aca2f8ee7a09523";
 const qwenUrl = (name: string) =>
   `https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/${QWEN35_4B_COMMIT}/${name}`;
 
-/** Qwen3.5 4B (Apache-2.0), 4-bit, with its vision projector for scans. */
+/**
+ * Qwen3.5 4B (Apache-2.0), 4-bit. Without its vision projector: scans are
+ * read by Tesseract, not by the model (node-llama-cpp takes no images).
+ */
 export const BUILT_IN_MODEL: ModelEntry = {
   id: "qwen3.5-4b",
   name: "Qwen3.5 4B",
@@ -29,12 +32,6 @@ export const BUILT_IN_MODEL: ModelEntry = {
       url: qwenUrl("Qwen3.5-4B-Q4_K_M.gguf"),
       sha256: "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4",
       size: 2740937888,
-    },
-    {
-      name: "mmproj-F16.gguf",
-      url: qwenUrl("mmproj-F16.gguf"),
-      sha256: "cd88edcf8d031894960bb0c9c5b9b7e1fea6ebee02b9f7ce925a00d12891f864",
-      size: 672423616,
     },
   ],
 };

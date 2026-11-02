@@ -25,6 +25,8 @@ export type PdfTextItem = {
   font: string;
   bold: boolean;
   italic: boolean;
+  /** Ink colour when it is not black (the scan Reader measures it). */
+  color?: string;
 };
 
 export type PdfPageText = {
@@ -66,7 +68,7 @@ type Para = {
 const FULL = -1;
 
 function styleKey(item: PdfTextItem): string {
-  return `${item.font}|${Math.round(item.size * 2) / 2}|${item.bold}|${item.italic}`;
+  return `${item.font}|${Math.round(item.size * 2) / 2}|${item.bold}|${item.italic}|${item.color ?? ""}`;
 }
 
 /** Look of the style most of the line's characters use. */
@@ -125,6 +127,7 @@ function makeLine(items: PdfTextItem[]): Line | null {
       size: `${Math.round(item.size * 2) / 2}pt`,
       weight: item.bold ? "bold" : "normal",
       style: item.italic ? "italic" : "normal",
+      ...(item.color ? { color: item.color } : {}),
     },
   };
 }

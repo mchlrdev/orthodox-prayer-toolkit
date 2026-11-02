@@ -7,3 +7,5 @@ allowBuilds:
   esbuild: true
   # Prebuilt binaries come as optional packages; no build from source on install.
   node-llama-cpp: false
+  # Its install script only prints a donation note.
+  tesseract.js: false

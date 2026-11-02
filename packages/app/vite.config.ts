@@ -36,7 +36,7 @@ export default defineConfig({
                   rollupOptions: {
                     // Keep Electron and updater as Node requires so electron-builder
                     // can ship them from node_modules inside the asar.
-                    external: ["electron", "electron-updater", "node-llama-cpp"],
+                    external: ["electron", "electron-updater", "node-llama-cpp", "tesseract.js"],
                   },
                 },
               },

@@ -27,6 +27,9 @@ export const RELEASE_NOTES: ReleaseNotesEntry[] = [
       "Assistant in the sidebar (Library | Assistant): tell the Built-in model what to change in plain words; changes show with Undo, and changes to other prayers ask first",
       "Built-in model sorts an import: headings, instructions, speakers and labels like “Troparion im 4. Ton:” are decided as it goes; uncertain ones are marked and “open decisions” jumps to them",
       "Library memory: your corrections in an import are remembered when you save, so the next import from the same site decides the same way; add plain-word hints and review or reset it in Library settings → Memory",
+      "Import from a scan: drop a photo, a scanned image or a PDF without text; its text is recognised on this computer in the languages you pick (small language packs download once and work offline)",
+      "Scans: words read uncertainly are underlined in the scan and dotted in the editor; red rubrics form their own style group",
+      "Built-in model download is smaller (2.7 GB); an older vision file is removed",
     ],
   },
   {

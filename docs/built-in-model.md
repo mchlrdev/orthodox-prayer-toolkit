@@ -24,7 +24,7 @@ Changes run through the Tool directory like an agent's: `import.apply` (origin m
 
 ## The model
 
-**Qwen3.5 4B** (Apache-2.0) in 4-bit GGUF, with its vision projector for scans: 3.4 GB in total, fine on a computer with 8 GB of memory. The entry lives in `packages/app/electron/modelCatalog.ts`: name, version and per file a fixed address (pinned to a repository commit), sha256 and size. It is kept as data so a list or a user's own file can replace it later.
+**Qwen3.5 4B** (Apache-2.0) in 4-bit GGUF: 2.7 GB, fine on a computer with 8 GB of memory. It reads no images; scans are read by Tesseract (see [core-api.md](core-api.md#import-drafts)). An install from an earlier app that still holds the vision projector frees that file on start. The entry lives in `packages/app/electron/modelCatalog.ts`: name, version and per file a fixed address (pinned to a repository commit), sha256 and size. It is kept as data so a list or a user's own file can replace it later.
 
 ## Download, cancel, delete
 

@@ -6,10 +6,12 @@ import type {
 
 import type { DecisionPrompt } from "@orthodox-prayer-toolkit/core";
 import type { ModelStatus } from "./modelStore";
+import type { OcrLanguageStatus, RecognizedLine } from "./ocrService";
 import type { GenerateRequest, ModelWorkerMessage } from "./modelWorker";
 
 export type { AppInfo, AppUpdateCheckResult } from "./updateCheck";
 export type { ModelStatus } from "./modelStore";
+export type { OcrLanguageStatus, RecognizedLine } from "./ocrService";
 export type { GenerateRequest, ModelWorkerMessage } from "./modelWorker";
 
 export type CreateLibraryOptions = {
@@ -84,6 +86,16 @@ export type PrayerToolkitApi = {
   startGenerate: (job: number, request: GenerateRequest) => Promise<void>;
   cancelDecision: (job: number) => Promise<void>;
   onDecision: (cb: (message: ModelWorkerMessage) => void) => () => void;
+  /** Tesseract language packs for scans: download on demand, kept for offline use. */
+  getOcrLanguages: () => Promise<OcrLanguageStatus[]>;
+  downloadOcrLanguage: (code: string) => Promise<void>;
+  cancelOcrDownload: (code: string) => Promise<void>;
+  removeOcrLanguage: (code: string) => Promise<void>;
+  onOcrLanguages: (cb: (languages: OcrLanguageStatus[]) => void) => () => void;
+  /** Recognise the text of an image (PNG/JPEG bytes); null when cancelled. */
+  recognizeImage: (job: number, image: Uint8Array, languages: string[]) => Promise<RecognizedLine[] | null>;
+  cancelRecognize: (job: number) => Promise<void>;
+  onOcrProgress: (cb: (job: number, progress: number) => void) => () => void;
   /** Fetch a web page for the import (http/https, size-capped). */
   fetchSource: (
     url: string,
@@ -193,6 +205,26 @@ const api: PrayerToolkitApi = {
     ipcRenderer.on("model:decision", handler);
     return () => {
       ipcRenderer.removeListener("model:decision", handler);
+    };
+  },
+  getOcrLanguages: () => ipcRenderer.invoke("ocr:languages"),
+  downloadOcrLanguage: (code) => ipcRenderer.invoke("ocr:download", code),
+  cancelOcrDownload: (code) => ipcRenderer.invoke("ocr:cancelDownload", code),
+  removeOcrLanguage: (code) => ipcRenderer.invoke("ocr:remove", code),
+  onOcrLanguages: (cb) => {
+    const handler = (_event: unknown, languages: OcrLanguageStatus[]) => cb(languages);
+    ipcRenderer.on("ocr:languages", handler);
+    return () => {
+      ipcRenderer.removeListener("ocr:languages", handler);
+    };
+  },
+  recognizeImage: (job, image, languages) => ipcRenderer.invoke("ocr:recognize", job, image, languages),
+  cancelRecognize: (job) => ipcRenderer.invoke("ocr:cancel", job),
+  onOcrProgress: (cb) => {
+    const handler = (_event: unknown, job: number, progress: number) => cb(job, progress);
+    ipcRenderer.on("ocr:progress", handler);
+    return () => {
+      ipcRenderer.removeListener("ocr:progress", handler);
     };
   },
   showItem: (fullPath) => ipcRenderer.invoke("shell:showItem", fullPath),

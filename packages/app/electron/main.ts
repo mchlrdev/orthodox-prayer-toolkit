@@ -33,6 +33,7 @@ import type { DecisionPrompt } from "@orthodox-prayer-toolkit/core";
 import { BUILT_IN_MODEL } from "./modelCatalog";
 import { createModelStore, type ModelStore } from "./modelStore";
 import { createModelProcess } from "./modelProcess";
+import { createOcrService, OcrCancelled } from "./ocrService";
 import { fetchSource } from "../sourceFetch";
 import { createTrustedRoots, type TrustedRoots } from "./trustedRoots";
 import { startMacUpdateInstall } from "./macUpdateInstall";
@@ -196,6 +197,21 @@ async function stopAgentAccess(): Promise<void> {
     pending({ status: 503, body: { ok: false, error: "Agent access was turned off" } });
   }
   await server?.close();
+}
+
+// --- Text recognition (scans) ---------------------------------------------
+
+let ocrService: ReturnType<typeof createOcrService> | null = null;
+
+function ocr() {
+  ocrService ??= createOcrService({
+    root: join(app.getPath("userData"), "ocr"),
+    fetch: (input, init) => net.fetch(String(input), init),
+    onStatus: (languages) => {
+      for (const win of BrowserWindow.getAllWindows()) win.webContents.send("ocr:languages", languages);
+    },
+  });
+  return ocrService;
 }
 
 // --- Built-in model -------------------------------------------------------
@@ -614,6 +630,40 @@ function registerIpc(): void {
     if (!pending) return;
     agentPending.delete(id);
     pending(answer as { status: number; body: unknown });
+  });
+
+  ipcMain.handle("ocr:languages", () => ocr().languages());
+  ipcMain.handle("ocr:download", (_evt, code: unknown) => {
+    if (typeof code !== "string") throw new Error("Invalid language");
+    return ocr().download(code);
+  });
+  ipcMain.handle("ocr:cancelDownload", (_evt, code: unknown) => {
+    if (typeof code === "string") ocr().cancelDownload(code);
+  });
+  ipcMain.handle("ocr:remove", (_evt, code: unknown) => {
+    if (typeof code === "string") ocr().remove(code);
+  });
+  ipcMain.handle("ocr:recognize", async (event, job: unknown, image: unknown, codes: unknown) => {
+    if (
+      typeof job !== "number" ||
+      !(image instanceof Uint8Array) ||
+      !Array.isArray(codes) ||
+      !codes.every((c) => typeof c === "string")
+    ) {
+      throw new Error("Invalid recognition request");
+    }
+    const sender = event.sender;
+    try {
+      return await ocr().recognize(job, image, codes, (progress) => {
+        if (!sender.isDestroyed()) sender.send("ocr:progress", job, progress);
+      });
+    } catch (error) {
+      if (error instanceof OcrCancelled) return null;
+      throw error;
+    }
+  });
+  ipcMain.handle("ocr:cancel", (_evt, job: unknown) => {
+    if (typeof job === "number") return ocr().cancel(job);
   });
 
   ipcMain.handle("model:status", () => builtInModel().status());

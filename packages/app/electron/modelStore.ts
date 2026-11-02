@@ -14,7 +14,7 @@ import {
 import { join } from "node:path";
 import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { modelSize, type ModelEntry, type ModelFile } from "./modelCatalog";
+import { modelSize, type ModelEntry, type ModelFile } from "./modelCatalog.ts";
 
 /**
  * The Built-in model on disk: `<root>/<id>/<version>/`. A file downloads to
@@ -107,6 +107,14 @@ export function createModelStore(options: {
       const s = statfsSync(dir);
       return s.bavail * s.bsize;
     });
+
+  // Files an earlier app listed for this version (the vision projector) free their space.
+  if (existsSync(join(versionDir, MARKER))) {
+    const keep = new Set([MARKER, ...entry.files.map((f) => f.name)]);
+    for (const name of readdirSync(versionDir)) {
+      if (!keep.has(name)) rmSync(join(versionDir, name), { recursive: true, force: true });
+    }
+  }
 
   let running: { abort: AbortController; done: Promise<void> } | null = null;
   let live: Pick<ModelStatus, "state" | "bytesPerSecond" | "message"> | null = null;

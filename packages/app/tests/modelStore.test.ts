@@ -138,6 +138,15 @@ describe("Built-in model download", () => {
     expect(existsSync(join(root, "test-model", "1", "weights.gguf.part"))).toBe(false);
   });
 
+  it("an installed version drops files the entry no longer lists", async () => {
+    host = await startHost({ "weights.gguf": WEIGHTS, "vision.gguf": VISION });
+    await createModelStore({ root, entry: entry(host.url) }).download();
+    const lean = { ...entry(host.url), files: entry(host.url).files.filter((f) => f.name !== "vision.gguf") };
+    const store = createModelStore({ root, entry: lean });
+    expect(store.status().state).toBe("installed");
+    expect(readdirSync(join(root, "test-model", "1")).sort()).toEqual(["installed.json", "weights.gguf"]);
+  });
+
   it("refuses to start without enough disk space", async () => {
     host = await startHost({ "weights.gguf": WEIGHTS, "vision.gguf": VISION });
     const store = createModelStore({ root, entry: entry(host.url), freeSpace: () => 1000 });

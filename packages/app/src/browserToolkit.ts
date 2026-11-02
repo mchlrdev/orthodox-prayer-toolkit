@@ -191,6 +191,20 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
     cancelDecision: async () => undefined,
     onDecision: () => () => undefined,
 
+    // Text recognition for scans needs the desktop app.
+    getOcrLanguages: async () => [],
+    downloadOcrLanguage: async () => {
+      throw new Error("Text recognition needs the desktop app");
+    },
+    cancelOcrDownload: async () => undefined,
+    removeOcrLanguage: async () => undefined,
+    onOcrLanguages: () => () => undefined,
+    recognizeImage: async () => {
+      throw new Error("Text recognition needs the desktop app");
+    },
+    cancelRecognize: async () => undefined,
+    onOcrProgress: () => () => undefined,
+
     pickPrayerJson: () =>
       new Promise((resolve) => {
         const input = document.createElement("input");

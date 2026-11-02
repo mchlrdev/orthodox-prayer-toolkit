@@ -23,6 +23,7 @@ Shared domain language for humans and agents. Prefer these terms in UI, docs, an
 | **Source** | Something being imported (pasted text, file, web page, image) with its origin. | document, input |
 | **Source segment** | Smallest addressable piece of a Source: verbatim text, look, stable id. Made by a Reader, never by a model. | chunk, line (ambiguous) |
 | **Reader** | Deterministic splitter of one format into Source segments. Understands no content. | parser |
+| **Text recognition** | Reading the text of a scan (image or PDF without a text layer) with Tesseract. Its segments carry `confidence` and `uncertain` words; language packs download on demand. | OCR (fine in code), vision |
 | **Style group** | Source segments with the same look. Target of group corrections. | category, class |
 | **Import draft** | Provisional Prayer from one or more Sources; its Blocks point at Source segments instead of holding text. Lives in the session until saved as `{id}.json`. | preview file, intermediate JSON |
 | **Import operation** | A named change to an Import draft (set kind, split, merge, mark note, exclude, …), the same for the user, the Built-in model and agents. | edit, patch |

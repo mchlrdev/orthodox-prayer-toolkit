@@ -9,6 +9,8 @@ const PAGE_WIDTH = 340;
 
 type Props = {
   data: Uint8Array;
+  /** A PDF (drawn by pdf.js) or a scanned image (JPEG, areas in its pixels). */
+  format?: "pdf" | "image";
   segments: readonly SourceSegment[];
   page: number;
   onPageChange: (page: number) => void;
@@ -21,9 +23,13 @@ type Props = {
   onSegmentClick: (segmentId: string, extend: boolean) => void;
 };
 
-/** One PDF page drawn by pdf.js with a frame on every Source segment. */
+/**
+ * One PDF page drawn by pdf.js, or a scanned image, with a frame on every
+ * Source segment and words read with low confidence underlined.
+ */
 export function PdfSourcePane({
   data,
+  format = "pdf",
   segments,
   page,
   onPageChange,
@@ -37,9 +43,19 @@ export function PdfSourcePane({
   const [doc, setDoc] = useState<PDFDocumentProxy | null>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
-  const pageCount = doc?.numPages ?? Math.max(1, ...segments.map((s) => s.area?.page ?? 1));
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const pageCount =
+    format === "image" ? 1 : (doc?.numPages ?? Math.max(1, ...segments.map((s) => s.area?.page ?? 1)));
 
   useEffect(() => {
+    if (format !== "image") return;
+    const url = URL.createObjectURL(new Blob([data.slice()], { type: "image/jpeg" }));
+    setImageUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [data, format]);
+
+  useEffect(() => {
+    if (format === "image") return;
     let alive = true;
     let opened: PDFDocumentProxy | null = null;
     openPdf(data)
@@ -55,7 +71,7 @@ export function PdfSourcePane({
       alive = false;
       void opened?.destroy();
     };
-  }, [data]);
+  }, [data, format]);
 
   useEffect(() => {
     if (!doc || !canvasRef.current) return;
@@ -90,6 +106,7 @@ export function PdfSourcePane({
 
   return (
     <div className="pdf-pane">
+      {pageCount > 1 ? (
       <div className="pdf-pane-nav">
         <ActionIcon
           size="sm"
@@ -115,8 +132,21 @@ export function PdfSourcePane({
           <IconChevronRight size={14} />
         </ActionIcon>
       </div>
+      ) : null}
       <div className="pdf-page" style={{ width: PAGE_WIDTH }}>
-        <canvas ref={canvasRef} aria-label={`PDF page ${page}`} />
+        {format === "image" ? (
+          imageUrl ? (
+            <img
+              className="pdf-page-image"
+              src={imageUrl}
+              alt="Scanned page"
+              onLoad={(e) => setSize({ width: e.currentTarget.naturalWidth, height: e.currentTarget.naturalHeight })}
+              onError={() => setFailed("The scan cannot be shown.")}
+            />
+          ) : null
+        ) : (
+          <canvas ref={canvasRef} aria-label={`PDF page ${page}`} />
+        )}
         {failed ? <div className="pdf-page-error">{failed}</div> : null}
         {size
           ? onPage.map((seg) => {
@@ -144,9 +174,30 @@ export function PdfSourcePane({
               );
             })
           : null}
+        {size
+          ? onPage.flatMap((seg) =>
+              (seg.uncertain ?? []).flatMap((u, i) =>
+                u.box
+                  ? [
+                      <span
+                        key={`${seg.id}-u${i}`}
+                        className="pdf-uncertain"
+                        title={`Read with low confidence${u.confidence !== undefined ? ` (${Math.round(u.confidence * 100)} %)` : ""}`}
+                        style={{
+                          left: u.box.x * scale,
+                          top: (u.box.y + u.box.height) * scale,
+                          width: u.box.width * scale,
+                        }}
+                      />,
+                    ]
+                  : [],
+              ),
+            )
+          : null}
       </div>
       <div className="pdf-legend">
         <span>Frame = segment</span>
+        {segments.some((s) => s.uncertain?.length) ? <span className="pdf-legend-uncertain">Dotted = uncertain</span> : null}
         <span>Shift-click = range</span>
         <span>Dashed = excluded</span>
       </div>
