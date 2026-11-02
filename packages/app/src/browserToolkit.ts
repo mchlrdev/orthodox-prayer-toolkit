@@ -145,6 +145,21 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
       });
     },
 
+    readLibraryMemory: async (libraryRoot) => {
+      const data = await getJson<{ content: string | null }>(
+        `${PREFIX}/memory/library?root=${encodeURIComponent(libraryRoot)}`,
+      );
+      return data.content;
+    },
+
+    writeLibraryMemory: async (libraryRoot, content) => {
+      await getJson(`${PREFIX}/memory/library`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ root: libraryRoot, content }),
+      });
+    },
+
     fetchSource: async (address) => {
       const params = new URLSearchParams({ url: address });
       return getJson(`${PREFIX}/fetch?${params}`) as Promise<{

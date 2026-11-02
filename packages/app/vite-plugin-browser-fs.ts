@@ -217,7 +217,9 @@ export function prayerToolkitBrowserFs(toolkitRoot: string): Plugin {
               ? ".orthodox-prayer-toolkit/styles.json"
               : route === "/templates/library"
                 ? ".orthodox-prayer-toolkit/templates.json"
-                : null;
+                : route === "/memory/library"
+                  ? ".orthodox-prayer-toolkit/memory.json"
+                  : null;
 
           if (configFile && req.method === "GET") {
             const root = url.searchParams.get("root") || examplesRoot;

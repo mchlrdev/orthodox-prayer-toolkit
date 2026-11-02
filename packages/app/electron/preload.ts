@@ -54,6 +54,9 @@ export type PrayerToolkitApi = {
   /** `.orthodox-prayer-toolkit/templates.json` text, or null when missing. */
   readLibraryTemplates: (libraryRoot: string) => Promise<string | null>;
   writeLibraryTemplates: (libraryRoot: string, content: string) => Promise<void>;
+  /** `.orthodox-prayer-toolkit/memory.json` text (Library memory), or null when missing. */
+  readLibraryMemory: (libraryRoot: string) => Promise<string | null>;
+  writeLibraryMemory: (libraryRoot: string, content: string) => Promise<void>;
   saveExport: (
     defaultName: string,
     content: string | Uint8Array,
@@ -148,6 +151,9 @@ const api: PrayerToolkitApi = {
     ipcRenderer.invoke("templates:readLibrary", libraryRoot),
   writeLibraryTemplates: (libraryRoot, content) =>
     ipcRenderer.invoke("templates:writeLibrary", libraryRoot, content),
+  readLibraryMemory: (libraryRoot) => ipcRenderer.invoke("memory:readLibrary", libraryRoot),
+  writeLibraryMemory: (libraryRoot, content) =>
+    ipcRenderer.invoke("memory:writeLibrary", libraryRoot, content),
   saveExport: (defaultName, content) =>
     ipcRenderer.invoke("dialog:saveExport", defaultName, content),
   pickPrayerJson: () => ipcRenderer.invoke("dialog:pickPrayerJson"),

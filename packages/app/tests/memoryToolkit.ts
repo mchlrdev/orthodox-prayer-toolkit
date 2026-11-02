@@ -2,6 +2,7 @@ import type { PrayerToolkitApi } from "../electron/preload";
 
 export const STYLES_PATH = ".orthodox-prayer-toolkit/styles.json";
 export const TEMPLATES_PATH = ".orthodox-prayer-toolkit/templates.json";
+export const MEMORY_PATH = ".orthodox-prayer-toolkit/memory.json";
 
 /**
  * In-memory library for session tests: prayer files plus `styles.json` /
@@ -49,6 +50,8 @@ export function memoryToolkit(initial: Record<string, string>) {
     readLibraryTemplates: async () => files[TEMPLATES_PATH] ?? null,
     writeLibraryTemplates: async (_root, content) =>
       write(TEMPLATES_PATH, content),
+    readLibraryMemory: async () => files[MEMORY_PATH] ?? null,
+    writeLibraryMemory: async (_root, content) => write(MEMORY_PATH, content),
     saveExport: async () => null,
     pickPrayerJson: async () => null,
     fetchSource: async () => {

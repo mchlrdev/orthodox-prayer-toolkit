@@ -1,13 +1,20 @@
 import {
   decisionPrompts,
   decisionStep,
+  draftOrigin,
   firstDraftBatches,
+  MEMORY_ORIGIN,
+  memoryRuleSteps,
   speakerBatch,
+  withMemory,
   type DecisionBatch,
   type DecisionItem,
   type DecisionKind,
   type DecisionStep,
   type ImportDraft,
+  type ImportOp,
+  type ImportOrigin,
+  type LibraryMemory,
 } from "@orthodox-prayer-toolkit/core";
 import type { DecisionRuntime } from "./decisionRuntime";
 
@@ -17,6 +24,21 @@ export type FirstDraftProgress = {
   /** Block the model is deciding about next. */
   pending: string | null;
 };
+
+/**
+ * Library memory's fixed rules on the live draft (same origin + look as a
+ * correction): applied before the model, with origin "memory". Returns how
+ * many blocks they decided.
+ */
+export function applyMemoryRules(
+  draft: ImportDraft,
+  memory: LibraryMemory,
+  apply: (ops: ImportOp[], origin: ImportOrigin) => void,
+): number {
+  const steps = memoryRuleSteps(draft, memory);
+  for (const step of steps) apply(step.ops, MEMORY_ORIGIN);
+  return steps.length;
+}
 
 /**
  * The Built-in model's first draft: asks the first-draft Decisions in order
@@ -34,9 +56,19 @@ export async function runFirstDraft(options: {
   signal: AbortSignal;
   /** Ask only these questions (e.g. ["pair"] after adding a language). */
   only?: DecisionKind[];
+  /**
+   * Library memory: its fixed rules decide first (see {@link applyMemoryRules}
+   * — the caller applies them), its hints and similar examples go into every
+   * Decision.
+   */
+  memory?: LibraryMemory;
 }): Promise<void> {
-  const { runtime, current, apply, onProgress, signal, only } = options;
-  const batches = firstDraftBatches(options.draft).filter((b) => !only || only.includes(b.kind));
+  const { runtime, current, apply, onProgress, signal, only, memory } = options;
+  const draft = current() ?? options.draft;
+  const origin = draftOrigin(draft);
+  const batches = firstDraftBatches(draft)
+    .filter((b) => !only || only.includes(b.kind))
+    .map((b) => (memory ? withMemory(b, memory, origin) : b));
   let total = batches.reduce((n, b) => n + b.items.length, 0);
   let done = 0;
 
@@ -74,7 +106,8 @@ export async function runFirstDraft(options: {
     await ask(batch, (item, choice) => {
       if (choice === "speaker") speakers.push(item);
     });
-    const follow = speakerBatch(batch, speakers);
+    const found = speakerBatch(batch, speakers);
+    const follow = found && memory ? withMemory(found, memory, origin) : found;
     if (follow && !signal.aborted) {
       total += follow.items.length;
       await ask(follow);

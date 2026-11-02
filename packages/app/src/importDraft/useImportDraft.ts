@@ -3,12 +3,15 @@ import {
   applyImportOps,
   createImportDraft,
   draftBlockGroup,
+  draftCorrections,
+  mergeCorrections,
   draftBlockPlainText,
   draftBlocksInGroup,
   importDraftToPrayer,
   type ImportDraft,
   type ImportOp,
   type ImportOrigin,
+  type MemoryCorrection,
   type Prayer,
   type Source,
 } from "@orthodox-prayer-toolkit/core";
@@ -51,12 +54,19 @@ type ImportState = {
   history: DraftHistory<ImportDraft>;
   /** Source files by Source id; not part of the draft or its undo. */
   files: Record<string, Uint8Array>;
+  /**
+   * The user's corrections of model decisions so far (Library memory learns
+   * those that still hold when the draft is saved).
+   */
+  corrections: MemoryCorrection[];
 };
 
 export type ImportDraftSession = {
   draft: ImportDraft | null;
   /** The draft right now, including changes made earlier in this turn. */
   currentDraft: () => ImportDraft | null;
+  /** The user's corrections of model decisions in this draft so far. */
+  corrections: () => MemoryCorrection[];
   /** Source files by Source id (PDF bytes for the page view). */
   files: Record<string, Uint8Array>;
   /** The Prayer the draft stands for (what the preview edits). */
@@ -107,9 +117,13 @@ export function useImportDraft(): ImportDraftSession {
       const result = applyImportOps(cur.draft, ops, options.origin);
       if (!result.ok) return false;
       if (JSON.stringify(result.draft) === JSON.stringify(cur.draft)) return true;
+      const byUser = (options.origin?.by ?? "human") === "human";
       commit({
         ...cur,
         draft: result.draft,
+        corrections: byUser
+          ? mergeCorrections(cur.corrections, draftCorrections(cur.draft, result.draft))
+          : cur.corrections,
         history: recordEdit(cur.history, cur.draft, {
           coalesceKey: options.coalesceKey ?? null,
           now: Date.now(),
@@ -231,6 +245,7 @@ export function useImportDraft(): ImportDraftSession {
         draft,
         history: emptyHistory<ImportDraft>(),
         files: file ? { [source.id]: file } : {},
+        corrections: [],
       });
     },
     [commit],
@@ -244,6 +259,7 @@ export function useImportDraft(): ImportDraftSession {
   return {
     draft: state?.draft ?? null,
     currentDraft: useCallback(() => stateRef.current?.draft ?? null, []),
+    corrections: useCallback(() => stateRef.current?.corrections ?? [], []),
     files: state?.files ?? NO_FILES,
     prayer,
     canUndo: (state?.history.past.length ?? 0) > 0,

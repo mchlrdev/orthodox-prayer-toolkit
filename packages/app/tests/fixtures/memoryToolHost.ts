@@ -1,14 +1,20 @@
 import {
   applyImportOps,
   createImportDraft,
+  draftCorrections,
+  emptyMemory,
+  learnCorrections,
+  mergeCorrections,
   readText,
+  type LibraryMemory,
+  type MemoryCorrection,
   type ImportDraft,
   type ImportOp,
   type ImportOrigin,
   type Prayer,
 } from "@orthodox-prayer-toolkit/core";
 import type { ConfirmRequest, ToolHost } from "../../src/agentTools/toolDirectory";
-import { runFirstDraft } from "../../src/builtInModel/firstDraft";
+import { applyMemoryRules, runFirstDraft } from "../../src/builtInModel/firstDraft";
 import { standInRuntime } from "../../src/builtInModel/standInModel";
 import { applyBlockEdits } from "../../src/prayerEdit/blockEdits";
 import { prayerFileText } from "../../src/session/persistPrayer";
@@ -22,8 +28,14 @@ export const EXISTING: Prayer = {
   ],
 };
 
-/** The session an Agent talks to: an in-memory Library plus the open Import draft. */
-export function memoryHost(options: { confirm?: boolean; prayers?: Prayer[]; selected?: string } = {}) {
+/**
+ * The session an Agent talks to: an in-memory Library plus the open Import
+ * draft. Like the app, the user's corrections of model decisions are
+ * learned into the Library memory when the draft is saved.
+ */
+export function memoryHost(
+  options: { confirm?: boolean; prayers?: Prayer[]; selected?: string; memory?: LibraryMemory } = {},
+) {
   const files: Record<string, string> = Object.fromEntries(
     (options.prayers ?? [EXISTING]).map((p) => [`${p.id}.json`, prayerFileText(p)]),
   );
@@ -31,6 +43,8 @@ export function memoryHost(options: { confirm?: boolean; prayers?: Prayer[]; sel
   const unsaved: Record<string, Prayer> = {};
   const confirms: ConfirmRequest[] = [];
   let draft: ImportDraft | null = null;
+  let memory = options.memory ?? emptyMemory();
+  let corrections: MemoryCorrection[] = [];
   const steps: ImportDraft[] = [];
   const asked: string[] = [];
   const host: ToolHost = {
@@ -49,13 +63,16 @@ export function memoryHost(options: { confirm?: boolean; prayers?: Prayer[]; sel
     },
     readSource: async (input, id) => ({ source: readText(input.text ?? "", { id }), originHint: null }),
     importDraft: () => draft,
+    memory: () => memory,
     startImport: ({ source, origin, variant }) => {
       draft = createImportDraft({ sources: [source], variant: { ...variant, source: origin } });
+      corrections = [];
     },
     applyImportOps: (ops: ImportOp[], origin: ImportOrigin = { by: "agent" }) => {
       const result = applyImportOps(draft!, ops, origin);
       if (!result.ok) return false;
       steps.push(draft!);
+      if (origin.by === "human") corrections = mergeCorrections(corrections, draftCorrections(draft!, result.draft));
       draft = result.draft;
       return true;
     },
@@ -68,22 +85,27 @@ export function memoryHost(options: { confirm?: boolean; prayers?: Prayer[]; sel
       const path = `${prayer.id}.json`;
       if (path in files) return false;
       files[path] = prayerFileText(prayer);
+      if (draft) memory = learnCorrections(memory, draft, corrections, "2026-11-02T10:00:00.000Z");
       return true;
     },
     closeImport: () => {
       draft = null;
     },
-    runFirstDraft: () =>
-      runFirstDraft({
+    runFirstDraft: () => {
+      const apply = (ops: ImportOp[], origin: ImportOrigin) => {
+        const result = applyImportOps(draft!, ops, origin);
+        if (result.ok) draft = result.draft;
+      };
+      applyMemoryRules(draft!, memory, apply);
+      return runFirstDraft({
         draft: draft!,
         runtime: standInRuntime(),
         current: () => draft,
-        apply: (step) => {
-          const result = applyImportOps(draft!, step.ops, step.origin);
-          if (result.ok) draft = result.draft;
-        },
+        apply: (step) => apply(step.ops, step.origin),
         signal: new AbortController().signal,
-      }),
+        memory,
+      });
+    },
     selectedPrayer: () => {
       if (draft || !options.selected) return null;
       return unsaved[options.selected] ?? (JSON.parse(files[`${options.selected}.json`]!) as Prayer);
@@ -96,6 +118,6 @@ export function memoryHost(options: { confirm?: boolean; prayers?: Prayer[]; sel
       return list.length;
     },
   };
-  return { host, files, steps, asked, confirms, unsaved, draft: () => draft };
+  return { host, files, steps, asked, confirms, unsaved, draft: () => draft, memory: () => memory };
 }
 

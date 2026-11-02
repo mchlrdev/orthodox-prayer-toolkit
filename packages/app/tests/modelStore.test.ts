@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdtempSync, readdirSync, rmSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { mkdtempSync, readdirSync, rmSync, writeFileSync, mkdirSync, existsSync, statSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -98,8 +98,10 @@ describe("Built-in model download", () => {
   it("cancel keeps the partial file; the next download resumes with a Range request", async () => {
     host = await startHost({ "weights.gguf": WEIGHTS, "vision.gguf": VISION }, { stallAfter: 100_000 });
     const store = createModelStore({ root, entry: entry(host.url) });
+    // Cancel once the bytes are on disk (the counter runs ahead of the write).
+    const part = join(root, "test-model", "1", "weights.gguf.part");
     const watch = setInterval(() => {
-      if (store.status().received >= 100_000) store.cancel();
+      if (existsSync(part) && statSync(part).size >= 100_000) store.cancel();
     }, 5);
     await store.download();
     clearInterval(watch);

@@ -21,6 +21,7 @@ It also writes `agent-access.json` (`url`, `port`, `pid`) to the app's data fold
 | `library.list` | Prayers in the open Library (id, title, kinds) and its Variants |
 | `prayer.read` | One prayer as Prayer JSON |
 | `prayer.validate` | Schema and rule check of Prayer JSON |
+| `memory.read` | The Library memory: the editor's hints in plain words and the latest corrections of earlier imports (text, look, origin, wrong → right) — follow them when sorting |
 | `import.start` | Read text, HTML or a web page into a new Import draft (asks before replacing an open one) |
 | `import.read` | The draft: Variant keys, Source segments (id, text, look, style group), blocks (id, kind, speaker, text per Variant, segments, who decided) and validity |
 | `import.apply` | Import operations ([core-api.md](core-api.md#import)) as one undo step |

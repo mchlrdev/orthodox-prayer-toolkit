@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { IconArrowBackUp, IconArrowUp, IconPlayerStopFilled, IconX } from "@tabler/icons-react";
-import type { ChatView } from "@orthodox-prayer-toolkit/core";
+import { hintForChanges, type ChatView, type MemorySuggestion } from "@orthodox-prayer-toolkit/core";
 import type { ModelStatus } from "../../electron/modelStore";
 import type { Chat, ChatChip, ChatMessage } from "../builtInModel/useChat";
 import { changeLines, changedWording } from "../builtInModel/changeLines";
@@ -18,6 +18,14 @@ type Props = {
   /** Section or block number shown in the change card. */
   blockNumber: (block: string) => string;
   speakerName: (id: string) => string;
+  /** Library memory: a hint suggested from repeated corrections (null = none). */
+  suggestion: MemorySuggestion | null;
+  /** Hints the Library memory has (no card for those again). */
+  hints: readonly string[];
+  /** Remember a suggested hint in the Library memory. */
+  onKeepHint: (suggestion: MemorySuggestion) => void;
+  /** "No" to a suggestion from repeated corrections (it does not come back). */
+  onDismissSuggestion: (key: string) => void;
 };
 
 const PLACEHOLDER: Record<ChatView, string> = {
@@ -55,7 +63,21 @@ function modelLabel(model: ModelStatus | null): { text: string; tone: "ok" | "mu
  * the Built-in model through the Tool directory. Changes show as a card with
  * Undo; library-wide changes ask first with a confirm card.
  */
-export function ChatPane({ chat, view, title, model, chips, onRemoveChip, onSent, blockNumber, speakerName }: Props) {
+export function ChatPane({
+  chat,
+  view,
+  title,
+  model,
+  chips,
+  onRemoveChip,
+  onSent,
+  blockNumber,
+  speakerName,
+  suggestion,
+  hints,
+  onKeepHint,
+  onDismissSuggestion,
+}: Props) {
   const [text, setText] = useState("");
   const threadRef = useRef<HTMLDivElement>(null);
   const status = modelLabel(model);
@@ -110,9 +132,18 @@ export function ChatPane({ chat, view, title, model, chips, onRemoveChip, onSent
               chat={chat}
               blockNumber={blockNumber}
               speakerName={speakerName}
+              hints={hints}
+              onKeepHint={onKeepHint}
             />
           ),
         )}
+        {suggestion && !hints.includes(suggestion.text) ? (
+          <RememberCard
+            text={suggestion.text}
+            onKeep={() => onKeepHint(suggestion)}
+            onNo={() => onDismissSuggestion(suggestion.key)}
+          />
+        ) : null}
       </div>
 
       <div className="chat-composer-wrap">
@@ -167,11 +198,15 @@ function AssistantMessage({
   chat,
   blockNumber,
   speakerName,
+  hints,
+  onKeepHint,
 }: {
   message: Extract<ChatMessage, { role: "assistant" }>;
   chat: Chat;
   blockNumber: (block: string) => string;
   speakerName: (id: string) => string;
+  hints: readonly string[];
+  onKeepHint: (suggestion: MemorySuggestion) => void;
 }) {
   if (m.confirm) {
     const items = m.confirm.items ?? [];
@@ -230,6 +265,7 @@ function AssistantMessage({
   if (m.outcome?.kind === "import") {
     const lines = changeLines(m.outcome.changes, speakerName);
     const undoable = chat.canUndo(m.id);
+    const hint = m.undone || m.hintAnswered ? null : hintForChanges(m.outcome.before, m.outcome.changes);
     return (
       <div className="chat-assistant">
         <div className="chat-text">
@@ -267,6 +303,16 @@ function AssistantMessage({
             </div>
           </div>
         ) : null}
+        {hint && !hints.includes(hint.text) ? (
+          <RememberCard
+            text={hint.text}
+            onKeep={() => {
+              onKeepHint(hint);
+              chat.answerHint(m.id);
+            }}
+            onNo={() => chat.answerHint(m.id)}
+          />
+        ) : null}
       </div>
     );
   }
@@ -274,6 +320,23 @@ function AssistantMessage({
   return (
     <div className="chat-assistant">
       <OutcomeText message={m} />
+    </div>
+  );
+}
+
+/** "For future imports, remember? …": a hint for the Library memory. */
+function RememberCard({ text, onKeep, onNo }: { text: string; onKeep: () => void; onNo: () => void }) {
+  return (
+    <div className="chat-remember">
+      <div className="chat-remember-text">Remember for future imports? “{text}”</div>
+      <div className="chat-remember-actions">
+        <button type="button" className="chat-button" data-primary="true" onClick={onKeep}>
+          Remember
+        </button>
+        <button type="button" className="chat-button" onClick={onNo}>
+          No
+        </button>
+      </div>
     </div>
   );
 }

@@ -298,6 +298,7 @@ function createWindow(): BrowserWindow {
 
 const LIBRARY_STYLES_FILE = ".orthodox-prayer-toolkit/styles.json";
 const LIBRARY_TEMPLATES_FILE = ".orthodox-prayer-toolkit/templates.json";
+const LIBRARY_MEMORY_FILE = ".orthodox-prayer-toolkit/memory.json";
 
 function readLibraryConfig(libraryRoot: string, relativePath: string): string | null {
   const root = assertAllowedLibraryRoot(libraryRoot);
@@ -532,6 +533,16 @@ function registerIpc(): void {
     "templates:writeLibrary",
     (_evt, libraryRoot: string, content: string) =>
       writeLibraryConfig(libraryRoot, LIBRARY_TEMPLATES_FILE, content),
+  );
+
+  ipcMain.handle("memory:readLibrary", (_evt, libraryRoot: string) =>
+    readLibraryConfig(libraryRoot, LIBRARY_MEMORY_FILE),
+  );
+
+  ipcMain.handle(
+    "memory:writeLibrary",
+    (_evt, libraryRoot: string, content: string) =>
+      writeLibraryConfig(libraryRoot, LIBRARY_MEMORY_FILE, content),
   );
 
   ipcMain.handle(

@@ -64,6 +64,8 @@ function fakeApi(
     writeLibraryStyles: async () => undefined,
     readLibraryTemplates: async () => null,
     writeLibraryTemplates: async () => undefined,
+    readLibraryMemory: async () => null,
+    writeLibraryMemory: async () => undefined,
     saveExport: async () => null,
     pickPrayerJson: async () => null,
     showItem: async () => undefined,

@@ -30,6 +30,7 @@ describe("Tool directory", () => {
       "library.list",
       "prayer.read",
       "prayer.validate",
+      "memory.read",
       "import.start",
       "import.read",
       "import.apply",
@@ -128,6 +129,49 @@ describe("Tool directory", () => {
     ]);
   });
 
+  it("Library memory: a correction makes the second import of the same page decide right", async () => {
+    const { host, memory } = memoryHost();
+    const PAGE = "Troparion der Auferstehung\n\nChristus ist erstanden von den Toten.\n\nKontakion im 8. Ton";
+    const importPage = async () => {
+      await call(host, "import.start", { text: PAGE, lang: "de", variant: "standard", origin: "orthodoxe-gebete.de" });
+      await call(host, "import.firstDraft");
+    };
+
+    await importPage();
+    let view = await call(host, "import.read");
+    // The stand-in calls the short last line a heading; the user makes it an annotation.
+    expect((view.blocks as Array<{ kind: string }>)[2]!.kind).toBe("heading");
+    expect(host.applyImportOps([{ op: "setKind", target: { block: "b3" }, kind: "annotation" }], { by: "human" })).toBe(true);
+    await call(host, "import.save", {
+      meta: { id: "ostern", type: "troparion" },
+      variants: { v1: { title: "Ostern", license: "CC0" } },
+    });
+    expect(memory().examples).toEqual([
+      expect.objectContaining({ text: "Kontakion im 8. Ton", origin: "orthodoxe-gebete.de", wrong: "heading", right: "annotation" }),
+    ]);
+    expect((await call(host, "memory.read")).corrections).toHaveLength(1);
+
+    await importPage();
+    view = await call(host, "import.read");
+    expect((view.blocks as Array<{ kind: string; origin: string }>).map((b) => [b.kind, b.origin])).toEqual([
+      ["heading", "model"],
+      ["verse", "model"],
+      ["annotation", "memory"],
+    ]);
+  });
+
+  it("agents read the Library memory's hints", async () => {
+    const { host } = memoryHost({
+      memory: {
+        formatVersion: 1,
+        hints: [{ id: "h1", text: "Doxologien immer als Verse.", from: "user", added: "2026-11-02" }],
+        examples: [],
+        dismissed: [],
+      },
+    });
+    expect(await call(host, "memory.read")).toMatchObject({ hints: ["Doxologien immer als Verse."], corrections: [] });
+  });
+
   it("saving waits for the user: declined → nothing written", async () => {
     const { host, files } = memoryHost({ confirm: false });
     await call(host, "import.start", { text: TEXT, lang: "de", variant: "standard", origin: "x" });
@@ -213,7 +257,7 @@ describe("Agent HTTP routes", () => {
     const { host } = memoryHost();
     const index = await handleAgentRequest(host, { method: "GET", path: "/", body: "" });
     expect(index.status).toBe(200);
-    expect((index.body as { tools: unknown[] }).tools).toHaveLength(10);
+    expect((index.body as { tools: unknown[] }).tools).toHaveLength(11);
     const list = await handleAgentRequest(host, { method: "POST", path: "/tools/library.list", body: "{}" });
     expect(list.status).toBe(200);
     expect(await handleAgentRequest(host, { method: "POST", path: "/tools/library.list", body: "{" })).toMatchObject({

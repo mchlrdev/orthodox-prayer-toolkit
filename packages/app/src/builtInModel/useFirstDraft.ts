@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { DecisionKind } from "@orthodox-prayer-toolkit/core";
+import type { DecisionKind, LibraryMemory } from "@orthodox-prayer-toolkit/core";
 import { getToolkitApi, isBrowserDev } from "../api";
 import type { useImportDraft } from "../importDraft/useImportDraft";
 import { builtInModelRuntime, type DecisionRuntime } from "./decisionRuntime";
-import { runFirstDraft, type FirstDraftProgress } from "./firstDraft";
+import { applyMemoryRules, runFirstDraft, type FirstDraftProgress } from "./firstDraft";
 import { standInRuntime } from "./standInModel";
 
 export type FirstDraft = {
@@ -12,7 +12,10 @@ export type FirstDraft = {
   error: string | null;
   /** Run the first draft on the open Import draft; rejects when no model is installed. */
   start: (options?: { only?: DecisionKind[] }) => Promise<void>;
-  /** Start only when a model is there (after the user loads a Source); never throws. */
+  /**
+   * After the user loads a Source: Library memory's fixed rules, then the
+   * model when one is there; never throws.
+   */
   startIfAvailable: (options?: { only?: DecisionKind[] }) => void;
   stop: () => void;
   dismissError: () => void;
@@ -25,13 +28,30 @@ export async function availableRuntime(): Promise<DecisionRuntime | null> {
   return status.state === "installed" ? builtInModelRuntime() : null;
 }
 
-/** The Built-in model's first draft on the Import draft, one undo step per run. */
-export function useFirstDraft(importDraft: ReturnType<typeof useImportDraft>): FirstDraft {
+/**
+ * The Built-in model's first draft on the Import draft, one undo step per
+ * run (with Library memory's fixed rules first).
+ */
+export function useFirstDraft(
+  importDraft: ReturnType<typeof useImportDraft>,
+  memory: () => LibraryMemory,
+): FirstDraft {
   const [progress, setProgress] = useState<FirstDraftProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const draftRef = useRef(importDraft);
   draftRef.current = importDraft;
+  const memoryRef = useRef(memory);
+  memoryRef.current = memory;
+
+  /** Fixed rules from the memory; not after adding a language (`only`). */
+  const applyRules = useCallback((coalesceKey: string, only?: DecisionKind[]) => {
+    const draft = draftRef.current.currentDraft();
+    if (!draft || only) return;
+    applyMemoryRules(draft, memoryRef.current(), (ops, origin) =>
+      draftRef.current.apply(ops, { origin, coalesceKey, coalesceAlways: true }),
+    );
+  }, []);
 
   const stop = useCallback(() => {
     abortRef.current?.abort();
@@ -49,6 +69,7 @@ export function useFirstDraft(importDraft: ReturnType<typeof useImportDraft>): F
     const coalesceKey = `model-${Date.now()}`;
     setError(null);
     setProgress({ done: 0, total: 0, pending: null });
+    applyRules(coalesceKey, options.only);
     try {
       await runFirstDraft({
         draft,
@@ -61,6 +82,7 @@ export function useFirstDraft(importDraft: ReturnType<typeof useImportDraft>): F
         },
         signal: abort.signal,
         only: options.only,
+        memory: memoryRef.current(),
       });
     } catch (err) {
       if (!abort.signal.aborted) {
@@ -74,15 +96,16 @@ export function useFirstDraft(importDraft: ReturnType<typeof useImportDraft>): F
         setProgress(null);
       }
     }
-  }, []);
+  }, [applyRules]);
 
   const startIfAvailable = useCallback(
     (options?: { only?: DecisionKind[] }) => {
       void availableRuntime().then((runtime) => {
         if (runtime) start(options).catch(() => undefined);
+        else applyRules(`memory-${Date.now()}`, options?.only);
       });
     },
-    [start],
+    [applyRules, start],
   );
 
   // Closing or saving the import stops the model.

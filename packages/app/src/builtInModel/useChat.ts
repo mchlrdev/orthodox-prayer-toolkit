@@ -19,6 +19,8 @@ export type ChatMessage =
       /** "Answer n" for answers that changed the Import draft. */
       answer?: number;
       undone?: boolean;
+      /** The "remember for future imports?" card was answered. */
+      hintAnswered?: boolean;
       /** A Tool waiting for the user's yes. */
       confirm?: ConfirmRequest & { resolve: (ok: boolean) => void; answered?: boolean };
     };
@@ -31,6 +33,8 @@ export type Chat = {
   undo: (id: number) => void;
   canUndo: (id: number) => boolean;
   answerConfirm: (id: number, ok: boolean) => void;
+  /** Close an answer's "remember?" card (Remember or No). */
+  answerHint: (id: number) => void;
   /** The answer whose changes are marked in the import view (null = none). */
   highlighted: number | null;
   hideHighlight: () => void;
@@ -145,6 +149,7 @@ export function useChat(host: ToolHost, importDraft: ReturnType<typeof useImport
       m.confirm.resolve(ok);
       patch(id, { confirm: { ...m.confirm, answered: true } });
     },
+    answerHint: (id) => patch(id, { hintAnswered: true }),
     highlighted,
     hideHighlight: () => setHighlighted(null),
   };

@@ -10,6 +10,10 @@ Each model decision keeps its confidence. Below 70 % the block shows **Kind unce
 
 The model runs in its own process (Electron utility process, node-llama-cpp with Metal on Apple silicon), so the window stays responsive. It loads on the first run (a few seconds) and is unloaded after three idle minutes. About 0.2 s per block on an M-series Mac.
 
+## Library memory
+
+Corrections you make to the model's decisions in an import are learned when you save it, and decide the same way next time for the same site and look; hints you write (or accept) are read before every decision. See [library.md](library.md#library-memory-memoryjson).
+
 ## Chat pane
 
 The sidebar's **Assistant** mode takes instructions in plain words: "Abschnitt 7 gehört nicht dazu", "Gib Abschnitt 3 den Speaker Priester", "Was ist ein Kontakion?". The block last clicked in the editor comes along as a chip (Section n in an import, Block n in a prayer); × drops it.

@@ -12,6 +12,7 @@ import {
   type ImportDraft,
   type ImportOp,
   type ImportOrigin,
+  type LibraryMemory,
   type Prayer,
   type Source,
 } from "@orthodox-prayer-toolkit/core";
@@ -40,6 +41,8 @@ export type ToolHost = {
     variants: ActiveVariantRef[];
   } | null;
   readPrayer(id: string): Promise<Prayer | null>;
+  /** The open Library's memory (hints, learned corrections), or null when none is open. */
+  memory(): LibraryMemory | null;
   /** Run the Readers (text, HTML, web page) like the Import dialog does. */
   readSource(input: SourceInput, sourceId: string): Promise<{ source: Source; originHint: string | null }>;
   importDraft(): ImportDraft | null;
@@ -199,6 +202,28 @@ const TOOLS: Tool[] = [
         valid: result.ok,
         errors: result.ok ? [] : result.errors.map((e) => ({ path: e.path, message: e.message })),
         warnings: result.warnings.map((e) => ({ path: e.path, message: e.message })),
+      };
+    },
+  },
+  {
+    name: "memory.read",
+    purpose:
+      "Read the Library memory: the editor's rules in plain words (hints) and the corrections they made to earlier imports. Follow them when you sort an import.",
+    params: { type: "object", properties: {} },
+    example: {},
+    run: async (host) => {
+      const memory = host.memory();
+      if (!memory) throw new ToolError("No Library is open in the app");
+      return {
+        hints: memory.hints.map((h) => h.text),
+        corrections: memory.examples.slice(-50).map(({ text, look, origin, wrong, right }) => ({
+          text,
+          look,
+          origin,
+          wrong,
+          right,
+        })),
+        note: "wrong/right are kind ids, or \"exclude\" for text that is not part of the prayer.",
       };
     },
   },

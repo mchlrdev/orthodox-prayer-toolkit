@@ -12,6 +12,7 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import {
+  IconBulb,
   IconFolder,
   IconPalette,
   IconTemplate,
@@ -22,19 +23,21 @@ import {
   type KindTemplate,
   type LibraryManifest,
   type KindStyle,
+  type LibraryMemory,
   type StyleMap,
   type ValidationError,
 } from "@orthodox-prayer-toolkit/core";
 import type { TemplateEdit } from "../session";
 import { KindTemplatesPanel } from "./KindTemplatesPanel";
 import { LibraryStylesPanel } from "./LibraryStylesPanel";
+import { MemoryPanel } from "./MemoryPanel";
 import {
   parseVariantKey,
   variantKey,
   variantLabel,
 } from "../variant";
 
-export type LibrarySettingsPane = "library" | "templates" | "styles";
+export type LibrarySettingsPane = "library" | "templates" | "styles" | "memory";
 
 type Props = {
   opened: boolean;
@@ -65,6 +68,13 @@ type Props = {
     onPatchStyle: (kind: string, partial: Partial<KindStyle>) => void;
     onRemoveStyle: (kind: string) => void;
   };
+  memory: {
+    memory: LibraryMemory;
+    errors: readonly ValidationError[];
+    onAddHint: (text: string) => void;
+    onRemove: (id: string) => void;
+    onReset: () => void;
+  };
 };
 
 const NAV: {
@@ -75,6 +85,7 @@ const NAV: {
   { id: "library", label: "Library", icon: IconFolder },
   { id: "templates", label: "Kind templates", icon: IconTemplate },
   { id: "styles", label: "Kind styles", icon: IconPalette },
+  { id: "memory", label: "Memory", icon: IconBulb },
 ];
 
 type Draft = {
@@ -125,6 +136,7 @@ export function LibrarySettingsModal({
   onMigrate,
   templates,
   styles,
+  memory,
 }: Props) {
   const [draft, setDraft] = useState<Draft>(() => toDraft(manifest));
   const [saving, setSaving] = useState(false);
@@ -323,6 +335,9 @@ export function LibrarySettingsModal({
               onPatchStyle={styles.onPatchStyle}
               onRemoveStyle={styles.onRemoveStyle}
             />
+          </div>
+          <div {...section("memory")}>
+            <MemoryPanel {...memory} />
           </div>
         </div>
       </div>

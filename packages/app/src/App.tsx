@@ -14,12 +14,18 @@ import {
   IconChevronRight,
 } from "@tabler/icons-react";
 import {
+  addMemoryHint,
   applyImportOps,
+  dismissMemorySuggestion,
   draftBlocksInColumn,
   draftBlockVisible,
+  emptyMemory,
   freeSourceId,
+  hintSuggestions,
   importDraftToPrayer,
   indexVariants,
+  learnCorrections,
+  removeMemoryEntry,
   type ImportOp,
   type Prayer,
 } from "@orthodox-prayer-toolkit/core";
@@ -55,6 +61,7 @@ import {
 } from "./components/ImportSaveModal";
 import { useImportDraft } from "./importDraft/useImportDraft";
 import { useFirstDraft } from "./builtInModel/useFirstDraft";
+import { useLibraryMemory } from "./builtInModel/useLibraryMemory";
 import { useChat, type ChatChip } from "./builtInModel/useChat";
 import { useBuiltInModel } from "./builtInModel/useBuiltInModel";
 import { chatBlockLabel, chatSpeakerName } from "./builtInModel/chatLabels";
@@ -111,7 +118,15 @@ export function App() {
   }, []);
   const session = usePrayerSession({ onNotice });
   const importDraft = useImportDraft();
-  const firstDraft = useFirstDraft(importDraft);
+  const libraryMemory = useLibraryMemory(session.library?.root ?? null);
+  const firstDraft = useFirstDraft(importDraft, libraryMemory.current);
+  /** After an Import draft is saved: the user's corrections that still hold become Library memory. */
+  const learnFromImport = () => {
+    const draft = importDraft.currentDraft();
+    const corrections = importDraft.corrections();
+    if (!draft || corrections.length === 0) return;
+    libraryMemory.update((m) => learnCorrections(m, draft, corrections, new Date().toISOString()));
+  };
   const importing = importDraft.draft !== null;
   const [importTextOpen, setImportTextOpen] = useState(false);
   const [importSaveOpen, setImportSaveOpen] = useState(false);
@@ -507,7 +522,12 @@ export function App() {
           return { ...request, resolve };
         });
       }),
-    createPrayer: (prayer, variant) => session.createPrayer(prayer, variant),
+    memory: () => (session.library ? libraryMemory.current() : null),
+    createPrayer: async (prayer, variant) => {
+      const saved = await session.createPrayer(prayer, variant);
+      if (saved && importDraft.currentDraft()) learnFromImport();
+      return saved;
+    },
     closeImport: () => importDraft.discard(),
     runFirstDraft: () => firstDraft.start(),
     selectedPrayer: () => (importDraft.draft ? null : session.draft),
@@ -582,6 +602,7 @@ export function App() {
       variant: edition,
     });
     if (!saved) return;
+    learnFromImport();
     setImportSaveOpen(false);
     importDraft.discard();
   };
@@ -668,6 +689,14 @@ export function App() {
                   onSent={() => setChatBlocks([])}
                   blockNumber={(block) => String(chatBlockLabel(chatTarget, block)?.n ?? "")}
                   speakerName={(id) => chatSpeakerName(chatTarget, id)}
+                  suggestion={libraryMemory.errors.length > 0 ? null : (hintSuggestions(libraryMemory.memory)[0] ?? null)}
+                  hints={libraryMemory.memory.hints.map((h) => h.text)}
+                  onKeepHint={(hint) =>
+                    libraryMemory.update((m) =>
+                      addMemoryHint(m, { text: hint.text, from: "suggestion", key: hint.key }, new Date().toISOString()),
+                    )
+                  }
+                  onDismissSuggestion={(key) => libraryMemory.update((m) => dismissMemorySuggestion(m, key))}
                 />
               }
             />
@@ -908,6 +937,14 @@ export function App() {
           }
           migrationBlocked={session.migrationStatus.blocked}
           onMigrate={() => setMigrationManual(true)}
+          memory={{
+            memory: libraryMemory.memory,
+            errors: libraryMemory.errors,
+            onAddHint: (text) =>
+              libraryMemory.update((m) => addMemoryHint(m, { text, from: "user" }, new Date().toISOString())),
+            onRemove: (id) => libraryMemory.update((m) => removeMemoryEntry(m, id)),
+            onReset: () => libraryMemory.update(() => emptyMemory()),
+          }}
           templates={{
             templates: session.templates,
             templateErrors: session.templateErrors,

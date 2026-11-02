@@ -3590,3 +3590,243 @@ body,
   font-weight: 400;
   color: var(--opt-text-secondary);
 }
+
+/* Library settings → Memory (Library memory) */
+.memory-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memory-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.memory-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--opt-text);
+}
+
+.memory-count {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--opt-text-secondary);
+}
+
+.memory-link {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--opt-accent);
+  cursor: pointer;
+}
+
+.memory-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--opt-text-secondary);
+}
+
+.memory-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--opt-border);
+  border-radius: 10px;
+}
+
+.memory-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--opt-divider);
+}
+
+.memory-row:last-child {
+  border-bottom: none;
+}
+
+.memory-row-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.memory-row-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--opt-text);
+}
+
+.memory-row-text[data-italic="true"] {
+  font-style: italic;
+}
+
+.memory-row-meta {
+  flex-shrink: 0;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--opt-text-secondary);
+}
+
+.memory-row-main .memory-row-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memory-answer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.memory-answer-wrong {
+  color: var(--opt-text-tertiary);
+  text-decoration: line-through 1px;
+}
+
+.memory-answer-arrow {
+  color: var(--opt-text-secondary);
+}
+
+.memory-answer-right {
+  font-weight: 500;
+  color: var(--opt-text);
+}
+
+.memory-remove {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: -4px;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  background: none;
+  color: var(--opt-text-tertiary);
+  cursor: pointer;
+}
+
+.memory-remove:hover:not(:disabled) {
+  background: var(--opt-hover);
+  color: var(--opt-text);
+}
+
+.memory-remove:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.memory-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--opt-text);
+}
+
+.memory-more {
+  min-height: 0;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--opt-text-secondary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.memory-more:hover {
+  color: var(--opt-text);
+}
+
+.memory-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--opt-divider);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--opt-text-secondary);
+}
+
+.memory-reset {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--opt-accent) 10%, transparent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--opt-accent);
+  cursor: pointer;
+}
+
+.memory-reset:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--opt-accent) 16%, transparent);
+}
+
+.memory-reset:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+/* Chat pane: "Remember for future imports?" (Library memory hint) */
+.chat-remember {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 11px;
+  border: 1px solid color-mix(in srgb, var(--opt-accent) 18%, transparent);
+  border-radius: 10px;
+  background: var(--opt-surface-solid);
+}
+
+.chat-remember-text {
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--opt-text);
+}
+
+.chat-remember-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.chat-remember .chat-button {
+  height: 22px;
+}
