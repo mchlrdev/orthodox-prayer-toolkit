@@ -25,7 +25,7 @@ export type SourceSegment = {
   group?: string;
   /** Language hint from the Reader (column, `lang` attribute). */
   lang?: string;
-  /** Where the segment sits on a page (PDF, scan): points, origin top-left. */
+  /** Where the segment sits on a page, origin top-left: points (PDF) or image pixels (scan). */
   area?: SegmentArea;
   /**
    * Ranges of `text` the Reader suggests leaving out of the block, e.g. a
@@ -40,6 +40,19 @@ export type SourceSegment = {
    * bold word inside a paragraph): hints for Note runs. Sorted, disjoint.
    */
   marks?: SegmentMark[];
+  /** Text recognition (scans): how sure it was overall, 0–1. */
+  confidence?: number;
+  /** Text recognition: words of `text` read with low confidence. Sorted, disjoint. */
+  uncertain?: UncertainRange[];
+};
+
+export type UncertainRange = {
+  start: number;
+  end: number;
+  /** 0–1. */
+  confidence?: number;
+  /** Where the word sits on the page, in the units of `area`. */
+  box?: { x: number; y: number; width: number; height: number };
 };
 
 export type SegmentMark = { start: number; end: number; look: SegmentLook };

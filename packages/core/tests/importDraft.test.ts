@@ -5,6 +5,7 @@ import {
   createImportDraft,
   draftBlockHasTypedText,
   draftBlockPlainText,
+  draftUncertainWords,
   draftBlocksInGroup,
   draftBlockVisible,
   draftBlocksInColumn,
@@ -492,6 +493,37 @@ describe("Reader hints in the first draft", () => {
     const split = run(d, { op: "split", block: "b2", variant: "v1", at: 22 });
     expect(texts(split)).toEqual([["und denen in den Gräbe"], ["rn das Leben geschenkt."]]);
     expect(texts(run(split, { op: "merge", block: "b2" }))).toEqual(texts(d));
+  });
+});
+
+describe("words read with low confidence (scans)", () => {
+  const source: Source = {
+    id: "i",
+    format: "image",
+    name: "scan.jpg",
+    segments: [
+      { id: "i-1", text: "Ehre sei dem Sohne", look: {}, uncertain: [{ start: 13, end: 18, confidence: 0.41 }] },
+      { id: "i-2", text: "jetzt und imrnerdar", look: {}, uncertain: [{ start: 10, end: 19 }] },
+    ],
+  };
+  const d = createImportDraft({ sources: [source], variant: { lang: "de", variant: "standard" } });
+
+  it("are found in the block's plain text, also after a merge", () => {
+    expect(draftUncertainWords(d, d.blocks[0]!, "v1")).toEqual([
+      { start: 13, end: 18, segment: "i-1", confidence: 0.41 },
+    ]);
+    const merged = run(d, { op: "merge", block: "b1" });
+    const block = merged.blocks[0]!;
+    const plain = draftBlockPlainText(merged, block, "v1");
+    expect(draftUncertainWords(merged, block, "v1").map((w) => plain.slice(w.start, w.end))).toEqual([
+      "Sohne",
+      "imrnerdar",
+    ]);
+  });
+
+  it("typed over, a word is no longer uncertain", () => {
+    const fixed = run(d, { op: "setText", block: "b2", variant: "v1", content: ["jetzt und immerdar"] });
+    expect(draftUncertainWords(fixed, fixed.blocks[1]!, "v1")).toEqual([]);
   });
 });
 

@@ -20,7 +20,7 @@ import {
   type DraftSpan,
   type Piece,
 } from "./importContent.js";
-import type { Source, SourceSegment } from "./importSource.js";
+import type { Source, SourceSegment, UncertainRange } from "./importSource.js";
 import { kindAllowsSpeaker } from "./kinds.js";
 import { isValidSpeakerId } from "./speakers.js";
 import { isRunArray, toRuns, type InlineContent } from "./textRuns.js";
@@ -198,6 +198,55 @@ export function draftBlockPlainText(
   const spans = block.content[variantKey];
   if (!spans) return "";
   return piecesPlain(buildPieces(spans, contextOf(draft)), lineMode(block.kind));
+}
+
+/** A word of a block's plain text that text recognition read with low confidence. */
+export type DraftUncertainWord = { start: number; end: number; segment: string; confidence?: number };
+
+/**
+ * Words in {@link draftBlockPlainText} that come from `uncertain` ranges of
+ * their Source segments (scans), in plain-text offsets. Typed text is never
+ * uncertain.
+ */
+export function draftUncertainWords(
+  draft: ImportDraft,
+  block: DraftBlock,
+  variantKey: string,
+): DraftUncertainWord[] {
+  const spans = block.content[variantKey];
+  if (!spans) return [];
+  const ctx = contextOf(draft);
+  // Per uncertain range: where its characters landed in the plain text.
+  const found = new Map<UncertainRange, { segment: string; at: number[]; length: number }>();
+  let at = 0;
+  for (const p of buildPieces(spans, ctx)) {
+    if (p.t === "sep") at += 1;
+    if (p.t !== "ch") continue;
+    const range =
+      p.seg !== undefined && p.off !== undefined
+        ? ctx.segment(p.seg)?.uncertain?.find((r) => p.off! >= r.start && p.off! < r.end)
+        : undefined;
+    if (range) {
+      const entry = found.get(range) ?? { segment: p.seg!, at: [], length: 0 };
+      entry.at.push(at);
+      entry.length += p.ch.length;
+      found.set(range, entry);
+    }
+    at += p.ch.length;
+  }
+  const out: DraftUncertainWord[] = [];
+  for (const [range, { segment, at: positions, length }] of found) {
+    // A word the user typed into (or cut) is theirs now.
+    const start = positions[0]!;
+    if (length !== range.end - range.start || positions.at(-1)! + 1 - start > length) continue;
+    out.push({
+      start,
+      end: start + length,
+      segment,
+      ...(range.confidence !== undefined ? { confidence: range.confidence } : {}),
+    });
+  }
+  return out.sort((x, y) => x.start - y.start);
 }
 
 /** Source segment ids a block points into, across Variants. */
