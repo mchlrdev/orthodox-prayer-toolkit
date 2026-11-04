@@ -196,7 +196,7 @@ A **Speaker** marks who says a block (liturgical dialogue). The id is on the blo
 | Allowed kinds | `verse` always; `heading`, `subheading`, `annotation` never; a custom kind only when its `kinds` entry has `speaker: true`. Otherwise `validate` errors (`speaker-kind-not-allowed`) |
 | Variant `speakers` | Map `{ [id]: { name?, short? } }`. Empty strings are not written; an entry with neither field is omitted; an empty map is omitted |
 | No registry | The Speakers of a prayer are the ids used on blocks plus the keys of `speakers` maps. There is no Library list |
-| Presets | `priest`, `deacon`, `bishop`, `reader`, `choir`, `people` are offered in the editor only. Core ships no translated labels |
+| Presets | `bishop`, `priest`, `deacon`, `reader`, `cantor`, `choir`, `people`, `all` (`SPEAKER_PRESETS`), offered in the editor. Import writes a missing `name` from Core’s default names per language (`presetSpeakerName`); export does not use them as a fallback |
 | Printed name fallback | `name` missing → the English variant’s `name` if present, else the id, title-cased (`priest` → `Priest`, `my-cantor` → `My cantor`) |
 | Printed short fallback | `short` missing → first letter of this variant’s `name`; else English `short` / first letter of English `name`; else first letter of the resolved name (`Priester` → `P`) |
 | Missing name | Validation warns (`speaker-name-missing`) when a used Speaker has no `name` in a Variant that has a translation for that block. The file stays valid |

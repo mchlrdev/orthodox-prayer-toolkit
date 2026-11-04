@@ -17,7 +17,7 @@ Always emit a markdown `json` fence so the prayer can be copied. Agents may also
 
 ## Steps
 
-1. **Read the entire source**, first line through last. The page title becomes `variants[].title`. The first rubric or spoken line after the title is the first block — encode it. Completion: every paragraph of the source is accounted for; no empty `text` / `lines`.
+1. **Read the entire source**, first line through last. The page title becomes `variants[].title`. The first rubric or spoken line after the title is the first block — encode it. Completion: every paragraph of the source is encoded or deliberately left out as not part of the prayer (see **Role**); no empty `text` / `lines`.
 2. **Outline by role** (see below). Show it before JSON unless the user said to skip questions.
 3. **Encode one prayer object.** One source page is one file. Filename `{id}.json` (`id` kebab-case: `^[a-z0-9]+(?:-[a-z0-9]+)*$`).
 
@@ -78,8 +78,12 @@ Classify by **role**, not by color or typeface. Genre labels and rubrics often l
 |------|------|---------|
 | `heading` | Names the item that follows (“Ostertroparion im 5. Ton”, “Psalm 50”) | `text` |
 | `subheading` | Second heading level only | `text` |
-| `annotation` | Instruction with **no spoken words of its own** (“Dann dreimal das Ostertroparion im 5. Ton:”, “Stehend.”) | `text` |
+| `annotation` | Instruction with **no spoken words of its own** (“Dann dreimal das Ostertroparion im 5. Ton:”, “Stehend.”), including descriptions of what clergy or choir do (“Der Priester betet leise …”), even long ones | `text` |
 | `verse` | Words that are said or sung | `lines` |
+
+Not part of the prayer → leave it out: site navigation, page numbers, running headers, copyright, “print this page”.
+
+A short genre label on its own line is a `heading`: “2. Kondakion”, “Ikos 3”, “Troparion, 4. Ton”, “Тропарь, глас 4”.
 
 Spoken liturgical text is `verse`: Gloria Patri / “Ehre sei dem Vater…”, “Jetzt und immerdar… Amen.”, “Herr, erbarme Dich!”, Trisagion, Amen-formulas, Theotokia, hymns. A trailing colon does not make a doxology a rubric.
 
@@ -112,7 +116,7 @@ Glued **rubric + spoken words on one line** → one `verse`, rubric as a `note` 
 }
 ```
 
-Same pattern for “Dann dreimal: Herr, erbarme Dich!”. Spaces around the note live on the `text` run, not inside `note`.
+Same pattern for “Dann dreimal: Herr, erbarme Dich!”, and for a bracketed instruction inside spoken words (“(dreimal)”, “[Verneigung]”, “(3)”, “(oder …)”): that bracket becomes a `note` run where it stands. Spaces around the note live on the `text` run, not inside `note`.
 
 Standalone instruction that only introduces a named hymn stays an `annotation` block, then heading/verse as usual.
 
@@ -148,7 +152,7 @@ Liturgical dialogue often prefixes a line with who says it: "Priester:", "Diakon
 Set a Speaker only when the source marks the speaker. Do not infer one from a verse that sounds like a reply.
 
 1. Remove the label from the text. The block's `lines` / `text` start with the words spoken.
-2. Set `speaker` on the block. Use a preset id where it fits: `priest`, `deacon`, `bishop`, `reader`, `choir`, `people`. Otherwise a short custom id (`cantor`), letters, digits, `_` and `-` only, starting with a letter.
+2. Set `speaker` on the block. Use a preset id where it fits: `bishop`, `priest`, `deacon`, `reader`, `cantor`, `choir`, `people`, `all`. Otherwise a short custom id (`psalmist`), letters, digits, `_` and `-` only, starting with a letter.
 3. Add a `speakers` map on **each** variant that has the block. Give `name` as printed in that language and `short` as the book's abbreviation when the source shows one. Omit a field you do not know; do not invent it.
 4. One Speaker per block, the same id for every variant.
 
@@ -180,6 +184,10 @@ Set a Speaker only when the source marks the speaker. Do not infer one from a ve
 ```
 
 Source: `Priester: Christus ist auferstanden!` → block `speaker: "priest"`, text `Christus ist auferstanden!`. Source with no marked speaker → no `speaker`, no `speakers`.
+
+- A label on its own line (“Priester:”) belongs to the words that follow: one block, no block for the label.
+- A label after a sentence end inside a line (“… in die Ewigkeit. V: Amen.”) starts a new block.
+- A rubric naming the speaker before the words (“Der Priester leise: Herr …”) → `speaker` set, the rubric stays as a `note` run (see **Role**).
 
 Do not put `speaker` on `heading`, `subheading` or `annotation`; the editor does not offer it there. Speakers are for `verse` and custom kinds whose `kinds` entry has `"speaker": true`.
 
