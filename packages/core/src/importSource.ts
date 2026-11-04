@@ -75,6 +75,8 @@ export type Source = {
   name: string;
   /** Full text of a text Source; its segments slice it. */
   text?: string;
+  /** A web page's own title and site name (`<title>`, `og:title`, `og:site_name`). */
+  page?: { title?: string; siteName?: string };
   segments: SourceSegment[];
 };
 
@@ -163,4 +165,71 @@ export function assignStyleGroups(source: Source): Source {
     return { ...rest, group };
   });
   return { ...source, segments };
+}
+
+function lookSize(look: SegmentLook): number | null {
+  const n = typeof look.size === "string" ? Number.parseFloat(look.size) : typeof look.size === "number" ? look.size : NaN;
+  return Number.isFinite(n) ? n : null;
+}
+
+const TITLE_PARTS = /\s+[|–—·•:»/-]\s+|\s+-\s+/u;
+const fold = (text: string) => text.replace(/\s+/g, " ").trim().toLowerCase();
+
+/**
+ * A title to start with. A web page names the prayer in its own title, next
+ * to the site's name ("Vaterunser – Orthodoxe Gemeinde"): the heading that
+ * matches the page title wins, and the site's name (a banner heading on
+ * every page) is never the title. Else the first heading-like segment near
+ * the top (an h1–h3, or clearly larger than the body text), else a short
+ * first line. Undefined when nothing reads like a title.
+ */
+export function suggestTitle(source: Source): string | undefined {
+  const segments = source.segments.filter((s) => !s.furniture && s.text.trim());
+  // A footnote mark is no part of the title ("УТРЕННИЕ МОЛИТВЫ[1]").
+  const clean = (text: string) => text.replace(/\s*(\[\d{1,3}\]|[¹²³⁴⁵⁶⁷⁸⁹⁰]+|\*)\s*$/u, "").replace(/\s+/g, " ").trim();
+  const short = (text: string) => clean(text).length <= 80;
+
+  const pageTitle = source.page?.title ? clean(source.page.title) : "";
+  const parts = pageTitle ? pageTitle.split(TITLE_PARTS).map(clean).filter(Boolean) : [];
+  const site = new Set<string>();
+  if (source.page?.siteName) site.add(fold(source.page.siteName));
+  // "Prayer – Site": the part shared with the site name, or the last part.
+  if (parts.length > 1) {
+    const known = parts.find((p) => site.has(fold(p)));
+    site.add(fold(known ?? parts[parts.length - 1]!));
+  }
+  const isSite = (text: string) => site.has(fold(text));
+
+  const counts = new Map<number, number>();
+  for (const s of segments) {
+    const size = lookSize(s.look);
+    if (size !== null) counts.set(size, (counts.get(size) ?? 0) + s.text.length);
+  }
+  let body: number | null = null;
+  for (const [size, n] of counts) if (body === null || n > counts.get(body)!) body = size;
+  const headingLike = (s: SourceSegment) => {
+    if (!short(s.text) || isSite(s.text)) return false;
+    const tag = typeof s.look.tag === "string" ? s.look.tag : "";
+    const size = lookSize(s.look);
+    return /^h[1-3]$/i.test(tag) || (size !== null && body !== null && size >= body * 1.15);
+  };
+
+  if (pageTitle) {
+    const wanted = parts.filter((p) => !isSite(p)).map(fold);
+    const matches = segments.slice(0, 40).filter((s) => short(s.text) && wanted.includes(fold(clean(s.text))));
+    // "Common Prayers - Morning Prayers - OCA": the part the page shows as its heading.
+    const match = matches.find((s) => /^h[1-3]$/i.test(typeof s.look.tag === "string" ? s.look.tag : "")) ?? matches[0];
+    if (match) return clean(match.text);
+  }
+  const heading = segments.slice(0, 8).find(headingLike);
+  if (heading) return clean(heading.text);
+  // A short first line of the text itself beats a page title that may only name the site.
+  const first = segments.length > 0 ? clean(segments[0]!.text) : "";
+  const firstOk = first.length > 0 && first.length <= 60 && !/[.:;,]$/.test(first) && !isSite(first);
+  if (firstOk && (parts.length <= 1 || !pageTitle)) return first;
+  if (pageTitle) {
+    const own = parts.find((p) => !isSite(p));
+    if (own && own.length <= 80) return own;
+  }
+  return firstOk ? first : undefined;
 }

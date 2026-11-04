@@ -166,12 +166,27 @@ function segmentSpans(segment: SourceSegment): DraftSpan[] {
   return spans;
 }
 
+// Drafts are immutable and per-block helpers ask for the context once per
+// block, so building the segment index each time made them O(blocks ×
+// segments). Keyed by the sources / excluded arrays themselves.
+const contextCache = new WeakMap<
+  Source[],
+  { excluded: string[]; ctx: ContentContext }
+>();
+
 function contextOf(draft: ImportDraft): ContentContext {
+  const hit = contextCache.get(draft.sources);
+  if (hit && hit.excluded === draft.excluded) return hit.ctx;
   const segments = new Map<string, SourceSegment>();
   for (const source of draft.sources) {
     for (const segment of source.segments) segments.set(segment.id, segment);
   }
-  return { segment: (id) => segments.get(id), excluded: new Set(draft.excluded) };
+  const ctx: ContentContext = {
+    segment: (id) => segments.get(id),
+    excluded: new Set(draft.excluded),
+  };
+  contextCache.set(draft.sources, { excluded: draft.excluded, ctx });
+  return ctx;
 }
 
 function lineMode(kind: string): boolean {
@@ -321,29 +336,28 @@ export function draftBlocksInColumn(
   });
 }
 
-/**
- * The Prayer the draft stands for. Blocks with no visible text are left out;
- * missing translations are omitted. Run it through `validate()` before saving.
- */
-export function importDraftToPrayer(draft: ImportDraft): Prayer {
-  const ctx = contextOf(draft);
-  const structure: Block[] = [];
-  for (const block of draft.blocks) {
-    const translations: Translation[] = [];
-    for (const v of draft.variants) {
-      const spans = block.content[v.key];
-      if (!spans) continue;
-      const payload = piecesContent(buildPieces(spans, ctx), lineMode(block.kind));
-      if (payload) translations.push({ lang: v.lang, variant: v.variant, ...payload });
-    }
-    if (translations.length === 0) continue;
-    const speaker =
-      block.speaker !== undefined && kindAllowsSpeaker(block.kind, draft)
-        ? { speaker: block.speaker }
-        : {};
-    structure.push({ id: block.id, kind: block.kind, ...speaker, translations });
+/** One draft block as a Prayer Block; null when it has no visible text. */
+function draftBlockToBlock(
+  draft: ImportDraft,
+  ctx: ContentContext,
+  block: DraftBlock,
+): Block | null {
+  const translations: Translation[] = [];
+  for (const v of draft.variants) {
+    const spans = block.content[v.key];
+    if (!spans) continue;
+    const payload = piecesContent(buildPieces(spans, ctx), lineMode(block.kind));
+    if (payload) translations.push({ lang: v.lang, variant: v.variant, ...payload });
   }
+  if (translations.length === 0) return null;
+  const speaker =
+    block.speaker !== undefined && kindAllowsSpeaker(block.kind, draft)
+      ? { speaker: block.speaker }
+      : {};
+  return { id: block.id, kind: block.kind, ...speaker, translations };
+}
 
+function assemblePrayer(draft: ImportDraft, structure: Block[]): Prayer {
   const { id, type, book, occasion, tone, description } = draft.meta;
   const prayer: Prayer = {
     id,
@@ -357,6 +371,51 @@ export function importDraftToPrayer(draft: ImportDraft): Prayer {
     structure,
   };
   return normalizeFormatVersion(prayer);
+}
+
+/**
+ * The Prayer the draft stands for. Blocks with no visible text are left out;
+ * missing translations are omitted. Run it through `validate()` before saving.
+ */
+export function importDraftToPrayer(draft: ImportDraft): Prayer {
+  const ctx = contextOf(draft);
+  const structure: Block[] = [];
+  for (const block of draft.blocks) {
+    const converted = draftBlockToBlock(draft, ctx, block);
+    if (converted) structure.push(converted);
+  }
+  return assemblePrayer(draft, structure);
+}
+
+/**
+ * `importDraftToPrayer` for a draft that changes one op at a time: draft
+ * blocks the op left alone (same object) give the same Block object as last
+ * time, so an editor can skip re-rendering them. The cache resets when the
+ * sources, exclusions, variants or kinds change. Output equals
+ * `importDraftToPrayer(draft)`.
+ */
+export function createImportPrayerBuilder(): (draft: ImportDraft) => Prayer {
+  let keys: readonly unknown[] = [];
+  let ctx: ContentContext | null = null;
+  let cache = new WeakMap<DraftBlock, Block | null>();
+  return (draft) => {
+    const next = [draft.sources, draft.excluded, draft.variants, draft.kinds];
+    if (!ctx || next.some((k, i) => k !== keys[i])) {
+      keys = next;
+      ctx = contextOf(draft);
+      cache = new WeakMap();
+    }
+    const structure: Block[] = [];
+    for (const block of draft.blocks) {
+      let converted = cache.get(block);
+      if (converted === undefined) {
+        converted = draftBlockToBlock(draft, ctx, block);
+        cache.set(block, converted);
+      }
+      if (converted) structure.push(converted);
+    }
+    return assemblePrayer(draft, structure);
+  };
 }
 
 /** `validate()` of {@link importDraftToPrayer}. */
@@ -835,10 +894,13 @@ function applyOne(draft: ImportDraft, op: ImportOp, origin: ImportOrigin): Impor
     case "pairByOrder": {
       requireVariant(draft, op.variant);
       // Blocks with only this Variant, in order, go to the blocks without it.
+      // Left-out blocks on either side take no part, so the rows stay aligned.
+      const ctx = contextOf(draft);
       const lone = draft.blocks.filter(
-        (b) => b.content[op.variant] && Object.keys(b.content).length === 1,
+        (b) =>
+          b.content[op.variant] && Object.keys(b.content).length === 1 && isVisible(ctx, b),
       );
-      const open = draft.blocks.filter((b) => !b.content[op.variant]);
+      const open = draft.blocks.filter((b) => !b.content[op.variant] && isVisible(ctx, b));
       const pairs = new Map<string, DraftBlock>();
       lone.slice(0, open.length).forEach((b, i) => pairs.set(open[i]!.id, b));
       const moved = new Set([...pairs.values()].map((b) => b.id));

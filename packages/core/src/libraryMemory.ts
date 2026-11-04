@@ -341,7 +341,9 @@ function exampleKey(e: Pick<MemoryExample, "origin" | "look" | "text">): string 
 /** A correction seen in the open Import draft, before it is saved. */
 export type MemoryCorrection = Omit<MemoryExample, "id" | "added"> & { block: string };
 
-const byMachine = (o: ImportOrigin | undefined) => o?.by === "model" || o?.by === "memory";
+/** Decided by the model, the memory or one of the reader's fixed rules (those carry a confidence). */
+const byMachine = (o: ImportOrigin | undefined) =>
+  o?.by === "model" || o?.by === "memory" || (o?.by === "reader" && o.confidence !== undefined);
 
 function hiddenByMachine(draft: ImportDraft, block: DraftBlock): boolean {
   const segs = draftBlockSegments(block);
@@ -509,8 +511,21 @@ export function withMemory(
   let examples = batch.examples;
   if (batch.kind === "role") {
     const options = new Set(batch.options.map((o) => o.id));
+    // The examples most like the paragraphs asked about (shared words, same look), same site first.
+    const words = (t: string) => new Set(t.toLowerCase().split(/[^\p{L}\d]+/u).filter((w) => w.length > 3));
+    const asked = batch.items.map((it) => words(it.text));
+    const overlap = (t: string) => {
+      const w = words(t);
+      let best = 0;
+      for (const a of asked) {
+        let n = 0;
+        for (const x of w) if (a.has(x)) n += 1;
+        best = Math.max(best, w.size > 0 ? n / w.size : 0);
+      }
+      return best;
+    };
     const picked = memory.examples
-      .map((e, i) => ({ e, score: (e.origin === origin && origin ? 1000 : 0) + i }))
+      .map((e, i) => ({ e, score: (e.origin === origin && origin ? 1000 : 0) + overlap(e.text) * 100 + i / 1000 }))
       .filter(({ e }) => options.has(e.right))
       .sort((a, b) => b.score - a.score)
       .slice(0, max)

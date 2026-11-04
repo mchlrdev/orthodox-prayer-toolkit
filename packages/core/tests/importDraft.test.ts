@@ -5,6 +5,7 @@ import {
   createImportDraft,
   draftBlockHasTypedText,
   draftBlockPlainText,
+  pairedLabelOps,
   draftUncertainWords,
   draftBlocksInGroup,
   draftBlockVisible,
@@ -13,6 +14,7 @@ import {
   freeSourceId,
   prayerIdFromTitle,
   importDraftToPrayer,
+  createImportPrayerBuilder,
   readText,
   validateImportDraft,
   type ImportDraft,
@@ -574,6 +576,38 @@ describe("multilingual import", () => {
     expect(JSON.stringify(prayer)).not.toContain('"lines":[]');
   });
 
+  it("pairs past left-out blocks without showing them again", () => {
+    const d = run(
+      draft(DE),
+      { op: "setExcluded", segments: ["s1-2"], excluded: true },
+      { op: "addVariant", variant: { lang: "cu", variant: "standard" } },
+      {
+        op: "addSource",
+        source: readText("Христосъ воскресе.\n\nАминь.", { id: "s2" }),
+        variant: "v2",
+      },
+      { op: "pairByOrder", variant: "v2" },
+    );
+    const prayer = importDraftToPrayer(d);
+    expect(prayer.structure.map((b) => b.translations.map((t) => t.lines![0]))).toEqual([
+      ["Christus ist auferstanden.", "Христосъ воскресе."],
+      ["Amen.", "Аминь."],
+    ]);
+  });
+
+  it("cuts a paired language's speaker label when it names the block's speaker", () => {
+    const d0 = run(
+      draft("Christus ist auferstanden."),
+      { op: "setSpeaker", block: "b1", speaker: "priest" },
+      { op: "addVariant", variant: { lang: "en", variant: "standard" } },
+      { op: "addSource", source: readText("Priest: Christ is risen.", { id: "s2" }), variant: "v2" },
+      { op: "pairByOrder", variant: "v2" },
+    );
+    const d = run(d0, ...pairedLabelOps(d0, "v2"));
+    expect(draftBlockPlainText(d, d.blocks[0]!, "v2")).toBe("Christ is risen.");
+    expect(d.variants[1]!.speakers).toEqual({ priest: { name: "Priest" } });
+  });
+
   it("splits a two-column Source into two Variants", () => {
     const seg = (id: string, text: string, column: number) => ({
       id,
@@ -647,5 +681,47 @@ describe("multilingual import", () => {
       ["Amen.", "Воистину воскресе."],
       ["Аминь."],
     ]);
+  });
+});
+
+describe("createImportPrayerBuilder", () => {
+  it("equals importDraftToPrayer and keeps untouched Blocks", () => {
+    const build = createImportPrayerBuilder();
+    let d = draft();
+    const steps: ImportOp[][] = [
+      [{ op: "setText", block: "b2", variant: "v1", content: ["Neu", "Zeile"] }],
+      [{ op: "split", block: "b2", variant: "v1", at: 2 }],
+      [{ op: "setKind", target: { block: "b1" }, kind: "annotation" }],
+      [{ op: "setSpeaker", block: "b3", speaker: "priest" }],
+      [{ op: "setExcluded", segments: ["s1-1"], excluded: true }],
+      [{ op: "declareKind", kind: { id: "rubric", speaker: true } }],
+      [{ op: "merge", block: "b2" }],
+    ];
+    let prev = build(d);
+    let reused = 0;
+    expect(prev).toEqual(importDraftToPrayer(d));
+    for (const ops of steps) {
+      const before = d;
+      d = run(d, ...ops);
+      const next = build(d);
+      expect(next).toEqual(importDraftToPrayer(d));
+      // A draft block the op left alone keeps its Prayer Block object.
+      const kept = new Set(before.blocks.filter((b) => d.blocks.includes(b)));
+      const sameInputs =
+        before.sources === d.sources &&
+        before.excluded === d.excluded &&
+        before.variants === d.variants &&
+        before.kinds === d.kinds;
+      for (const block of next.structure) {
+        const draftBlock = d.blocks.find((b) => b.id === block.id)!;
+        const old = prev.structure.find((b) => b.id === block.id);
+        if (sameInputs && kept.has(draftBlock) && old) {
+          expect(block).toBe(old);
+          reused += 1;
+        }
+      }
+      prev = next;
+    }
+    expect(reused).toBeGreaterThan(5);
   });
 });

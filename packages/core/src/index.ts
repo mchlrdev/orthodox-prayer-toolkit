@@ -212,6 +212,7 @@ export type { KindDir, TextDir } from "./resolveDir.js";
 export {
   SPEAKER_PRESETS,
   isSpeakerPreset,
+  presetSpeakerName,
   listSpeakers,
   renameSpeaker,
   indexSpeakers,
@@ -226,7 +227,7 @@ export {
 } from "./speakers.js";
 export type { SpeakerPreset, SpeakerSummary, VariantRef } from "./speakers.js";
 
-export { assignStyleGroups, readText } from "./importSource.js";
+export { assignStyleGroups, readText, suggestTitle } from "./importSource.js";
 export type {
   ReadTextOptions,
   SegmentArea,
@@ -256,6 +257,7 @@ export {
   segmentColumn,
   draftBlockVisible,
   importDraftToPrayer,
+  createImportPrayerBuilder,
   validateImportDraft,
 } from "./importDraft.js";
 export type {
@@ -279,9 +281,36 @@ export {
   firstDraftBatches,
   speakerBatch,
   speakerForLabel,
+  pairedLabelOps,
   speakerNamedIn,
+  speakerLabelAt,
+  labelPrefixEnd,
+  inlineNoteRanges,
+  readerRuleOps,
+  readerKindOf,
+  standaloneSpeakerLabel,
+  speakerRubricAt,
+  speakerNameOps,
   uncertainDecisions,
 } from "./importDecisions.js";
+export {
+  chatImportOps,
+  chatPlanOptions,
+  chatPlanRequest,
+  chatPlanSchema,
+  chatPlanSummary,
+  editTextOps,
+  mergeChatPlans,
+  readChatPlan,
+  ruleChatPlan,
+  ruleTargets,
+  cannotDo,
+  meansAll,
+  bareNumbers,
+  numberRanges,
+  groupSkips,
+} from "./chatPlan.js";
+export type { ChatParagraph, ChatPlan, ChatSection, ChatSkip, ChatTurn } from "./chatPlan.js";
 export {
   actionBatch,
   chatActions,

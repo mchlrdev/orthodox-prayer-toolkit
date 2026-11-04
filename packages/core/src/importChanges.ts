@@ -2,13 +2,15 @@
  * What changed between two states of an Import draft, per block: for the
  * Chat pane's change card and the highlighted rows of one answer.
  */
-import { draftBlockPlainText, draftBlockVisible, type ImportDraft } from "./importDraft.js";
+import { draftBlockContent, draftBlockPlainText, draftBlockVisible, type DraftBlock, type ImportDraft } from "./importDraft.js";
 
 export type DraftChange =
   | { block: string; what: "kind"; from: string; to: string }
   | { block: string; what: "speaker"; from: string | null; to: string | null }
   | { block: string; what: "excluded" | "included" | "added" | "removed" }
-  | { block: string; what: "text"; variant: string; from: string; to: string };
+  | { block: string; what: "text"; variant: string; from: string; to: string }
+  /** Same words, other inline annotations. */
+  | { block: string; what: "note"; variant: string };
 
 export function draftChanges(before: ImportDraft, after: ImportDraft): DraftChange[] {
   const old = new Map(before.blocks.map((b) => [b.id, b]));
@@ -36,6 +38,8 @@ export function draftChanges(before: ImportDraft, after: ImportDraft): DraftChan
       // A kind change alone re-joins lines; compare without line breaks.
       if (from.replace(/\s+/g, " ") !== to.replace(/\s+/g, " ")) {
         out.push({ block: block.id, what: "text", variant: v.key, from, to });
+      } else if (noteMarks(before, prev, v.key) !== noteMarks(after, block, v.key)) {
+        out.push({ block: block.id, what: "note", variant: v.key });
       }
     }
   }
@@ -44,4 +48,14 @@ export function draftChanges(before: ImportDraft, after: ImportDraft): DraftChan
     if (!now.has(prev.id) && draftBlockVisible(before, prev)) out.push({ block: prev.id, what: "removed" });
   }
   return out;
+}
+
+/** Where a block's inline annotations are, as a comparable string. */
+function noteMarks(draft: ImportDraft, block: DraftBlock, key: string): string {
+  const content = draftBlockContent(draft, block, key);
+  if (!content) return "";
+  const lines = "lines" in content ? content.lines : [content.text];
+  return JSON.stringify(
+    lines.map((line) => (typeof line === "string" ? [] : line.flatMap((r) => (r.t === "note" ? [r.v] : [])))),
+  );
 }

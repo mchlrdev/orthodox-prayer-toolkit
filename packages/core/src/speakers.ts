@@ -8,7 +8,8 @@ import {
 
 /**
  * Built-in speaker ids, always available in the editor like Kind presets
- * (fixed: not renameable or deletable). Core ships no translated labels.
+ * (fixed: not renameable or deletable). Default names per language come
+ * from {@link presetSpeakerName}; a Variant's own label wins.
  */
 export const SPEAKER_PRESETS = [
   "bishop",
@@ -22,6 +23,26 @@ export const SPEAKER_PRESETS = [
 ] as const;
 
 export type SpeakerPreset = (typeof SPEAKER_PRESETS)[number];
+
+const PRESET_NAMES: Record<string, Record<SpeakerPreset, string>> = {
+  de: { bishop: "Bischof", priest: "Priester", deacon: "Diakon", reader: "Leser", cantor: "Kantor", choir: "Chor", people: "Volk", all: "Alle" },
+  en: { bishop: "Bishop", priest: "Priest", deacon: "Deacon", reader: "Reader", cantor: "Cantor", choir: "Choir", people: "People", all: "All" },
+  ru: { bishop: "Архиерей", priest: "Иерей", deacon: "Диакон", reader: "Чтец", cantor: "Псаломщик", choir: "Хор", people: "Люди", all: "Все" },
+  cu: { bishop: "Архїерей", priest: "Їерей", deacon: "Дїакон", reader: "Чтецъ", cantor: "Пѣвецъ", choir: "Ликъ", people: "Людїе", all: "Вси" },
+  el: { bishop: "Ἀρχιερεύς", priest: "Ἱερεύς", deacon: "Διάκονος", reader: "Ἀναγνώστης", cantor: "Ψάλτης", choir: "Χορός", people: "Λαός", all: "Πάντες" },
+  ro: { bishop: "Episcopul", priest: "Preotul", deacon: "Diaconul", reader: "Citețul", cantor: "Cântărețul", choir: "Corul", people: "Poporul", all: "Toți" },
+};
+
+/**
+ * The usual name of a preset speaker in a language ("priest", "de" →
+ * "Priester"), for a Variant that has no label of its own yet. Undefined for
+ * custom speakers and languages without a list.
+ */
+export function presetSpeakerName(id: string, lang: string): string | undefined {
+  if (!isSpeakerPreset(id)) return undefined;
+  const base = lang.trim().toLowerCase().split(/[-_]/)[0] ?? "";
+  return PRESET_NAMES[base]?.[id];
+}
 
 export function isSpeakerPreset(id: string): id is SpeakerPreset {
   return (SPEAKER_PRESETS as readonly string[]).includes(id);

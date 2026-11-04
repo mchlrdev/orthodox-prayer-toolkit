@@ -8,6 +8,7 @@ import {
   speakerBatch,
   importDraftToPrayer,
   readText,
+  readerRuleOps,
   uncertainDecisions,
   type DecisionBatch,
   type ImportDraft,
@@ -30,8 +31,11 @@ function draft(): ImportDraft {
 
 /** Run every batch with fixed answers: `pick(batch, item index)` → option id. */
 function run(start: ImportDraft, pick: (batch: DecisionBatch, i: number) => string, p = 0.9): ImportDraft {
-  let d = start;
-  for (const batch of firstDraftBatches(start)) {
+  // The reader's fixed rules first, like the app ("Priester:" needs no model).
+  const read = applyImportOps(start, readerRuleOps(start), { by: "reader" });
+  if (!read.ok) throw new Error(read.error);
+  let d = read.draft;
+  for (const batch of firstDraftBatches(d)) {
     batch.items.forEach((item, i) => {
       const chosen = batch.options.findIndex((o) => o.id === pick(batch, i));
       const answer = batch.options.map((_, k) => (k === chosen ? p : (1 - p) / (batch.options.length - 1)));
@@ -46,13 +50,14 @@ function run(start: ImportDraft, pick: (batch: DecisionBatch, i: number) => stri
 }
 
 describe("first-draft Decisions", () => {
-  it("asks for every block's role and about each 'Label:' start", () => {
+  it("asks for every block's role and about each 'Label:' start, except known speaker labels", () => {
     const batches = firstDraftBatches(draft());
     expect(batches.map((b) => [b.kind, b.items.length])).toEqual([
-      ["role", 5],
-      ["prefix", 3],
+      ["role", 4],
+      ["prefix", 2],
     ]);
-    expect(batches[1]!.items.map((i) => i.prefix!.label)).toEqual(["Troparion im 4. Ton", "Dann vierzigmal", "Priester"]);
+    // "Priester:" is the reader's (readerRuleOps), not the model's.
+    expect(batches[1]!.items.map((i) => i.prefix!.label)).toEqual(["Troparion im 4. Ton", "Dann vierzigmal"]);
     const [prompt] = decisionPrompts(batches[0]!);
     expect(prompt!.letters).toEqual(["A", "B", "C", "D", "E"]);
     expect(prompt!.user).toContain("1. Troparion im 4. Ton");
@@ -60,9 +65,9 @@ describe("first-draft Decisions", () => {
   });
 
   it("answers become Import operations: split label, note run, speaker, exclusion", () => {
-    const prefixAnswers = ["heading", "note", "speaker"];
+    const prefixAnswers = ["heading", "note"];
     const result = run(draft(), (batch, i) =>
-      batch.kind === "role" ? (i === 4 ? "exclude" : "verse") : prefixAnswers[i]!,
+      batch.kind === "role" ? (i === 3 ? "exclude" : "verse") : prefixAnswers[i]!,
     );
     const prayer = importDraftToPrayer(result);
     expect(prayer.variants[0]!.speakers).toEqual({ priest: { name: "Priester" } });

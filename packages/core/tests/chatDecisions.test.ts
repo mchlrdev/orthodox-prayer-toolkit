@@ -26,6 +26,16 @@ describe("Chat pane Decisions", () => {
     expect(sectionNumbers("Abschnitt 3 und 7 sind Anmerkungen")).toEqual([3, 7]);
     expect(sectionNumbers("sections 2-4, 9")).toEqual([2, 3, 4, 9]);
     expect(sectionNumbers("Was bedeutet das?")).toEqual([]);
+    expect(sectionNumbers("Zeile 2 gehört nicht dazu")).toEqual([2]);
+    expect(sectionNumbers("line 4 is a heading")).toEqual([4]);
+    expect(sectionNumbers("#3 und #7 sind Anmerkungen")).toEqual([3, 7]);
+    expect(sectionNumbers("Nr. 5 ist eine Überschrift")).toEqual([5]);
+    expect(sectionNumbers("2 und 10 gehören nicht dazu")).toEqual([2, 10]);
+    expect(sectionNumbers("Die letzte Zeile gehört nicht dazu", 12)).toEqual([12]);
+    expect(sectionNumbers("Der erste Abschnitt ist der Titel")).toEqual([1]);
+    expect(sectionNumbers("Troparion im 5. Ton ist eine Überschrift")).toEqual([]);
+    expect(sectionNumbers("„Psalm 50“ ist eine Überschrift")).toEqual([]);
+    expect(sectionNumbers("zum ersten Mal")).toEqual([]);
   });
 
   it("lists what an answer changed", () => {
