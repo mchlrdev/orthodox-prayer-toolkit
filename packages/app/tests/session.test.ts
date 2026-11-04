@@ -112,6 +112,16 @@ describe("applyDraftEdit", () => {
     expect(session.prayer.id).toBe("morning");
   });
 
+  it("keeps the same visibleVariants array when columns still match", () => {
+    const prayer = samplePrayer();
+    const cols = [{ lang: "de", variant: "standard" }];
+    const session = applyDraftEdit(
+      { ...prayer, variants: [{ ...prayer.variants[0]!, title: "Neu" }] },
+      cols,
+    );
+    expect(session.visibleVariants).toBe(cols);
+  });
+
   it("preserves previous errors until validate runs", () => {
     const prayer = samplePrayer();
     prayer.id = "";

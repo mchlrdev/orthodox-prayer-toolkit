@@ -3,6 +3,7 @@ import {
   isKindPreset,
   isValidKindId,
   plainText,
+  type Block,
   type InlineContent,
   type Prayer,
   type Translation,
@@ -126,8 +127,17 @@ export function isTranslationFilled(
   col: ActiveVariant,
 ): boolean {
   const block = prayer.structure.find((b) => b.id === blockId);
-  if (!block) return false;
-  const tr = getTranslation(prayer, blockId, col);
+  return block ? isBlockTranslationFilled(block, col) : false;
+}
+
+/** `isTranslationFilled` for a Block already at hand (no lookup by id). */
+export function isBlockTranslationFilled(
+  block: Block,
+  col: ActiveVariant,
+): boolean {
+  const tr = block.translations.find(
+    (t) => t.lang === col.lang && t.variant === col.variant,
+  );
   if (!tr) return false;
   if (usesLines(block.kind)) {
     const lines = translationEditorContent(block.kind, tr) as InlineContent[];
@@ -166,9 +176,18 @@ export function fillPercent(
 ): { filled: number; total: number; percent: number } {
   const total = prayer.structure.length;
   if (total === 0) return { filled: 0, total: 0, percent: 100 };
-  const filled = prayer.structure.filter((b) =>
-    isTranslationFilled(prayer, b.id, col),
-  ).length;
+  // One pass. With duplicate ids (invalid drafts) every Block counts as the
+  // first Block of its id, as a lookup by id would.
+  const filledById = new Map<string, boolean>();
+  let filled = 0;
+  for (const block of prayer.structure) {
+    let isFilled = filledById.get(block.id);
+    if (isFilled === undefined) {
+      isFilled = isBlockTranslationFilled(block, col);
+      filledById.set(block.id, isFilled);
+    }
+    if (isFilled) filled += 1;
+  }
   return {
     filled,
     total,

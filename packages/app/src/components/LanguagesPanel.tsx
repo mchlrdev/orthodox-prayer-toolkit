@@ -1,11 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Accordion, Button, Group, Stack, Text } from "@mantine/core";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
-import {
-  normalizeVariantMeta,
-  type Prayer,
-  type VariantMeta,
-} from "@orthodox-prayer-toolkit/core";
+import { type Prayer, type VariantMeta } from "@orthodox-prayer-toolkit/core";
+import { patchVariantMeta } from "../prayerEdit";
 import { VariantMetaFields } from "./VariantMetaFields";
 
 type ActiveVariant = { lang: string; variant: string };
@@ -13,7 +10,7 @@ type ActiveVariant = { lang: string; variant: string };
 type Props = {
   prayer: Prayer;
   activeVariant: ActiveVariant;
-  onChange: (prayer: Prayer) => void;
+  onChange: (prayer: Prayer, options?: { coalesceKey?: string }) => void;
   onActiveVariantChange: (v: ActiveVariant) => void;
 };
 
@@ -32,17 +29,22 @@ export function LanguagesPanel({
   onActiveVariantChange,
 }: Props) {
   const [openedLanguage, setOpenedLanguage] = useState<string | null>(null);
+  const prayerRef = useRef(prayer);
+  prayerRef.current = prayer;
 
   const updateVariantMeta = (index: number, patch: Partial<VariantMeta>) => {
-    const variants = prayer.variants.map((v, i) =>
-      i === index ? normalizeVariantMeta({ ...v, ...patch }) : v,
-    );
-    onChange({ ...prayer, variants });
-    const updated = variants[index];
+    const current = prayerRef.current;
+    const previous = current.variants[index];
+    const next = patchVariantMeta(current, index, patch);
+    if (next === current) return;
+    const field = (Object.keys(patch)[0] as string | undefined) ?? "meta";
+    onChange(next, { coalesceKey: `variant-meta:${index}:${field}` });
+    const updated = next.variants[index];
     if (
       updated &&
-      prayer.variants[index] &&
-      variantKey(prayer.variants[index]!) === variantKey(activeVariant)
+      previous &&
+      variantKey(previous) === variantKey(activeVariant) &&
+      variantKey(updated) !== variantKey(previous)
     ) {
       onActiveVariantChange({ lang: updated.lang, variant: updated.variant });
     }

@@ -116,7 +116,11 @@ export function PrayerSettingsModal({
             aria-hidden={pane !== "prayer"}
           >
             <Stack gap="lg">
-              <PrayerBasicsFields prayer={prayer} onChange={onChange} />
+              <PrayerBasicsFields
+                prayer={prayer}
+                onChange={onChange}
+                deferCommit
+              />
               <ExtraFieldsEditor prayer={prayer} onChange={onChange} />
             </Stack>
           </div>

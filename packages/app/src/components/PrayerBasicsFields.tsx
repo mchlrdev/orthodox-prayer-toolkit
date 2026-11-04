@@ -1,26 +1,71 @@
+import { useRef } from "react";
 import { Group, NumberInput, Textarea, TextInput, Stack } from "@mantine/core";
 import type { Prayer } from "@orthodox-prayer-toolkit/core";
+import { useSettingsDraft } from "./useSettingsDraft";
 
 type Props = {
   prayer: Prayer;
-  onChange: (prayer: Prayer) => void;
+  onChange: (prayer: Prayer, options?: { coalesceKey?: string }) => void;
   autoFocusId?: boolean;
+  /** Keep typing local until idle/blur. Off in New prayer so Create sees the id. */
+  deferCommit?: boolean;
 };
 
 export function PrayerBasicsFields({
   prayer,
   onChange,
   autoFocusId = false,
+  deferCommit = false,
 }: Props) {
-  const idOk = prayer.id.trim().length > 0;
+  const live = !deferCommit;
+  const prayerRef = useRef(prayer);
+  prayerRef.current = prayer;
+  const idDraft = useSettingsDraft(
+    prayer.id,
+    (next) =>
+      onChange(
+        { ...prayerRef.current, id: next },
+        { coalesceKey: "prayer-basics:id" },
+      ),
+    { live },
+  );
+  const description = useSettingsDraft(
+    prayer.description ?? "",
+    (next) =>
+      onChange(
+        { ...prayerRef.current, description: next || undefined },
+        { coalesceKey: "prayer-basics:description" },
+      ),
+    { live },
+  );
+  const type = useSettingsDraft(prayer.type, (next) =>
+    onChange(
+      { ...prayerRef.current, type: next },
+      { coalesceKey: "prayer-basics:type" },
+    ),
+    { live },
+  );
+  const book = useSettingsDraft(prayer.book ?? "", (next) =>
+    onChange(
+      { ...prayerRef.current, book: next || undefined },
+      { coalesceKey: "prayer-basics:book" },
+    ),
+    { live },
+  );
+  const occasion = useSettingsDraft(prayer.occasion ?? "", (next) =>
+    onChange(
+      { ...prayerRef.current, occasion: next || undefined },
+      { coalesceKey: "prayer-basics:occasion" },
+    ),
+    { live },
+  );
 
   return (
     <Stack gap="sm">
       <TextInput
         label="File name"
-        value={prayer.id}
-        onChange={(e) => onChange({ ...prayer, id: e.currentTarget.value })}
-        error={!idOk ? "Required" : undefined}
+        {...idDraft}
+        error={idDraft.value.trim().length > 0 ? undefined : "Required"}
         data-autofocus={autoFocusId || undefined}
       />
       <Textarea
@@ -28,22 +73,13 @@ export function PrayerBasicsFields({
         minRows={2}
         autosize
         maxRows={5}
-        value={prayer.description ?? ""}
-        onChange={(e) =>
-          onChange({
-            ...prayer,
-            description: e.currentTarget.value || undefined,
-          })
-        }
+        {...description}
       />
       <Group grow>
         <TextInput
           label="Type"
           description="e.g. prayer, troparion"
-          value={prayer.type}
-          onChange={(e) =>
-            onChange({ ...prayer, type: e.currentTarget.value })
-          }
+          {...type}
         />
         <NumberInput
           label="Tone"
@@ -55,7 +91,7 @@ export function PrayerBasicsFields({
           value={prayer.tone ?? ""}
           onChange={(value) =>
             onChange({
-              ...prayer,
+              ...prayerRef.current,
               tone: typeof value === "number" ? value : null,
             })
           }
@@ -65,24 +101,12 @@ export function PrayerBasicsFields({
         <TextInput
           label="Book"
           placeholder="horologion, menaion…"
-          value={prayer.book ?? ""}
-          onChange={(e) =>
-            onChange({
-              ...prayer,
-              book: e.currentTarget.value || undefined,
-            })
-          }
+          {...book}
         />
         <TextInput
           label="Occasion"
           placeholder="Optional"
-          value={prayer.occasion ?? ""}
-          onChange={(e) =>
-            onChange({
-              ...prayer,
-              occasion: e.currentTarget.value || undefined,
-            })
-          }
+          {...occasion}
         />
       </Group>
     </Stack>

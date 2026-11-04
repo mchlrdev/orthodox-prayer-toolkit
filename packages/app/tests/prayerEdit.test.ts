@@ -18,6 +18,7 @@ import {
   splitBlock,
   splitEditorContent,
   translationEditorContent,
+  patchVariantMeta,
 } from "../src/prayerEdit";
 
 const col = { lang: "de", variant: "standard" };
@@ -519,5 +520,31 @@ describe("fill helpers", () => {
     expect(
       isBlockEmptyAcrossVariants(onlyDe, "b1", { treatAsEmpty: col }),
     ).toBe(true);
+  });
+});
+
+describe("patchVariantMeta", () => {
+  it("returns the same prayer when the patch is a no-op", () => {
+    const prayer = basePrayer();
+    expect(patchVariantMeta(prayer, 0, { title: "Morgen" })).toBe(prayer);
+  });
+
+  it("keeps structure identity when only the title changes", () => {
+    const prayer = basePrayer();
+    const next = patchVariantMeta(prayer, 0, { title: "Morgengebet" });
+    expect(next.variants[0]?.title).toBe("Morgengebet");
+    expect(next.structure).toBe(prayer.structure);
+  });
+
+  it("retargets translations when language or edition changes", () => {
+    const prayer = basePrayer();
+    const next = patchVariantMeta(prayer, 0, { lang: "deu" });
+    expect(next.variants[0]?.lang).toBe("deu");
+    expect(next.structure[1]?.translations[0]).toEqual({
+      lang: "deu",
+      variant: "standard",
+      text: "Stehend",
+    });
+    expect(next.structure[0]).toBe(prayer.structure[0]);
   });
 });

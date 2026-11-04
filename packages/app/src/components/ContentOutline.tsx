@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { ActionIcon, ScrollArea, Tooltip } from "@mantine/core";
 import {
   IconChevronDown,
@@ -13,7 +13,7 @@ import {
   resolveActiveOutlineId,
   type OutlineEntry,
 } from "../prayerEdit";
-import type { ActiveVariant } from "../variant";
+import { variantKey, type ActiveVariant } from "../variant";
 
 type Props = {
   prayer: Prayer | null;
@@ -40,10 +40,15 @@ export function ContentOutline({
   scrollRootRef,
   onJump,
 }: Props) {
+  const primaryKey = primary ? variantKey(primary) : "";
+  const structure = prayer?.structure;
+  const outlineSourceRef = useRef({ prayer, primary });
+  outlineSourceRef.current = { prayer, primary };
   const outline = useMemo(() => {
-    if (!prayer || !primary) return [];
-    return buildPrayerOutline(prayer, primary);
-  }, [prayer, primary]);
+    const { prayer: p, primary: col } = outlineSourceRef.current;
+    if (!p || !col) return [];
+    return buildPrayerOutline(p, col);
+  }, [structure, primaryKey]);
 
   const expandableIds = useMemo(
     () => collectExpandableIds(outline),
@@ -98,7 +103,7 @@ export function ContentOutline({
       root.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [outline, scrollRootRef, prayer]);
+  }, [outline, scrollRootRef]);
 
   // Keep the active heading group expanded so the accent highlight is visible.
   useEffect(() => {

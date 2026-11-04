@@ -43,6 +43,7 @@ Rule of thumb: if a behaviour should be true without a UI, implement and test it
 2. Dev loads `examples/` automatically.
 3. Prefer Core unit tests with JSON fixtures for format/export changes.
 4. Keep the app thin: session/draft UI over Core APIs.
+5. Performance: see [performance.md](performance.md) for the 300-Block test prayer (`node scripts/perf-fixture.mjs`), the measurement setup, and the editor rules that keep rows memoized.
 
 ### Electron `ENOENT` / incomplete `.app` (macOS)
 

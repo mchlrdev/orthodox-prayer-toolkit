@@ -4,6 +4,7 @@ import type {
   Prayer,
   VariantMeta,
 } from "@orthodox-prayer-toolkit/core";
+import { patchVariantMeta } from "../prayerEdit";
 import { PrayerBasicsFields } from "./PrayerBasicsFields";
 import { VariantMetaFields } from "./VariantMetaFields";
 
@@ -60,14 +61,16 @@ export function NewPrayerModal({
   const idOk = prayer.id.trim().length > 0;
 
   const updateFirstVariant = (patch: Partial<VariantMeta>) => {
-    if (!first) return;
-    const variants = prayer.variants.map((v, i) =>
-      i === 0 ? { ...v, ...patch } : v,
-    );
-    onChange({ ...prayer, variants });
-    const updated = variants[0];
-    if (!updated) return;
-    if (variantKey(first) === variantKey(activeVariant)) {
+    const next = patchVariantMeta(prayer, 0, patch);
+    if (next === prayer) return;
+    onChange(next);
+    const updated = next.variants[0];
+    if (
+      updated &&
+      first &&
+      variantKey(first) === variantKey(activeVariant) &&
+      variantKey(updated) !== variantKey(first)
+    ) {
       onActiveVariantChange({ lang: updated.lang, variant: updated.variant });
     }
   };

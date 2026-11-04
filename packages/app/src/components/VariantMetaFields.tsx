@@ -1,5 +1,6 @@
 import { Checkbox, Group, Stack, TextInput } from "@mantine/core";
 import type { VariantMeta } from "@orthodox-prayer-toolkit/core";
+import { useSettingsDraft } from "./useSettingsDraft";
 
 type Props = {
   value: VariantMeta;
@@ -7,36 +8,36 @@ type Props = {
 };
 
 export function VariantMetaFields({ value, onChange }: Props) {
+  const lang = useSettingsDraft(
+    value.lang,
+    (next) => onChange({ lang: next }),
+    { idle: false },
+  );
+  const edition = useSettingsDraft(
+    value.variant,
+    (next) => onChange({ variant: next }),
+    { idle: false },
+  );
+  const title = useSettingsDraft(value.title, (next) =>
+    onChange({ title: next }),
+  );
+  const license = useSettingsDraft(value.license, (next) =>
+    onChange({ license: next }),
+  );
+  const source = useSettingsDraft(value.source, (next) =>
+    onChange({ source: next }),
+  );
+
   return (
     <Stack gap="xs">
       <Group grow>
-        <TextInput
-          label="Language Code"
-          value={value.lang}
-          onChange={(e) => onChange({ lang: e.currentTarget.value })}
-        />
-        <TextInput
-          label="Edition"
-          value={value.variant}
-          onChange={(e) => onChange({ variant: e.currentTarget.value })}
-        />
+        <TextInput label="Language Code" {...lang} />
+        <TextInput label="Edition" {...edition} />
       </Group>
-      <TextInput
-        label="Display title"
-        value={value.title}
-        onChange={(e) => onChange({ title: e.currentTarget.value })}
-      />
+      <TextInput label="Display title" {...title} />
       <Group grow>
-        <TextInput
-          label="License"
-          value={value.license}
-          onChange={(e) => onChange({ license: e.currentTarget.value })}
-        />
-        <TextInput
-          label="Source"
-          value={value.source}
-          onChange={(e) => onChange({ source: e.currentTarget.value })}
-        />
+        <TextInput label="License" {...license} />
+        <TextInput label="Source" {...source} />
       </Group>
       <Checkbox
         mt="sm"

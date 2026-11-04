@@ -27,7 +27,12 @@ export function reconcileVisibleVariants(
   const next = columns.filter((col) =>
     prayerVariants.some((v) => sameVariant(v, col)),
   );
-  if (next.length > 0) return next;
+  if (next.length > 0) {
+    // Keep the same array when nothing dropped, so title-only metadata
+    // edits do not look like a column change to the editor.
+    if (next.length === columns.length) return columns;
+    return next;
+  }
   if (fallback && prayerVariants.some((v) => sameVariant(v, fallback))) {
     return [fallback];
   }

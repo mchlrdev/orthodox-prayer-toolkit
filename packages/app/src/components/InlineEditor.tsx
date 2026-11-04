@@ -1,4 +1,5 @@
 import {
+  createContext,
   forwardRef,
   Fragment,
   memo,
@@ -6,6 +7,7 @@ import {
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
+  useContext,
   useMemo,
   useRef,
   useState,
@@ -20,6 +22,7 @@ import {
   IconArrowDown,
   IconArrowUp,
   IconChevronDown,
+  IconCircleOff,
   IconClipboard,
   IconCopy,
   IconCut,
@@ -42,7 +45,9 @@ import {
   resolveSpeakerLabel,
   speakerChipLabel,
   toggleNoteRange,
+  type Block,
   type InlineContent,
+  type KindDef,
   type KindStyle,
   type Prayer,
   type StyleMap,
@@ -245,10 +250,19 @@ function styleToCss(style: KindStyle): CSSProperties {
   };
 }
 
+/**
+ * No visible text in the cell. Reads textContent, not innerText: innerText
+ * forces a synchronous layout, which made opening a long prayer lay out
+ * once per cell. Cells hold only text nodes and inline spans (never hidden
+ * content), so both give the same answer here.
+ */
 function isDomEmpty(el: HTMLElement): boolean {
-  // Chrome often reports "\n" for an empty contenteditable.
+  // Chrome often leaves "\n" (or a <br>) in an empty contenteditable.
   return (
-    el.innerText.replace(/\u00a0/g, " ").replace(/\n/g, "").trim().length === 0
+    (el.textContent ?? "")
+      .replace(/\u00a0/g, " ")
+      .replace(/\n/g, "")
+      .trim().length === 0
   );
 }
 
@@ -598,7 +612,14 @@ const EditableBlock = memo(function EditableBlock({
     setDomEmpty(isDomEmpty(el));
   };
 
+  // The layout effect below paints on mount; repainting the same content in
+  // this effect's first run only doubled the cost of opening a prayer.
+  const paintedOnMountRef = useRef(true);
   useEffect(() => {
+    if (paintedOnMountRef.current) {
+      paintedOnMountRef.current = false;
+      return;
+    }
     if (!ref.current || focused) return;
     if (skipSyncOnBlurRef.current) {
       skipSyncOnBlurRef.current = false;
@@ -1075,6 +1096,429 @@ const EditableBlock = memo(function EditableBlock({
   );
 });
 
+type BlockRowActions = {
+  openBlockMenu: (
+    e: ReactMouseEvent<HTMLDivElement>,
+    index: number,
+    kind: string,
+    blockId: string,
+    speaker: string | undefined,
+  ) => void;
+  toggleSpeakerUi: (blockId: string, anchor: SpeakerUi["anchor"]) => void;
+  closeSpeakerUi: () => void;
+  selectSpeaker: (blockId: string, id: string | null) => void;
+  openMoreSpeakers: () => void;
+  openMoreKinds?: () => void;
+  openKindUi: (blockId: string) => void;
+  handleKindIdle: () => void;
+  changeKind: (index: number, kind: string) => void;
+  groupScopeFor: (blockId: string) => KindGroupScope | null;
+  onRenameKind: (from: string, to: string) => void;
+  onDeleteKind: (kind: string) => void;
+  onSetKindSpeaker: (kind: string, allowed: boolean) => void;
+  handleFocusChange: (blockId: string, focused: boolean) => void;
+  getCommitHandler: (
+    blockId: string,
+    col: ActiveVariant,
+  ) => (content: InlineContent | InlineContent[] | null) => void;
+  getInsertHandler: (
+    blockId: string,
+    col: ActiveVariant,
+  ) => (
+    before: InlineContent | InlineContent[] | null,
+    after: InlineContent | InlineContent[] | null,
+    split: SplitPoint,
+  ) => boolean | void;
+  getSpillHandler: (
+    blockId: string,
+    col: ActiveVariant,
+  ) => (
+    before: InlineContent | InlineContent[] | null,
+    after: InlineContent | InlineContent[] | null,
+  ) => boolean;
+  getArrowLeaveHandler: (
+    blockId: string,
+    col: ActiveVariant,
+  ) => (direction: "up" | "down", clientX: number) => boolean;
+  getJoinHandler: (
+    blockId: string,
+    col: ActiveVariant,
+  ) => (
+    direction: JoinDirection,
+    current: InlineContent | InlineContent[] | null,
+  ) => JoinOutcome;
+  moveBlock: (index: number, dir: -1 | 1) => void;
+  requestDeleteBlock: (index: number) => void;
+  /** Import draft: "delete" leaves the block out (it can be restored). */
+  leavesOut: boolean;
+  /** Position of this Block object in the structure last rendered. */
+  indexOf: (block: Block) => number;
+};
+
+type BlockRowProps = {
+  block: Block;
+  /** First / last Block: rows get no index, so a split or move re-renders
+   * only the rows it changes. Actions look the position up when they run. */
+  first: boolean;
+  last: boolean;
+  lineMode: boolean;
+  styleCss: CSSProperties;
+  blockStyle: KindStyle;
+  blockIssues: BlockIssues | undefined;
+  showSpeakerTrigger: boolean;
+  chipText: string | null;
+  chipName: string | null;
+  kinds: string[];
+  speakerOpts: { id: string; chip: string; name: string }[];
+  visibleVariants: ActiveVariant[];
+  visibleKey: string;
+  rtlByVisible: boolean[];
+  rtlKey: string;
+  split: boolean;
+  /** A lead cell is shown (its content comes from RowSlotsContext). */
+  hasLead: boolean;
+  marked: boolean;
+  indicate: boolean;
+  jumpTarget: boolean;
+  kindMenuOpen: boolean;
+  speakerUi: SpeakerUi | null;
+  noteColor: string;
+  styleEditing: StyleEditing;
+  kindDefs: KindDef[] | undefined;
+  edits?: EditorEdits;
+  actionsRef: { current: BlockRowActions };
+};
+
+function sameBlockRowProps(prev: BlockRowProps, next: BlockRowProps): boolean {
+  if (prev.block !== next.block) return false;
+  if (prev.first !== next.first || prev.last !== next.last) return false;
+  if (prev.lineMode !== next.lineMode) return false;
+  if (prev.styleCss !== next.styleCss || prev.blockStyle !== next.blockStyle) {
+    return false;
+  }
+  if (prev.blockIssues !== next.blockIssues) return false;
+  if (prev.showSpeakerTrigger !== next.showSpeakerTrigger) return false;
+  if (prev.chipText !== next.chipText || prev.chipName !== next.chipName) {
+    return false;
+  }
+  if (prev.split !== next.split || prev.marked !== next.marked) return false;
+  if (prev.indicate !== next.indicate || prev.jumpTarget !== next.jumpTarget) {
+    return false;
+  }
+  if (prev.kindMenuOpen !== next.kindMenuOpen) return false;
+  if (prev.speakerUi !== next.speakerUi) return false;
+  if (prev.noteColor !== next.noteColor) return false;
+  if (prev.visibleKey !== next.visibleKey || prev.rtlKey !== next.rtlKey) {
+    return false;
+  }
+  if (prev.hasLead !== next.hasLead) return false;
+  if (prev.edits !== next.edits) return false;
+  if (prev.kindDefs !== next.kindDefs) return false;
+  if (prev.kinds !== next.kinds && (prev.kindMenuOpen || next.kindMenuOpen)) {
+    return false;
+  }
+  if (
+    prev.speakerOpts !== next.speakerOpts &&
+    (prev.speakerUi || next.speakerUi)
+  ) {
+    return false;
+  }
+  if (
+    prev.styleEditing !== next.styleEditing &&
+    (prev.kindMenuOpen || next.kindMenuOpen)
+  ) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * leadCell / rowsAfter are new functions on every parent render (their output
+ * depends on import state). Passing them through context re-renders only
+ * these slots, not the memoized rows and their editable cells.
+ */
+type RowSlots = {
+  leadCell?: (blockId: string) => ReactNode;
+  rowsAfter?: (blockId: string | null) => ReactNode;
+};
+
+const RowSlotsContext = createContext<RowSlots>({});
+
+function RowLeadCell({ blockId }: { blockId: string }) {
+  const { leadCell } = useContext(RowSlotsContext);
+  return <>{leadCell?.(blockId)}</>;
+}
+
+function RowsAfterSlot({ blockId }: { blockId: string }) {
+  const { rowsAfter } = useContext(RowSlotsContext);
+  return <>{rowsAfter?.(blockId)}</>;
+}
+
+const BlockRow = memo(function BlockRow({
+  block,
+  first,
+  last,
+  lineMode,
+  styleCss,
+  blockStyle,
+  blockIssues,
+  showSpeakerTrigger,
+  chipText,
+  chipName,
+  kinds,
+  speakerOpts,
+  visibleVariants,
+  rtlByVisible,
+  split,
+  hasLead,
+  marked,
+  indicate,
+  jumpTarget,
+  kindMenuOpen,
+  speakerUi,
+  noteColor,
+  styleEditing,
+  kindDefs,
+  edits,
+  actionsRef,
+}: BlockRowProps) {
+  const [hovered, setHovered] = useState(false);
+  const speakerChrome = speakerUi?.anchor === "chrome";
+  const showChrome = hovered || kindMenuOpen || speakerChrome;
+  const a = actionsRef.current;
+
+  return (
+    <Fragment>
+      <div
+        className="inline-block"
+        data-block-id={block.id}
+        data-lead={hasLead ? "true" : undefined}
+        data-marked={marked ? "true" : undefined}
+        data-invalid={blockIssues ? "true" : undefined}
+        onContextMenu={(e) =>
+          a.openBlockMenu(e, a.indexOf(block), block.kind, block.id, block.speaker)
+        }
+        data-indicate={indicate ? "true" : undefined}
+        data-jump-target={jumpTarget ? "true" : undefined}
+        data-menu-open={
+          kindMenuOpen || speakerUi ? "true" : undefined
+        }
+        data-split={split ? "true" : undefined}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onMouseDown={(e) => {
+          const target = e.target as HTMLElement;
+          if (target.closest(".inline-block-chrome")) return;
+          if (target.closest(".inline-lead")) return;
+          if (target.closest(".inline-content")) return;
+          if (target.closest(".inline-note-toolbar")) return;
+          if (target.closest(".speaker-chip")) return;
+          if (target.closest("[role='dialog']")) return;
+          if (target.closest(".mantine-Popover-dropdown")) return;
+          if (target.closest(".mantine-Combobox-dropdown")) return;
+
+          const row = e.currentTarget.querySelector(".split-row");
+          if (!row) return;
+          const cells = [...row.querySelectorAll<HTMLElement>(".split-cell")];
+          const cell =
+            cells.find((c) => {
+              const r = c.getBoundingClientRect();
+              return e.clientX >= r.left && e.clientX <= r.right;
+            }) ?? cells[0];
+          const editable =
+            cell?.querySelector<HTMLElement>(".inline-content");
+          if (!editable) return;
+
+          e.preventDefault();
+          editable.focus();
+          placeCaretFromPoint(editable, e.clientX, e.clientY);
+        }}
+      >
+        {showChrome ? (
+          <div className="inline-block-chrome">
+            {showSpeakerTrigger ? (
+              speakerUi && speakerChrome ? (
+                <SpeakerMenu
+                  opened
+                  onClose={a.closeSpeakerUi}
+                  value={block.speaker}
+                  options={speakerOpts}
+                  onSelect={(id) => a.selectSpeaker(block.id, id)}
+                  onMore={a.openMoreSpeakers}
+                >
+                  <SpeakerTrigger
+                    name={chipName}
+                    onClick={() => a.toggleSpeakerUi(block.id, "chrome")}
+                  />
+                </SpeakerMenu>
+              ) : (
+                <SpeakerTrigger
+                  name={chipName}
+                  onClick={() => a.toggleSpeakerUi(block.id, "chrome")}
+                />
+              )
+            ) : null}
+            {kindMenuOpen ? (
+              <KindSelect
+                key={block.id}
+                compact
+                defaultOpen
+                value={block.kind}
+                options={kinds}
+                styleEditing={styleEditing}
+                onIdle={a.handleKindIdle}
+                onChange={(kind) => a.changeKind(a.indexOf(block), kind)}
+                groupScope={a.groupScopeFor(block.id)}
+                onMoreKinds={a.openMoreKinds}
+                onRename={(from, to) => {
+                  a.onRenameKind(from, to);
+                }}
+                onDelete={a.onDeleteKind}
+                kindDefs={kindDefs}
+                onSpeakerChange={a.onSetKindSpeaker}
+              />
+            ) : (
+              <KindTrigger
+                compact
+                value={block.kind}
+                onClick={() => a.openKindUi(block.id)}
+              />
+            )}
+            {blockIssues ? (
+              <Tooltip
+                label={blockIssues.messages.join("\n")}
+                withArrow
+                multiline
+                maw={320}
+                style={{ whiteSpace: "pre-line" }}
+              >
+                <span
+                  className="inline-block-issue"
+                  role="img"
+                  aria-label={`${blockIssues.messages.length} validation problem${blockIssues.messages.length === 1 ? "" : "s"}`}
+                >
+                  <IconAlertTriangle size={14} stroke={2} />
+                </span>
+              </Tooltip>
+            ) : null}
+            <Group gap={2}>
+              <ActionIcon
+                size="sm"
+                variant="subtle"
+                color="gray"
+                onClick={() => a.moveBlock(a.indexOf(block), -1)}
+                disabled={first}
+                aria-label="Move up"
+              >
+                <IconArrowUp size={14} />
+              </ActionIcon>
+              <ActionIcon
+                size="sm"
+                variant="subtle"
+                color="gray"
+                onClick={() => a.moveBlock(a.indexOf(block), 1)}
+                disabled={last}
+                aria-label="Move down"
+              >
+                <IconArrowDown size={14} />
+              </ActionIcon>
+              <ActionIcon
+                size="sm"
+                variant="subtle"
+                color={a.leavesOut ? "gray" : "accent"}
+                onClick={() => a.requestDeleteBlock(a.indexOf(block))}
+                aria-label={a.leavesOut ? "Leave out" : "Delete block"}
+                title={a.leavesOut ? "Leave out" : undefined}
+              >
+                {a.leavesOut ? <IconCircleOff size={14} /> : <IconTrash size={14} />}
+              </ActionIcon>
+            </Group>
+          </div>
+        ) : null}
+
+        {hasLead ? (
+          <div className="inline-lead">
+            <RowLeadCell blockId={block.id} />
+          </div>
+        ) : null}
+        <div className="split-row">
+          {visibleVariants.map((col, colIndex) => {
+            const tr = block.translations.find(
+              (t) => t.lang === col.lang && t.variant === col.variant,
+            );
+            const content = translationEditorContent(block.kind, tr);
+            const dir = resolveDir(
+              rtlByVisible[colIndex] ? true : undefined,
+              blockStyle.dir,
+            );
+            const showChip = colIndex === 0 && chipText !== null;
+            const chip = showChip ? (
+              <SpeakerChip
+                chip={chipText}
+                name={chipName ?? ""}
+                dir={dir}
+                fontSize={styleCss.fontSize}
+                onClick={() => a.toggleSpeakerUi(block.id, "chip")}
+              />
+            ) : null;
+
+            return (
+              <div
+                key={variantKey(col)}
+                className="split-cell"
+                data-speaker={showChip ? "true" : undefined}
+                data-lang={col.lang}
+                data-invalid={
+                  blockIssues?.variantKeys.has(variantKey(col))
+                    ? "true"
+                    : undefined
+                }
+              >
+                {chip &&
+                speakerUi?.blockId === block.id &&
+                speakerUi.anchor === "chip" ? (
+                  <SpeakerMenu
+                    opened
+                    onClose={a.closeSpeakerUi}
+                    value={block.speaker}
+                    options={speakerOpts}
+                    onSelect={(id) => a.selectSpeaker(block.id, id)}
+                    onMore={a.openMoreSpeakers}
+                  >
+                    {chip}
+                  </SpeakerMenu>
+                ) : (
+                  chip
+                )}
+                <EditableBlock
+                  content={content}
+                  lineMode={lineMode}
+                  editorKey={editorKey(block.id, col)}
+                  blockId={block.id}
+                  placeholder={kindDisplayLabel(block.kind)}
+                  style={styleCss}
+                  noteColor={noteColor}
+                  initialCap={blockStyle.initialCap === "true"}
+                  dir={dir}
+                  onFocusChange={a.handleFocusChange}
+                  onCommit={a.getCommitHandler(block.id, col)}
+                  onInsertBelow={a.getInsertHandler(block.id, col)}
+                  onSpillToNext={
+                    edits ? undefined : a.getSpillHandler(block.id, col)
+                  }
+                  onArrowLeave={a.getArrowLeaveHandler(block.id, col)}
+                  onJoin={a.getJoinHandler(block.id, col)}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <RowsAfterSlot blockId={block.id} />
+    </Fragment>
+  );
+}, sameBlockRowProps);
+
 export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
   function InlineEditor(
     {
@@ -1103,11 +1547,18 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
   const [lastAddedKind, setLastAddedKind] = useState("verse");
   const layoutRef = useRef<HTMLDivElement>(null);
   const focusedIdRef = useRef<string | null>(null);
+  const rowActionsRef = useRef<BlockRowActions>(null!);
+  const rowSlots = useMemo(
+    () => ({ leadCell, rowsAfter }),
+    [leadCell, rowsAfter],
+  );
+  const renderedStructureRef = useRef(prayer.structure);
+  renderedStructureRef.current = prayer.structure;
   const kindUiBlockIdRef = useRef<string | null>(null);
   kindUiBlockIdRef.current = kindUiBlockId;
 
   // Presets + this prayer's declared kinds (in `kinds` order).
-  const kinds = useMemo(() => pickerKinds(prayer), [prayer]);
+  const kinds = useMemo(() => pickerKinds(prayer), [prayer.kinds]);
   // The last added kind may have been deleted from this prayer since.
   const nextAddKind = kinds.includes(lastAddedKind) ? lastAddedKind : "verse";
   const split = visibleVariants.length > 1;
@@ -1117,15 +1568,17 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     // Speaker ids live on blocks, labels on variants.
     [prayer.structure, prayer.variants, firstCol],
   );
-  const kindsUsedKey = prayer.structure.map((b) => b.kind).join("\0");
-
-  const cssByKind = useMemo(() => {
-    const out: Record<string, CSSProperties> = {};
-    for (const kind of new Set(kindsUsedKey.split("\0").filter(Boolean))) {
-      out[kind] = styleToCss(styles[kind] ?? FALLBACK_KIND_STYLE);
+  // One CSS object per Kind style object: rows stay memoized across
+  // structure edits (a split or merge used to restyle every cell).
+  const cssCacheRef = useRef(new WeakMap<KindStyle, CSSProperties>());
+  const cssFor = (style: KindStyle): CSSProperties => {
+    let css = cssCacheRef.current.get(style);
+    if (!css) {
+      css = styleToCss(style);
+      cssCacheRef.current.set(style, css);
     }
-    return out;
-  }, [kindsUsedKey, styles]);
+    return css;
+  };
 
   const noteColor = useMemo(
     () =>
@@ -1723,16 +2176,55 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
       },
       { divider: true },
       {
-        label: "Delete block",
-        icon: <IconTrash size={14} />,
-        color: "accent",
+        label: edits ? "Leave out" : "Delete block",
+        icon: edits ? <IconCircleOff size={14} /> : <IconTrash size={14} />,
+        color: edits ? undefined : "accent",
         onClick: () => requestDeleteBlock(index),
       },
     );
     contextMenu.open(e, items);
   };
 
+  // Column header fill (n blocks × columns); only the structure changes it.
+  const fillByCol = useMemo(
+    () => (split ? visibleVariants.map((col) => fillPercent(prayer, col)) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [prayer.structure, visibleVariants, split],
+  );
+  const visibleKey = visibleVariants.map((col) => variantKey(col)).join("\0");
+  const rtlByVisible = visibleVariants.map((col) => {
+    const meta = prayer.variants.find((v) => sameVariant(v, col));
+    return meta?.rtl === true;
+  });
+  const rtlKey = rtlByVisible.map((flag) => (flag ? "1" : "0")).join("");
+  rowActionsRef.current = {
+    openBlockMenu,
+    toggleSpeakerUi,
+    closeSpeakerUi,
+    selectSpeaker,
+    openMoreSpeakers,
+    openMoreKinds,
+    openKindUi: (blockId) => setKindUiBlockId(blockId),
+    handleKindIdle,
+    changeKind,
+    groupScopeFor,
+    onRenameKind,
+    onDeleteKind,
+    onSetKindSpeaker,
+    handleFocusChange,
+    getCommitHandler,
+    getInsertHandler,
+    getSpillHandler,
+    getArrowLeaveHandler,
+    getJoinHandler,
+    moveBlock,
+    requestDeleteBlock,
+    leavesOut: Boolean(edits),
+    indexOf: (block) => renderedStructureRef.current.indexOf(block),
+  };
+
   return (
+    <RowSlotsContext.Provider value={rowSlots}>
     <Stack gap={4}>
       <div
         ref={layoutRef}
@@ -1755,8 +2247,8 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         {split ? (
           <div className="split-col-labels">
             <div className="split-row">
-              {visibleVariants.map((col) => {
-                const { filled, total, percent } = fillPercent(prayer, col);
+              {visibleVariants.map((col, colIndex) => {
+                const { filled, total, percent } = fillByCol[colIndex]!;
                 const complete = total > 0 && filled === total;
                 return (
                   <div key={variantKey(col)} className="split-cell split-col-label">
@@ -1791,9 +2283,8 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         {rowsAfter?.(null)}
         {prayer.structure.map((block, index) => {
           const lineMode = usesLines(block.kind);
-          const styleCss =
-            cssByKind[block.kind] ?? styleToCss(FALLBACK_KIND_STYLE);
           const blockStyle = styles[block.kind] ?? FALLBACK_KIND_STYLE;
+          const styleCss = cssFor(block.kind ? blockStyle : FALLBACK_KIND_STYLE);
           const blockIssues = issues?.get(block.id);
           const showSpeakerTrigger =
             block.speaker !== undefined ||
@@ -1822,235 +2313,37 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
               : null);
 
           return (
-            <Fragment key={block.id}>
-            <div
-              className="inline-block"
-              data-block-id={block.id}
-              data-lead={leadCell ? "true" : undefined}
-              data-marked={markedBlocks?.has(block.id) ? "true" : undefined}
-              data-invalid={blockIssues ? "true" : undefined}
-              onContextMenu={(e) =>
-                openBlockMenu(e, index, block.kind, block.id, block.speaker)
-              }
-              data-indicate={
-                blockStyle.indicate === "true" ? "true" : undefined
-              }
-              data-jump-target={jumpTargetId === block.id ? "true" : undefined}
-              data-menu-open={
-                kindUiBlockId === block.id || speakerUi?.blockId === block.id
-                  ? "true"
-                  : undefined
-              }
-              data-split={split ? "true" : undefined}
-              onMouseDown={(e) => {
-                const target = e.target as HTMLElement;
-                if (target.closest(".inline-block-chrome")) return;
-                if (target.closest(".inline-lead")) return;
-                if (target.closest(".inline-content")) return;
-                if (target.closest(".inline-note-toolbar")) return;
-                if (target.closest(".speaker-chip")) return;
-                // Kind edit / pickers portal to document.body; without this,
-                // preventDefault below steals focus from the Kind name field.
-                if (target.closest("[role='dialog']")) return;
-                if (target.closest(".mantine-Popover-dropdown")) return;
-                if (target.closest(".mantine-Combobox-dropdown")) return;
-
-                const row = e.currentTarget.querySelector(".split-row");
-                if (!row) return;
-                const cells = [
-                  ...row.querySelectorAll<HTMLElement>(".split-cell"),
-                ];
-                const cell =
-                  cells.find((c) => {
-                    const r = c.getBoundingClientRect();
-                    return e.clientX >= r.left && e.clientX <= r.right;
-                  }) ?? cells[0];
-                const editable =
-                  cell?.querySelector<HTMLElement>(".inline-content");
-                if (!editable) return;
-
-                e.preventDefault();
-                editable.focus();
-                placeCaretFromPoint(editable, e.clientX, e.clientY);
-                focusedIdRef.current = block.id;
-              }}
-            >
-              <div className="inline-block-chrome">
-                {showSpeakerTrigger ? (
-                  speakerUi?.blockId === block.id &&
-                  speakerUi.anchor === "chrome" ? (
-                    <SpeakerMenu
-                      opened
-                      onClose={closeSpeakerUi}
-                      value={block.speaker}
-                      options={speakerOpts}
-                      onSelect={(id) => selectSpeaker(block.id, id)}
-                      onMore={openMoreSpeakers}
-                    >
-                      <SpeakerTrigger
-                        name={chipName}
-                        onClick={() => toggleSpeakerUi(block.id, "chrome")}
-                      />
-                    </SpeakerMenu>
-                  ) : (
-                    <SpeakerTrigger
-                      name={chipName}
-                      onClick={() => toggleSpeakerUi(block.id, "chrome")}
-                    />
-                  )
-                ) : null}
-                {kindUiBlockId === block.id ? (
-                  <KindSelect
-                    key={block.id}
-                    compact
-                    defaultOpen
-                    value={block.kind}
-                    options={kinds}
-                    styleEditing={styleEditing}
-                    onIdle={handleKindIdle}
-                    onChange={(kind) => changeKind(index, kind)}
-                    groupScope={groupScopeFor(block.id)}
-                    onMoreKinds={openMoreKinds}
-                    onRename={(from, to) => {
-                      onRenameKind(from, to);
-                    }}
-                    onDelete={onDeleteKind}
-                    kindDefs={prayer.kinds}
-                    onSpeakerChange={onSetKindSpeaker}
-                  />
-                ) : (
-                  <KindTrigger
-                    compact
-                    value={block.kind}
-                    onClick={() => setKindUiBlockId(block.id)}
-                  />
-                )}
-                {blockIssues ? (
-                  <Tooltip
-                    label={blockIssues.messages.join("\n")}
-                    withArrow
-                    multiline
-                    maw={320}
-                    style={{ whiteSpace: "pre-line" }}
-                  >
-                    <span
-                      className="inline-block-issue"
-                      role="img"
-                      aria-label={`${blockIssues.messages.length} validation problem${blockIssues.messages.length === 1 ? "" : "s"}`}
-                    >
-                      <IconAlertTriangle size={14} stroke={2} />
-                    </span>
-                  </Tooltip>
-                ) : null}
-                <Group gap={2}>
-                  <ActionIcon
-                    size="sm"
-                    variant="subtle"
-                    color="gray"
-                    onClick={() => moveBlock(index, -1)}
-                    disabled={index === 0}
-                    aria-label="Move up"
-                  >
-                    <IconArrowUp size={14} />
-                  </ActionIcon>
-                  <ActionIcon
-                    size="sm"
-                    variant="subtle"
-                    color="gray"
-                    onClick={() => moveBlock(index, 1)}
-                    disabled={index === prayer.structure.length - 1}
-                    aria-label="Move down"
-                  >
-                    <IconArrowDown size={14} />
-                  </ActionIcon>
-                  <ActionIcon
-                    size="sm"
-                    variant="subtle"
-                    color="accent"
-                    onClick={() => requestDeleteBlock(index)}
-                    aria-label="Delete block"
-                  >
-                    <IconTrash size={14} />
-                  </ActionIcon>
-                </Group>
-              </div>
-
-              {leadCell ? (
-                <div className="inline-lead">{leadCell(block.id)}</div>
-              ) : null}
-              <div className="split-row">
-                {visibleVariants.map((col, colIndex) => {
-                  const tr = getTranslation(prayer, block.id, col);
-                  const content = translationEditorContent(block.kind, tr);
-                  const colMeta = prayer.variants.find((v) =>
-                    sameVariant(v, col),
-                  );
-                  const dir = resolveDir(colMeta?.rtl, blockStyle.dir);
-                  const showChip = colIndex === 0 && chipText !== null;
-                  const chip = showChip ? (
-                    <SpeakerChip
-                      chip={chipText}
-                      name={chipName ?? ""}
-                      dir={dir}
-                      fontSize={styleCss.fontSize}
-                      onClick={() => toggleSpeakerUi(block.id, "chip")}
-                    />
-                  ) : null;
-
-                  return (
-                    <div
-                      key={variantKey(col)}
-                      className="split-cell"
-                      data-speaker={showChip ? "true" : undefined}
-                      data-lang={col.lang}
-                      data-invalid={
-                        blockIssues?.variantKeys.has(variantKey(col))
-                          ? "true"
-                          : undefined
-                      }
-                    >
-                      {chip &&
-                      speakerUi?.blockId === block.id &&
-                      speakerUi.anchor === "chip" ? (
-                        <SpeakerMenu
-                          opened
-                          onClose={closeSpeakerUi}
-                          value={block.speaker}
-                          options={speakerOpts}
-                          onSelect={(id) => selectSpeaker(block.id, id)}
-                          onMore={openMoreSpeakers}
-                        >
-                          {chip}
-                        </SpeakerMenu>
-                      ) : (
-                        chip
-                      )}
-                      <EditableBlock
-                        content={content}
-                        lineMode={lineMode}
-                        editorKey={editorKey(block.id, col)}
-                        blockId={block.id}
-                        placeholder={kindDisplayLabel(block.kind)}
-                        style={styleCss}
-                        noteColor={noteColor}
-                        initialCap={blockStyle.initialCap === "true"}
-                        dir={dir}
-                        onFocusChange={handleFocusChange}
-                        onCommit={getCommitHandler(block.id, col)}
-                        onInsertBelow={getInsertHandler(block.id, col)}
-                        onSpillToNext={
-                          edits ? undefined : getSpillHandler(block.id, col)
-                        }
-                        onArrowLeave={getArrowLeaveHandler(block.id, col)}
-                        onJoin={getJoinHandler(block.id, col)}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            {rowsAfter?.(block.id)}
-            </Fragment>
+            <BlockRow
+              key={block.id}
+              block={block}
+              first={index === 0}
+              last={index === prayer.structure.length - 1}
+              lineMode={lineMode}
+              styleCss={styleCss}
+              blockStyle={blockStyle}
+              blockIssues={blockIssues}
+              showSpeakerTrigger={showSpeakerTrigger}
+              chipText={chipText}
+              chipName={chipName}
+              kinds={kinds}
+              speakerOpts={speakerOpts}
+              visibleVariants={visibleVariants}
+              visibleKey={visibleKey}
+              rtlByVisible={rtlByVisible}
+              rtlKey={rtlKey}
+              split={split}
+              hasLead={Boolean(leadCell)}
+              marked={Boolean(markedBlocks?.has(block.id))}
+              indicate={blockStyle.indicate === "true"}
+              jumpTarget={jumpTargetId === block.id}
+              kindMenuOpen={kindUiBlockId === block.id}
+              speakerUi={speakerUi?.blockId === block.id ? speakerUi : null}
+              noteColor={noteColor}
+              styleEditing={styleEditing}
+              kindDefs={prayer.kinds}
+              edits={edits}
+              actionsRef={rowActionsRef}
+            />
           );
         })}
       </div>
@@ -2092,6 +2385,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
 
       {contextMenu.menu}
     </Stack>
+    </RowSlotsContext.Provider>
   );
   },
 );

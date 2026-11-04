@@ -293,10 +293,18 @@ export function usePrayerSession(opts?: {
   const activeVariant = visibleVariants[0] ?? null;
 
   /** Every kind the library knows (prayers, templates, style keys). */
-  const libraryKinds = useMemo(
-    () => discoverKinds(libraryKindSources(library, state.drafts)),
-    [library, state.drafts],
-  );
+  // Every edit makes a new `drafts`; keep the old array while the kinds are
+  // the same, so resolvedStyles (and every memoized editor row) stays put.
+  const libraryKindsRef = useRef<string[]>([]);
+  const libraryKinds = useMemo(() => {
+    const next = discoverKinds(libraryKindSources(library, state.drafts));
+    const prev = libraryKindsRef.current;
+    if (next.length === prev.length && next.every((k, i) => k === prev[i])) {
+      return prev;
+    }
+    libraryKindsRef.current = next;
+    return next;
+  }, [library, state.drafts]);
 
   const resolvedStyles = useMemo(
     () =>

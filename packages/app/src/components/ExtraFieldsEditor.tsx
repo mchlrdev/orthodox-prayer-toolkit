@@ -1,29 +1,37 @@
+import { useRef } from "react";
 import { Button, Group, Stack, Text, TextInput } from "@mantine/core";
 import { IconPlus, IconTrash } from "@tabler/icons-react";
 import type { Prayer } from "@orthodox-prayer-toolkit/core";
+import { useSettingsDraft } from "./useSettingsDraft";
 
 type Props = {
   prayer: Prayer;
-  onChange: (prayer: Prayer) => void;
+  onChange: (prayer: Prayer, options?: { coalesceKey?: string }) => void;
 };
 
 export function ExtraFieldsEditor({ prayer, onChange }: Props) {
+  const prayerRef = useRef(prayer);
+  prayerRef.current = prayer;
   const customEntries = Object.entries(prayer.meta?.custom ?? {});
 
   const setCustom = (key: string, value: string) => {
-    const custom = { ...(prayer.meta?.custom ?? {}) };
+    const current = prayerRef.current;
+    const custom = { ...(current.meta?.custom ?? {}) };
     if (value.trim() === "") {
       delete custom[key];
     } else {
       custom[key] = value;
     }
-    onChange({
-      ...prayer,
-      meta: {
-        ...prayer.meta,
-        custom: Object.keys(custom).length > 0 ? custom : undefined,
+    onChange(
+      {
+        ...current,
+        meta: {
+          ...current.meta,
+          custom: Object.keys(custom).length > 0 ? custom : undefined,
+        },
       },
-    });
+      { coalesceKey: `extra-field:${key}` },
+    );
   };
 
   const renameCustomKey = (from: string, to: string) => {
@@ -91,11 +99,10 @@ export function ExtraFieldsEditor({ prayer, onChange }: Props) {
                 }
               }}
             />
-            <TextInput
-              label="Value"
+            <ExtraFieldValue
+              fieldKey={key}
               value={value == null ? "" : String(value)}
-              style={{ flex: 1.4 }}
-              onChange={(e) => setCustom(key, e.currentTarget.value)}
+              onCommit={setCustom}
             />
             <Button
               color="accent"
@@ -120,4 +127,17 @@ export function ExtraFieldsEditor({ prayer, onChange }: Props) {
       </Button>
     </Stack>
   );
+}
+
+function ExtraFieldValue({
+  fieldKey,
+  value,
+  onCommit,
+}: {
+  fieldKey: string;
+  value: string;
+  onCommit: (key: string, next: string) => void;
+}) {
+  const draft = useSettingsDraft(value, (next) => onCommit(fieldKey, next));
+  return <TextInput label="Value" style={{ flex: 1.4 }} {...draft} />;
 }

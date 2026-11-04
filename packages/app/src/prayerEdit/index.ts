@@ -6,6 +6,7 @@ export {
   orderKinds,
   getTranslation,
   setTranslation,
+  isBlockTranslationFilled,
   isTranslationFilled,
   isBlockEmptyAcrossVariants,
   fillPercent,
@@ -57,3 +58,4 @@ export {
   patchKindStyle,
   templateMissingKinds,
 } from "./kindLists";
+export { patchVariantMeta } from "./variantMeta";
