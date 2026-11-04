@@ -22,7 +22,7 @@ export type Decider = {
    * stops at the end of the answer or after `maxTokens`.
    */
   generate: (
-    request: { system: string; user: string; maxTokens?: number },
+    request: { system: string; user: string; maxTokens?: number; json?: object },
     onText: (text: string) => void,
     signal?: AbortSignal,
   ) => Promise<string>;
@@ -35,11 +35,27 @@ function chatPrompt(system: string, user: string): string {
 }
 
 export async function createDecider(modelPath: string, contextSize = 8192): Promise<Decider> {
-  const { getLlama } = await import("node-llama-cpp");
+  const { getLlama, LlamaGrammarEvaluationState } = await import("node-llama-cpp");
   const llama: Llama = await getLlama();
   const model: LlamaModel = await llama.loadModel({ modelPath });
   const context: LlamaContext = await model.createContext({ contextSize });
   const sequence: LlamaContextSequence = context.getSequence();
+
+  /**
+   * Keep what the sequence already holds of `input` (the rules, options and
+   * examples shared by every prompt of a batch) and return the rest to
+   * evaluate. At least the last token is left, so its next-token
+   * probabilities can be read. Same tokens, same results, less work.
+   */
+  async function reuse(input: Token[]): Promise<Token[]> {
+    const held = sequence.contextTokens;
+    let common = 0;
+    const max = Math.min(held.length, input.length - 1);
+    while (common < max && held[common] === input[common]) common++;
+    if (common === 0) await sequence.clearHistory();
+    else if (common < held.length) await sequence.eraseContextTokenRanges([{ start: common, end: held.length }]);
+    return input.slice(common);
+  }
 
   return {
     async decide(prompt, onItem, signal) {
@@ -48,11 +64,10 @@ export async function createDecider(modelPath: string, contextSize = 8192): Prom
         if (tokens.length !== 1) throw new Error(`Option letter "${l}" is not one token`);
         return tokens[0]!;
       });
-      await sequence.clearHistory();
-      let input: Token[] = [
+      let input: Token[] = await reuse([
         ...model.tokenize(chatPrompt(prompt.system, prompt.user), true),
         ...model.tokenize(decisionItemPrefix(0)),
-      ];
+      ]);
       for (let i = 0; i < prompt.count; i++) {
         if (signal?.aborted) return;
         const out = await sequence.controlledEvaluate([
@@ -71,11 +86,17 @@ export async function createDecider(modelPath: string, contextSize = 8192): Prom
       }
     },
     async generate(request, onText, signal) {
-      await sequence.clearHistory();
-      const tokens = model.tokenize(chatPrompt(request.system, request.user), true);
+      const tokens = await reuse(model.tokenize(chatPrompt(request.system, request.user), true));
       const out: Token[] = [];
       let text = "";
-      for await (const token of sequence.evaluate(tokens, { temperature: 0 })) {
+      const grammar = request.json
+        ? new LlamaGrammarEvaluationState({
+            model,
+            // The schema comes from Core (chatPlanSchema); its shape is checked there.
+            grammar: await llama.createGrammarForJsonSchema(request.json as never),
+          })
+        : undefined;
+      for await (const token of sequence.evaluate(tokens, { temperature: 0, grammarEvaluationState: grammar })) {
         if (signal?.aborted || model.isEogToken(token)) break;
         out.push(token);
         const next = model.detokenize(out);

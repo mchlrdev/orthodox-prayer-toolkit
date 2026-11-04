@@ -2,22 +2,33 @@ import {
   KIND_PRESETS,
   SPEAKER_PRESETS,
   actionBatch,
+  chatImportOps,
+  chatPlanOptions,
+  chatPlanRequest,
+  chatPlanSchema,
+  chatPlanSummary,
   choiceBatch,
   decisionPrompts,
   draftBlockPlainText,
   draftBlockVisible,
   draftChanges,
+  editTextOps,
+  groupSkips,
   kindDisplayLabel,
-  quotedText,
+  mergeChatPlans,
   plainScope,
-  plainAction,
+  readChatPlan,
+  ruleChatPlan,
+  ruleTargets,
   scopeBatch,
   sectionNumbers,
+  bareNumbers,
+  meansAll,
   speakerDisplayLabel,
-  speakerForLabel,
-  speakerNamedIn,
   targetBatch,
   type ChatAction,
+  type ChatPlan,
+  type ChatTurn,
   type ChatView,
   type DecisionBatch,
   type DraftChange,
@@ -27,13 +38,16 @@ import {
 } from "@orthodox-prayer-toolkit/core";
 import { callTool, type ToolHost } from "../agentTools/toolDirectory";
 import { segmentIndex } from "../importDraft/sourceView";
+import { chatSpeakerName } from "./chatLabels";
 import type { DecisionRuntime } from "./decisionRuntime";
 
 /**
- * One instruction from the Chat pane, run by the Built-in model through the
- * Tool directory: the model picks the action, then kind or speaker, scope
- * and target blocks by Decisions; the change is one Tool call (one undo
- * step). Questions and translations are answered as text.
+ * One instruction from the Chat pane. Fixed rules in Core read what the
+ * wording settles (action, speaker, kind, quoted words, "das" = the previous
+ * answer's blocks); the Built-in model fills the rest in one answer held to
+ * a JSON schema, with the conversation so far; the changes are built in Core
+ * and applied as one Tool call (one undo step). Every answer says what it
+ * understood, and why blocks were left as they were.
  */
 
 export type ChatContext = {
@@ -42,17 +56,30 @@ export type ChatContext = {
   blocks: string[];
 };
 
-export type ChatOutcome =
+export type ChatOutcome = (
   | { kind: "answer"; text: string }
   /** Import draft changed: what changed per block, and the draft before/after (for Undo). */
-  | { kind: "import"; changes: DraftChange[]; before: ImportDraft; after: ImportDraft }
+  | {
+      kind: "import";
+      changes: DraftChange[];
+      before: ImportDraft;
+      after: ImportDraft;
+      /** "Speaker Leser in section 12, printed label removed". */
+      understood?: string;
+      /** Sections left as they were, with the reason. */
+      skipped?: Array<{ n: number; reason: string }>;
+    }
   /** Prayers in the Library changed (unsaved). */
   | { kind: "prayers"; prayers: number; blocks: number; summary: string }
   /** Nothing done, with the reason. */
-  | { kind: "none"; text: string };
+  | { kind: "none"; text: string }
+) & {
+  /** This exchange, for the next instruction's follow-ups. */
+  turn?: ChatTurn;
+};
 
 const ANSWER_SYSTEM =
-  "You help edit Orthodox liturgical texts in a prayer editor. Answer briefly, in the language of the user's message. Never invent liturgical text; quote only what is given.";
+  "You help edit Orthodox liturgical texts in a prayer editor. The text is shown as numbered sections with their kind ([left out] = not part of the prayer) and speaker. Answer in one to three sentences, in the language of the user's message. Never invent liturgical text; quote only what is given. Explain liturgical terms briefly from the terms below or common knowledge, even when they are not in the text; say plainly when you are not sure. Translating a passage in the chat is fine (the draft stays as it is). You cannot change anything by answering. In this chat the user can set kinds, speakers, inline annotations, the title, leave sections out, merge neighbouring sections, fix wording, undo. It cannot add a language (use Add language in the import), change fonts or colours (they are kind styles in Library settings), play audio, set tones, save files or send anything: say so when asked. Terms: (ἐκ γ΄), (γ΄), (3x), „dreimal“, „трижды“ = said three times; ιβ΄ / (12x) = twelve times; μ΄ = forty times. Troparion = short hymn of the day or feast; Kontakion = short hymn summing up the feast; Ikos = stanza after a kontakion; Theotokion = hymn to the Mother of God, often after „Ehre … Jetzt …“; Irmos = model stanza opening each ode of a canon; Ektenie / litany = petitions by the deacon answered „Herr, erbarme Dich“; Prokimenon = verse before a reading; Trisagion = „Heiliger Gott, heiliger Starker, heiliger Unsterblicher“.";
 
 const EDIT_SYSTEM =
   "You change one paragraph of a liturgical text exactly as the instruction says and nothing else. Keep every other word, spelling and punctuation. Reply with the changed paragraph only, no quotes, no explanation.";
@@ -77,7 +104,8 @@ async function pick(runtime: DecisionRuntime, batch: DecisionBatch, signal: Abor
   return batch.options[best(answer)]?.id ?? batch.options[0]!.id;
 }
 
-type Target = { block: string; text: string; n: number };
+/** `n`: the number shown for the block; `ns`: every number of its source text (all languages). */
+type Target = { block: string; text: string; n: number; ns?: number[]; kind?: string; speaker?: string };
 
 /** Blocks of the open draft or prayer, with the numbers the user sees. */
 function importTargets(draft: ImportDraft): Target[] {
@@ -88,7 +116,13 @@ function importTargets(draft: ImportDraft): Target[] {
     const n = first && "seg" in first ? segs.get(first.seg)?.n : undefined;
     // Excluded blocks too: "take section 7 back in" must find them.
     const text = draftBlockPlainText(draft, b, key) || (first && "seg" in first ? (segs.get(first.seg)?.text ?? "") : "");
-    return n === undefined && !draftBlockVisible(draft, b) ? [] : [{ block: b.id, text, n: n ?? 0 }];
+    const ns = Object.values(b.content)
+      .flat()
+      .flatMap((s) => ("seg" in s && segs.get(s.seg) ? [segs.get(s.seg)!.n] : []));
+    const visible = draftBlockVisible(draft, b);
+    return n === undefined && !visible
+      ? []
+      : [{ block: b.id, text, n: n ?? ns[0] ?? 0, ns, kind: visible ? b.kind : "left out", speaker: b.speaker }];
   });
 }
 
@@ -98,6 +132,8 @@ function prayerTargets(prayer: Prayer): Target[] {
     block: b.id,
     text: b.translations.map(plainOf).filter(Boolean).join(" / "),
     n: i + 1,
+    kind: b.kind,
+    speaker: b.speaker,
   }));
 }
 
@@ -110,32 +146,21 @@ function plainOf(t: Prayer["structure"][number]["translations"][number] | undefi
 
 const norm = (s: string) => s.replace(/\s+/g, " ").trim().toLowerCase();
 
-/** Which blocks the instruction means: chips, numbers, a quote, or one Decision per block. */
-async function chooseTargets(
-  instruction: string,
-  context: ChatContext,
-  all: Target[],
-  runtime: DecisionRuntime,
-  signal: AbortSignal,
-): Promise<Target[]> {
-  if (context.blocks.length > 0) return all.filter((t) => context.blocks.includes(t.block));
-  const numbers = sectionNumbers(instruction);
-  if (numbers.length > 0) return all.filter((t) => numbers.includes(t.n));
-  const quote = quotedText(instruction);
-  if (quote) {
-    const q = norm(quote);
-    const hits = all.filter((t) => norm(t.text).includes(q));
-    if (hits.length > 0) return hits;
-  }
-  const batch = targetBatch(instruction, all.map((t) => ({ block: t.block, text: t.text })));
-  const answers = await decide(runtime, batch, signal);
-  return all.filter((_, i) => (answers[i]?.[0] ?? 0) >= 0.5);
+/** The blocks the wording names (Core's rules), or null when only the model can tell. */
+function settledTargets(instruction: string, plan: ChatPlan, context: ChatContext, all: Target[], previous?: ChatTurn): Target[] | null {
+  const ids = ruleTargets(
+    instruction,
+    plan,
+    all.map((t) => ({ block: t.block, n: t.n, ns: t.ns, text: t.text, visible: t.kind !== "left out", speaker: t.speaker, kind: t.kind })),
+    { chips: context.blocks, previous },
+  );
+  return ids ? all.filter((t) => ids.includes(t.block)) : null;
 }
 
 function kindOptions(custom: string[]) {
-  return [...KIND_PRESETS, ...custom].map((id) => ({
+  return [...new Set([...KIND_PRESETS, ...custom])].map((id) => ({
     id,
-    label: id === "heading" ? "heading" : id === "subheading" ? "subheading" : id === "annotation" ? "annotation (instruction, rubric)" : id === "verse" ? "verse (spoken or sung text)" : kindDisplayLabel(id),
+    label: id === "annotation" ? "annotation (instruction, rubric)" : id === "verse" ? "verse (spoken or sung text)" : kindDisplayLabel(id).toLowerCase(),
   }));
 }
 
@@ -144,26 +169,64 @@ const SPEAKER_LABELS: Record<string, string> = {
   cantor: "cantor (Kantor, Sänger)", choir: "choir (Chor)", people: "people (Volk)", all: "everyone (Alle)",
 };
 
-async function chooseSpeaker(
-  instruction: string,
-  custom: string[],
-  runtime: DecisionRuntime,
-  signal: AbortSignal,
-): Promise<string> {
-  const quote = quotedText(instruction);
-  const known = (quote ? speakerForLabel(quote) : undefined) ?? speakerNamedIn(instruction.replace(quote ?? "", ""));
-  if (known) return known;
-  const ids = [...SPEAKER_PRESETS, ...custom.filter((c) => !(SPEAKER_PRESETS as readonly string[]).includes(c))];
-  return pick(
-    runtime,
-    choiceBatch("Which speaker does the instruction name?", ids.map((id) => ({ id, label: SPEAKER_LABELS[id] ?? id })), instruction),
-    signal,
-  );
+function speakerOptions(custom: string[]) {
+  return [...new Set([...SPEAKER_PRESETS, ...custom])].map((id) => ({ id, label: SPEAKER_LABELS[id] ?? id }));
 }
 
-function contextText(targets: Target[], fallback: string): string {
-  const text = targets.length > 0 ? targets.map((t) => `${t.n}. ${t.text}`).join("\n") : fallback;
-  return text.slice(0, 4000);
+/** The model's plan for what the rules left open; empty when the model gives none. */
+async function modelPlan(options: {
+  instruction: string;
+  view: ChatView;
+  history: readonly ChatTurn[];
+  all: Target[];
+  selected: string[];
+  known: ChatPlan;
+  kinds: string[];
+  speakers: string[];
+  runtime: DecisionRuntime;
+  signal: AbortSignal;
+}): Promise<ChatPlan> {
+  const { all, runtime, signal } = options;
+  const numberOf = (block: string) => all.find((t) => t.block === block)?.n;
+  const request = chatPlanRequest({
+    instruction: options.instruction,
+    view: options.view,
+    history: options.history,
+    paragraphs: all.map((t) => ({ n: t.n, text: t.text, kind: t.kind, speaker: t.speaker })),
+    selected: options.selected.map(numberOf).filter((n): n is number => n !== undefined),
+    known: options.known,
+    numberOf,
+  });
+  try {
+    const text = await runtime.generate(
+      { ...request, maxTokens: 160, json: chatPlanSchema(options.view, options.kinds, options.speakers) },
+      () => {},
+      signal,
+    );
+    return readChatPlan(JSON.parse(text), { view: options.view, kinds: options.kinds, speakers: options.speakers });
+  } catch {
+    return {};
+  }
+}
+
+/** One line for the conversation history. */
+function turnSummary(outcome: ChatOutcome): string {
+  switch (outcome.kind) {
+    case "answer":
+      return outcome.text.replace(/\s+/g, " ").slice(0, 160);
+    case "import":
+      return outcome.understood ?? "Changed the import";
+    case "prayers":
+      return outcome.summary;
+    case "none":
+      return outcome.text;
+  }
+}
+
+function withTurn(outcome: ChatOutcome, instruction: string, action: ChatAction | null, blocks: string[], plan?: ChatPlan): ChatOutcome {
+  const changed = outcome.kind === "import" && outcome.changes.length > 0;
+  const { correct: _c, again: _a, explain: _e, readBack: _r, ...kept } = plan ?? {};
+  return { ...outcome, turn: { instruction, action, blocks, summary: turnSummary(outcome), plan: plan ? kept : undefined, changed } };
 }
 
 export async function runInstruction(options: {
@@ -174,41 +237,136 @@ export async function runInstruction(options: {
   host: ToolHost;
   signal: AbortSignal;
   onAnswerText?: (chunk: string) => void;
+  /** Earlier exchanges of this conversation, oldest first. */
+  history?: readonly ChatTurn[];
+  /** Undo the last answer that changed the Import draft; false when it cannot (later edits). */
+  undoLast?: () => boolean;
 }): Promise<ChatOutcome> {
   const { instruction, context, runtime, host, signal } = options;
+  const history = options.history ?? [];
+  const previous = history.at(-1);
   const draft = context.view === "import" ? host.importDraft() : null;
   const prayer = context.view === "prayer" ? host.selectedPrayer() : null;
-  const action =
-    plainAction(instruction) ?? ((await pick(runtime, actionBatch(context.view, instruction), signal)) as ChatAction);
-
   const all = draft ? importTargets(draft) : prayer ? prayerTargets(prayer) : [];
+  const target = { importDraft: draft, prayer };
+  const speakerName = (id: string) => chatSpeakerName(target, id);
+
+  const customSpeakers = draft
+    ? draft.variants.flatMap((v) => Object.keys(v.speakers ?? {}))
+    : (prayer?.variants.flatMap((v) => Object.keys(v.speakers ?? {})) ?? []);
+  const options_ = chatPlanOptions(draft);
+  const kinds = [...new Set([...options_.kinds, ...(prayer?.kinds?.map((k) => k.id) ?? [])])];
+  const speakers = [...new Set([...options_.speakers, ...customSpeakers])];
+
+  // 1. What the wording settles.
+  const lastChange = [...history].reverse().find((t) => t.changed && t.plan?.action && t.action !== "undo");
+  let plan = ruleChatPlan(instruction, context.view, { previous, customSpeakers, lastChange });
+  if (plan.cancel) return withTurn({ kind: "answer", text: "Okay, I leave it as it is." }, instruction, "answer", []);
+  if (plan.cannot) return withTurn({ kind: "answer", text: plan.cannot }, instruction, "answer", []);
+
+  if (plan.action === "undo") {
+    const done = options.undoLast?.() ?? false;
+    const changedTurn = [...history].reverse().find((t) => t.changed);
+    const text = done
+      ? `Undone: ${changedTurn?.summary ?? "the last change"}.`
+      : "Nothing to undo here. Use Undo in the toolbar (⌘Z) for your own edits.";
+    return withTurn({ kind: "none", text }, instruction, "undo", previous?.blocks ?? []);
+  }
+  if (plan.explain) {
+    const text = previous
+      ? previous.changed
+        ? `Because you wrote „${previous.instruction}“, I did this: ${previous.summary}. If that is wrong, say what you meant or type “rückgängig”.`
+        : `For „${previous.instruction}“ I answered: ${previous.summary}`
+      : "I have not changed anything yet.";
+    return withTurn({ kind: "answer", text }, instruction, "answer", previous?.blocks ?? []);
+  }
+  // "Nein, …": the previous answer goes first, then the corrected one.
+  const corrected = plan.correct && previous?.changed ? (options.undoLast?.() ?? false) : false;
+  const fresh = corrected ? host.importDraft() : draft;
+  if (corrected && fresh) all.splice(0, all.length, ...importTargets(fresh));
+
+  let targets = settledTargets(instruction, plan, context, all, previous);
+  plan.explicit =
+    sectionNumbers(instruction).length > 0 || bareNumbers(instruction).length > 0 || context.blocks.length > 0 || Boolean(plan.quote) || meansAll(instruction);
+  if (plan.readBack) {
+    const shown = (targets ?? []).slice(0, 3);
+    const text = shown.length > 0 ? shown.map((t) => `${t.n}. ${t.text}`).join("\n") : "Which section? Name its number, e.g. “Was steht in Abschnitt 4?”.";
+    return withTurn({ kind: "answer", text }, instruction, "answer", shown.map((t) => t.block));
+  }
+
+  // 2. The model fills the gaps, in one answer with the conversation.
+  const needsKind = plan.action === "setKind" && !plan.kind;
+  const needsSpeaker = plan.action === "setSpeaker" && !plan.speaker;
+  const needsTargets = !targets && plan.action !== "answer" && context.view !== "library" && !(plan.action === "setTitle" && plan.title);
+  if (!plan.action || needsKind || needsSpeaker || needsTargets) {
+    const model = await modelPlan({
+      instruction,
+      view: context.view,
+      history,
+      all,
+      selected: context.blocks,
+      known: plan,
+      kinds,
+      speakers,
+      runtime,
+      signal,
+    });
+    // A quote the model made up (not in any section) is dropped.
+    if (model.quote && !all.some((t) => norm(t.text).includes(norm(model.quote!)))) delete model.quote;
+    plan = mergeChatPlans(plan, model);
+    if (!targets && model.sections?.length && plan.action !== "exclude") {
+      const hits = all.filter((t) => model.sections!.includes(t.n));
+      if (hits.length > 0) targets = hits;
+    }
+  }
+  if (signal.aborted) return { kind: "none", text: "Stopped." };
+
+  // 3. Decisions for whatever is still open (the model gave no usable plan).
+  const action: ChatAction = plan.action ?? ((await pick(runtime, actionBatch(context.view, instruction), signal)) as ChatAction);
+  plan = { ...plan, action };
+  if (action === "setKind" && !plan.kind) {
+    plan.kind = await pick(runtime, choiceBatch("Which kind does the instruction name?", kindOptions(kinds), instruction), signal);
+  }
+  if (action === "setSpeaker" && !plan.speaker) {
+    plan.speaker = await pick(runtime, choiceBatch("Which speaker does the instruction name?", speakerOptions(customSpeakers), instruction), signal);
+  }
 
   if (action === "answer") {
     const chips = all.filter((t) => context.blocks.includes(t.block));
-    const user = `${contextText(chips, all.map((t) => `${t.n}. ${t.text}`).join("\n"))}\n\n${instruction}`;
+    const shown = (chips.length > 0 ? chips : all)
+      .map((t) => `${t.n}. [${t.kind ?? "verse"}${t.speaker ? `, ${t.speaker}` : ""}] ${t.text.replace(/\s+/g, " ").slice(0, 200)}`)
+      .join("\n")
+      .slice(0, 4000);
+    const past = history.slice(-4).map((t) => `User: ${t.instruction}\nYou: ${t.summary}`).join("\n");
+    const user = `${shown}\n\n${past ? `Conversation so far:\n${past}\n\n` : ""}${instruction}`;
     const text = await runtime.generate({ system: ANSWER_SYSTEM, user }, options.onAnswerText ?? (() => {}), signal);
-    return { kind: "answer", text };
+    return withTurn({ kind: "answer", text }, instruction, action, chips.map((t) => t.block));
   }
 
   // --- The Library, or the open prayer ---------------------------------
   if (!draft) {
     const library = host.library();
-    if (!library) return { kind: "none", text: "Open a library first." };
+    if (!library) return withTurn({ kind: "none", text: "Open a library first." }, instruction, action, []);
     const scope = !prayer ? "library" : (plainScope(instruction) ?? (await pick(runtime, scopeBatch(instruction), signal)));
     if (action !== "setKind" && action !== "setSpeaker" && action !== "removeSpeaker") {
-      return { kind: "none", text: "That works in the import view." };
+      return withTurn({ kind: "none", text: "That works in the import view." }, instruction, action, []);
     }
     type Planned = { prayer: Prayer; targets: Target[] };
     const planned: Planned[] = [];
     if (scope === "library") {
-      const quote = quotedText(instruction);
+      const quote = plan.quote;
       if (!quote) {
-        return {
-          kind: "none",
-          text: prayer
-            ? "For a change in every prayer, put the text in quotes, e.g. „Ehre sei dem Vater …“."
-            : "Open a prayer to change its blocks, or put the text in quotes to change it in every prayer.",
-        };
+        return withTurn(
+          {
+            kind: "none",
+            text: prayer
+              ? "For a change in every prayer, put the text in quotes, e.g. „Ehre sei dem Vater …“."
+              : "Open a prayer to change its blocks, or put the text in quotes to change it in every prayer.",
+          },
+          instruction,
+          action,
+          [],
+        );
       }
       for (const entry of library.entries) {
         if (!entry.id) continue;
@@ -219,31 +377,31 @@ export async function runInstruction(options: {
         if (hits.length > 0) planned.push({ prayer: p, targets: hits });
       }
     } else {
-      planned.push({ prayer: prayer!, targets: await chooseTargets(instruction, context, all, runtime, signal) });
+      planned.push({ prayer: prayer!, targets: targets ?? (await decidedTargets(instruction, all, runtime, signal)) });
     }
     const blocks = planned.reduce((n, p) => n + p.targets.length, 0);
     if (blocks === 0) {
-      const quote = quotedText(instruction);
-      return {
-        kind: "none",
-        text:
-          scope === "library" && quote
-            ? `No block in the library starts with „${quote}“.`
-            : "I could not tell which blocks you mean. Select them or put their text in quotes.",
-      };
+      return withTurn(
+        {
+          kind: "none",
+          text:
+            scope === "library" && plan.quote
+              ? `No block in the library starts with „${plan.quote}“.`
+              : "I could not tell which blocks you mean. Select them or put their text in quotes.",
+        },
+        instruction,
+        action,
+        [],
+      );
     }
-    const customKinds = planned.flatMap((p) => p.prayer.kinds?.map((k) => k.id) ?? []);
-    const customSpeakers = planned.flatMap((p) => p.prayer.variants.flatMap((v) => Object.keys(v.speakers ?? {})));
     let patch: { kind?: string; speaker?: string; removeSpeaker?: true };
     let what: string;
     if (action === "setKind") {
-      const kind = await pick(runtime, choiceBatch("Which kind does the instruction name?", kindOptions(customKinds), instruction), signal);
-      patch = { kind };
-      what = `Kind ${kindDisplayLabel(kind)}`;
+      patch = { kind: plan.kind! };
+      what = `Kind ${kindDisplayLabel(plan.kind!)}`;
     } else if (action === "setSpeaker") {
-      const speaker = await chooseSpeaker(instruction, customSpeakers, runtime, signal);
-      patch = { speaker };
-      what = `Speaker ${speakerDisplayLabel(speaker)}`;
+      patch = { speaker: plan.speaker! };
+      what = `Speaker ${speakerDisplayLabel(plan.speaker!)}`;
     } else {
       patch = { removeSpeaker: true };
       what = "Speaker removed";
@@ -251,97 +409,100 @@ export async function runInstruction(options: {
     const answer = await callTool(host, "prayers.edit", {
       edits: planned.flatMap((p) => p.targets.map((t) => ({ prayer: p.prayer.id, block: t.block, ...patch }))),
     });
+    const ids = planned.flatMap((p) => p.targets.map((t) => t.block));
     if (!answer.ok) {
       const declined = answer.error === "The user declined the change";
-      return { kind: "none", text: declined ? "Cancelled. Nothing changed." : answer.error };
+      return withTurn({ kind: "none", text: declined ? "Cancelled. Nothing changed." : answer.error }, instruction, action, ids);
     }
     const where = planned.length === 1 ? `${blocks} ${blocks === 1 ? "block" : "blocks"}` : `${blocks} blocks in ${planned.length} prayers`;
-    return {
-      kind: "prayers",
-      prayers: planned.length,
-      blocks,
-      summary: `Done: ${what} for ${where}. Unsaved until you save; Undo in the editor reverts it.`,
-    };
+    return withTurn(
+      {
+        kind: "prayers",
+        prayers: planned.length,
+        blocks,
+        summary: `Done: ${what} for ${where}. Unsaved until you save; Undo in the editor reverts it.`,
+      },
+      instruction,
+      action,
+      ids,
+    );
   }
 
   // --- The Import draft --------------------------------------------------
-  const targets = await chooseTargets(instruction, context, all, runtime, signal);
-  if (targets.length === 0) {
-    return { kind: "none", text: "I could not tell which sections you mean. Select them, name their numbers or quote their text." };
+  // Leaving out is never guessed: the model's pick of sections to leave out is not applied.
+  const guessed = !targets;
+  if (guessed && action === "exclude") {
+    return withTurn(
+      { kind: "none", text: "Which sections should go? Name their numbers or click one. Site menus and footers the import recognised are already left out." },
+      instruction,
+      action,
+      [],
+    );
+  }
+  const chosen = targets ?? (action === "setTitle" && plan.title ? [] : await decidedTargets(instruction, all, runtime, signal));
+  const current = host.importDraft() ?? draft;
+  const ids = chosen.map((t) => t.block);
+  const numbers = [...new Set(chosen.map((t) => t.n))].sort((a, b) => a - b);
+  const understood = chatPlanSummary(plan, numbers, speakerName);
+  if (chosen.length === 0 && !(action === "setTitle" && plan.title)) {
+    const here = /\b(hier|this one|this here|das hier)\b/iu.test(instruction);
+    return withTurn(
+      {
+        kind: "none",
+        text: here
+          ? `${understood}: click the section you mean in the editor, then send again.`
+          : `${understood}: I could not tell which sections you mean. Select them, name their numbers or quote their text.`,
+      },
+      instruction,
+      action,
+      [],
+    );
   }
   const key = draft.variants[0]!.key;
-  const ops: ImportOp[] = [];
-  const segsOf = (id: string) =>
-    (draft.blocks.find((b) => b.id === id)?.content[key] ?? []).flatMap((s) => ("seg" in s ? [s.seg] : []));
-  switch (action) {
-    case "setKind": {
-      const kind = await pick(
-        runtime,
-        choiceBatch("Which kind does the instruction name?", kindOptions(draft.kinds.map((k) => k.id)), instruction),
+  let ops: ImportOp[];
+  let skipped: Array<{ block: string; reason: string }>;
+  if (action === "editText" && plan.replacement === undefined) {
+    ops = [];
+    skipped = [];
+    for (const t of chosen.slice(0, 12)) {
+      const text = await runtime.generate(
+        { system: EDIT_SYSTEM, user: `Instruction: ${instruction}\n\nParagraph:\n${t.text}`, maxTokens: Math.max(64, t.text.length) },
+        () => {},
         signal,
       );
-      for (const t of targets) ops.push({ op: "setKind", target: { block: t.block }, kind });
-      break;
+      const edit = text ? editTextOps(current, t.block, key, text) : [];
+      if (edit.length === 0) skipped.push({ block: t.block, reason: "the model left the wording as it was" });
+      ops.push(...edit);
     }
-    case "setSpeaker": {
-      const speaker = await chooseSpeaker(
-        instruction,
-        draft.variants.flatMap((v) => Object.keys(v.speakers ?? {})),
-        runtime,
-        signal,
-      );
-      const variant = draft.variants[0]!;
-      let speakers = variant.speakers;
-      for (const t of targets) {
-        const block = draft.blocks.find((b) => b.id === t.block)!;
-        if (block.kind !== "verse" && !draft.kinds.some((k) => k.id === block.kind && k.speaker)) {
-          ops.push({ op: "setKind", target: { block: t.block }, kind: "verse" });
-        }
-        // "Priester: …" — the label goes, its name becomes the speaker's name.
-        const m = /^([^:\n]{1,40}):\s+/u.exec(t.text);
-        if (m && speakerForLabel(m[1]!) === speaker) {
-          ops.push({ op: "removeText", block: t.block, variant: key, start: 0, end: m[0].length });
-          if (!speakers?.[speaker]) speakers = { ...speakers, [speaker]: { name: m[1]! } };
-        }
-        ops.push({ op: "setSpeaker", block: t.block, speaker });
-      }
-      if (speakers !== variant.speakers) ops.push({ op: "setVariantMeta", variant: key, patch: { speakers } });
-      break;
-    }
-    case "removeSpeaker":
-      for (const t of targets) ops.push({ op: "setSpeaker", block: t.block, speaker: null });
-      break;
-    case "exclude":
-    case "include":
-      ops.push({
-        op: "setExcluded",
-        segments: [...new Set(targets.flatMap((t) => segsOf(t.block)))],
-        excluded: action === "exclude",
-      });
-      break;
-    case "editText":
-      for (const t of targets.slice(0, 12)) {
-        const text = await runtime.generate(
-          { system: EDIT_SYSTEM, user: `Instruction: ${instruction}\n\nParagraph:\n${t.text}`, maxTokens: Math.max(64, t.text.length) },
-          () => {},
-          signal,
-        );
-        if (!text || text === t.text) continue;
-        const block = draft.blocks.find((b) => b.id === t.block)!;
-        ops.push({
-          op: "setText",
-          block: t.block,
-          variant: key,
-          content: block.kind === "verse" ? text.split("\n") : text,
-        });
-      }
-      break;
+  } else {
+    ({ ops, skipped } = chatImportOps(current, plan, ids, speakerName));
   }
   if (signal.aborted) return { kind: "none", text: "Stopped." };
-  if (ops.length === 0) return { kind: "none", text: "Nothing to change." };
+  const numberOf = (block: string) => chosen.find((t) => t.block === block)?.n ?? 0;
+  const reasons = skipped.map((s) => ({ n: numberOf(s.block), reason: s.reason }));
+  if (ops.length === 0) {
+    if (corrected) {
+      return withTurn({ kind: "none", text: `Took back the last change. Now: ${understood}.` }, instruction, action, ids, plan);
+    }
+    const why = reasons.length > 0 ? groupSkips(reasons) : "there was nothing to do";
+    return withTurn({ kind: "none", text: `${understood}. Nothing changed: ${why}.` }, instruction, action, ids, plan);
+  }
   const before = host.importDraft()!;
   const answer = await callTool(host, "import.apply", { ops });
-  if (!answer.ok) return { kind: "none", text: answer.error };
+  if (!answer.ok) return withTurn({ kind: "none", text: `${understood}. ${answer.error}` }, instruction, action, ids, plan);
   const after = host.importDraft()!;
-  return { kind: "import", changes: draftChanges(before, after), before, after };
+  return withTurn(
+    { kind: "import", changes: draftChanges(before, after), before, after, understood: corrected ? `${understood} (instead of the last change)` : understood, skipped: reasons },
+    instruction,
+    action,
+    ids,
+    plan,
+  );
+}
+
+/** One Decision per block: does the instruction apply to it? */
+async function decidedTargets(instruction: string, all: Target[], runtime: DecisionRuntime, signal: AbortSignal): Promise<Target[]> {
+  const batch = targetBatch(instruction, all.map((t) => ({ block: t.block, text: t.text })));
+  const answers = await decide(runtime, batch, signal);
+  return all.filter((_, i) => (answers[i]?.[0] ?? 0) >= 0.5);
 }

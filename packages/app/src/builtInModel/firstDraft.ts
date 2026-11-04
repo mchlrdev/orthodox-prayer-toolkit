@@ -5,6 +5,7 @@ import {
   firstDraftBatches,
   MEMORY_ORIGIN,
   memoryRuleSteps,
+  readerRuleOps,
   speakerBatch,
   withMemory,
   type DecisionBatch,
@@ -24,6 +25,21 @@ export type FirstDraftProgress = {
   /** Block the model is deciding about next. */
   pending: string | null;
 };
+
+/**
+ * The reader's fixed rules before any model (known speaker labels, bracketed
+ * instructions; see `readerRuleOps`), with origin "reader". Returns whether
+ * they changed anything.
+ */
+export function applyReaderRules(
+  draft: ImportDraft,
+  apply: (ops: ImportOp[], origin: ImportOrigin) => void,
+): boolean {
+  const ops = readerRuleOps(draft);
+  // Confidence marks a fixed rule's decision (a correction of it is learned), unlike the plain reading.
+  if (ops.length > 0) apply(ops, { by: "reader", confidence: 1 });
+  return ops.length > 0;
+}
 
 /**
  * Library memory's fixed rules on the live draft (same origin + look as a
@@ -62,8 +78,14 @@ export async function runFirstDraft(options: {
    * Decision.
    */
   memory?: LibraryMemory;
+  /** Apply the reader's fixed rules first (default; off when the caller did, see {@link applyReaderRules}). */
+  readerRules?: boolean;
 }): Promise<void> {
   const { runtime, current, apply, onProgress, signal, only, memory } = options;
+  if (options.readerRules !== false && !only) {
+    const start = current() ?? options.draft;
+    applyReaderRules(start, (ops, origin) => apply({ block: "", kind: "prefix", choice: "reader", ops, origin }));
+  }
   const draft = current() ?? options.draft;
   const origin = draftOrigin(draft);
   const batches = firstDraftBatches(draft)

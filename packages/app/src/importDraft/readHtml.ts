@@ -28,7 +28,18 @@ export type ElementInfoFn = (el: Element) => ElementInfo;
 export type ReadHtmlOptions = {
   id?: string;
   name?: string;
+  /** The page's title and site name; read from the document when left out. */
+  page?: Source["page"];
 };
+
+/** `<title>`, `og:title` and `og:site_name` of a page (before sanitizing drops the head). */
+export function pageInfo(doc: Document): NonNullable<Source["page"]> {
+  const meta = (name: string) =>
+    doc.querySelector(`meta[property="${name}"], meta[name="${name}"]`)?.getAttribute("content")?.trim() || undefined;
+  const title = doc.querySelector("title")?.textContent?.replace(/\s+/g, " ").trim() || meta("og:title") || meta("twitter:title");
+  const siteName = meta("og:site_name") || meta("application-name");
+  return { ...(title ? { title } : {}), ...(siteName ? { siteName } : {}) };
+}
 
 const NEVER_SHOWN = new Set([
   "SCRIPT", "STYLE", "TEMPLATE", "NOSCRIPT", "HEAD", "TITLE", "META", "LINK",
@@ -160,6 +171,68 @@ function containerLook(el: Element): SegmentLook {
   return look;
 }
 
+const CHROME_TAGS = new Set(["NAV", "HEADER", "FOOTER", "ASIDE", "FORM", "MENU"]);
+const CHROME_ROLES = /^(navigation|banner|contentinfo|search|menu|menubar|complementary)$/i;
+const CHROME_NAMES = /(^|[\s_-])(nav|navbar|navigation|menu|mainmenu|submenu|menue|footer|sidebar|breadcrumbs?|cookies?|consent|site-?header|header|topbar|widget|widgets|share|social|skip-?link)([\s_-]|$)/i;
+const CONTENT_NAMES = /(^|[\s_-])(content|entry|post|article|main|text|prayer)([\s_-]|$)/i;
+
+/**
+ * Site chrome, not the page's text: inside nav/header/footer/aside/form, a
+ * landmark role, or a container named like a menu, footer or sidebar —
+ * unless a main/article (or a container named "content") comes first on the
+ * way up. A link inside a list item is a menu entry.
+ */
+function chromeOf(el: Element): boolean {
+  let linkInList = false;
+  let inLink = false;
+  for (let e: Element | null = el; e && e.tagName !== "BODY"; e = e.parentElement) {
+    if (e.tagName === "MAIN" || e.tagName === "ARTICLE" || /^main$/i.test(e.getAttribute("role") ?? "")) return false;
+    if (e.tagName === "A") inLink = true;
+    if (e.tagName === "LI" && inLink) linkInList = true;
+    if (CHROME_TAGS.has(e.tagName) || CHROME_ROLES.test(e.getAttribute("role") ?? "")) return true;
+    const names = `${e.getAttribute("id") ?? ""} ${e.getAttribute("class") ?? ""}`;
+    if (CONTENT_NAMES.test(names) && !CHROME_NAMES.test(names)) return linkInList;
+    if (CHROME_NAMES.test(names)) return true;
+  }
+  return linkInList;
+}
+
+/** The page's main text: one main/article holding most of the words. */
+function mainOf(doc: Document): Element | null {
+  const candidates = [...doc.querySelectorAll("main, article, [role=main]")];
+  if (candidates.length !== 1) return null;
+  const all = (doc.body?.textContent ?? "").replace(/\s+/g, "").length;
+  const own = (candidates[0]!.textContent ?? "").replace(/\s+/g, "").length;
+  return all > 0 && own / all >= 0.25 ? candidates[0]! : null;
+}
+
+/** Lines a site prints around every page: server warnings, search boxes, menu toggles. */
+const CHROME_TEXT =
+  /^((notice|warning|deprecated|fatal error|parse error): .+ (in|on line) |(suchen nach|search for|suche)\s*:|(primary|main|haupt)\s*(menu|menü|navigation)$|(skip|jump) to (content|main)|zum inhalt (springen|wechseln)|menü$|menu$|toggle navigation|(read|weiter)lesen|teilen auf|share on|cookie|©|copyright)/iu;
+
+const SENTENCE_END = /[.!?;·»”“"…)\]]$/u;
+const flat = (text: string) => text.replace(/\s+/g, " ").trim();
+/** A short line without closing punctuation: "Psalm 50", "ΣΤΑΣΙΣ ΠΡΩΤΗ", "1. Ikos". */
+const titleLine = (text: string) => {
+  const t = flat(text);
+  return t.length > 0 && t.length <= 60 && !SENTENCE_END.test(t) && !/[,:]$/.test(t);
+};
+
+/**
+ * Inside one block element, does a single line break start a new paragraph?
+ * Yes when the look changes (a red "1. Kondakion"), around a title line,
+ * and between long lines that end a sentence (prose set line by line). Short
+ * lines of verse stay together.
+ */
+function lineBreakStartsParagraph(prev: { text: string; key: string }, line: { text: string; key: string }): boolean {
+  if (prev.key !== line.key) return true;
+  const a = flat(prev.text);
+  const b = flat(line.text);
+  if (titleLine(a) && b.length > 60) return true;
+  if (titleLine(b) && a.length > 60 && SENTENCE_END.test(a)) return true;
+  return SENTENCE_END.test(a) && (a.length > 90 || b.length > 90);
+}
+
 /** Walk a (sanitized) document into a Source. */
 export function readHtmlDocument(
   doc: Document,
@@ -178,36 +251,105 @@ export function readHtmlDocument(
     return hit;
   };
 
-  let buf = "";
-  let textEl: Element | null = null;
-  let block: Element = doc.body ?? doc.documentElement;
+  const main = mainOf(doc);
+  const chrome = new Map<Element, boolean>();
+  const isChrome = (el: Element) => {
+    let hit = chrome.get(el);
+    if (hit === undefined) {
+      hit = main ? !main.contains(el) : chromeOf(el);
+      chrome.set(el, hit);
+    }
+    return hit;
+  };
 
+  let block: Element = doc.body ?? doc.documentElement;
+  /** Text of the current block element, with the element each piece sits in (null: a line break). */
+  let runs: Array<{ text: string; el: Element | null }> = [];
+
+  const lookKey = (el: Element) => {
+    const look = infoOf(el).look;
+    return JSON.stringify([look.weight, look.style, look.size, look.color]);
+  };
+
+  const push = (lines: Array<{ text: string; el: Element }>) => {
+    const text = cleanSegmentText(lines.map((l) => l.text).join("\n"));
+    const el = lines.find((l) => l.text.trim())?.el;
+    if (!text || !el) return;
+    const lang = el.closest("[lang]")?.getAttribute("lang")?.trim();
+    segments.push({
+      id: `${id}-${segments.length + 1}`,
+      text,
+      look: { ...containerLook(block), ...infoOf(el).look },
+      ...(lang ? { lang } : {}),
+      // Site chrome starts out excluded (Restore brings it back).
+      ...(isChrome(el) || CHROME_TEXT.test(text) ? { furniture: true as const } : {}),
+    });
+  };
+
+  /**
+   * One block element's text → segments: a blank line (two line breaks)
+   * starts a new segment, and so does a line set apart by its look (a red
+   * "1. Kondakion" between plain lines), as a reader sees paragraphs.
+   */
   const flush = () => {
-    const text = cleanSegmentText(buf);
-    if (text && textEl) {
-      const lang = textEl.closest("[lang]")?.getAttribute("lang")?.trim();
-      segments.push({
-        id: `${id}-${segments.length + 1}`,
-        text,
-        look: { ...containerLook(block), ...infoOf(textEl).look },
-        ...(lang ? { lang } : {}),
+    const lines: Array<{ text: string; el: Element | null; chars: Map<Element, number> }> = [{ text: "", el: null, chars: new Map() }];
+    for (const run of runs) {
+      if (run.el === null) {
+        lines.push({ text: "", el: null, chars: new Map() });
+        continue;
+      }
+      const parts = run.text.split("\n");
+      parts.forEach((part, i) => {
+        if (i > 0) lines.push({ text: "", el: null, chars: new Map() });
+        const line = lines[lines.length - 1]!;
+        line.text += part;
+        const n = part.replace(/\s+/g, "").length;
+        if (n > 0) {
+          line.chars.set(run.el!, (line.chars.get(run.el!) ?? 0) + n);
+          line.el ??= run.el;
+        }
       });
     }
-    buf = "";
-    textEl = null;
+    runs = [];
+    // The look a line is mostly set in.
+    const keyed = lines.map((l) => {
+      let best: Element | null = null;
+      for (const [el, n] of l.chars) if (!best || n > l.chars.get(best)!) best = el;
+      return { text: l.text, el: l.el, key: best ? lookKey(best) : "" };
+    });
+    let group: Array<{ text: string; el: Element; key: string }> = [];
+    const groups: Array<typeof group> = [];
+    for (const line of keyed) {
+      if (!line.text.trim() || !line.el) {
+        if (group.length) groups.push(group);
+        group = [];
+      } else group.push({ text: line.text, el: line.el, key: line.key });
+    }
+    if (group.length) groups.push(group);
+    for (const g of groups) {
+      let chunk: typeof g = [];
+      g.forEach((line, i) => {
+        if (chunk.length && lineBreakStartsParagraph(g[i - 1]!, line)) {
+          push(chunk);
+          chunk = [];
+        }
+        chunk.push(line);
+      });
+      if (chunk.length) push(chunk);
+    }
   };
 
   const visit = (node: Node, pre: boolean) => {
     if (node.nodeType === 3) {
       const value = node.nodeValue ?? "";
-      buf += pre ? value : value.replace(/[ \t\n\r\f]+/g, " ");
-      if (!textEl && /\S/.test(value)) textEl = node.parentElement;
+      const text = pre ? value : value.replace(/[ \t\n\r\f]+/g, " ");
+      if (text && node.parentElement) runs.push({ text, el: node.parentElement });
       return;
     }
     if (node.nodeType !== 1) return;
     const el = node as Element;
     if (el.tagName === "BR") {
-      buf += "\n";
+      runs.push({ text: "\n", el: null });
       return;
     }
     const meta = infoOf(el);
@@ -228,10 +370,17 @@ export function readHtmlDocument(
   visit(root, false);
   flush();
 
+  const page = options.page ?? pageInfo(doc);
+  // When nearly everything reads as chrome, the guess is wrong: keep it all.
+  const text = (list: SourceSegment[]) => list.reduce((n, seg) => n + seg.text.length, 0);
+  if (text(segments.filter((seg) => !seg.furniture)) < Math.max(40, text(segments) * 0.05)) {
+    for (const seg of segments) delete seg.furniture;
+  }
   return assignStyleGroups({
     id,
     format: "html",
     name: options.name ?? "Web page",
+    ...(page.title || page.siteName ? { page } : {}),
     segments,
   });
 }
@@ -246,6 +395,7 @@ const FRAME_CSP =
  */
 export async function readHtml(html: string, options: ReadHtmlOptions = {}): Promise<Source> {
   const doc = new DOMParser().parseFromString(html, "text/html");
+  options = { ...options, page: options.page ?? pageInfo(doc) };
   sanitizeHtml(doc);
   const csp = doc.createElement("meta");
   csp.setAttribute("http-equiv", "Content-Security-Policy");

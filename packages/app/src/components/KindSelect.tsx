@@ -68,7 +68,7 @@ type Props = {
 
 /** The block's style group, for setting the kind of all its blocks at once. */
 export type KindGroupScope = {
-  /** Label of the single-block side, e.g. "Segment 4". */
+  /** Label of the single-block side, e.g. "Only this". */
   blockLabel: string;
   /** Short group mark (A, B, …). */
   letter: string;
@@ -371,13 +371,12 @@ export function KindSelect({
                   data-active={scope === "group"}
                   onClick={() => setScope("group")}
                 >
-                  <span className="import-source-badge">{groupScope.letter}</span>
-                  Group · {groupScope.count}
+                  All {groupScope.count} like it
                 </button>
               </div>
               {groupMode && groupScope.samples.length > 0 ? (
                 <div className="kind-scope-samples">
-                  Looks the same: {groupScope.samples.map((t) => `“${t}”`).join(", ")}
+                  {groupScope.samples.map((t) => `“${t}”`).join(", ")}
                 </div>
               ) : null}
             </div>
@@ -389,11 +388,6 @@ export function KindSelect({
                 <div key={kind} className="option-row-with-edit">
                   <OptionRow
                     active={active}
-                    hint={
-                      groupMode
-                        ? `for ${groupScope!.count} ${groupScope!.count === 1 ? "segment" : "segments"}`
-                        : undefined
-                    }
                     onClick={() => {
                       if (groupMode) groupScope!.onChangeGroup(kind);
                       else onChange(kind);

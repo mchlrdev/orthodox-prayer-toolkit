@@ -167,7 +167,7 @@ Older files may use custom kinds without declaring them (kinds and the `speaker`
 - Deleting a prayer removes its file and patches the Library catalog (no full rescan).
 - **Export prayer JSON** (right-click a sidebar row) writes the complete `{id}.json` source file via a save dialog. Unsaved draft changes are included.
 - The editor **Export** dialog can write a two-column **Word table** (order of two variants; language gutter and, for Own column, speaker gutter are checked by default and can be turned off; Speakers default to Own column). That file is for Microsoft Word; Affinity Place cannot flow tables as story text. Export options are remembered per Prayer (local), including the last format.
-- **Import prayer JSON** (library menu) copies a picked `.json` into the library root as `{id}.json`. The file is copied byte for byte and migrated in memory (undeclared kinds declared; the catalog flags it for the migration prompt); saving an edit writes the new format. Existing ids/filenames are not overwritten.
+- **Add prayer file…** (library menu) copies a picked `.json` into the library root as `{id}.json`. The file is copied byte for byte and migrated in memory (undeclared kinds declared; the catalog flags it for the migration prompt); saving an edit writes the new format. Existing ids/filenames are not overwritten.
 - The editor has no block paste / import between prayers yet. Core `declareBlockKinds` is the helper for that (declares missing kinds, carrying `speaker` from the source prayer when known); text pasted into a cell never changes kinds.
 
 ## Opening folders (editor)

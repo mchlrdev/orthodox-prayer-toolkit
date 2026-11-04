@@ -13,7 +13,8 @@ const INSTRUCTION = /^(dann|danach|hierauf|darauf|stehend|kniend|dreimal|zweimal
 const GENRE = /(ton|troparion|tropar|kontakion|psalm|ikos|stichera|irmos|kanon|hymnus|ode|lied|exapostilarion|theotokion)/iu;
 
 function choose(batch: DecisionBatch, item: DecisionItem): [string, number] {
-  const text = item.text.replace(/^\([^)]*\)\s*/, "");
+  // The neighbours ("‹before: …›") are context for the model, not part of the paragraph.
+  const text = item.text.replace(/\s*‹(before|after): [^›]*›/gu, "").replace(/^\([^)]*\)\s*/, "");
   switch (batch.kind) {
     case "role": {
       if (FURNITURE.test(text)) return ["exclude", 0.8];
@@ -45,7 +46,7 @@ function choose(batch: DecisionBatch, item: DecisionItem): [string, number] {
 }
 
 /** Keyword rules for the Chat pane's first question (what to do). */
-function chatAction(batch: DecisionBatch, text: string): string {
+function chatAction(batch: Pick<DecisionBatch, "options">, text: string): string {
   const offered = (id: string) => batch.options.some((o) => o.id === id);
   const rules: Array<[RegExp, string]> = [
     [/(gehört nicht|nicht dazu|weglassen|ausschließen|exclude|leave out|not part)/iu, "exclude"],
@@ -103,6 +104,16 @@ export function standInRuntime(
       }
     },
     async generate(request, onText) {
+      if (request.json) {
+        // A chat plan: the action by keyword rules, the rest left to the caller's rules.
+        const schema = request.json as { properties?: { action?: { enum?: string[] } } };
+        const actions = schema.properties?.action?.enum ?? [];
+        const instruction = /Instruction: (.*)$/su.exec(request.user)?.[1] ?? request.user;
+        const action = chatAction({ options: actions.map((id) => ({ id, label: id })) }, instruction);
+        const plan = JSON.stringify({ action, sections: [], kind: "none", speaker: "none", quote: "" });
+        onText(plan);
+        return plan;
+      }
       const text = standInText?.(request.user) ?? `Stand-in model: no answer in browser dev. (${request.user.split("\n")[0]!.slice(0, 60)})`;
       onText(text);
       return text;

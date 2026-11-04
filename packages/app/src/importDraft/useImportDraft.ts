@@ -8,6 +8,9 @@ import {
   draftBlockPlainText,
   draftBlocksInGroup,
   importDraftToPrayer,
+  createImportPrayerBuilder,
+  suggestTitle,
+  pairedLabelOps,
   type ImportDraft,
   type ImportOp,
   type ImportOrigin,
@@ -25,7 +28,7 @@ import {
   type DraftHistory,
 } from "../session/history";
 import { variantKey, type ActiveVariant } from "../variant";
-import { groupLetters, sample, segmentIndex, sourceParts } from "./sourceView";
+import { groupLetters, sample } from "./sourceView";
 import {
   addColumnOps,
   addLanguageOps,
@@ -63,6 +66,8 @@ type ImportState = {
 
 export type ImportDraftSession = {
   draft: ImportDraft | null;
+  /** Changes whenever a draft starts or is discarded (chat and marks belong to one draft). */
+  session: number;
   /** The draft right now, including changes made earlier in this turn. */
   currentDraft: () => ImportDraft | null;
   /** The user's corrections of model decisions in this draft so far. */
@@ -92,8 +97,17 @@ export type ImportDraftSession = {
 
 const NO_FILES: Record<string, Uint8Array> = {};
 
+/** A new language's ops, plus cutting its speaker labels where the block has that speaker. */
+function withPairedLabels(draft: ImportDraft, ops: ImportOp[]): ImportOp[] {
+  const result = applyImportOps(draft, ops);
+  if (!result.ok) return ops;
+  const added = result.draft.variants[result.draft.variants.length - 1]!.key;
+  return [...ops, ...pairedLabelOps(result.draft, added)];
+}
+
 export function useImportDraft(): ImportDraftSession {
   const [state, setState] = useState<ImportState | null>(null);
+  const [session, setSession] = useState(0);
   // Edits in one turn (flush, then structural edit) must see each other.
   const stateRef = useRef<ImportState | null>(null);
 
@@ -139,7 +153,7 @@ export function useImportDraft(): ImportDraftSession {
     ({ source, file, origin, variant }: StartImportInput): boolean => {
       const cur = stateRef.current;
       if (!cur) return false;
-      const ok = apply(addLanguageOps(cur.draft, source, { ...variant, origin }));
+      const ok = apply(withPairedLabels(cur.draft, addLanguageOps(cur.draft, source, { ...variant, origin })));
       if (ok && file) {
         const next = stateRef.current!;
         commit({ ...next, files: { ...next.files, [source.id]: file } });
@@ -152,7 +166,7 @@ export function useImportDraft(): ImportDraftSession {
   const addColumn = useCallback(
     (input: AddColumnInput): boolean => {
       const cur = stateRef.current;
-      return cur ? apply(addColumnOps(cur.draft, input)) : false;
+      return cur ? apply(withPairedLabels(cur.draft, addColumnOps(cur.draft, input))) : false;
     },
     [apply],
   );
@@ -218,9 +232,8 @@ export function useImportDraft(): ImportDraftSession {
         const members = draftBlocksInGroup(d, group);
         if (members.length < 2) return null;
         const key = d.variants[0]!.key;
-        const n = sourceParts(block, segmentIndex(d))[0]?.n;
         return {
-          blockLabel: n !== undefined ? `Segment ${n}` : "This block",
+          blockLabel: "Only this",
           letter: groupLetters(d).get(group) ?? "",
           count: members.length,
           samples: members
@@ -239,7 +252,7 @@ export function useImportDraft(): ImportDraftSession {
     ({ source, file, origin, variant }: StartImportInput) => {
       const draft = createImportDraft({
         sources: [source],
-        variant: { ...variant, source: origin.trim() },
+        variant: { ...variant, source: origin.trim(), title: suggestTitle(source) ?? "" },
       });
       commit({
         draft,
@@ -247,17 +260,23 @@ export function useImportDraft(): ImportDraftSession {
         files: file ? { [source.id]: file } : {},
         corrections: [],
       });
+      setSession((n) => n + 1);
     },
     [commit],
   );
 
+  // Reuses the Block of every draft block an op left alone, so the editor
+  // re-renders only the rows that changed.
+  const buildPrayerRef = useRef<((draft: ImportDraft) => Prayer) | null>(null);
+  buildPrayerRef.current ??= createImportPrayerBuilder();
   const prayer = useMemo(
-    () => (state ? importDraftToPrayer(state.draft) : null),
+    () => (state ? buildPrayerRef.current!(state.draft) : null),
     [state],
   );
 
   return {
     draft: state?.draft ?? null,
+    session,
     currentDraft: useCallback(() => stateRef.current?.draft ?? null, []),
     corrections: useCallback(() => stateRef.current?.corrections ?? [], []),
     files: state?.files ?? NO_FILES,
@@ -267,7 +286,10 @@ export function useImportDraft(): ImportDraftSession {
     start,
     addLanguage,
     addColumn,
-    discard: useCallback(() => commit(null), [commit]),
+    discard: useCallback(() => {
+      commit(null);
+      setSession((n) => n + 1);
+    }, [commit]),
     apply,
     undo: useCallback(() => step(stepBack), [step]),
     redo: useCallback(() => step(stepForward), [step]),

@@ -118,6 +118,13 @@ export function memoryHost(
       return list.length;
     },
   };
-  return { host, files, steps, asked, confirms, unsaved, draft: () => draft, memory: () => memory };
+  /** Undo the last applied step (like the app's Undo). */
+  const undo = () => {
+    const previous = steps.pop();
+    if (!previous) return false;
+    draft = previous;
+    return true;
+  };
+  return { host, files, steps, asked, confirms, unsaved, undo, draft: () => draft, memory: () => memory };
 }
 

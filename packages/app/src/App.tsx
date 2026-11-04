@@ -6,7 +6,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { ActionIcon, useMantineColorScheme } from "@mantine/core";
+import { ActionIcon, Button, useMantineColorScheme } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useMediaQuery } from "@mantine/hooks";
 import {
@@ -64,8 +64,8 @@ import { useFirstDraft } from "./builtInModel/useFirstDraft";
 import { useLibraryMemory } from "./builtInModel/useLibraryMemory";
 import { useChat, type ChatChip } from "./builtInModel/useChat";
 import { useBuiltInModel } from "./builtInModel/useBuiltInModel";
-import { chatBlockLabel, chatSpeakerName } from "./builtInModel/chatLabels";
-import { changeLines, changedWording } from "./builtInModel/changeLines";
+import { chatBlockLabel, chatBlockNumber, chatSpeakerName } from "./builtInModel/chatLabels";
+import { changeLines, changedWording, changeSummary } from "./builtInModel/changeLines";
 import { applyBlockEdits } from "./prayerEdit/blockEdits";
 import { readImportInput } from "./importDraft/readInput";
 import type { ConfirmRequest, ToolHost } from "./agentTools/toolDirectory";
@@ -129,6 +129,9 @@ export function App() {
   };
   const importing = importDraft.draft !== null;
   const [importTextOpen, setImportTextOpen] = useState(false);
+  /** A file dropped on the window: the Import dialog opens with it. */
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [windowDrag, setWindowDrag] = useState(false);
   const [importSaveOpen, setImportSaveOpen] = useState(false);
   const [addLanguageOpen, setAddLanguageOpen] = useState(false);
   /** What waits for "discard the open Import draft?": a prayer or a new import. */
@@ -178,13 +181,18 @@ export function App() {
     saveSidebarPrefs({ libraryCollapsed, contentCollapsed });
   }, [libraryCollapsed, contentCollapsed]);
 
+  // Mantine returns a new setColorScheme every render, and each call injects
+  // a "transition: none" stylesheet (full-document style recalc). Run only
+  // when the preference changes.
+  const setColorSchemeRef = useRef(setColorScheme);
+  setColorSchemeRef.current = setColorScheme;
   useEffect(() => {
     saveAppearancePrefs({
       colorScheme: colorSchemePref,
       editorFontSize,
     });
-    setColorScheme(toMantineColorScheme(colorSchemePref));
-  }, [colorSchemePref, editorFontSize, setColorScheme]);
+    setColorSchemeRef.current(toMantineColorScheme(colorSchemePref));
+  }, [colorSchemePref, editorFontSize]);
 
 
   const handleSelectEntry = useCallback(
@@ -548,12 +556,14 @@ export function App() {
   const builtInModel = useBuiltInModel(sidebarMode === "assistant");
   const chatView = importing ? "import" : session.draft ? "prayer" : "library";
   const chatTarget = { importDraft: importDraft.draft, prayer: importing ? null : session.draft };
+  /** Variant key the import preview shows: chips use its numbers. */
+  const [importShownKey, setImportShownKey] = useState<string | undefined>(undefined);
   /** The block last focused in the editor: the chat's chip. */
   const [chatBlocks, setChatBlocks] = useState<string[]>([]);
   useEffect(() => setChatBlocks([]), [chatView, selectedPath]);
   const chatChips: ChatChip[] = chatBlocks.flatMap((block) => {
-    const label = chatBlockLabel(chatTarget, block);
-    return label ? [{ block, label: `${label.word} ${label.n}` }] : [];
+    const label = chatBlockLabel(chatTarget, block, importShownKey);
+    return label ? [{ block, label }] : [];
   });
   const chatTitle = importing
     ? importDraft.draft?.variants[0]?.title || "Import draft"
@@ -561,22 +571,74 @@ export function App() {
       ? (sidebarEntries.find((e) => e.path === selectedPath)?.title ?? selectedPath ?? "Prayer")
       : (folderLabel ?? "Library");
   const highlightedAnswer = chat.messages.find((m) => m.id === chat.highlighted);
+  // Marked while the answer is the latest change; the next edit ends it.
   const chatHighlight =
-    importing && highlightedAnswer?.role === "assistant" && highlightedAnswer.outcome?.kind === "import"
+    importing &&
+    highlightedAnswer?.role === "assistant" &&
+    highlightedAnswer.outcome?.kind === "import" &&
+    chat.canUndo(highlightedAnswer.id)
       ? {
-          answer: highlightedAnswer.answer ?? 0,
           lines: new Map(
             changeLines(highlightedAnswer.outcome.changes, (id) => chatSpeakerName(chatTarget, id)).map((l) => [
               l.block,
               l.text,
             ]),
           ),
+          summary: changeSummary(highlightedAnswer.outcome.changes, (id) => chatSpeakerName(chatTarget, id)),
           wording: changedWording(highlightedAnswer.outcome.changes),
-          canUndo: chat.canUndo(highlightedAnswer.id),
           onUndo: () => chat.undo(highlightedAnswer.id),
-          onHide: chat.hideHighlight,
         }
       : null;
+
+  const openImport = () => {
+    if (importing) setLeaveImportFor("new-import");
+    else setImportTextOpen(true);
+  };
+  const anyDialogOpen =
+    importTextOpen || importSaveOpen || addLanguageOpen || leaveImportFor !== null;
+  // A file dropped anywhere on the window opens the Import dialog with it
+  // (and never lets the window navigate to the file).
+  const dropRef = useRef({ library: false, dialog: false, importing: false });
+  dropRef.current = { library: Boolean(library), dialog: anyDialogOpen, importing };
+  useEffect(() => {
+    const hasFiles = (e: DragEvent) => [...(e.dataTransfer?.types ?? [])].includes("Files");
+    let depth = 0;
+    const onEnter = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      depth += 1;
+      if (dropRef.current.library && !dropRef.current.dialog) setWindowDrag(true);
+    };
+    const onLeave = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      depth = Math.max(0, depth - 1);
+      if (depth === 0) setWindowDrag(false);
+    };
+    const onOver = (e: DragEvent) => {
+      if (hasFiles(e)) e.preventDefault();
+    };
+    const onDrop = (e: DragEvent) => {
+      depth = 0;
+      setWindowDrag(false);
+      if (!hasFiles(e) || e.defaultPrevented) return;
+      e.preventDefault();
+      const file = e.dataTransfer?.files[0];
+      const { library: open, dialog, importing: busyImport } = dropRef.current;
+      if (!file || !open || dialog) return;
+      setImportFile(file);
+      if (busyImport) setLeaveImportFor("new-import");
+      else setImportTextOpen(true);
+    };
+    window.addEventListener("dragenter", onEnter);
+    window.addEventListener("dragleave", onLeave);
+    window.addEventListener("dragover", onOver);
+    window.addEventListener("drop", onDrop);
+    return () => {
+      window.removeEventListener("dragenter", onEnter);
+      window.removeEventListener("dragleave", onLeave);
+      window.removeEventListener("dragover", onOver);
+      window.removeEventListener("drop", onDrop);
+    };
+  }, []);
 
   const saveImport = async ({ meta, variants }: ImportSaveInput) => {
     const current = importDraft.draft;
@@ -670,10 +732,7 @@ export function App() {
               onLibrarySettings={() => setLibrarySettingsOpen(true)}
               onAppSettings={() => setAppSettingsOpen(true)}
               onImportPrayer={() => void session.importPrayerFile()}
-              onImportText={() => {
-                if (importing) setLeaveImportFor("new-import");
-                else setImportTextOpen(true);
-              }}
+              onImportText={openImport}
               onExportPrayer={(entry) => void session.exportPrayerFile(entry)}
               onDelete={(entry) => setPendingDelete(entry)}
               mode={sidebarMode}
@@ -687,7 +746,10 @@ export function App() {
                   chips={chatChips}
                   onRemoveChip={(block) => setChatBlocks((list) => list.filter((b) => b !== block))}
                   onSent={() => setChatBlocks([])}
-                  blockNumber={(block) => String(chatBlockLabel(chatTarget, block)?.n ?? "")}
+                  blockNumber={(block) => {
+                    const n = chatBlockNumber(chatTarget, block, importShownKey);
+                    return n === null ? "" : String(n);
+                  }}
                   speakerName={(id) => chatSpeakerName(chatTarget, id)}
                   suggestion={libraryMemory.errors.length > 0 ? null : (hintSuggestions(libraryMemory.memory)[0] ?? null)}
                   hints={libraryMemory.memory.hints.map((h) => h.text)}
@@ -733,7 +795,6 @@ export function App() {
                 edits={importDraft.edits}
                 canUndo={importDraft.canUndo}
                 canRedo={importDraft.canRedo}
-                takenIds={takenIds}
                 editorRef={editorRef}
                 scrollRootRef={scrollRootRef}
                 onApply={(ops) => importDraft.apply(ops)}
@@ -743,6 +804,7 @@ export function App() {
                 onAddLanguage={() => setAddLanguageOpen(true)}
                 firstDraft={firstDraft}
                 chatHighlight={chatHighlight}
+                onShownVariantChange={setImportShownKey}
                 onSave={() => {
                   flushPendingEdits();
                   setImportSaveOpen(true);
@@ -799,7 +861,10 @@ export function App() {
               />
             ) : library ? (
               <div className="workspace-empty">
-                Select a prayer from the library.
+                <span>Select a prayer, or drop a file here to import one.</span>
+                <Button size="xs" variant="default" onClick={openImport}>
+                  Import…
+                </Button>
               </div>
             ) : (
               <LibraryWelcome
@@ -814,6 +879,11 @@ export function App() {
             )}
           </div>
         </main>
+        {windowDrag ? (
+          <div className="window-drop" aria-hidden="true">
+            <span>Drop to import</span>
+          </div>
+        ) : null}
 
         <aside
           className="sidebar sidebar-content"
@@ -1009,12 +1079,17 @@ export function App() {
           variant: v.variant,
         }))}
         defaultVariant={library?.manifest?.defaultVariant ?? null}
-        onClose={() => setImportTextOpen(false)}
+        initialFile={importFile}
+        onClose={() => {
+          setImportTextOpen(false);
+          setImportFile(null);
+        }}
         onCreate={(input) => {
           flushPendingEdits();
           importDraft.start(input);
           firstDraft.startIfAvailable();
           setImportTextOpen(false);
+          setImportFile(null);
           if (overlayMode) setLibraryCollapsed(true);
         }}
       />
@@ -1048,7 +1123,6 @@ export function App() {
         <ImportSaveModal
           opened={importSaveOpen}
           draft={importDraft.draft}
-          blockCount={importDraft.prayer?.structure.length ?? 0}
           takenIds={takenIds}
           busy={createBusy}
           onClose={() => setImportSaveOpen(false)}
@@ -1077,12 +1151,15 @@ export function App() {
 
       <ConfirmDialog
         opened={leaveImportFor !== null}
-        onClose={() => setLeaveImportFor(null)}
-        title="Discard import draft?"
+        onClose={() => {
+          setLeaveImportFor(null);
+          setImportFile(null);
+        }}
+        title="Discard this import?"
         message={
           leaveImportFor === "new-import"
-            ? "A new import replaces the open import draft and every change to it."
-            : "Opening another prayer drops the import draft and every change to it."
+            ? "A new import replaces the open one and your changes to it."
+            : "Opening another prayer drops the open import and your changes to it."
         }
         confirmLabel="Discard"
         onConfirm={() => {
@@ -1090,7 +1167,10 @@ export function App() {
           setLeaveImportFor(null);
           importDraft.discard();
           if (next === "new-import") setImportTextOpen(true);
-          else if (next) void session.openEntry(next);
+          else if (next) {
+            setImportFile(null);
+            void session.openEntry(next);
+          }
         }}
       />
 

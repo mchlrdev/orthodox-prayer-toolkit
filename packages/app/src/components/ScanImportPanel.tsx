@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Menu } from "@mantine/core";
-import { IconCheck } from "@tabler/icons-react";
+import { IconCheck, IconX } from "@tabler/icons-react";
 import type { OcrLanguageStatus } from "../../electron/preload";
 
 export type ScanStep = {
@@ -11,7 +11,7 @@ export type ScanStep = {
 
 type Props = {
   name: string;
-  /** "Scan · 1841 × 2037 px" or "PDF without text layer · 12 pages". */
+  /** "Image" or "12 pages". */
   info: string;
   /** Picture of the (first) page. */
   thumb: string | null;
@@ -20,6 +20,10 @@ type Props = {
   onToggle: (code: string) => void;
   busy: boolean;
   step: ScanStep | null;
+  /** A short note about the recognition (e.g. how a language is read). */
+  note?: string;
+  /** Drop the file and go back to the empty field. */
+  onRemove?: () => void;
 };
 
 function mb(bytes: number): string {
@@ -35,7 +39,7 @@ function shortName(name: string): string {
  * languages are in it (packs download on demand and stay offline), and the
  * progress of downloading and recognising.
  */
-export function ScanImportPanel({ name, info, thumb, languages, picked, onToggle, busy, step }: Props) {
+export function ScanImportPanel({ name, info, thumb, languages, picked, onToggle, busy, step, note, onRemove }: Props) {
   const [extra, setExtra] = useState<string[]>([]);
   const shown = languages.filter(
     (l) => picked.includes(l.code) || l.state === "installed" || extra.includes(l.code),
@@ -48,10 +52,15 @@ export function ScanImportPanel({ name, info, thumb, languages, picked, onToggle
       <div className="scan-side">
         <div className="scan-file">
           <span className="scan-file-name">{name}</span>
-          <span className="scan-file-info">{info} · Text is recognised on this computer (Tesseract)</span>
+          <span className="scan-file-info">{info}</span>
+          {onRemove ? (
+            <button type="button" className="import-file-remove" aria-label="Remove file" onClick={onRemove}>
+              <IconX size={12} stroke={1.8} />
+            </button>
+          ) : null}
         </div>
         <div className="scan-langs">
-          <span className="scan-langs-title">Languages in the image</span>
+          <span className="scan-langs-title">Languages</span>
           <div className="scan-chips">
             {shown.map((l) => {
               const on = picked.includes(l.code);
@@ -109,10 +118,7 @@ export function ScanImportPanel({ name, info, thumb, languages, picked, onToggle
           </div>
         </div>
         <div className="scan-foot">
-          <span className="scan-note">
-            Language packs are downloaded once and stay available offline. Church Slavonic: read with Russian for
-            now (civil script only).
-          </span>
+          {note ? <span className="scan-note">{note}</span> : null}
           {step ? (
             <div className="scan-progress" role="status">
               <div className="scan-progress-row">

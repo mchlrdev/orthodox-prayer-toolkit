@@ -297,7 +297,7 @@ Inline output uses one character style per Speaker, `styleNameWithPrefix(stem, "
 
 `exportLayoutDocxParallel` takes `speakers?: { placement, form, separator }` with `placement` `column` (default) · `inline-left` · `inline-both` · `off`. `column` adds a Speaker column on the left (labels from the left variant, including the separator via `inlineSpeakerText`); rows without a speaker still emit an empty Speaker cell so the grid stays aligned. Default: `DEFAULT_PARALLEL_SPEAKER_EXPORT` = `{ placement: "column", form: "name", separator: ": " }`. Word table treats the Speaker column as a first-class option, so the default is Own column: `Speaker | [speaker gutter] | Left | [language gutter] | Right` when both gutters are on (`gutterColumn` and `speakerGutterColumn` default on; `speakerGutterColumn` is ignored unless placement is `column`).
 
-Pure helpers (return new Prayers, `formatVersion` normalized): `normalizeFormatVersion` (`3` iff `kinds` is non-empty, else `2` iff speakers are used, else omitted), `indexSpeakers`, `setBlockSpeaker(prayer, blockId, id | null)`, `setSpeakerLabel(prayer, {lang, variant}, id, {name?, short?})`, `removeSpeaker`. Labels: `resolveSpeakerLabel(prayer, ref, id, "name" | "short")` (this variant, else the English variant, else title-cased id / first letter), `speakerChipLabel` (same as `short`), `speakerDisplayLabel`. Ids: `SPEAKER_PRESETS`, `isValidSpeakerId`, `sanitizeSpeakerIdInput`. Which kinds may carry a speaker: `kindAllowsSpeaker(kind, prayer)` (see [Kinds](#kinds)).
+Pure helpers (return new Prayers, `formatVersion` normalized): `normalizeFormatVersion` (`3` iff `kinds` is non-empty, else `2` iff speakers are used, else omitted), `indexSpeakers`, `setBlockSpeaker(prayer, blockId, id | null)`, `setSpeakerLabel(prayer, {lang, variant}, id, {name?, short?})`, `removeSpeaker`. Labels: `resolveSpeakerLabel(prayer, ref, id, "name" | "short")` (this variant, else the English variant, else title-cased id / first letter), `speakerChipLabel` (same as `short`), `speakerDisplayLabel`, `presetSpeakerName(id, lang)` (a preset's usual name in de, en, ru, cu, el, ro, for a Variant without its own label). Ids: `SPEAKER_PRESETS`, `isValidSpeakerId`, `sanitizeSpeakerIdInput`. Which kinds may carry a speaker: `kindAllowsSpeaker(kind, prayer)` (see [Kinds](#kinds)).
 
 ## Import
 
@@ -330,7 +330,7 @@ Turns a Source into a Prayer without retyping its text. Readers split a Source i
 
 `importDraftToPrayer(draft)` builds the Prayer (blocks without visible text are left out, speakers only where the kind allows them); `validateImportDraft(draft)` runs it through `validate()`; `draftBlockVisible(draft, block)` tells whether a block is part of that Prayer; `draftBlocksInGroup(draft, group)` lists the visible blocks a group `setKind` changes. `segmentColumn(segment)` gives a segment's 0-based text column (PDF `area.column` or a table's `look.column`), and `draftBlocksInColumn(draft, column, variantKey)` the blocks made only of that column — the input to `assignVariant` when a parallel Source becomes two Variants. Saving and id-collision checks stay with the app's Library writer; `prayerIdFromTitle(title)` suggests an id and `freePrayerId(id, taken)` the first free `id-2`, `id-3`, ….
 
-The HTML Reader lives in the app (`packages/app/src/importDraft/readHtml.ts`): the page is sanitized (no scripts, handlers or remote loads), laid out in a sandboxed frame with a `default-src 'none'` CSP, and every block element's own text becomes a segment whose look is its tag, class and computed weight, style, size, colour and alignment. Pasted HTML, dropped `.html` files and fetched web addresses all go through it; addresses are fetched in the main process (`sourceFetch.ts`), never in the renderer.
+The HTML Reader lives in the app (`packages/app/src/importDraft/readHtml.ts`): the page is sanitized (no scripts, handlers or remote loads), laid out in a sandboxed frame with a `default-src 'none'` CSP, and every block element's own text becomes a segment whose look is its tag, class and computed weight, style, size, colour and alignment. Pasted HTML, dropped `.html` files and fetched web addresses all go through it; addresses are fetched in the main process (`sourceFetch.ts`), never in the renderer. Inside one block element, a blank line (two `<br>`), a line set apart by its look (a red "1. Kondakion"), a short title line between long ones and long prose lines that end a sentence start new segments; short verse lines stay together. Site chrome starts out excluded (`furniture`): segments inside `nav`/`header`/`footer`/`aside`/`form`, a landmark role, a container named like a menu, footer, sidebar, breadcrumbs or cookie banner, links in list items, everything outside a single `main`/`article` that holds the text, and lines like PHP notices, "Suchen nach:" or "Primary Menu" — unless that would leave almost nothing. The page's `<title>`, `og:title` and `og:site_name` go on the Source (`page`) for `suggestTitle`.
 
 The PDF Reader (`pdfLayout.ts` + `pdfText.ts`, pdf.js) turns text items into lines, splits a page at a column gutter (full-width lines such as a centred heading stay whole and order the columns band by band), and joins lines into paragraphs by look, line spacing and first-line indent. A PDF has no line-break characters: a line that runs to the column edge continues with a space, a shorter one keeps its break. Segments carry `area` (page, box in points, column) for the page view. Two Reader hints are honoured by `createImportDraft`: `drop` ranges (a hyphen where a word was broken across lines stays in the segment text but is left out of the block) and `furniture` (running heads and page numbers start out excluded). A PDF without a text layer goes to the scan Reader. pdf.js runs from its legacy build, whose polyfills cover what Electron's Chromium lacks (`Uint8Array.prototype.toHex`).
 
@@ -344,28 +344,48 @@ The Built-in model never writes text or JSON: it answers **Decisions**, question
 
 | Function | Does |
 |----------|------|
-| `firstDraftBatches(draft)` | The first-draft questions as `DecisionBatch`es: `role` of every visible block (heading, subheading, annotation, verse, not part of the prayer), `prefix` for blocks starting with "Label:" (genre label → split off as heading, instruction → Note run, speaker, spoken text), `pair` for blocks paired by order (same passage or not) |
+| `readerRuleOps(draft)` | Fixed rules before the model: a paragraph holding several blocks (lines joined by `<br>`) is split before a line with a known speaker label or an instruction line and after "… spricht:" (`lineSplitOffsets`); a known speaker label (normalized: accents, case, "Der Priester", "Ὁ Ἱερεύς"; de, en, ru, cu, el, ro, sr) at a block's start ("Leser: …") → speaker, label cut, its wording as the Variant's speaker name; bracketed instructions inside the text (`inlineNoteRanges`) → inline annotations |
+| `speakerLabelAt(text)`, `labelPrefixEnd(text)` | A known speaker label at the start (label, speaker, end), or where any "Label: " ends |
+| `speakerNameOps(draft, speaker, named?)` | Speaker names for Variants that have none, from `named` or `presetSpeakerName(id, lang)` |
+| `firstDraftBatches(draft)` | The first-draft questions as `DecisionBatch`es (blocks with a speaker, a known speaker label or a reader kind are not asked; worked examples in the source's language — de, en, ru/cu, el, ro): `role` of every visible block (heading, subheading, annotation, verse, not part of the prayer), `prefix` for blocks starting with "Label:" (genre label → split off as heading, instruction → Note run, speaker, spoken text), `pair` for blocks paired by order (same passage or not) |
 | `speakerBatch(prefix, items)` | Follow-up for "who speaks" labels that `speakerForLabel` does not know ("Priester" → `priest` is known) |
 | `decisionPrompts(batch, maxItems)` | Prompt text (rules, options with letters, worked examples, numbered items); the runtime reads item *i*'s letter right after `decisionItemPrefix(i)` |
 | `decisionStep(draft, batch, item, answer)` | The Import operations for one answer against the draft as it is now, with origin `{ by: "model", confidence }`; null when nothing changes or someone other than the reader already decided the block (user edits win) |
-| `uncertainDecisions(block)` | Model decisions below `UNCERTAIN_BELOW` (0.7), for "open decisions" |
+| `uncertainDecisions(block)` | Model decisions below `UNCERTAIN_BELOW` (0.85, calibrated on the test set: answers at 0.9–1.0 were right 92% of the time, at 0.8–0.9 75%, below that about half), for "open decisions" |
 
 The app runs them in `packages/app/src/builtInModel/` (`runFirstDraft`, a stand-in model with fixed rules for browser dev and tests); the model itself runs in its own process (`electron/modelWorker.ts`, node-llama-cpp). `pnpm --filter @orthodox-prayer-toolkit/app measure:model [library-dir]` measures hit rates against a folder of prayers.
 
-### Decisions (Chat pane)
+### Chat plan (Chat pane)
 
-`chatDecisions.ts` turns one chat instruction into a few Decisions; the app (`builtInModel/chatInstruction.ts`) runs them and calls Tools.
+`chatPlan.ts` turns one chat instruction into a `ChatPlan` (action, kind, speaker, quote, replacement, follow-up, sections) and builds its changes; the app (`builtInModel/chatInstruction.ts`) asks the model only for what is open and calls Tools.
 
 | Function | Does |
 |----------|------|
-| `actionBatch(view, instruction)` | What to do: set kind, set or remove speaker, exclude, include, change wording, answer (options depend on the view: import, prayer, library) |
+| `ruleChatPlan(instruction, view, { previous, customSpeakers })` | What the wording settles: action, speaker (also quoted), kind, quoted words, a replacement, and `followUp` when the instruction means the previous answer's blocks (`ChatTurn`) |
+| `chatPlanRequest(…)`, `chatPlanSchema(view, kinds, speakers)` | The model's prompt (sections with kind and speaker, selection, last exchanges, what is settled) and the JSON schema its answer is held to |
+| `ruleTargets(instruction, plan, sections, { chips, previous })` | The sections the wording names without the model (numbers, chips, "das hier", "bei allem", a named speaker, quotes, the text before "ist", a distinctive word, "oben"/"am Ende", follow-ups); null when only the model can tell |
+| `cannotDo(instruction)`, `meansAll(instruction)` | The honest reply for a request the chat cannot carry out; "bei allem" / "und alles danach" |
+| `readerKindOf(text)`, `speakerRubricAt(text)`, `standaloneSpeakerLabel(text)` | The reader's own kind for genre labels and rubrics; a speaker named by a leading rubric; a block that is only a speaker label |
+| `bareNumbers(instruction)`, `numberRanges(ns)`, `groupSkips(skips)` | Numbers standing alone in a short message ("und 15 auch"; not "Ode 1", "40 mal"); "3–5, 9"; grouped reasons for unchanged sections |
+| `readChatPlan(raw, options)`, `mergeChatPlans(rules, model)` | The model's answer as a plan (unknown values dropped); rules win |
+| `chatImportOps(draft, plan, blocks, speakerName?)` | Import operations for a plan, and a reason per block left as it was ("already has the speaker …", "„…“ is not in this section") |
+| `editTextOps(draft, block, variant, text)` | New wording for one block (lines for verse) |
+| `chatPlanSummary(plan, sections, speakerName)` | The plan in one line for the user ("Inline annotation „(dreimal)“ in section 4") |
+
+### Decisions (Chat pane)
+
+`chatDecisions.ts` holds the one-question Decisions the app falls back to when the model gives no usable plan.
+
+| Function | Does |
+|----------|------|
+| `actionBatch(view, instruction)` | What to do: set kind, set or remove speaker, exclude, include, change wording, inline annotation, remove words, answer (options depend on the view: import, prayer, library) |
 | `choiceBatch(question, options, instruction)` | One pick from a list (which kind, which speaker) |
 | `scopeBatch(instruction)` | The open prayer only, or every prayer |
 | `targetBatch(instruction, blocks)` | Yes/no per block: does the instruction mean it? |
 | `plainAction(instruction)`, `plainScope(instruction)` | The answer without the model when the wording leaves no doubt ("Speaker Priester", "in allen Gebeten") |
 | `sectionNumbers(instruction)`, `quotedText(instruction)` | Section numbers ("Abschnitt 3 und 7") and a quoted text ("„Ehre sei …“") named in the instruction |
 | `speakerNamedIn(text)` | The speaker preset a sentence names ("Diakon" → `deacon`; "all" is skipped) |
-| `draftChanges(before, after)` | What changed per block between two Import drafts (kind, speaker, excluded, included, added, removed, text), for the chat's change card |
+| `draftChanges(before, after)` | What changed per block between two Import drafts (kind, speaker, excluded, included, added, removed, text, note = inline annotations only), for the chat's change card |
 
 ### Library memory
 

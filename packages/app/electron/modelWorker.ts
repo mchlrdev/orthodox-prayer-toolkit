@@ -7,7 +7,13 @@ import { createDecider, type Decider } from "./modelRuntime";
  * main process. One job runs at a time.
  */
 
-export type GenerateRequest = { system: string; user: string; maxTokens?: number };
+export type GenerateRequest = {
+  system: string;
+  user: string;
+  maxTokens?: number;
+  /** JSON schema the answer must follow (a grammar holds the model to it). */
+  json?: object;
+};
 
 export type ModelWorkerRequest =
   | { type: "decide"; job: number; modelPath: string; prompt: DecisionPrompt }

@@ -1,4 +1,5 @@
 import {
+  suggestTitle,
   applyImportOps,
   draftBlocksInColumn,
   freeVariantKey,
@@ -170,7 +171,10 @@ export function addLanguageOps(
 ): ImportOp[] {
   const key = freeVariantKey(draft);
   return [
-    { op: "addVariant", variant: { ...variant, source: origin.trim() } },
+    {
+      op: "addVariant",
+      variant: { ...variant, source: origin.trim(), title: suggestTitle(source) ?? "" },
+    },
     { op: "addSource", source, variant: key },
     { op: "pairByOrder", variant: key },
   ];

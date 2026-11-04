@@ -26,7 +26,10 @@
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit",
     "measure:model": "node scripts/measure-model.ts",
-    "measure:ocr": "node scripts/measure-ocr.ts"
+    "measure:ocr": "node scripts/measure-ocr.ts",
+    "measure:import": "vitest run --config vitest.measure.config.ts scripts/measure/import.measure.ts",
+    "measure:chat": "vitest run --config vitest.measure.config.ts scripts/measure/chat.measure.ts",
+    "export:training": "vitest run --config vitest.measure.config.ts scripts/measure/training.measure.ts"
   },
   "dependencies": {
     "@mantine/core": "^7.17.2",

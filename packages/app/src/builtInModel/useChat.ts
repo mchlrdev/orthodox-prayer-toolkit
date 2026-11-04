@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from "react";
-import type { ChatView } from "@orthodox-prayer-toolkit/core";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { ChatTurn, ChatView } from "@orthodox-prayer-toolkit/core";
 import type { ConfirmRequest, ToolHost } from "../agentTools/toolDirectory";
 import type { useImportDraft } from "../importDraft/useImportDraft";
 import { runInstruction, type ChatOutcome } from "./chatInstruction";
@@ -52,10 +52,25 @@ export function useChat(host: ToolHost, importDraft: ReturnType<typeof useImport
   const abortRef = useRef<AbortController | null>(null);
   const nextId = useRef(1);
   const answers = useRef(0);
+  /** The conversation so far, for follow-ups ("entferne das", "nein, Leser"). */
+  const turns = useRef<ChatTurn[]>([]);
   const hostRef = useRef(host);
   hostRef.current = host;
   const importRef = useRef(importDraft);
   importRef.current = importDraft;
+
+  // A new or discarded draft starts a new conversation: old answers would
+  // mark and undo blocks of a draft that is gone (block ids repeat).
+  useEffect(() => {
+    abortRef.current?.abort();
+    setMessages([]);
+    setHighlighted(null);
+    answers.current = 0;
+    turns.current = [];
+  }, [importDraft.session]);
+
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   const patch = (id: number, change: Partial<Extract<ChatMessage, { role: "assistant" }>>) =>
     setMessages((list) => list.map((m) => (m.id === id && m.role === "assistant" ? { ...m, ...change } : m)));
@@ -95,11 +110,25 @@ export function useChat(host: ToolHost, importDraft: ReturnType<typeof useImport
         runtime,
         host: chatHost,
         signal: abort.signal,
+        history: turns.current,
+        // "rückgängig" / "nein, …": the last answer that changed the draft, while nothing came after it.
+        undoLast: () => {
+          const last = [...messagesRef.current]
+            .reverse()
+            .find((m) => m.role === "assistant" && m.outcome?.kind === "import" && !m.undone) as
+            | Extract<ChatMessage, { role: "assistant" }>
+            | undefined;
+          if (!last || last.outcome?.kind !== "import" || importRef.current.currentDraft() !== last.outcome.after) return false;
+          importRef.current.undo();
+          patch(last.id, { undone: true });
+          return true;
+        },
         onAnswerText: (chunk) => {
           streamed += chunk;
           patch(replyId, { text: streamed });
         },
       });
+      if (outcome.turn) turns.current = [...turns.current, outcome.turn].slice(-8);
       if (outcome.kind === "import" && outcome.changes.length > 0) {
         answers.current += 1;
         patch(replyId, { pending: false, outcome, answer: answers.current, text: "" });

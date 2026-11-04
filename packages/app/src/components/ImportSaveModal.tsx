@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   Button,
   Group,
@@ -16,6 +16,8 @@ import {
   type DraftVariant,
   type ImportDraft,
 } from "@orthodox-prayer-toolkit/core";
+import { IconChevronRight } from "@tabler/icons-react";
+import { variantName } from "../languageName";
 
 type VariantFields = Pick<DraftVariant, "title" | "license" | "source">;
 
@@ -28,7 +30,6 @@ export type ImportSaveInput = {
 type Props = {
   opened: boolean;
   draft: ImportDraft;
-  blockCount: number;
   takenIds: ReadonlySet<string>;
   busy: boolean;
   onClose: () => void;
@@ -41,7 +42,6 @@ const ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export function ImportSaveModal({
   opened,
   draft,
-  blockCount,
   takenIds,
   busy,
   onClose,
@@ -63,6 +63,9 @@ export function ImportSaveModal({
   const [occasion, setOccasion] = useState("");
   const [license, setLicense] = useState("");
   const [source, setSource] = useState("");
+  /** Save was pressed: empty required fields are marked. */
+  const [attempted, setAttempted] = useState(false);
+  const [details, setDetails] = useState(false);
 
   useEffect(() => {
     if (!opened) return;
@@ -75,6 +78,8 @@ export function ImportSaveModal({
     setOccasion(draft.meta.occasion ?? "");
     setLicense(variant.license);
     setSource(variant.source);
+    setAttempted(false);
+    setDetails(false);
     setExtra(
       Object.fromEntries(
         others.map((v) => [
@@ -110,6 +115,103 @@ export function ImportSaveModal({
       return f !== undefined && f.title.trim() !== "" && f.license.trim() !== "" && f.source.trim() !== "";
     });
 
+  const needed = (value: string) => (attempted && value.trim() === "" ? "Needed" : undefined);
+  const nameOf = (v: DraftVariant) => variantName({ lang: v.lang, variant: v.variant });
+
+  const submit = (e?: FormEvent) => {
+    e?.preventDefault();
+    if (busy) return;
+    if (!ready) {
+      setAttempted(true);
+      if (type.trim() === "" || (fileId !== "" && idError !== null && !taken)) setDetails(true);
+      return;
+    }
+    onSave({
+      meta: {
+        id: fileId,
+        type: type.trim(),
+        tone: tone ?? undefined,
+        book: book.trim(),
+        occasion: occasion.trim(),
+      },
+      variants: {
+        [variant.key]: {
+          title: title.trim(),
+          license: license.trim(),
+          source: source.trim(),
+        },
+        ...Object.fromEntries(
+          others.map((v) => {
+            const f = extra[v.key]!;
+            return [v.key, { title: f.title.trim(), license: f.license.trim(), source: f.source.trim() }];
+          }),
+        ),
+      },
+    });
+  };
+
+  const fields = (
+    v: DraftVariant,
+    value: VariantFields,
+    set: (field: keyof VariantFields, value: string) => void,
+    first: boolean,
+  ) => (
+    <Stack gap="xs" key={v.key}>
+      {multilingual ? (
+        <Text size="xs" fw={600} c="dimmed" tt="uppercase" className="import-save-lang">
+          {nameOf(v)}
+        </Text>
+      ) : null}
+      <TextInput
+        label="Title"
+        value={value.title}
+        data-autofocus={first ? true : undefined}
+        error={needed(value.title)}
+        onChange={(e) => set("title", e.currentTarget.value)}
+      />
+      {first ? (
+        idError ? (
+          <Group justify="space-between" gap="xs" wrap="nowrap" mt={-4}>
+            <Text size="xs" c="accent">
+              {taken ? `${fileId}.json is already in the library.` : idError}
+            </Text>
+            {taken ? (
+              <UnstyledButton
+                className="import-id-suggestion"
+                onClick={() => {
+                  setIdTouched(true);
+                  setId(freePrayerId(fileId, takenIds));
+                }}
+              >
+                Use {freePrayerId(fileId, takenIds)}
+              </UnstyledButton>
+            ) : null}
+          </Group>
+        ) : fileId ? (
+          <Text size="xs" c="dimmed" mt={-4}>
+            Saved as {fileId}.json
+          </Text>
+        ) : null
+      ) : null}
+      <Group grow align="flex-start">
+        <TextInput
+          label="From"
+          placeholder="Book or website"
+          value={value.source}
+          error={needed(value.source)}
+          onChange={(e) => set("source", e.currentTarget.value)}
+        />
+        <TextInput
+          label="License"
+          placeholder="e.g. CC BY 4.0"
+          value={value.license}
+          error={needed(value.license)}
+          onChange={(e) => set("license", e.currentTarget.value)}
+        />
+      </Group>
+    </Stack>
+  );
+
   return (
     <Modal
       opened={opened}
@@ -120,154 +222,86 @@ export function ImportSaveModal({
       closeOnClickOutside={!busy}
       closeOnEscape={!busy}
     >
-      <Stack gap="md">
-        <Text size="xs" c="dimmed">
-          {blockCount} {blockCount === 1 ? "block" : "blocks"} ·{" "}
-          {draft.variants.map((v) => `${v.lang} / ${v.variant}`).join(", ")}
-        </Text>
-        <TextInput
-          label={`Title · ${variant.lang}`}
-          value={title}
-          data-autofocus
-          onChange={(e) => setTitle(e.currentTarget.value)}
-        />
-        {others.map((v) => (
-          <TextInput
-            key={v.key}
-            label={`Title · ${v.lang}`}
-            value={extra[v.key]?.title ?? ""}
-            onChange={(e) => setExtraField(v.key, "title", e.currentTarget.value)}
-          />
-        ))}
-        <Stack gap={6}>
-          <TextInput
-            label="File name"
-            value={fileId}
-            rightSection={<Text size="sm" c="dimmed">.json</Text>}
-            rightSectionWidth={48}
-            error={idError ? true : undefined}
-            onChange={(e) => {
-              setIdTouched(true);
-              setId(e.currentTarget.value);
-            }}
-          />
-          {idError ? (
-            <Group justify="space-between" gap="xs" wrap="nowrap">
-              <Text size="xs" c="accent">
-                {idError}
-              </Text>
-              {taken ? (
-                <UnstyledButton
-                  className="import-id-suggestion"
-                  onClick={() => {
-                    setIdTouched(true);
-                    setId(freePrayerId(fileId, takenIds));
-                  }}
-                >
-                  Use {freePrayerId(fileId, takenIds)}
-                </UnstyledButton>
-              ) : null}
-            </Group>
-          ) : null}
-        </Stack>
-        <Group grow align="flex-start">
-          <TextInput
-            label="Type"
-            description="e.g. prayer, troparion"
-            value={type}
-            onChange={(e) => setType(e.currentTarget.value)}
-          />
-          <NumberInput
-            label="Tone"
-            description="1–8, optional"
-            min={1}
-            max={8}
-            allowDecimal={false}
-            hideControls
-            value={tone ?? ""}
-            onChange={(v) => setTone(typeof v === "number" ? v : null)}
-          />
-        </Group>
-        <Group grow>
-          <TextInput
-            label="Book"
-            placeholder="horologion, menaion…"
-            value={book}
-            onChange={(e) => setBook(e.currentTarget.value)}
-          />
-          <TextInput
-            label="Occasion"
-            placeholder="Optional"
-            value={occasion}
-            onChange={(e) => setOccasion(e.currentTarget.value)}
-          />
-        </Group>
-        <Group grow>
-          <TextInput
-            label={multilingual ? `License · ${variant.lang}` : "License"}
-            value={license}
-            onChange={(e) => setLicense(e.currentTarget.value)}
-          />
-          <TextInput
-            label={multilingual ? `Source · ${variant.lang}` : "Source"}
-            value={source}
-            onChange={(e) => setSource(e.currentTarget.value)}
-          />
-        </Group>
-        {others.map((v) => (
-          <Group grow key={v.key}>
-            <TextInput
-              label={`License · ${v.lang}`}
-              value={extra[v.key]?.license ?? ""}
-              onChange={(e) => setExtraField(v.key, "license", e.currentTarget.value)}
-            />
-            <TextInput
-              label={`Source · ${v.lang}`}
-              value={extra[v.key]?.source ?? ""}
-              onChange={(e) => setExtraField(v.key, "source", e.currentTarget.value)}
-            />
-          </Group>
-        ))}
-        <Group justify="flex-end" gap="xs">
-          <Button variant="subtle" color="gray" onClick={onClose} disabled={busy}>
-            Cancel
-          </Button>
-          <Button
-            color="dark"
-            loading={busy}
-            disabled={!ready}
-            onClick={() =>
-              onSave({
-                meta: {
-                  id: fileId,
-                  type: type.trim(),
-                  tone: tone ?? undefined,
-                  book: book.trim(),
-                  occasion: occasion.trim(),
-                },
-                variants: {
-                  [variant.key]: {
-                    title: title.trim(),
-                    license: license.trim(),
-                    source: source.trim(),
-                  },
-                  ...Object.fromEntries(
-                    others.map((v) => {
-                      const f = extra[v.key]!;
-                      return [
-                        v.key,
-                        { title: f.title.trim(), license: f.license.trim(), source: f.source.trim() },
-                      ];
-                    }),
-                  ),
-                },
-              })
-            }
+      <form onSubmit={submit}>
+        <Stack gap="md">
+          {fields(variant, { title, license, source }, (field, value) => {
+            if (field === "title") setTitle(value);
+            else if (field === "license") setLicense(value);
+            else setSource(value);
+          }, true)}
+          {others.map((v) =>
+            fields(
+              v,
+              extra[v.key] ?? { title: "", license: "", source: "" },
+              (field, value) => setExtraField(v.key, field, value),
+              false,
+            ),
+          )}
+          <UnstyledButton
+            className="import-save-details"
+            aria-expanded={details}
+            onClick={() => setDetails(!details)}
           >
-            Save
-          </Button>
-        </Group>
-      </Stack>
+            <IconChevronRight size={12} stroke={2} data-open={details ? "true" : undefined} />
+            More details
+          </UnstyledButton>
+          {details ? (
+            <Stack gap="xs">
+              <Group grow align="flex-start">
+                <TextInput
+                  label="Type"
+                  placeholder="prayer, troparion …"
+                  value={type}
+                  error={needed(type)}
+                  onChange={(e) => setType(e.currentTarget.value)}
+                />
+                <NumberInput
+                  label="Tone"
+                  placeholder="1–8"
+                  min={1}
+                  max={8}
+                  allowDecimal={false}
+                  hideControls
+                  value={tone ?? ""}
+                  onChange={(v) => setTone(typeof v === "number" ? v : null)}
+                />
+              </Group>
+              <Group grow>
+                <TextInput
+                  label="Book"
+                  placeholder="horologion, menaion …"
+                  value={book}
+                  onChange={(e) => setBook(e.currentTarget.value)}
+                />
+                <TextInput
+                  label="Occasion"
+                  value={occasion}
+                  onChange={(e) => setOccasion(e.currentTarget.value)}
+                />
+              </Group>
+              <TextInput
+                label="File name"
+                value={fileId}
+                rightSection={<Text size="sm" c="dimmed">.json</Text>}
+                rightSectionWidth={48}
+                error={idError && !taken ? idError : undefined}
+                onChange={(e) => {
+                  setIdTouched(true);
+                  setId(e.currentTarget.value);
+                }}
+              />
+            </Stack>
+          ) : null}
+          <Group justify="flex-end" gap="xs">
+            <Button variant="subtle" color="gray" onClick={onClose} disabled={busy}>
+              Cancel
+            </Button>
+            <Button color="dark" loading={busy} type="submit">
+              Save
+            </Button>
+          </Group>
+        </Stack>
+      </form>
     </Modal>
   );
 }

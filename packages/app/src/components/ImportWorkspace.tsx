@@ -9,6 +9,7 @@ import {
   IconCircleOff,
   IconLink,
   IconUser,
+  IconX,
 } from "@tabler/icons-react";
 import {
   draftBlockGroup,
@@ -16,6 +17,7 @@ import {
   draftBlockVisible,
   kindDisplayLabel,
   locateValidationErrors,
+  pickerKinds,
   uncertainDecisions,
   type DraftBlock,
   type ImportDraft,
@@ -35,7 +37,6 @@ import { useUncertainWords } from "../importDraft/useUncertainWords";
 import { shortcutLabel } from "../appCommands";
 import { importContentErrors } from "../importDraft/contentErrors";
 import {
-  groupLetters,
   segmentIndex,
   markedPieces,
   sample,
@@ -44,6 +45,7 @@ import {
   type SegmentInfo,
 } from "../importDraft/sourceView";
 import { variantKey, type ActiveVariant } from "../variant";
+import { languageName, variantName } from "../languageName";
 import type { FirstDraft } from "../builtInModel/useFirstDraft";
 
 /** Small progress ring for the model's work. */
@@ -93,7 +95,6 @@ function MarkedText({ part }: { part: SourcePart }) {
         data-bold={piece.mark.look.weight === "bold" ? "true" : undefined}
         data-italic={piece.mark.look.style === "italic" ? "true" : undefined}
         data-colored={piece.mark.look.color ? "true" : undefined}
-        title="Formatted differently in the source: maybe a note"
       >
         {piece.text}
       </span>
@@ -104,14 +105,13 @@ function MarkedText({ part }: { part: SourcePart }) {
 }
 
 export type ChatHighlight = {
-  answer: number;
-  /** Changed block → what changed ("Speaker Priest · label removed"). */
+  /** Changed block → what changed ("Speaker: Priest · Label removed"). */
   lines: ReadonlyMap<string, string>;
+  /** "2 left out", "3 → Annotation". */
+  summary: string;
   /** The answer changed wording, not just structure. */
   wording: boolean;
-  canUndo: boolean;
   onUndo: () => void;
-  onHide: () => void;
 };
 
 type Props = {
@@ -124,8 +124,6 @@ type Props = {
   edits: EditorEdits;
   canUndo: boolean;
   canRedo: boolean;
-  /** Prayer ids already in the library (for the id status). */
-  takenIds: ReadonlySet<string>;
   editorRef?: Ref<InlineEditorHandle>;
   scrollRootRef?: Ref<HTMLDivElement | null>;
   onApply: (ops: ImportOp[]) => boolean;
@@ -139,6 +137,8 @@ type Props = {
   firstDraft: FirstDraft;
   /** The chat answer whose changes are marked (null = none). */
   chatHighlight?: ChatHighlight | null;
+  /** The Variant key the preview shows (the chat numbers blocks by its source). */
+  onShownVariantChange?: (key: string) => void;
 };
 
 export function ImportWorkspace({
@@ -150,7 +150,6 @@ export function ImportWorkspace({
   edits,
   canUndo,
   canRedo,
-  takenIds,
   editorRef,
   scrollRootRef,
   onApply,
@@ -161,6 +160,7 @@ export function ImportWorkspace({
   onAddLanguage,
   firstDraft,
   chatHighlight = null,
+  onShownVariantChange,
 }: Props) {
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   /** The Variant the preview shows; the others are checked through the dropdown. */
@@ -176,6 +176,7 @@ export function ImportWorkspace({
     seenCount.current = variantCount;
   }, [variantCount, lastKey]);
   const col: ActiveVariant = { lang: variant.lang, variant: variant.variant };
+  useEffect(() => onShownVariantChange?.(variant.key), [variant.key, onShownVariantChange]);
   const bodyRef = useRef<HTMLDivElement | null>(null);
   const uncertain = useUncertainWords(bodyRef, draft, variant.key, variantKey(col));
   const visibleVariants = useMemo(
@@ -184,7 +185,6 @@ export function ImportWorkspace({
     [col.lang, col.variant],
   );
   const segments = useMemo(() => segmentIndex(draft), [draft.sources]);
-  const letters = useMemo(() => groupLetters(draft), [draft.sources]);
   // Most common font size = body text; larger segments read as headings.
   const bodySize = useMemo(() => {
     const counts = new Map<number, number>();
@@ -207,10 +207,6 @@ export function ImportWorkspace({
   );
   /** Block holding the caret: its row and its style group are marked. */
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
-  const segmentCount = segments.size;
-  const groupCount = new Set(
-    [...segments.values()].map((s) => s.group).filter(Boolean),
-  ).size;
   const source = draft.sources[0];
 
   const errors = useMemo(() => importContentErrors(prayer), [prayer]);
@@ -261,7 +257,7 @@ export function ImportWorkspace({
     });
   };
 
-  const langOf = (key: string) => draft.variants.find((v) => v.key === key)?.lang ?? key;
+  const langOf = (key: string) => languageName(draft.variants.find((v) => v.key === key)?.lang ?? key);
   const firstN = (block: DraftBlock) =>
     (sourceParts(block, segments, variant.key)[0] ?? sourceParts(block, segments)[0])?.n;
 
@@ -291,7 +287,7 @@ export function ImportWorkspace({
           <>
             <span className="import-chip" data-tone="warning">
               <span className="import-chip-dot" />
-              No counterpart in {missing.map((v) => v.lang).join(", ")}
+              No {missing.map((v) => languageName(v.lang)).join(", ")}
             </span>
             {target ? (
               <button
@@ -320,7 +316,7 @@ export function ImportWorkspace({
               <span key={v.key} className="import-pair-item">
                 <span className="import-chip">
                   <IconLink size={11} stroke={1.6} />
-                  Paired with {v.lang}
+                  {languageName(v.lang)}
                   {part ? ` ${part.n} · ${sample(part.text, 18)}` : ""}
                 </span>
                 <button
@@ -338,7 +334,9 @@ export function ImportWorkspace({
     );
   };
 
-  /** What the model decided about a block: pending, speaker taken from a label, uncertain. */
+  const kindChoices = useMemo(() => pickerKinds(prayer), [prayer]);
+
+  /** What the model decided about a block: pending, speaker taken from a label, unsure kind. */
   const modelRow = (block: DraftBlock) => {
     const pending = firstDraft.progress?.pending === block.id;
     const uncertain = uncertainDecisions(block);
@@ -351,35 +349,45 @@ export function ImportWorkspace({
     const uncertainSpeaker = uncertain.find((u) => u.what === "speaker");
     if (!pending && !speakerByModel && !uncertainKind) return null;
     const speakerName = speakerByModel
-      ? (draft.variants.find((v) => v.speakers?.[block.speaker!])?.speakers?.[block.speaker!]?.name ?? block.speaker)
+      ? (variant.speakers?.[block.speaker!]?.name ??
+        draft.variants.find((v) => v.speakers?.[block.speaker!])?.speakers?.[block.speaker!]?.name ??
+        block.speaker)
       : null;
     return (
       <div className="import-pair-row" onMouseDown={(e) => e.preventDefault()}>
         {pending ? (
-          <span className="import-chip" data-muted="true">
+          <span className="import-chip" data-muted="true" aria-label="Checking">
             <Spinner size={10} />
-            Model checking …
           </span>
         ) : null}
         {speakerByModel ? (
           <span className="import-chip" data-tone={uncertainSpeaker ? "warning" : undefined}>
             <IconUser size={11} stroke={1.6} />
-            „{speakerName}:“ → Speaker
-            {uncertainSpeaker ? ` · ${Math.round(uncertainSpeaker.confidence * 100)} %` : ""}
+            {speakerName}
+            {uncertainSpeaker ? "?" : ""}
           </span>
         ) : null}
         {uncertainKind ? (
-          <button
-            type="button"
-            className="import-chip"
-            data-tone="warning"
-            data-action="true"
-            title={`Keep ${kindDisplayLabel(block.kind)}`}
-            onClick={() => onApply([{ op: "setKind", target: { block: block.id }, kind: block.kind }])}
-          >
-            <span className="import-chip-dot" />
-            Kind uncertain · {Math.round(uncertainKind.confidence * 100)} %
-          </button>
+          <Menu shadow="md" width={180} position="bottom-start" withinPortal>
+            <Menu.Target>
+              <button type="button" className="import-chip" data-tone="warning" data-action="true">
+                <span className="import-chip-dot" />
+                {kindDisplayLabel(block.kind)}?
+                <IconChevronDown size={10} stroke={1.8} />
+              </button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              {kindChoices.map((kind) => (
+                <Menu.Item
+                  key={kind}
+                  rightSection={kind === block.kind ? <IconCheck size={13} stroke={2} /> : null}
+                  onClick={() => onApply([{ op: "setKind", target: { block: block.id }, kind }])}
+                >
+                  {kindDisplayLabel(kind)}
+                </Menu.Item>
+              ))}
+            </Menu.Dropdown>
+          </Menu>
         ) : null}
       </div>
     );
@@ -391,11 +399,7 @@ export function ImportWorkspace({
   );
   const answerLine = (blockId: string) => {
     const line = chatHighlight?.lines.get(blockId);
-    return line ? (
-      <div className="import-answer-line">
-        Answer {chatHighlight!.answer} · {line}
-      </div>
-    ) : null;
+    return line ? <div className="import-answer-line">{line}</div> : null;
   };
 
   const leadCell = (blockId: string) => {
@@ -423,34 +427,22 @@ export function ImportWorkspace({
       draftBlockGroup(draft, block) === activeGroup;
     return (
       <>
-        {parts.map((part, i) => {
-          const letter = part.group ? letters.get(part.group) : undefined;
-          return (
-            <button
-              type="button"
-              key={`${part.n}-${i}`}
-              className="import-source-row"
-              data-group-peer={peer ? "true" : undefined}
-              data-other={other ? "true" : undefined}
-              title={
-                other
-                  ? `Only in ${Object.keys(block.content).map(langOf).join(", ")}`
-                  : letter
-                    ? `Style group ${letter}`
-                    : undefined
-              }
-              onClick={() => selectBlock(blockId)}
-            >
-              <span className="import-source-n">{part.n}</span>
-              <span className="import-source-group">
-                {letter ? <span className="import-source-badge">{letter}</span> : null}
-              </span>
-              <span className="import-source-text" {...lookAttrs(part.look, bodySize)}>
-                <MarkedText part={part} />
-              </span>
-            </button>
-          );
-        })}
+        {parts.map((part, i) => (
+          <button
+            type="button"
+            key={`${part.n}-${i}`}
+            className="import-source-row"
+            data-group-peer={peer ? "true" : undefined}
+            data-other={other ? "true" : undefined}
+            title={other ? `Only in ${Object.keys(block.content).map(langOf).join(", ")}` : undefined}
+            onClick={() => selectBlock(blockId)}
+          >
+            <span className="import-source-n">{part.n}</span>
+            <span className="import-source-text" {...lookAttrs(part.look, bodySize)}>
+              <MarkedText part={part} />
+            </span>
+          </button>
+        ))}
         {decided}
         {answerLine(blockId)}
         {pairs}
@@ -476,7 +468,6 @@ export function ImportWorkspace({
             {parts.map((part, i) => (
               <div key={`${part.n}-${i}`} className="import-source-row" data-excluded="true">
                 <span className="import-source-n">{part.n}</span>
-                <span className="import-source-group" />
                 <span className="import-source-text" {...lookAttrs(part.look, bodySize)}>
                   <MarkedText part={part} />
                 </span>
@@ -485,7 +476,7 @@ export function ImportWorkspace({
             <div className="import-excluded-actions">
               <span className="import-excluded-label">
                 <IconCircleOff size={11} stroke={1.6} />
-                Excluded
+                Left out
               </span>
               <button
                 type="button"
@@ -496,10 +487,10 @@ export function ImportWorkspace({
                   ])
                 }
               >
-                Include
+                Restore
               </button>
             </div>
-            {answerLine(block.id)}
+            {chatHighlight?.lines.get(block.id) === "Left out" ? null : answerLine(block.id)}
           </div>
         </div>
       );
@@ -526,7 +517,6 @@ export function ImportWorkspace({
     () => new Set(activeBlock ? draftBlockSegments(activeBlock) : []),
     [activeBlock],
   );
-  const pageCount = Math.max(1, ...allSegments.map((s) => s.area?.page ?? 1));
 
   // Follow the caret: show the page of the block being edited.
   useEffect(() => {
@@ -577,14 +567,48 @@ export function ImportWorkspace({
   const uncertainBlocks = draft.blocks.filter(
     (b) => draftBlockVisible(draft, b) && uncertainDecisions(b).length > 0,
   );
-  /** "Uncertain first": the next uncertain block after the one being edited. */
-  const nextUncertain = () => {
-    if (uncertainBlocks.length === 0) return;
+  const segmentNumbers = useMemo(
+    () => new Map([...segments].map(([id, info]) => [id, info.n] as const)),
+    [segments],
+  );
+  const unsureSegs = new Set(uncertainBlocks.flatMap((b) => draftBlockSegments(b)));
+  /** PDF: the page is the source column, so the model's chips go under each block. */
+  const pdfRowsAfter = (blockId: string | null) => {
+    if (!blockId) return null;
+    const block = byId.get(blockId);
+    if (!block) return null;
+    const decided = modelRow(block);
+    const line = answerLine(blockId);
+    const pairs = pairRow(block, blockId === activeBlockId);
+    return decided || line || pairs ? (
+      <div className="import-pdf-after">
+        {decided}
+        {line}
+        {pairs}
+      </div>
+    ) : null;
+  };
+  const nextUncertain = () => jumpToNext(uncertainBlocks.map((b) => b.id));
+  const nextUncertainRef = useRef(nextUncertain);
+  nextUncertainRef.current = nextUncertain;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "j" && (e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey) {
+        e.preventDefault();
+        nextUncertainRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  /** Go to the next of these blocks after the one being edited (wraps). */
+  const jumpToNext = (ids: readonly string[]) => {
+    if (ids.length === 0) return;
     const order = draft.blocks.map((b) => b.id);
     const at = activeBlockId ? order.indexOf(activeBlockId) : -1;
-    const next =
-      uncertainBlocks.find((b) => order.indexOf(b.id) > at) ?? uncertainBlocks[0]!;
-    localEditorRef.current?.revealBlock(next.id, {
+    const next = ids.find((id) => order.indexOf(id) > at) ?? ids[0]!;
+    localEditorRef.current?.revealBlock(next, {
       scroll: "smooth-center",
       focusCol: col,
       flash: true,
@@ -593,33 +617,25 @@ export function ImportWorkspace({
   };
 
   const visibleCount = prayer.structure.length;
-  const variantCounts = new Map(
-    draft.variants.map((v) => [
-      v.key,
-      prayer.structure.filter((b) =>
-        b.translations.some((t) => t.lang === v.lang && t.variant === v.variant),
-      ).length,
-    ]),
-  );
-  const pairedCount = prayer.structure.filter(
-    (b) => b.translations.length === draft.variants.length,
-  ).length;
-  const id = draft.meta.id;
+  const problemBlocks = [...issues.keys()];
+  /** Blocks without the shown language's counterpart (multilingual drafts). */
+  const unpaired = multilingual
+    ? prayer.structure.filter((b) => b.translations.length < draft.variants.length).map((b) => b.id)
+    : [];
 
   return (
     <div className="workspace import-workspace" data-pdf={pdfData ? "true" : undefined}>
       <div className="workspace-header">
         <div className="workspace-header-top">
           <div className="import-title-row">
-            <h1 className="workspace-title">{draft.variants[0]!.title || "Untitled"}</h1>
-            <span className="import-subtitle">
-              Import draft · {source?.name ?? "Source"} ·{" "}
-              {pageFormat === "image"
-                ? "Text recognised"
-                : pdfData
-                ? `Page ${pdfPage} of ${pageCount}`
-                : `${segmentCount} ${segmentCount === 1 ? "segment" : "segments"}`}
-            </span>
+            <h1 className="workspace-title" title={draft.variants[0]!.title || undefined}>
+              {draft.variants[0]!.title || "Untitled"}
+            </h1>
+            {source?.name ? (
+              <span className="import-subtitle" title={source.name}>
+                {source.name}
+              </span>
+            ) : null}
           </div>
           <div className="import-actions">
             <Tooltip label={`Undo (${shortcutLabel("Mod+Z")})`} withArrow openDelay={300}>
@@ -653,8 +669,8 @@ export function ImportWorkspace({
             <Button
               size="xs"
               color="dark"
-              disabled={visibleCount === 0 || errors.length > 0}
-              onClick={onSave}
+              disabled={visibleCount === 0}
+              onClick={() => (problemBlocks.length > 0 ? jumpToNext(problemBlocks) : onSave())}
             >
               Save to library
             </Button>
@@ -662,27 +678,18 @@ export function ImportWorkspace({
         </div>
         <div className="import-columns">
           <div className="import-column-label">
-            <span className="import-caps">Source</span>
-            {pdfData && pageFormat !== "image" ? <span>· Page {pdfPage}</span> : null}
-            {scanSummary ? (
+            <span className="import-caps">Original</span>
+            {scanSummary && scanSummary.doubtful > 0 ? (
               <span>
-                · {scanSummary.sure} % sure
-                {scanSummary.doubtful > 0 ? ` · ${scanSummary.doubtful} uncertain` : ""}
-              </span>
-            ) : groupCount > 0 ? (
-              <span>
-                · {groupCount} style {groupCount === 1 ? "group" : "groups"}
+                · {scanSummary.doubtful} unclear {scanSummary.doubtful === 1 ? "word" : "words"}
               </span>
             ) : null}
           </div>
           <div className="import-column-label">
-            <span className="import-caps">Preview</span>
-            <Menu shadow="md" width={240} position="bottom-end" withinPortal>
+            <Menu shadow="md" width={220} position="bottom-start" withinPortal>
               <Menu.Target>
                 <button type="button" className="import-variant-chip" aria-label="Shown language">
-                  <span className="split-chip-lang">{col.lang}</span>
-                  <span className="split-chip-sep">/</span>
-                  <span className="split-chip-variant">{col.variant}</span>
+                  <span className="import-variant-name">{variantName(col)}</span>
                   <IconChevronDown size={11} stroke={1.8} className="import-variant-caret" />
                 </button>
               </Menu.Target>
@@ -691,40 +698,26 @@ export function ImportWorkspace({
                   <Menu.Item
                     key={v.key}
                     onClick={() => setShownKey(v.key)}
-                    rightSection={
-                      <span className="import-variant-count">
-                        {variantCounts.get(v.key) ?? 0} of {visibleCount}
-                        {v.key === variant.key ? <IconCheck size={13} stroke={2} /> : null}
-                      </span>
-                    }
+                    rightSection={v.key === variant.key ? <IconCheck size={13} stroke={2} /> : null}
                   >
-                    <span className="split-chip-lang">{v.lang}</span>{" "}
-                    <span className="split-chip-sep">/</span>{" "}
-                    <span className="split-chip-variant">{v.variant}</span>
+                    {variantName(v)}
                   </Menu.Item>
                 ))}
                 <Menu.Divider />
-                <Menu.Item onClick={onAddLanguage}>Add language from source…</Menu.Item>
+                <Menu.Item onClick={onAddLanguage}>Add translation…</Menu.Item>
               </Menu.Dropdown>
             </Menu>
-            {multilingual ? (
-              <span className="import-pair-status">
-                <IconLink size={12} stroke={1.6} />
-                {pairedCount} paired · {visibleCount - pairedCount} open
-              </span>
-            ) : null}
           </div>
         </div>
         {firstDraft.progress ? (
           <div className="import-model-banner" role="status">
             <Spinner />
             <span>
-              Model is sorting
+              Sorting
               {firstDraft.progress.total > 0
                 ? ` · ${firstDraft.progress.done} of ${firstDraft.progress.total}`
                 : " …"}
             </span>
-            <span className="import-model-banner-hint">You can already edit; your changes win.</span>
             <button type="button" className="import-model-banner-action" onClick={firstDraft.stop}>
               Stop
             </button>
@@ -732,34 +725,21 @@ export function ImportWorkspace({
         ) : chatHighlight ? (
           <div className="import-model-banner" data-tone="answer" role="status">
             <span className="import-answer-mark" />
-            <span>
-              Answer {chatHighlight.answer} changed {chatHighlight.lines.size}{" "}
-              {chatHighlight.lines.size === 1 ? "section" : "sections"}
-            </span>
+            <span>{chatHighlight.summary}</span>
             <span className="import-model-banner-hint">
-              {chatHighlight.wording ? "Wording changed" : "Text unchanged"}
+              {chatHighlight.wording ? "Text changed" : "Text unchanged"}
             </span>
-            {chatHighlight.canUndo ? (
-              <button type="button" className="import-model-banner-action" onClick={chatHighlight.onUndo}>
-                <IconArrowBackUp size={12} stroke={1.8} />
-                Undo
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className="import-model-banner-action"
-              data-muted="true"
-              onClick={chatHighlight.onHide}
-            >
-              Hide
+            <button type="button" className="import-model-banner-action" onClick={chatHighlight.onUndo}>
+              <IconArrowBackUp size={12} stroke={1.8} />
+              Undo
             </button>
           </div>
         ) : firstDraft.error ? (
           <div className="import-model-banner" role="alert">
             <IconAlertTriangle size={12} stroke={2} className="import-bad" />
-            <span className="import-model-banner-hint">The model stopped: {firstDraft.error}</span>
+            <span className="import-model-banner-hint">Sorting stopped: {firstDraft.error}</span>
             <button type="button" className="import-model-banner-action" onClick={firstDraft.dismissError}>
-              Dismiss
+              <IconX size={12} stroke={1.8} aria-label="Dismiss" />
             </button>
           </div>
         ) : null}
@@ -779,7 +759,11 @@ export function ImportWorkspace({
         }}
         onBlurCapture={(e) => {
           const next = e.relatedTarget as HTMLElement | null;
-          if (!next?.isContentEditable) setActiveBlockId(null);
+          // The block's own toolbar and its popovers (kind menu) keep it active,
+          // so the rows that look the same stay lit while choosing.
+          if (next && !bodyRef.current?.contains(next)) return;
+          const row = next?.closest<HTMLElement>("[data-block-id]");
+          setActiveBlockId(row?.dataset.blockId ?? null);
         }}
       >
         <div
@@ -797,14 +781,15 @@ export function ImportWorkspace({
                   setPdfPage(p);
                   setRange(null);
                 }}
-                letters={letters}
                 excluded={excludedSet}
+                numbers={segmentNumbers}
+                unsure={unsureSegs}
                 active={activeSegs}
                 selected={range?.ids ?? new Set()}
                 onSegmentClick={onSegmentClick}
               />
               {rangeIds.length > 0 ? (
-                <div className="pdf-range-actions" role="toolbar" aria-label="Selected segments">
+                <div className="pdf-range-actions" role="toolbar" aria-label="Selection">
                   {rangeHasIncluded ? (
                     <button
                       type="button"
@@ -812,7 +797,7 @@ export function ImportWorkspace({
                         applyRange([{ op: "setExcluded", segments: rangeIds, excluded: true }])
                       }
                     >
-                      Exclude
+                      Leave out
                     </button>
                   ) : null}
                   {rangeHasExcluded ? (
@@ -822,14 +807,19 @@ export function ImportWorkspace({
                         applyRange([{ op: "setExcluded", segments: rangeIds, excluded: false }])
                       }
                     >
-                      Include
+                      Restore
                     </button>
                   ) : null}
                   <button type="button" onClick={importFromHere}>
-                    Import from here
+                    Start here
                   </button>
-                  <button type="button" className="pdf-range-clear" onClick={() => setRange(null)}>
-                    Clear
+                  <button
+                    type="button"
+                    className="pdf-range-clear"
+                    aria-label="Clear selection"
+                    onClick={() => setRange(null)}
+                  >
+                    <IconX size={12} stroke={1.8} />
                   </button>
                 </div>
               ) : null}
@@ -845,7 +835,7 @@ export function ImportWorkspace({
             edits={edits}
             leadCell={pdfData ? undefined : leadCell}
             markedBlocks={markedBlocks}
-            rowsAfter={pdfData ? undefined : rowsAfter}
+            rowsAfter={pdfData ? pdfRowsAfter : rowsAfter}
             onChange={() => {}}
             onRenameKind={() => {}}
             onDeleteKind={() => {}}
@@ -860,45 +850,43 @@ export function ImportWorkspace({
           role="tooltip"
           style={{ left: uncertain.hover.left, top: uncertain.hover.top - 30 }}
         >
-          <span>
-            Read with low confidence
-            {uncertain.hover.confidence !== undefined ? ` (${Math.round(uncertain.hover.confidence * 100)} %)` : ""}
-          </span>
-          <span className="ocr-uncertain-tip-hint">Check it against the scan</span>
+          <span>Unclear in the scan</span>
         </div>
       ) : null}
 
-      <div className="import-status">
-        <span className="import-status-item">
-          {errors.length === 0 ? (
-            <>
-              <IconCheck size={12} stroke={2} className="import-ok" />
-              {visibleCount} {visibleCount === 1 ? "block" : "blocks"} · valid prayer
-            </>
-          ) : (
-            <>
+      {problemBlocks.length > 0 || uncertainBlocks.length > 0 || unpaired.length > 0 ? (
+        <div className="import-status">
+          {problemBlocks.length > 0 ? (
+            <button
+              type="button"
+              className="import-status-item import-status-open"
+              data-tone="bad"
+              onClick={() => jumpToNext(problemBlocks)}
+            >
               <IconAlertTriangle size={12} stroke={2} className="import-bad" />
-              {errors.length} {errors.length === 1 ? "issue" : "issues"}
-            </>
-          )}
-        </span>
-        {uncertainBlocks.length > 0 ? (
-          <button
-            type="button"
-            className="import-status-item import-status-open"
-            title="Go to the next uncertain decision"
-            onClick={nextUncertain}
-          >
-            <span className="import-chip-dot" />
-            {uncertainBlocks.length} open {uncertainBlocks.length === 1 ? "decision" : "decisions"}
-          </button>
-        ) : null}
-        {id ? (
-          <span className="import-status-id">
-            ID {id} · {takenIds.has(id) ? "taken" : "free"}
-          </span>
-        ) : null}
-      </div>
+              {problemBlocks.length} {problemBlocks.length === 1 ? "problem" : "problems"}
+            </button>
+          ) : null}
+          {uncertainBlocks.length > 0 ? (
+            <Tooltip label={shortcutLabel("Mod+J")} withArrow openDelay={500}>
+              <button type="button" className="import-status-item import-status-open" onClick={nextUncertain}>
+                <span className="import-chip-dot" />
+                {uncertainBlocks.length} to check →
+              </button>
+            </Tooltip>
+          ) : null}
+          {unpaired.length > 0 ? (
+            <button
+              type="button"
+              className="import-status-item import-status-open"
+              onClick={() => jumpToNext(unpaired)}
+            >
+              <IconLink size={12} stroke={1.6} />
+              {unpaired.length} unpaired →
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
       <ConfirmDialog
         opened={confirmDiscard}
@@ -907,8 +895,8 @@ export function ImportWorkspace({
           setConfirmDiscard(false);
           onDiscard();
         }}
-        title="Discard import draft?"
-        message="The pasted text and every change to it are dropped."
+        title="Discard this import?"
+        message="The text and your changes to it are dropped."
         confirmLabel="Discard"
       />
     </div>

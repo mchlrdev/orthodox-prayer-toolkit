@@ -14,8 +14,11 @@ type Props = {
   segments: readonly SourceSegment[];
   page: number;
   onPageChange: (page: number) => void;
-  letters: ReadonlyMap<string, string>;
   excluded: ReadonlySet<string>;
+  /** The number of each segment, as the chat and chips name it. */
+  numbers: ReadonlyMap<string, number>;
+  /** Segments of blocks the model was unsure about. */
+  unsure: ReadonlySet<string>;
   /** Segments of the block holding the caret. */
   active: ReadonlySet<string>;
   /** Segments of a shift-click range. */
@@ -33,8 +36,9 @@ export function PdfSourcePane({
   segments,
   page,
   onPageChange,
-  letters,
   excluded,
+  numbers,
+  unsure,
   active,
   selected,
   onSegmentClick,
@@ -151,13 +155,13 @@ export function PdfSourcePane({
         {size
           ? onPage.map((seg) => {
               const a = seg.area!;
-              const letter = seg.group ? letters.get(seg.group) : undefined;
               return (
                 <button
                   type="button"
                   key={seg.id}
                   className="pdf-seg"
                   data-excluded={excluded.has(seg.id) ? "true" : undefined}
+                  data-unsure={unsure.has(seg.id) ? "true" : undefined}
                   data-active={active.has(seg.id) ? "true" : undefined}
                   data-selected={selected.has(seg.id) ? "true" : undefined}
                   title={seg.text}
@@ -169,7 +173,7 @@ export function PdfSourcePane({
                   }}
                   onClick={(e) => onSegmentClick(seg.id, e.shiftKey)}
                 >
-                  {letter ? <span className="pdf-seg-group">{letter}</span> : null}
+                  <span className="pdf-seg-n">{numbers.get(seg.id)}</span>
                 </button>
               );
             })
@@ -182,7 +186,7 @@ export function PdfSourcePane({
                       <span
                         key={`${seg.id}-u${i}`}
                         className="pdf-uncertain"
-                        title={`Read with low confidence${u.confidence !== undefined ? ` (${Math.round(u.confidence * 100)} %)` : ""}`}
+                        title="Unclear in the scan"
                         style={{
                           left: u.box.x * scale,
                           top: (u.box.y + u.box.height) * scale,
@@ -194,12 +198,6 @@ export function PdfSourcePane({
               ),
             )
           : null}
-      </div>
-      <div className="pdf-legend">
-        <span>Frame = segment</span>
-        {segments.some((s) => s.uncertain?.length) ? <span className="pdf-legend-uncertain">Dotted = uncertain</span> : null}
-        <span>Shift-click = range</span>
-        <span>Dashed = excluded</span>
       </div>
     </div>
   );

@@ -24,7 +24,8 @@ Shared domain language for humans and agents. Prefer these terms in UI, docs, an
 | **Source segment** | Smallest addressable piece of a Source: verbatim text, look, stable id. Made by a Reader, never by a model. | chunk, line (ambiguous) |
 | **Reader** | Deterministic splitter of one format into Source segments. Understands no content. | parser |
 | **Text recognition** | Reading the text of a scan (image or PDF without a text layer) with Tesseract. Its segments carry `confidence` and `uncertain` words; language packs download on demand. | OCR (fine in code), vision |
-| **Style group** | Source segments with the same look. Target of group corrections. | category, class |
+| **Style group** | Source segments with the same look. Target of group corrections. In the UI it has no name: rows that look the same light up together, and the kind menu offers "All 3 like it". | category, class |
+| **Number (#4)** | The number of a Source segment in the import view (left of each row, on the PDF frames). The chat chip shows `#4`; instructions may say Abschnitt, Zeile, Nr., #, line, section or just the number. The UI shows no word for it. | section (that means a Block), segment (in the UI) |
 | **Import draft** | Provisional Prayer from one or more Sources; its Blocks point at Source segments instead of holding text. Lives in the session until saved as `{id}.json`. | preview file, intermediate JSON |
 | **Import operation** | A named change to an Import draft (set kind, split, merge, mark note, exclude, …), the same for the user, the Built-in model and agents. | edit, patch |
 | **Tool** | One entry in the Tool directory (read the Library, start an import, apply Import operations, save, …) with purpose, parameter schema and example; the same for agents and, later, the Built-in model. | command (those are app menu commands), endpoint |
@@ -32,7 +33,8 @@ Shared domain language for humans and agents. Prefer these terms in UI, docs, an
 | **Built-in model** | The one local model the app downloads on request (App settings), keeps in its data folder until a model update, and runs offline. Optional: import works without it. | AI, LLM, assistant |
 | **Decision** | A question to the Built-in model with a fixed set of answers (role of a block, what a "Label:" is, …); the model gives each answer a probability, nothing else. Below 70 % a decision counts as open. | prompt, classification |
 | **Library memory** | The user's corrections of the Built-in model (as examples) and plain-text hints, kept in `.orthodox-prayer-toolkit/memory.json`. Same origin + same look as a correction decides the next import; hints and similar examples go into every Decision. Viewed and reset in Library settings → Memory. | training, profile |
-| **Chat pane** | The Assistant mode of the left sidebar (Library \| Assistant): instructions in plain words, run by the Built-in model through the Tool directory. Import changes show as a card with Undo and are marked in the draft; changes to other prayers ask first. | chat, copilot |
+| **Chat pane** | The Assistant mode of the left sidebar (Library \| Assistant): instructions in plain words, run by the Built-in model through the Tool directory. Import changes show as a card with Undo and are marked in the draft until the next edit; changes to other prayers ask first. A new or discarded import starts a new conversation. | chat, copilot |
+| **Leave out / Restore** | What the user sees for excluding Source segments from an Import draft (the `setExcluded` operation; in the import, the editor's delete action leaves out). Left-out rows stay visible, struck through, and come back with Restore. | exclude, delete (in the import UI) |
 | **Structure (model A)** | Shared block skeleton; texts hang off per-variant translations on each block. | parallel files per language |
 
 ## Related

@@ -706,6 +706,7 @@ body,
 .sidebar-chrome {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   gap: 4px;
   min-width: 0;
 }
@@ -1428,6 +1429,8 @@ body,
 
 .workspace-empty {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
   align-items: center;
   justify-content: center;
   flex: 1;
@@ -1791,9 +1794,7 @@ body,
   gap: 4px;
   padding: 3px 4px 3px 3px;
   border-radius: 8px;
-  background: var(--opt-glass);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  background: var(--opt-surface-solid);
   border: 1px solid var(--opt-border);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   opacity: 0;
@@ -2066,8 +2067,7 @@ body,
 @media (prefers-reduced-transparency: reduce) {
   .sidebar,
   .workspace-header,
-  .split-col-labels,
-  .inline-block-chrome {
+  .split-col-labels {
     background: var(--opt-surface-solid);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -2357,15 +2357,24 @@ body,
   --import-column-gap: 32px;
 }
 
+/* Title above its source, both cut to one line: long page titles and URLs never push the actions out. */
 .import-title-row {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
+  flex-direction: column;
+  gap: 1px;
   min-width: 0;
   flex: 1;
 }
 
+.import-title-row .workspace-title {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .import-subtitle {
+  max-width: 100%;
   font-size: 12px;
   line-height: 16px;
   color: var(--opt-text-secondary);
@@ -2422,9 +2431,9 @@ body,
 }
 
 .import-variant-chip {
-  margin-left: auto;
+  margin-left: -10px;
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 4px;
   padding: 4px 10px;
   border: none;
@@ -2467,8 +2476,10 @@ body,
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  /* Under the text: number (20) + gap (10) + group (18) + gap (10). */
-  padding: 2px 0 4px 58px;
+  /* Under the text: number (20) + gap (10). */
+  padding: 2px 0 4px 30px;
+  font-size: 11px;
+  line-height: 14px;
 }
 
 .import-pair-item {
@@ -2507,6 +2518,11 @@ body,
 
 .import-chip[data-action="true"] {
   cursor: pointer;
+  transition: transform 120ms ease-out, background-color 120ms ease;
+}
+
+.import-chip[data-action="true"]:active {
+  transform: scale(0.97);
 }
 
 .import-chip[data-action="true"]:hover {
@@ -2519,6 +2535,13 @@ body,
 
 .import-variant-chip .split-chip-lang {
   font-weight: 600;
+  color: var(--opt-text);
+}
+
+.import-variant-chip .import-variant-name {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
   color: var(--opt-text);
 }
 
@@ -2575,9 +2598,12 @@ body,
   outline-offset: 2px;
 }
 
-/* Same style group as the block holding the caret. */
-.import-source-row[data-group-peer="true"] .import-source-badge {
-  background: color-mix(in srgb, var(--opt-accent) 16%, transparent);
+/* Looks the same as the block holding the caret (same style group). */
+.import-source-row[data-group-peer="true"] {
+  background: color-mix(in srgb, var(--opt-accent) 5%, transparent);
+}
+
+.import-source-row[data-group-peer="true"] .import-source-n {
   color: var(--opt-accent);
 }
 
@@ -2666,8 +2692,8 @@ body,
   display: flex;
   align-items: center;
   gap: 8px;
-  /* Under the text: number (20) + gap (10) + group (18) + gap (10). */
-  padding-left: 58px;
+  /* Under the text: number (20) + gap (10). */
+  padding-left: 30px;
   font-size: 11px;
   line-height: 14px;
 }
@@ -3120,19 +3146,24 @@ body,
   border-style: dashed;
 }
 
-.pdf-seg-group {
+.pdf-seg-n {
   position: absolute;
-  top: 50%;
-  left: -20px;
-  transform: translateY(-50%);
-  height: 14px;
-  padding: 0 3px;
-  border-radius: 3px;
-  background: var(--opt-hover-strong);
+  top: 0;
+  right: calc(100% + 3px);
   font-size: 9px;
-  font-weight: 600;
-  line-height: 14px;
-  color: var(--opt-text-secondary);
+  line-height: 12px;
+  color: var(--opt-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.pdf-seg[data-active="true"] .pdf-seg-n {
+  color: var(--opt-accent);
+}
+
+/* The model was unsure about this block's kind or speaker. */
+.pdf-seg[data-unsure="true"] {
+  border: 1.5px dotted var(--opt-warning);
 }
 
 .pdf-legend {
@@ -3444,6 +3475,7 @@ body,
 
 .chat-header {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 8px;
   padding: 2px 4px 0;
@@ -3490,6 +3522,8 @@ body,
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  /* Scroll edge: older messages fade under the header instead of being cut. */
+  mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 8px), transparent 100%);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -3579,6 +3613,10 @@ body,
 
 .chat-card[data-tone="confirm"] {
   border-color: var(--opt-border-strong);
+}
+
+.chat-change[data-muted="true"] {
+  color: var(--opt-text-secondary);
 }
 
 .chat-card[data-undone="true"] .chat-change {
@@ -3747,16 +3785,37 @@ body,
   color: var(--opt-text-tertiary);
 }
 
-.chat-composer-foot {
+.chat-composer-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-end;
+  gap: 8px;
 }
 
-.chat-hint {
-  font-size: 11px;
-  line-height: 14px;
-  color: var(--opt-text-tertiary);
+.chat-composer-row .chat-input {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 0;
+}
+
+/* In place of the input while the Built-in model is not downloaded. */
+.chat-download {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--opt-border-strong);
+  border-radius: 12px;
+  background: var(--opt-surface-solid);
+}
+
+.chat-download-text {
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--opt-text);
+}
+
+.chat-download .chat-card-actions {
+  justify-content: flex-start;
 }
 
 .chat-send {
@@ -3794,6 +3853,7 @@ body,
 }
 
 .import-answer-line {
+  padding: 2px 0 2px 30px;
   font-size: 11px;
   line-height: 14px;
   color: var(--opt-accent);
@@ -4036,15 +4096,22 @@ body,
   opacity: 0.45;
 }
 
-/* Chat pane: "Remember for future imports?" (Library memory hint) */
+/* Chat pane: a rule to keep in the Library memory, one click. */
 .chat-remember {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   padding: 10px 11px;
-  border: 1px solid color-mix(in srgb, var(--opt-accent) 18%, transparent);
+  border: 1px solid var(--opt-border);
   border-radius: 10px;
   background: var(--opt-surface-solid);
+}
+
+.chat-card .chat-remember {
+  border: none;
+  border-top: 1px solid var(--opt-border);
+  border-radius: 0;
+  background: none;
 }
 
 .chat-remember-text {
@@ -4055,9 +4122,182 @@ body,
 
 .chat-remember-actions {
   display: flex;
+  align-items: center;
   gap: 6px;
+}
+
+.chat-remember-actions .chat-card-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chat-remember-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  background: none;
+  color: var(--opt-text-tertiary);
+  cursor: pointer;
+}
+
+.chat-remember-dismiss:hover {
+  background: var(--opt-hover);
+  color: var(--opt-text-secondary);
 }
 
 .chat-remember .chat-button {
   height: 22px;
+}
+
+/* Import dialog: a read file (its text is shown, not edited) */
+.import-file-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 6px 6px 6px 10px;
+  border-radius: 8px;
+  background: var(--opt-hover);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--opt-text-secondary);
+}
+
+.import-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--opt-text);
+}
+
+.import-file-info {
+  flex-shrink: 0;
+  color: var(--opt-text-tertiary);
+}
+
+.import-file-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  background: none;
+  color: var(--opt-text-tertiary);
+  cursor: pointer;
+}
+
+.import-file-remove:hover {
+  background: var(--opt-hover-strong);
+  color: var(--opt-text);
+}
+
+.scan-file {
+  position: relative;
+  padding-right: 24px;
+}
+
+.scan-file .import-file-remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.import-url-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  margin-top: -8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--opt-text-secondary);
+}
+
+.import-choose-file {
+  align-self: flex-start;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--opt-accent);
+}
+
+.import-choose-file:hover {
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .import-chip[data-action="true"]:active {
+    transform: none;
+  }
+}
+
+/* Import → Save: "More details" disclosure */
+.import-save-details {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--opt-text-secondary);
+}
+
+.import-save-details:hover {
+  color: var(--opt-text);
+}
+
+.import-save-details svg {
+  transition: transform 150ms ease-out;
+}
+
+.import-save-details svg[data-open="true"] {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .import-save-details svg {
+    transition: none;
+  }
+}
+
+/* A file dragged over the window: drop anywhere to import it. */
+.window-drop {
+  position: fixed;
+  inset: 8px;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed color-mix(in srgb, var(--opt-accent) 55%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--opt-bg) 82%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--opt-text);
+  pointer-events: none;
+}
+
+/* PDF import: the model's chips sit under the block in the preview. */
+.import-pdf-after {
+  margin: -6px 0 6px;
+}
+
+.import-pdf-after .import-pair-row,
+.import-pdf-after .import-answer-line {
+  padding-left: 0;
 }

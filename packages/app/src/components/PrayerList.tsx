@@ -124,13 +124,13 @@ export function PrayerList({
       onClick: onCreate,
     },
     {
-      label: "Import text…",
+      label: "Import…",
       icon: <IconClipboardText size={14} />,
       disabled: busy,
       onClick: onImportText,
     },
     {
-      label: "Import prayer JSON…",
+      label: "Add prayer file…",
       icon: <IconFileImport size={14} />,
       disabled: busy,
       onClick: onImportPrayer,
@@ -277,14 +277,14 @@ export function PrayerList({
                       onClick={onImportText}
                       disabled={busy}
                     >
-                      Import text…
+                      Import…
                     </Menu.Item>
                     <Menu.Item
                       leftSection={<IconFileImport size={14} />}
                       onClick={onImportPrayer}
                       disabled={busy}
                     >
-                      Import prayer JSON…
+                      Add prayer file…
                     </Menu.Item>
                     <Menu.Item
                       leftSection={<IconRefresh size={14} />}

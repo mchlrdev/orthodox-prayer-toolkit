@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { DecisionKind, LibraryMemory } from "@orthodox-prayer-toolkit/core";
+import type { DecisionKind, ImportOp, ImportOrigin, LibraryMemory } from "@orthodox-prayer-toolkit/core";
 import { getToolkitApi, isBrowserDev } from "../api";
 import type { useImportDraft } from "../importDraft/useImportDraft";
 import { builtInModelRuntime, type DecisionRuntime } from "./decisionRuntime";
-import { applyMemoryRules, runFirstDraft, type FirstDraftProgress } from "./firstDraft";
+import { applyMemoryRules, applyReaderRules, runFirstDraft, type FirstDraftProgress } from "./firstDraft";
 import { standInRuntime } from "./standInModel";
 
 export type FirstDraft = {
@@ -46,11 +46,12 @@ export function useFirstDraft(
 
   /** Fixed rules from the memory; not after adding a language (`only`). */
   const applyRules = useCallback((coalesceKey: string, only?: DecisionKind[]) => {
-    const draft = draftRef.current.currentDraft();
-    if (!draft || only) return;
-    applyMemoryRules(draft, memoryRef.current(), (ops, origin) =>
-      draftRef.current.apply(ops, { origin, coalesceKey, coalesceAlways: true }),
-    );
+    if (!draftRef.current.currentDraft() || only) return;
+    const apply = (ops: ImportOp[], origin: ImportOrigin) =>
+      draftRef.current.apply(ops, { origin, coalesceKey, coalesceAlways: true });
+    applyReaderRules(draftRef.current.currentDraft()!, apply);
+    // Memory (the user's own corrections) after the reader, so it wins.
+    applyMemoryRules(draftRef.current.currentDraft()!, memoryRef.current(), apply);
   }, []);
 
   const stop = useCallback(() => {
@@ -83,6 +84,7 @@ export function useFirstDraft(
         signal: abort.signal,
         only: options.only,
         memory: memoryRef.current(),
+        readerRules: false,
       });
     } catch (err) {
       if (!abort.signal.aborted) {
