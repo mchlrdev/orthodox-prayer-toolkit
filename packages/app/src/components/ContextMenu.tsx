@@ -221,6 +221,7 @@ function SubmenuItem({
         ref={dropdownRef}
         className={Menu.classes.dropdown}
         role="menu"
+        onMouseDown={(e) => e.preventDefault()}
         onMouseEnter={clearTimer}
         onMouseLeave={() => {
           setHovered(-1);
@@ -287,8 +288,9 @@ function renderItems(items: ContextMenuItem[], closeAll: () => void): ReactNode[
 }
 
 /**
- * Right-click menu at the cursor. `open` prevents the native menu; render
- * `menu` once somewhere in the component.
+ * Right-click menu at the cursor. `open` prevents the page menu; Electron's
+ * native edit menu is also skipped for contenteditable. Render `menu` once
+ * somewhere in the component.
  */
 export function useContextMenu() {
   const [state, setState] = useState<OpenMenu | null>(null);
@@ -316,6 +318,8 @@ export function useContextMenu() {
       shadow="md"
       width={CONTEXT_MENU_WIDTH}
       withinPortal
+      trapFocus={false}
+      withInitialFocusPlaceholder={false}
       returnFocus={false}
       // Escape is handled on the dropdown (bubble phase), so an open submenu
       // can take it first and only step back one level.
@@ -334,7 +338,12 @@ export function useContextMenu() {
         />
       </Menu.Target>
       <Menu.Dropdown
+        className="context-menu-dropdown"
         onContextMenu={(e) => e.preventDefault()}
+        onMouseDown={(e) => {
+          // Keep the editor caret / selection (same as the note toolbar).
+          e.preventDefault();
+        }}
         onKeyDown={(e) => {
           if (e.key === "Escape") {
             e.preventDefault();

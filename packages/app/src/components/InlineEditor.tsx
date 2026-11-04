@@ -92,12 +92,14 @@ import {
   speakerOptions,
 } from "./SpeakerMenu";
 import { sameVariant, variantKey, type ActiveVariant } from "../variant";
+import { runEditorClipboardAction } from "../editorClipboard";
 import {
   createRangeFromOffsets,
   getElementOffsets,
   getSelectionOffsets,
   mapOffsetToLine,
   renderEditable,
+  restoreSelectionOffsets,
   selectionOverlapsNote,
   serializeEditable,
 } from "../inlineDom";
@@ -802,7 +804,11 @@ const EditableBlock = memo(function EditableBlock({
   const handleBlur = (e: FocusEvent<HTMLDivElement>) => {
     const related = e.relatedTarget as HTMLElement | null;
     const decision = editableBlurDecision({
-      relatedIsNoteToolbar: Boolean(related?.closest?.(".inline-note-toolbar")),
+      relatedIsNoteToolbar: Boolean(
+        related?.closest?.(".inline-note-toolbar") ||
+          related?.closest?.(".context-menu-dropdown") ||
+          related?.closest?.(".mantine-Menu-dropdown"),
+      ),
       skipBlurCommit: skipBlurCommitRef.current,
       dirty: dirtyRef.current,
     });
@@ -1743,13 +1749,7 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
         `[data-editor="${CSS.escape(restore.editor)}"]`,
       );
       if (!el) return;
-      el.focus();
-      const range = createRangeFromOffsets(el, restore.start, restore.end);
-      const sel = window.getSelection();
-      if (range && sel) {
-        sel.removeAllRanges();
-        sel.addRange(range);
-      }
+      restoreSelectionOffsets(el, restore.start, restore.end);
     });
   }, []);
 
@@ -2101,31 +2101,44 @@ export const InlineEditor = forwardRef<InlineEditorHandle, Props>(
     const target = e.target as HTMLElement;
     // Dropdowns portal out but still bubble React events through the tree.
     if (!e.currentTarget.contains(target)) return;
-    const inText = target.closest(".inline-content") !== null;
+    const editor = target.closest(".inline-content") as HTMLElement | null;
+    const inText = editor !== null;
+    const offsets = editor ? getSelectionOffsets(editor) : null;
+    const hasSelection = Boolean(offsets && offsets.start !== offsets.end);
     const api = getToolkitApi();
+    const runTextEdit = (action: "cut" | "copy" | "paste") => {
+      if (!editor) return;
+      if (offsets) {
+        void runEditorClipboardAction(action, editor, offsets, () =>
+          api.runEdit("paste"),
+        );
+        return;
+      }
+      editor.focus();
+      void api.runEdit(action);
+    };
     const items: ContextMenuItem[] = [];
     if (inText) {
-      const hasSelection = (window.getSelection()?.toString() ?? "") !== "";
       items.push(
         {
           label: "Cut",
           icon: <IconCut size={14} />,
           shortcut: shortcutLabel("Mod+X"),
           disabled: !hasSelection,
-          onClick: () => void api.runEdit("cut"),
+          onClick: () => runTextEdit("cut"),
         },
         {
           label: "Copy",
           icon: <IconCopy size={14} />,
           shortcut: shortcutLabel("Mod+C"),
           disabled: !hasSelection,
-          onClick: () => void api.runEdit("copy"),
+          onClick: () => runTextEdit("copy"),
         },
         {
           label: "Paste",
           icon: <IconClipboard size={14} />,
           shortcut: shortcutLabel("Mod+V"),
-          onClick: () => void api.runEdit("paste"),
+          onClick: () => runTextEdit("paste"),
         },
         { divider: true },
       );

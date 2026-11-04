@@ -265,7 +265,15 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
     onLibraryChanged: () => () => {},
     onCommand: () => () => {},
     runEdit: async (action) => {
-      if (action === "paste") return;
+      if (action === "paste") {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (text) document.execCommand("insertText", false, text);
+        } catch {
+          // Browser blocked clipboard; shortcuts still paste.
+        }
+        return;
+      }
       document.execCommand(action);
     },
     onInstallRequested: () => () => {},
