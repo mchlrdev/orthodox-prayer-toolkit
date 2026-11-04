@@ -51,7 +51,7 @@ Always emit a markdown `json` fence so the prayer can be copied. Agents may also
 | On a variant | Keys |
 |--------------|------|
 | Required | `lang`, `variant`, `title`, `license`, `source` |
-| Optional | `rtl` — write `true` only for a **full** right-to-left edition. Omit for LTR. Never write `false`. |
+| Optional | `rtl` — write `true` only for a **full** right-to-left edition. Omit for LTR. Never write `false`. `speakers` — printed labels when the file uses Speakers (see **Speakers**) |
 
 | On a block | Keys |
 |------------|------|
@@ -208,49 +208,62 @@ Each prayer is `{id}.json`. That is the whole document.
 ## Outline (before JSON)
 
 ```
-- verse: Auf die Gebete unserer heiligen Väter…
+- heading: Ostergebete
+- subheading: Ostertroparion im 5. Ton
 - annotation: Dann dreimal das Ostertroparion im 5. Ton:
-- heading: Ostertroparion im 5. Ton
-- verse: Christus ist erstanden…          (German)
-- verse: Χριστός ανέστη…                  (same edition, next block)
-- verse: Христос воскресе…                (same edition, next block)
-- heading: Auferstehungshymnus im 6. Ton
-- verse: Die Auferstehung Christi haben wir geschaut, / so lasset uns…
-- verse: Ehre sei dem Vater und dem Sohne und dem Heiligen Geiste:
-- verse: [next troparion, slashes kept]
-- verse: Dann vierzigmal: Herr, erbarme Dich!   (note run + text)
-- verse [priest]: Christus ist auferstanden!     (label stripped, speaker set)
+- verse: Christus ist erstanden…                 (German, poetic lines)
+- verse: Χριστός ανέστη…                         (same edition, next block)
+- verse [priest]: Christus ist auferstanden!     (label stripped)
+- verse [people]: Wahrhaftig, er ist auferstanden!
+- refrain [choir]: Christus ist erstanden von den Toten.  (custom kind)
+- verse: Dann vierzigmal: Herr, erbarme Dich!    (note run + text)
+- verse: Die Auferstehung Christi… / so lasset uns…  (one line, slashes kept)
 ```
 
 Ask only where heading vs annotation vs verse is still ambiguous.
 
 ## Encode example
 
+One file covering the encode rules. This source is LTR and one Oktoechos tone — omit `rtl`; set `tone` to `5`. A full RTL edition would add `"rtl": true` on **that** variant, not invent a second language here.
+
 **Source**
 
 ```
-Ostertroparion im 5. Ton:
+Ostergebete
+Ostertroparion im 5. Ton
+Dann dreimal das Ostertroparion im 5. Ton:
 Christus ist erstanden von den Toten,
 hat zertreten im Tode den Tod.
 Χριστός ανέστη εκ νεκρών…
+Priester: Christus ist auferstanden!
+Volk: Wahrhaftig, er ist auferstanden!
+Chor (Kehrvers): Christus ist erstanden von den Toten.
 Dann vierzigmal: Herr, erbarme Dich!
-Ehre sei dem Vater und dem Sohne und dem Heiligen Geiste, jetzt und immerdar und in die Ewigkeit der Ewigkeit. Amen.
+Die Auferstehung Christi haben wir geschaut, / so lasset uns anbeten den heiligen Herrn Jesus.
 ```
 
 **JSON**
 
 ```json
 {
+  "formatVersion": 3,
   "id": "oster-tropar-probe",
   "type": "prayer",
   "book": "horologion",
+  "tone": 5,
+  "kinds": [{ "id": "refrain", "speaker": true }],
   "variants": [
     {
       "lang": "de",
       "variant": "standard",
       "title": "Ostertroparion",
       "license": "unknown",
-      "source": "draft"
+      "source": "draft",
+      "speakers": {
+        "priest": { "name": "Priester", "short": "P" },
+        "people": { "name": "Volk", "short": "V" },
+        "choir": { "name": "Chor", "short": "Ch" }
+      }
     }
   ],
   "structure": [
@@ -258,7 +271,25 @@ Ehre sei dem Vater und dem Sohne und dem Heiligen Geiste, jetzt und immerdar und
       "id": "h1",
       "kind": "heading",
       "translations": [
+        { "lang": "de", "variant": "standard", "text": "Ostergebete" }
+      ]
+    },
+    {
+      "id": "s1",
+      "kind": "subheading",
+      "translations": [
         { "lang": "de", "variant": "standard", "text": "Ostertroparion im 5. Ton" }
+      ]
+    },
+    {
+      "id": "a1",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Dann dreimal das Ostertroparion im 5. Ton:"
+        }
       ]
     },
     {
@@ -287,6 +318,42 @@ Ehre sei dem Vater und dem Sohne und dem Heiligen Geiste, jetzt und immerdar und
       ]
     },
     {
+      "id": "d1",
+      "kind": "verse",
+      "speaker": "priest",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": ["Christus ist auferstanden!"]
+        }
+      ]
+    },
+    {
+      "id": "d2",
+      "kind": "verse",
+      "speaker": "people",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": ["Wahrhaftig, er ist auferstanden!"]
+        }
+      ]
+    },
+    {
+      "id": "r1",
+      "kind": "refrain",
+      "speaker": "choir",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Christus ist erstanden von den Toten."
+        }
+      ]
+    },
+    {
       "id": "v3",
       "kind": "verse",
       "translations": [
@@ -310,7 +377,7 @@ Ehre sei dem Vater und dem Sohne und dem Heiligen Geiste, jetzt und immerdar und
           "lang": "de",
           "variant": "standard",
           "lines": [
-            "Ehre sei dem Vater und dem Sohne und dem Heiligen Geiste, jetzt und immerdar und in die Ewigkeit der Ewigkeit. Amen."
+            "Die Auferstehung Christi haben wir geschaut, / so lasset uns anbeten den heiligen Herrn Jesus."
           ]
         }
       ]
