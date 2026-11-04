@@ -27,6 +27,7 @@ import {
   writeFileAtomic,
 } from "../nodeFs";
 import { createLibraryWatcher } from "./libraryWatch";
+import { nativeEditContextMenu } from "./nativeContextMenu";
 import { createTrustedRoots, type TrustedRoots } from "./trustedRoots";
 import { startMacUpdateInstall } from "./macUpdateInstall";
 import {
@@ -187,18 +188,20 @@ function createWindow(): BrowserWindow {
     void win.loadFile(join(RENDERER_DIST, "index.html"));
   }
 
-  // Native edit menu for text fields the renderer has no own menu for.
+  // Native edit menu for <input>/<textarea>. Block cells have their own menu.
   win.webContents.on("context-menu", (_event, params) => {
-    if (!params.isEditable && !params.selectionText) return;
-    const items: Electron.MenuItemConstructorOptions[] = params.isEditable
-      ? [
-          { role: "cut", enabled: params.editFlags.canCut },
-          { role: "copy", enabled: params.editFlags.canCopy },
-          { role: "paste", enabled: params.editFlags.canPaste },
-          { type: "separator" },
-          { role: "selectAll" },
-        ]
-      : [{ role: "copy" }];
+    const kind = nativeEditContextMenu(params);
+    if (!kind) return;
+    const items: Electron.MenuItemConstructorOptions[] =
+      kind === "edit"
+        ? [
+            { role: "cut", enabled: params.editFlags.canCut },
+            { role: "copy", enabled: params.editFlags.canCopy },
+            { role: "paste", enabled: params.editFlags.canPaste },
+            { type: "separator" },
+            { role: "selectAll" },
+          ]
+        : [{ role: "copy" }];
     Menu.buildFromTemplate(items).popup({ window: win });
   });
 

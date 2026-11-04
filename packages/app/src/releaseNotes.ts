@@ -12,6 +12,12 @@ export type ReleaseNotesEntry = { version: string; items: string[] };
  */
 export const RELEASE_NOTES: ReleaseNotesEntry[] = [
   {
+    version: "0.3.8",
+    items: [
+      "Cut, Copy and Paste in the Block right-click menu now work",
+    ],
+  },
+  {
     version: "0.3.7",
     items: [
       "Typing while a save runs is no longer lost",

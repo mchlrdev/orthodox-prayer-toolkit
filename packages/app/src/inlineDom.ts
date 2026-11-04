@@ -347,6 +347,21 @@ export function createRangeFromOffsets(
   return range;
 }
 
+/** Focus `root` and select the plain-text range `[start, end]`. */
+export function restoreSelectionOffsets(
+  root: HTMLElement,
+  start: number,
+  end: number,
+): boolean {
+  root.focus();
+  const range = createRangeFromOffsets(root, start, end);
+  const sel = window.getSelection();
+  if (!range || !sel) return false;
+  sel.removeAllRanges();
+  sel.addRange(range);
+  return true;
+}
+
 /** Client rectangles for a plain-text range inside an editable root. */
 export function rangeRectsFromOffsets(
   root: HTMLElement,
