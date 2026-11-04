@@ -90,18 +90,28 @@ overwritten.
 
 ### Before every push
 
+This pass is a **push gate** (AGENTS.md non‑negotiable 7). A push of
+user-visible UI or export work is not done until `releaseNotes.ts` matches
+the push.
+
 Review `releaseNotes.ts`:
 
 - Prepend a new `{ version, items }` block for the **next** tag if that
-  row is not there yet. Never delete older rows.
+  row is not there yet (one patch ahead of root `package.json`). Never
+  delete older rows.
 - Add or update short bullets on the newest row for **user-visible** UI /
-  export changes in this push.
+  export changes in this push. Internal-only / test-only pushes may skip
+  new bullets; still confirm the newest row is the next tag, not a
+  shipped version.
 - Keep each version’s list tiny. Short English fragments or imperatives;
   glossary terms (Block, Kind, Speaker, Word table); no marketing.
-- Do not push user-facing UI/export changes without this pass.
+- GitHub Release body is not a substitute. In-app What’s new reads only
+  this file.
 
 Do not invent bullets for uncommitted WIP. No separate CHANGELOG.md — this
-file is enough.
+file is enough. A placeholder like “UI fixes and improvements” is not a
+bullet: name the user-visible change, or leave `items` empty until there
+is one.
 
 ### Local smoke test (macOS only)
 

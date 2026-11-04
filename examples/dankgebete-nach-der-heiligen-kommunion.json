@@ -1,0 +1,774 @@
+{
+  "formatVersion": 2,
+  "id": "dankgebete-nach-der-heiligen-kommunion",
+  "type": "prayer",
+  "variants": [
+    {
+      "lang": "de",
+      "variant": "standard",
+      "title": "Dankgebete nach der heiligen Kommunion",
+      "license": "unknown",
+      "source": "orthodoxe-kirche-balingen.de",
+      "speakers": {
+        "priest": {
+          "name": "Priester"
+        },
+        "reader": {
+          "name": "Leser"
+        },
+        "all": {
+          "name": "Alle singen"
+        }
+      }
+    }
+  ],
+  "structure": [
+    {
+      "id": "b25",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Dankgebete nach der heiligen Kommunion"
+        }
+      ]
+    },
+    {
+      "id": "b26",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Zu lesen nach der Kommunion"
+        }
+      ]
+    },
+    {
+      "id": "b27",
+      "kind": "verse",
+      "speaker": "priest",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Ehre sei Dir, o Gott. Ehre sei Dir, o Gott. Ehre sei Dir, o Gott."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b28",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "1. Gebet"
+        }
+      ]
+    },
+    {
+      "id": "b29",
+      "kind": "verse",
+      "speaker": "reader",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Ich danke Dir, o Herr, mein Gott, daß Du mich Sünder nicht verstoßen, sondern vielmehr gewürdigt hast, Teilnehmer Deiner heiligen Sakramente zu sein. Ich danke Dir, daß Du mich Unwürdigen würdigtest, Deine allerreinsten und himmlischen Gaben zu empfangen. Menschenliebender Herr, der Du für uns gestorben und auferstanden bist und uns diese Deine ehrfurchtswerten und lebendigmachenden Sakramente zum Wohle und zur Heiligung unserer Seelen und Leiber schenktest, gib, daß diese auch mir gereichen zur Genesung der Seele und des Leibes, zur Vertreibung alles Feindlichen, zur Erleuchtung der Augen meines Herzens, zum Frieden meiner Seelenkräfte, zum Glauben, der nicht zuschanden werden läßt, zur ungeheuchelten Liebe, zum Wachstum in der Weisheit, zur Erfüllung Deiner Gebote, zur Vermehrung Deiner göttlichen Gnade und zum Besitz Deines Reiches, damit ich, durch sie in Deiner Herrlichkeit und Heiligkeit behütet und Deiner Gnade stets eingedenk, nicht mehr mir, sondern Dir, unserem Herrn und Wohltäter, lebe, und dereinst mit der Hoffnung auf das ewige Leben aus dieser Welt scheidend, eingehe zur ewigen Ruhe, dorthin, wo die Stimme der Feiernden nimmer ruht und endlose Wonne jene erfüllt, welche die unaussprechliche Schönheit Deines Angesichts schauen, denn Du bist die wahre Sehnsucht und die unaussprechliche Freude derer, die Dich lieben, Christus, unser Gott, und Dir lobsinget jegliches Geschöpf in Ewigkeit. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b30",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "2. Gebet"
+        }
+      ]
+    },
+    {
+      "id": "b31",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Christus, Herr, unser Gott, Du König der Ewigkeit und Schöpfer des Weltalls: Ich danke Dir wie für alle anderen Güter, welche Du mir schenktest, so auch für den Empfang Deiner allerreinsten und lebendigmachenden Sakramente. Deshalb bitte ich Dich inständig, Gütiger und Menschenliebender: Behüte mich unter dem Schirme und unter dem Schatten Deiner Flügel. Verleih mir, daß ich mit reinem Gewissen bis zum letzten Atemhauch an Deinen heiligen Sakramenten würdig teilnehmen möge zur Vergebung der Sünden und zum ewigen Leben, denn Du bist das Brot des Lebens, die Quelle der Heiligung, der Spender alles Guten, und Dir senden wir die Lobpreisung empor, mit dem Vater und dem Heiligen Geiste, jetzt und immerdar, und in alle Ewigkeit. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b32",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "3. Gebet"
+        }
+      ]
+    },
+    {
+      "id": "b33",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Du bist das Feuer, das die Unwürdigen verzehrt. Du hast mir freiwillig Deinen Leib zur Nahrung gegeben. Verzehre mich nimmer, mein Schöpfer, sondern durchdringe all meine Glieder, meine Gelenke, mein ganzes Innere und mein Herz. Verzehre die Dornen all meiner Missetaten, reinige die Seele und heilige das Gemüt, stärke die Gelenke und das Gebein, erhelle die einfaltige Fünfzahl meiner Sinne, festige mich gänzlich in Deiner Furcht, beschirme, behüte und bewahre mich vor jedem Werke und Wort, das der Seele Verderben bringt. Heilige, reinige, schmücke und bessere, belehre und erleuchte mich. Mache mich zur Wohnung Deines Geistes und laß mich nie Wohnung der Sünde sein, auf daß mich, da ich durch die Teilnahme an Deinem heiligen Sakrament zu Deinem Hause geworden bin, jeder Frevler und alle Leidenschaft fliehen mögen. Als Fürbitter bringe ich Dir alle Heiligen dar, die Engelfürsten und Deinen Vorläufer, die hochweisen Apostel und mit ihnen Deine unbefleckte, reine Mutter. Nimm, barmherziger Christus, ihr Flehen an, und mache Deinen Diener zu einem Sohne des Lichtes, denn Du allein, Gütiger, bist die Heiligung und die Erleuchtung unserer Seelen, und Dir bringen wir alle Tage die Lobpreisung dar, welche Dir, dem Herrn und Gott, gebührt. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b34",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "4. Gebet"
+        }
+      ]
+    },
+    {
+      "id": "b35",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Herr Jesus Christus, unser Gott, laß mir Deinen heiligen Leib zum ewigen Leben und Dein kostbares Blut zur Vergebung der Sünden gereichen. Diese Eucharistie selbst sei mir zur Freude, Gesundheit und Fröhlichkeit. Würdige mich bei Deiner zweiten und furchtbaren Ankunft, auch wenn ich ein Sünder bin, zur Rechten Deiner Herrlichkeit zu stehen, um der Fürbitten willen Deiner allerreinsten Mutter und aller Heiligen. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b36",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "5. Gebet"
+        }
+      ]
+    },
+    {
+      "id": "b37",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Allheilige Herrin, Gottesgebärerin, Du Licht meiner verfinsterten Seele, meine Hoffnung, mein Schutz, meine Zuflucht, mein Trost und meine Freude, ich danke Dir, daß Du mich Unwürdigen würdigtest, an dem allerreinsten Leibe und an dem kostbaren Blute Deines Sohnes teilzunehmen. Du gebarst das wahre Licht, erleuchte die geistigen Augen meines Herzens. Du hast den Quell der Unsterblichkeit geboren; mache mich, den von der Sünde Überwundenen, lebendig. Du bist die liebevoll mitleidige Mutter des erbarmenden Gottes. Erbarme Dich meiner. Laß Rührung und Zerknirschung in mein Herz, und Demut in meinen Sinn einziehen, und verleih mir, Dich anzurufen, wenn meine Gedanken gefangen sind. Würdige mich, bis zu meinem letzten Atemzug die Heiligung der allerreinsten Sakramente zur Heilung der Seele und des Leibes zu empfangen. Gib mir Tränen der Buße und des Bekenntnisses, daß ich Dir lobsinge und Dich preise alle Tage meines Lebens, denn gepriesen bist Du in Ewigkeit. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b38",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Nun läßt Du, Herr, Deinen Knecht, wie Du gesagt hast, in Frieden scheiden. Denn meine Augen haben Dein Heil gesehen, das Du vor allen Völkern bereitet hast, ein Licht, das die Heiden erleuchtet, und zur Herrlichkeit für Dein Volk Israel."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b39",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            [
+              {
+                "t": "text",
+                "v": "Heiliger Gott, / heiliger Starker, / heiliger Unsterblicher, / erbarme Dich unser. "
+              },
+              {
+                "t": "note",
+                "v": "(dreimal)"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b40",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Ehre dem Vater und dem Sohne und dem Heiligen Geiste, jetzt und immerdar und von Ewigkeit zu Ewigkeit. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b41",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Allheilige Dreieinheit, erbarme Dich unser. Herr, reinige uns von unseren Sünden. Gebieter, vergib uns unsere Übertretungen. Heiliger, sieh an unsere Schwächen und heile sie um Deines Namens willen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b42",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            [
+              {
+                "t": "text",
+                "v": "Herr, erbarme Dich. "
+              },
+              {
+                "t": "note",
+                "v": "(dreimal)"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b43",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Ehre dem Vater und dem Sohne und dem Heiligen Geiste, jetzt und immerdar und von Ewigkeit zu Ewigkeit. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b44",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Vater unser du in den Himmeln, geheiligt werde Dein Name. Dein Reich komme. Dein Wille geschehe, wie im Himmel, so auf Erden. Unser tägliches Brot gib uns heute. Und vergib uns unsere Schulden, wie auch wir vergeben unseren Schuldigern. Und führe uns nicht in Versuchung, sondern erlöse uns von dem Bösen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b45",
+      "kind": "verse",
+      "speaker": "priest",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Denn Dein ist das Reich und die Kraft und die Herrlichkeit, des Vaters und des Sohnes und des Heiligen Geistes, jetzt und immerdar und von Ewigkeit zu Ewigkeit. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b46",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Wenn kein Priester zugegen ist, folgt nach dem „Vater unser“:"
+        }
+      ]
+    },
+    {
+      "id": "b100",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Amen. Auf die Gebete unserer heiligen Väter, Herr Jesus Christus, Sohn Gottes, erbarme Dich unser. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b47",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Anschließend folgen Troparion, Kondakion und Theotokion. Zur Liturgie des hl. Johannes Chrysostomus: Troparion, 8. Ton"
+        }
+      ]
+    },
+    {
+      "id": "b48",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Die einem Flammenzeichen gleich strahlende Anmut Deines Mundes hat den Erdkreis erleuchtet, der Welt Schätze der Uneigennützigkeit erworben und uns die Erhabenheit der Demut gezeigt. Durch Deine Worte lehrst Du uns, Vater Johannes Chrysostomus, bitte das Wort, Christus, unseren Gott, zu erretten unsere Seelen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b49",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Ehre dem Vater und dem Sohne und dem Heiligen Geiste."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b50",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Kondakion, 6. Ton"
+        }
+      ]
+    },
+    {
+      "id": "b51",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Du empfingst vom Himmel die göttliche Gnade und lehrtest alle durch Deine Worte, den einen Gott in der Dreieinigkeit anzubeten, seliger und ehrwürdiger Johannes Chrysostomus. Wir loben Dich, denn Du bist unser Lehrer, der uns Göttliches offenbart."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b52",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Jetzt und immerdar und von Ewigkeit zu Ewigkeit. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b53",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Theotokion"
+        }
+      ]
+    },
+    {
+      "id": "b54",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Schutz der Christen, der keinen zuschanden werden läßt. Deine Fürsprache vor dem Schöpfer ist nie vergeblich. Verachte nicht das Flehen der Sünder. Komm in Deiner Güte unserem gläubigen Hilferufen zuvor, eile auf unser Bitten herbei und achte auf unser Gebet, o Gottesgebärerin, die Du immerdar alle beschirmst, die Dich verehren."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b55",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Zur Liturgie des hl. Basilius des Großen: Troparion, 1. Ton:"
+        }
+      ]
+    },
+    {
+      "id": "b56",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "In alle Weit erging Dein Rufen, daß sie Dein Wort annahm, durch welches Du gottwürdig lehrtest, das Wesen der Dinge erklärtest und die Sitten der Menschen ziertest: Königliches Priestertum, heiliger Vater, bitte Christus, Gott, zu erretten unsere Seelen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b57",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Ehre dem Vater und dem Sohne und dem Heiligen Geiste."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b58",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Kondakion, 4. Ton"
+        }
+      ]
+    },
+    {
+      "id": "b59",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Du erwiesest Dich als unerschütterlicher Pfeiler der Kirche. Allen Menschen spendetest Du das unentreißbare Reich und versiegeltest es mit Deinen Lehren. Du wiesest den Himmel, ehrwürdiger Basilios."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b60",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Jetzt und immerdar und von Ewigkeit zu Ewigkeit. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b61",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Theotokion"
+        }
+      ]
+    },
+    {
+      "id": "b62",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Schutz der Christen, der keinen zuschanden werden läßt. Deine Fürsprache vor dem Schöpfer ist nie vergeblich. Verachte nicht das Flehen der Sünder. Komm in Deiner Güte unserem gläubigen Hilferufen zuvor, eile auf unser Bitten herbei und achte auf unser Gebet, o Gottesgebärerin, die Du immerdar alle beschirmst, die Dich verehren."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b63",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Zur Liturgie der Vorgeweihten Gaben (des hl. Gregorius Dialogus): Troparion, 4. Ton:"
+        }
+      ]
+    },
+    {
+      "id": "b64",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Von Gott nahmst Du die himmlische Gabe in Dich auf, ruhmreicher Gregorius. Durch seine Kraft gestärkt, begannst Du, dem Evangelium zu folgen, und erwarbst so bei Christus den Lohn für Dein Mühen. Seliger, bitte ihn, zu erretten unsere Seelen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b65",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Ehre dem Vater und dem Sohne und dem Heiligen Geiste."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b66",
+      "kind": "heading",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Theotokion"
+        }
+      ]
+    },
+    {
+      "id": "b67",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Schutz der Christen, der keinen zuschanden werden läßt. Deine Fürsprache vor dem Schöpfer ist nie vergeblich. Verachte nicht das Flehen der Sünder. Komm in Deiner Güte unserem gläubigen Hilferufen zuvor, eile auf unser Bitten herbei und achte auf unser Gebet, o Gottesgebärerin, die Du immerdar alle beschirmst, die Dich verehren."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b68",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            [
+              {
+                "t": "text",
+                "v": "Herr, erbarme Dich. "
+              },
+              {
+                "t": "note",
+                "v": "(dreimal)"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b69",
+      "kind": "verse",
+      "speaker": "priest",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Weisheit! Allheilige Gottesgebärerin, rette uns!"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b70",
+      "kind": "verse",
+      "speaker": "all",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Wahrhaftig würdig ist es, dich selig zu preisen, / Gottesgebärerin, / allzeit Selige und ganz Unbefleckte und Mutter unseres Gottes. / Die du geehrter bist als die Cherubim / und unvergleichlich herrlicher als die Seraphim; / die du unversehrt Gott, das Wort geboren hast, / in Wahrheit Gottesgebärerin, // dich preisen wir hoch!"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b71",
+      "kind": "verse",
+      "speaker": "priest",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Ehre sei DEhre dem Vater und dem Sohne und dem Heiligen Geiste, jetzt und immerdar und von Ewigkeit zu Ewigkeit. Amen.ir, unser Gott, unsere Hoffnung, Ehre sei Dir!"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b72",
+      "kind": "verse",
+      "speaker": "reader",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Ehre dem Vater und dem Sohne und dem Heiligen Geiste, jetzt und immerdar und von Ewigkeit zu Ewigkeit. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b73",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            [
+              {
+                "t": "text",
+                "v": "Herr, erbarme Dich. "
+              },
+              {
+                "t": "note",
+                "v": "(dreimal)"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b74",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Segne."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b75",
+      "kind": "verse",
+      "speaker": "priest",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Christus, unser wahrer Gott, auf die Gebete seiner allreinen Mutter, unseres Vaters unter den heiligen Johannes Chrysotomos, des Erzbischofs von Konstantinopel, und aller Heiligen erbarme sich unser und errette uns, denn er ist gut und menschenliebend."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b76",
+      "kind": "annotation",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "text": "Wenn kein Priester zugegen ist, folgt nach dem „Wahrhaft würdig ist es“:"
+        }
+      ]
+    },
+    {
+      "id": "b77",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Ehre dem Vater und dem Sohne und dem Heiligen Geiste, jetzt und immerdar und von Ewigkeit zu Ewigkeit. Amen."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b78",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            [
+              {
+                "t": "text",
+                "v": "Herr, erbarme Dich. "
+              },
+              {
+                "t": "note",
+                "v": "(dreimal)"
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b79",
+      "kind": "verse",
+      "translations": [
+        {
+          "lang": "de",
+          "variant": "standard",
+          "lines": [
+            "Auf die Gebete unserer heiligen Väter, Herr Jesus Christus, Sohn Gottes, erbarme Dich unser. Amen."
+          ]
+        }
+      ]
+    }
+  ]
+}

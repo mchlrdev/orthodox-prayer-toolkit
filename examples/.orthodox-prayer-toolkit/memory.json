@@ -1,0 +1,58 @@
+{
+  "formatVersion": 1,
+  "hints": [],
+  "examples": [
+    {
+      "id": "e1",
+      "text": "< Gebet",
+      "look": {
+        "tag": "div",
+        "class": "ct-code-block",
+        "weight": "normal",
+        "style": "normal",
+        "size": "16px",
+        "color": "rgb(0, 0, 0)",
+        "align": "start"
+      },
+      "origin": "orthodoxe-kirche-balingen.de",
+      "wrong": "heading",
+      "right": "exclude",
+      "added": "2026-11-04T09:25:24.037Z"
+    },
+    {
+      "id": "e2",
+      "text": "Unser Glaube",
+      "look": {
+        "tag": "div",
+        "class": "ct-text-block",
+        "weight": "normal",
+        "style": "normal",
+        "size": "16px",
+        "color": "rgb(0, 0, 0)",
+        "align": "start"
+      },
+      "origin": "orthodoxe-kirche-balingen.de",
+      "wrong": "heading",
+      "right": "exclude",
+      "added": "2026-11-04T09:25:24.037Z"
+    },
+    {
+      "id": "e3",
+      "text": "Wenn kein Priester zugegen ist, folgt nach dem „Vater unser“: Amen. Auf die Gebete unserer heiligen Väter, Herr Jesus Christus, Sohn Gottes, erbarme Dich unser. Amen.",
+      "look": {
+        "tag": "div",
+        "class": "ct-text-block flr gebet-einschub p-article",
+        "weight": "normal",
+        "style": "normal",
+        "size": "16px",
+        "color": "rgb(0, 0, 0)",
+        "align": "start"
+      },
+      "origin": "orthodoxe-kirche-balingen.de",
+      "wrong": "annotation",
+      "right": "verse",
+      "added": "2026-11-04T09:25:24.037Z"
+    }
+  ],
+  "dismissed": []
+}

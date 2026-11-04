@@ -27,6 +27,7 @@ Root [README.md](README.md) is the human landing page. Do not treat `.scratch/` 
 4. **No empty translation keys** — missing variant = omit entry.
 5. **Id ↔ filename** — `{id}.json`; never silently overwrite on id collision.
 6. **Vocabulary** — Library, Block, Kind, Variant, Session draft (see glossary). Avoid “vault”, “buffer”, “cwd” for those concepts.
+7. **What’s new on push** — before every `git push` of user-visible UI or export work, update [`packages/app/src/releaseNotes.ts`](packages/app/src/releaseNotes.ts) using [docs/RELEASE.md](docs/RELEASE.md) → What’s new notes. Newest row is the **next** tag (one patch ahead of root `package.json`, or equal while that tag’s bullets still accumulate). Add a tiny English bullet for each user-visible change in this push. Older rows stay.
 
 ## Where to change what
 
@@ -37,7 +38,7 @@ Root [README.md](README.md) is the human landing page. Do not treat `.scratch/` 
 | Kind / style helpers | `indexKinds.ts`, `resolveStyles.ts`, `validateStyles.ts` |
 | Editor UX | `packages/app/src/**` |
 | Release / signing | `docs/RELEASE.md`, `scripts/release.mjs`, electron-builder config |
-| What’s new notes | `packages/app/src/releaseNotes.ts` — **before every push**, prepend a new version block for the next tag if needed; add tiny user-facing bullets; never delete older rows; `pnpm release` leaves a matching newest row alone or prepends an empty row for the new tag |
+| What’s new notes | `packages/app/src/releaseNotes.ts` (non‑negotiable 7; process in `docs/RELEASE.md`) |
 
 ## Verify before finishing
 
@@ -48,6 +49,8 @@ pnpm typecheck
 ```
 
 For UI-only work, at least Core tests still green if you touched shared types.
+
+**Push gate:** if this work is going to `git push` and includes user-visible UI or export changes, `packages/app/src/releaseNotes.ts` newest `version` is the next tag and that row has a bullet for each of those changes. Done = that file matches the push; older rows unchanged.
 
 ## Out of scope unless asked
 
