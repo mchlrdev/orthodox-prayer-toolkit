@@ -12,6 +12,10 @@ export type ReleaseNotesEntry = { version: string; items: string[] };
  */
 export const RELEASE_NOTES: ReleaseNotesEntry[] = [
   {
+    version: "0.4.0",
+    items: [],
+  },
+  {
     // Next tag (package is 0.3.7). Add bullets here before pushing user-visible UI/export work.
     version: "0.3.8",
     items: [
