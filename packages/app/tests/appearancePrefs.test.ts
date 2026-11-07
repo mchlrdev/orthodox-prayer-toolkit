@@ -39,22 +39,24 @@ describe("appearancePrefs", () => {
     installMemoryLocalStorage();
   });
 
+  const reading = { columnWidth: "medium", languageFonts: {} };
+
   it("defaults to system and 16px editor text", () => {
     expect(loadAppearancePrefs()).toEqual({
       colorScheme: "system",
-      editorFontSize: 16,
+      editorFontSize: 16, ...reading
     });
   });
 
   it("persists light/dark/system and editor font size", () => {
-    saveAppearancePrefs({ colorScheme: "dark", editorFontSize: 20 });
+    saveAppearancePrefs({ colorScheme: "dark", editorFontSize: 20, columnWidth: "medium", languageFonts: {} });
     expect(loadAppearancePrefs()).toEqual({
       colorScheme: "dark",
-      editorFontSize: 20,
+      editorFontSize: 20, ...reading
     });
-    saveAppearancePrefs({ colorScheme: "light", editorFontSize: 16 });
+    saveAppearancePrefs({ colorScheme: "light", editorFontSize: 16, columnWidth: "medium", languageFonts: {} });
     expect(loadAppearancePrefs().colorScheme).toBe("light");
-    saveAppearancePrefs({ colorScheme: "system", editorFontSize: 16 });
+    saveAppearancePrefs({ colorScheme: "system", editorFontSize: 16, columnWidth: "medium", languageFonts: {} });
     expect(loadAppearancePrefs().colorScheme).toBe("system");
   });
 
@@ -65,7 +67,7 @@ describe("appearancePrefs", () => {
     );
     expect(loadAppearancePrefs()).toEqual({
       colorScheme: "dark",
-      editorFontSize: 16,
+      editorFontSize: 16, ...reading
     });
   });
 
@@ -73,7 +75,7 @@ describe("appearancePrefs", () => {
     localStorage.setItem(APPEARANCE_STORAGE_KEY, "{not-json");
     expect(loadAppearancePrefs()).toEqual({
       colorScheme: "system",
-      editorFontSize: 16,
+      editorFontSize: 16, ...reading
     });
   });
 

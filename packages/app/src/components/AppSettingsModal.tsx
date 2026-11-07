@@ -13,6 +13,8 @@ import {
 import { IconCopy } from "@tabler/icons-react";
 import { agentPrompt, type AgentAccess } from "../agentTools/useAgentAccess";
 import { BuiltInModelSection } from "./BuiltInModelSection";
+import { LanguageFontsSection } from "./LanguageFontsSection";
+import type { ColumnWidth, LanguageFonts } from "../languageFontPrefs";
 import {
   EDITOR_FONT_SIZE_MAX,
   EDITOR_FONT_SIZE_MIN,
@@ -31,6 +33,11 @@ type Props = {
   onColorSchemeChange: (value: ColorSchemePreference) => void;
   editorFontSize: number;
   onEditorFontSizeChange: (value: number) => void;
+  columnWidth: ColumnWidth;
+  onColumnWidthChange: (value: ColumnWidth) => void;
+  languageFonts: LanguageFonts;
+  onLanguageFontsChange: (value: LanguageFonts) => void;
+  openLanguages: string[];
   agentAccess: AgentAccess;
 };
 
@@ -41,6 +48,11 @@ export function AppSettingsModal({
   onColorSchemeChange,
   editorFontSize,
   onEditorFontSizeChange,
+  columnWidth,
+  onColumnWidthChange,
+  languageFonts,
+  onLanguageFontsChange,
+  openLanguages,
   agentAccess,
 }: Props) {
   const [copied, setCopied] = useState(false);
@@ -153,6 +165,31 @@ export function AppSettingsModal({
             label={null}
           />
         </Stack>
+
+        <Stack gap={6}>
+          <Text size="sm" fw={600}>
+            Maximum column width
+          </Text>
+          <SegmentedControl
+            fullWidth
+            value={columnWidth}
+            onChange={(v) => onColumnWidthChange(v as ColumnWidth)}
+            data={[
+              { label: "Narrow", value: "narrow" },
+              { label: "Medium", value: "medium" },
+              { label: "Wide", value: "wide" },
+            ]}
+          />
+          <Text size="xs" c="dimmed">
+            Per column, also with several languages side by side.
+          </Text>
+        </Stack>
+
+        <LanguageFontsSection
+          fonts={languageFonts}
+          onChange={onLanguageFontsChange}
+          languages={openLanguages}
+        />
 
         <BuiltInModelSection active={opened} />
 

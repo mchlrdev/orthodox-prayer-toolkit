@@ -1,3 +1,11 @@
+import {
+  DEFAULT_COLUMN_WIDTH,
+  isColumnWidth,
+  readLanguageFonts,
+  type ColumnWidth,
+  type LanguageFonts,
+} from "./languageFontPrefs";
+
 export const APPEARANCE_STORAGE_KEY =
   "orthodox-prayer-toolkit.appearance-prefs";
 
@@ -11,11 +19,15 @@ export const DEFAULT_EDITOR_FONT_SIZE = 16;
 export type AppearancePrefs = {
   colorScheme: ColorSchemePreference;
   editorFontSize: number;
+  columnWidth: ColumnWidth;
+  languageFonts: LanguageFonts;
 };
 
 const DEFAULTS: AppearancePrefs = {
   colorScheme: "system",
   editorFontSize: DEFAULT_EDITOR_FONT_SIZE,
+  columnWidth: DEFAULT_COLUMN_WIDTH,
+  languageFonts: {},
 };
 
 export function clampEditorFontSize(value: unknown): number {
@@ -49,6 +61,8 @@ function readPrefs(): AppearancePrefs {
           ? DEFAULT_EDITOR_FONT_SIZE
           : obj.editorFontSize,
       ),
+      columnWidth: isColumnWidth(obj.columnWidth) ? obj.columnWidth : DEFAULT_COLUMN_WIDTH,
+      languageFonts: readLanguageFonts(obj.languageFonts),
     };
   } catch {
     return { ...DEFAULTS };

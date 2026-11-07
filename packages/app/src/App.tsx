@@ -44,6 +44,7 @@ import {
   type LibrarySettingsPane,
 } from "./components/LibrarySettingsModal";
 import { LibraryMigrationDialog } from "./components/LibraryMigrationDialog";
+import { columnWidthCss, languageFontCss } from "./languageFontPrefs";
 import { AppSettingsModal } from "./components/AppSettingsModal";
 import { ExportModal } from "./components/ExportModal";
 import { ConfirmDialog } from "./components/ConfirmDialog";
@@ -171,6 +172,8 @@ export function App() {
   const [editorFontSize, setEditorFontSize] = useState(
     initialAppearance.editorFontSize,
   );
+  const [columnWidth, setColumnWidth] = useState(initialAppearance.columnWidth);
+  const [languageFonts, setLanguageFonts] = useState(initialAppearance.languageFonts);
 
   const overlayMode = useMediaQuery(OVERLAY_BREAKPOINT) ?? false;
   const editorRef = useRef<InlineEditorHandle>(null);
@@ -190,9 +193,14 @@ export function App() {
     saveAppearancePrefs({
       colorScheme: colorSchemePref,
       editorFontSize,
+      columnWidth,
+      languageFonts,
     });
+  }, [colorSchemePref, editorFontSize, columnWidth, languageFonts]);
+  useEffect(() => {
     setColorSchemeRef.current(toMantineColorScheme(colorSchemePref));
-  }, [colorSchemePref, editorFontSize]);
+  }, [colorSchemePref]);
+  const languageFontRules = useMemo(() => languageFontCss(languageFonts), [languageFonts]);
 
 
   const handleSelectEntry = useCallback(
@@ -671,6 +679,7 @@ export function App() {
 
   return (
     <>
+      {languageFontRules ? <style>{languageFontRules}</style> : null}
       <div
         className="app-shell"
         data-overlay={overlayMode ? "true" : undefined}
@@ -679,6 +688,7 @@ export function App() {
         style={
           {
             "--opt-editor-font-size": `${editorFontSize}px`,
+            "--opt-column-max": columnWidthCss(columnWidth),
           } as CSSProperties
         }
       >
@@ -1069,6 +1079,11 @@ export function App() {
         onColorSchemeChange={setColorSchemePref}
         editorFontSize={editorFontSize}
         onEditorFontSizeChange={setEditorFontSize}
+        columnWidth={columnWidth}
+        onColumnWidthChange={setColumnWidth}
+        languageFonts={languageFonts}
+        onLanguageFontsChange={setLanguageFonts}
+        openLanguages={availableVariants.map((v) => v.lang)}
         agentAccess={agentAccess}
       />
 

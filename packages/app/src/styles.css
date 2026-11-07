@@ -1096,11 +1096,20 @@ body,
   min-width: 0;
   /* Kind-style rem values paint as em against this base. */
   font-size: var(--opt-editor-font-size);
+  /* Centered at the maximum width; a short window keeps the split nudge. */
+  margin-inline: max(
+    calc(-1 * var(--split-nudge, 0px)),
+    calc((100% - var(--split-count) * var(--opt-column-max, 44em) - (var(--split-count) - 1) * var(--split-gap)) / 2)
+  );
+}
+
+/* An import's rows line up with the source beside them. */
+.import-body .split-layout {
+  margin-inline: 0;
 }
 
 .split-layout[data-split="true"] {
   position: relative;
-  margin: 0 calc(-1 * var(--split-nudge));
   padding: 0 var(--split-nudge);
 }
 
@@ -4300,4 +4309,25 @@ body,
 .import-pdf-after .import-pair-row,
 .import-pdf-after .import-answer-line {
   padding-left: 0;
+}
+
+.language-font {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--opt-border);
+  border-radius: 8px;
+}
+
+.language-font-size {
+  width: 36px;
+  text-align: end;
+  flex-shrink: 0;
+}
+
+.language-font-sample {
+  font-family: var(--opt-prayer-font);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
