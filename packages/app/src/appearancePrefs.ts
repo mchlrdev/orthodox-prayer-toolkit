@@ -1,9 +1,9 @@
 import {
   DEFAULT_COLUMN_WIDTH,
   isColumnWidth,
-  readLanguageFonts,
+  readVariantFonts,
   type ColumnWidth,
-  type LanguageFonts,
+  type VariantFonts,
 } from "./languageFontPrefs";
 
 export const APPEARANCE_STORAGE_KEY =
@@ -20,14 +20,14 @@ export type AppearancePrefs = {
   colorScheme: ColorSchemePreference;
   editorFontSize: number;
   columnWidth: ColumnWidth;
-  languageFonts: LanguageFonts;
+  variantFonts: VariantFonts;
 };
 
 const DEFAULTS: AppearancePrefs = {
   colorScheme: "system",
   editorFontSize: DEFAULT_EDITOR_FONT_SIZE,
   columnWidth: DEFAULT_COLUMN_WIDTH,
-  languageFonts: {},
+  variantFonts: {},
 };
 
 export function clampEditorFontSize(value: unknown): number {
@@ -62,7 +62,7 @@ function readPrefs(): AppearancePrefs {
           : obj.editorFontSize,
       ),
       columnWidth: isColumnWidth(obj.columnWidth) ? obj.columnWidth : DEFAULT_COLUMN_WIDTH,
-      languageFonts: readLanguageFonts(obj.languageFonts),
+      variantFonts: readVariantFonts(obj.variantFonts),
     };
   } catch {
     return { ...DEFAULTS };

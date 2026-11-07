@@ -18,9 +18,10 @@ export const RELEASE_NOTES: ReleaseNotesEntry[] = [
       "App settings and the import progress show where the model runs: GPU with its name, or CPU, and any GPU it leaves unused",
       "The Intel Mac app now includes the Built-in model's runtime, which it was missing",
       "Maximum column width in App settings: Narrow, Medium or Wide, so lines no longer run to the window's edge",
-      "Font and size per language in App settings, for the editor's display only",
+      "Font and size per Variant in App settings, for the editor's display only: pick from the open Library or enter a Variant ahead of time",
       "Import cuts a hymn title off the text below it and rejoins paragraphs split by a page break",
       "Assistant can split a section: “teile 5 vor „Herr“” or “die erste Zeile ist eine eigene Überschrift”",
+      "App settings are sorted into sections, like Library and Prayer settings",
     ],
   },
   {

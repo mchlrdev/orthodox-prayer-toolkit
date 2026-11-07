@@ -20,10 +20,6 @@ export function BuiltInModelSection({ active }: { active: boolean }) {
           optional
         </Text>
       </Group>
-      <Text size="xs" c="dimmed">
-        Sorts sections during import and answers instructions. Runs offline; sources never
-        leave your computer. Import works without the model too.
-      </Text>
       {status === null ? null : status.state === "installed" || status.state === "stand-in" ? (
         <Stack gap={4}>
           <div className="model-installed">

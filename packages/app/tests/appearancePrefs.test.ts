@@ -39,7 +39,7 @@ describe("appearancePrefs", () => {
     installMemoryLocalStorage();
   });
 
-  const reading = { columnWidth: "medium", languageFonts: {} };
+  const reading = { columnWidth: "medium", variantFonts: {} };
 
   it("defaults to system and 16px editor text", () => {
     expect(loadAppearancePrefs()).toEqual({
@@ -49,14 +49,14 @@ describe("appearancePrefs", () => {
   });
 
   it("persists light/dark/system and editor font size", () => {
-    saveAppearancePrefs({ colorScheme: "dark", editorFontSize: 20, columnWidth: "medium", languageFonts: {} });
+    saveAppearancePrefs({ colorScheme: "dark", editorFontSize: 20, columnWidth: "medium", variantFonts: {} });
     expect(loadAppearancePrefs()).toEqual({
       colorScheme: "dark",
       editorFontSize: 20, ...reading
     });
-    saveAppearancePrefs({ colorScheme: "light", editorFontSize: 16, columnWidth: "medium", languageFonts: {} });
+    saveAppearancePrefs({ colorScheme: "light", editorFontSize: 16, columnWidth: "medium", variantFonts: {} });
     expect(loadAppearancePrefs().colorScheme).toBe("light");
-    saveAppearancePrefs({ colorScheme: "system", editorFontSize: 16, columnWidth: "medium", languageFonts: {} });
+    saveAppearancePrefs({ colorScheme: "system", editorFontSize: 16, columnWidth: "medium", variantFonts: {} });
     expect(loadAppearancePrefs().colorScheme).toBe("system");
   });
 

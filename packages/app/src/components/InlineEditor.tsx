@@ -1474,6 +1474,7 @@ const BlockRow = memo(function BlockRow({
                 className="split-cell"
                 data-speaker={showChip ? "true" : undefined}
                 data-lang={col.lang}
+                data-variant={col.variant}
                 data-invalid={
                   blockIssues?.variantKeys.has(variantKey(col))
                     ? "true"

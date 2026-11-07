@@ -44,7 +44,7 @@ import {
   type LibrarySettingsPane,
 } from "./components/LibrarySettingsModal";
 import { LibraryMigrationDialog } from "./components/LibraryMigrationDialog";
-import { columnWidthCss, languageFontCss } from "./languageFontPrefs";
+import { columnWidthCss, variantFontCss } from "./languageFontPrefs";
 import { AppSettingsModal } from "./components/AppSettingsModal";
 import { ExportModal } from "./components/ExportModal";
 import { ConfirmDialog } from "./components/ConfirmDialog";
@@ -173,7 +173,7 @@ export function App() {
     initialAppearance.editorFontSize,
   );
   const [columnWidth, setColumnWidth] = useState(initialAppearance.columnWidth);
-  const [languageFonts, setLanguageFonts] = useState(initialAppearance.languageFonts);
+  const [variantFonts, setVariantFonts] = useState(initialAppearance.variantFonts);
 
   const overlayMode = useMediaQuery(OVERLAY_BREAKPOINT) ?? false;
   const editorRef = useRef<InlineEditorHandle>(null);
@@ -194,13 +194,13 @@ export function App() {
       colorScheme: colorSchemePref,
       editorFontSize,
       columnWidth,
-      languageFonts,
+      variantFonts,
     });
-  }, [colorSchemePref, editorFontSize, columnWidth, languageFonts]);
+  }, [colorSchemePref, editorFontSize, columnWidth, variantFonts]);
   useEffect(() => {
     setColorSchemeRef.current(toMantineColorScheme(colorSchemePref));
   }, [colorSchemePref]);
-  const languageFontRules = useMemo(() => languageFontCss(languageFonts), [languageFonts]);
+  const variantFontRules = useMemo(() => variantFontCss(variantFonts), [variantFonts]);
 
 
   const handleSelectEntry = useCallback(
@@ -679,7 +679,7 @@ export function App() {
 
   return (
     <>
-      {languageFontRules ? <style>{languageFontRules}</style> : null}
+      {variantFontRules ? <style>{variantFontRules}</style> : null}
       <div
         className="app-shell"
         data-overlay={overlayMode ? "true" : undefined}
@@ -1081,9 +1081,10 @@ export function App() {
         onEditorFontSizeChange={setEditorFontSize}
         columnWidth={columnWidth}
         onColumnWidthChange={setColumnWidth}
-        languageFonts={languageFonts}
-        onLanguageFontsChange={setLanguageFonts}
-        openLanguages={availableVariants.map((v) => v.lang)}
+        variantFonts={variantFonts}
+        onVariantFontsChange={setVariantFonts}
+        libraryVariants={availableVariants}
+        openPrayer={draft}
         agentAccess={agentAccess}
       />
 

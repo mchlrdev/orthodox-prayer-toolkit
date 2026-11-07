@@ -9,9 +9,9 @@ export function sameVariant(a: ActiveVariant, b: ActiveVariant): boolean {
 }
 
 export function parseVariantKey(value: string): ActiveVariant | null {
-  const [lang, variant] = value.split("::");
-  if (!lang || !variant) return null;
-  return { lang, variant };
+  const at = value.indexOf("::");
+  if (at <= 0 || at + 2 >= value.length) return null;
+  return { lang: value.slice(0, at), variant: value.slice(at + 2) };
 }
 
 export function variantLabel(v: ActiveVariant): string {
