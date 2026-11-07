@@ -4,7 +4,10 @@ import {
   createImportDraft,
   decisionPrompts,
   decisionStep,
+  draftBlockPlainText,
+  draftBlockVisible,
   firstDraftBatches,
+  pageBreakJoinOps,
   speakerBatch,
   importDraftToPrayer,
   readText,
@@ -13,6 +16,7 @@ import {
   type DecisionBatch,
   type ImportDraft,
 } from "../src/index.js";
+import { lineSplitOffsets } from "../src/importDecisions.js";
 
 const TEXT = [
   "Troparion im 4. Ton: Dein Märtyrer Prokopius, Herr, hat in seinem Kampf die Krone empfangen.",
@@ -144,5 +148,64 @@ describe("first-draft Decisions", () => {
     const step = decisionStep(d, pair, pair.items[1]!, [0.2, 0.8]);
     expect(step?.ops).toEqual([{ op: "unpairVariant", block: "b2", variant: "v2" }]);
     expect(decisionStep(d, pair, pair.items[0]!, [0.9, 0.1])).toBeNull();
+  });
+});
+
+describe("cutting and joining paragraphs by rule", () => {
+  const start = (text: string) => {
+    const source = readText(text, { id: "s" });
+    return createImportDraft({ sources: [source], variant: { lang: "de", variant: "standard", title: "T" } });
+  };
+  const texts = (d: ImportDraft) => d.blocks.filter((b) => draftBlockVisible(d, b)).map((b) => draftBlockPlainText(d, b, d.variants[0]!.key));
+
+  it("the reader cuts a genre label off its text", () => {
+    expect(lineSplitOffsets("Troparion, 4. Ton\nDein Märtyrer, o Herr")).toEqual([18]);
+    expect(lineSplitOffsets("Herr, erbarme Dich\nPsalm 50\nErbarme Dich meiner")).toEqual([19, 28]);
+    expect(lineSplitOffsets("Heiliger Gott\nHeiliger Starker")).toEqual([]);
+    const d = start("Troparion, 4. Ton\nDein Märtyrer, o Herr");
+    const read = applyImportOps(d, readerRuleOps(d), { by: "reader" });
+    if (!read.ok) throw new Error(read.error);
+    expect(texts(read.draft)).toEqual(["Troparion, 4. Ton", "Dein Märtyrer, o Herr"]);
+    expect(read.draft.blocks[0]!.kind).toBe("heading");
+  });
+
+  describe("page breaks", () => {
+    const segment = (id: string, text: string, page: number, extra: object = {}) => ({
+      id,
+      text,
+      look: {},
+      group: "g1",
+      area: { page, x: 0, y: 0, width: 10, height: 10, column: 0 },
+      ...extra,
+    });
+    const pdf = (...segments: ReturnType<typeof segment>[]) =>
+      createImportDraft({
+        sources: [{ id: "s", format: "pdf", segments } as never],
+        variant: { lang: "de", variant: "standard", title: "T" },
+      });
+
+    it("joins a paragraph cut by a page break, chains too", () => {
+      const d = pdf(segment("a", "und denen in den", 1), segment("b", "Gräbern das Leben und", 2), segment("c", "denen ein Ende.", 3), segment("d", "Amen", 3));
+      expect(pageBreakJoinOps(d).length).toBe(1);
+      const c = pdf(segment("a", "und denen in den", 1), segment("b", "gräbern das Leben und", 2), segment("c", "denen ein Ende.", 3));
+      const ops = pageBreakJoinOps(c);
+      expect(ops.length).toBe(2);
+      const r = applyImportOps(c, ops, { by: "reader" });
+      if (!r.ok) throw new Error(r.error);
+      expect(r.draft.blocks.length).toBe(1);
+    });
+
+    it("leaves other neighbours alone", () => {
+      const same = pdf(segment("a", "und denen", 1), segment("b", "das Leben", 1));
+      expect(pageBreakJoinOps(same)).toEqual([]);
+      const finished = pdf(segment("a", "und denen.", 1), segment("b", "das Leben", 2));
+      expect(pageBreakJoinOps(finished)).toEqual([]);
+      const capital = pdf(segment("a", "und denen", 1), segment("b", "Das Leben", 2));
+      expect(pageBreakJoinOps(capital)).toEqual([]);
+      const column = pdf(segment("a", "und denen", 1), segment("b", "das Leben", 2, { area: { page: 2, x: 0, y: 0, width: 10, height: 10, column: 1 } }));
+      expect(pageBreakJoinOps(column)).toEqual([]);
+      const print = pdf(segment("a", "und denen", 1), segment("b", "das Leben", 2, { group: "g2" }));
+      expect(pageBreakJoinOps(print)).toEqual([]);
+    });
   });
 });

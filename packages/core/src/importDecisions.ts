@@ -284,6 +284,13 @@ export function firstDraftBatches(draft: ImportDraft): DecisionBatch[] {
   return batches;
 }
 
+/** A text that shows, in the main Variant only (a paired block cannot be cut for one language). */
+function structureBlocks(draft: ImportDraft, main: string): DraftBlock[] {
+  return draft.blocks.filter((b) => draftBlockVisible(draft, b) && b.content[main]);
+}
+
+const decidedByHuman = (b: DraftBlock) => b.origin.kind?.by === "human";
+
 /** The preset a printed speaker label names ("Priester" → priest), if known. */
 export function speakerForLabel(label: string): string | undefined {
   return SPEAKER_LABELS[labelKey(label)];
@@ -354,12 +361,50 @@ export function inlineNoteRanges(text: string): Array<{ start: number; end: numb
 export function readerRuleOps(draft: ImportDraft): ImportOp[] {
   const main = draft.variants[0];
   if (!main) return [];
-  const splits = lineSplitOps(draft, main.key);
+  const joins = pageBreakJoinOps(draft);
+  const joined = joins.length > 0 ? applyImportOps(draft, joins, { by: "reader" }) : null;
+  const first = joined?.ok ? joined.draft : draft;
+  const done = joined?.ok ? joins : [];
+  const splits = lineSplitOps(first, main.key);
   if (splits.length > 0) {
-    const split = applyImportOps(draft, splits, { by: "reader" });
-    if (split.ok) return [...splits, ...labelAndNoteOps(split.draft)];
+    const split = applyImportOps(first, splits, { by: "reader" });
+    if (split.ok) return [...done, ...splits, ...labelAndNoteOps(split.draft)];
   }
-  return labelAndNoteOps(draft);
+  return [...done, ...labelAndNoteOps(first)];
+}
+
+/**
+ * A paragraph a page break cut apart: the next visible block starts the next
+ * page in the same column and print, there is no sentence end above and a
+ * small letter below. Fixed rule, not a Decision: on the test set (Nov 2026)
+ * the model joined nearly anything that looked unfinished, also across the
+ * columns of a two-language book. From the end, so a chain joins up.
+ */
+export function pageBreakJoinOps(draft: ImportDraft): ImportOp[] {
+  const main = draft.variants[0]?.key;
+  if (!main) return [];
+  const segments = new Map(draft.sources.flatMap((source) => source.segments.map((seg) => [seg.id, seg] as const)));
+  const edge = (b: DraftBlock, end: boolean) => {
+    const spans = (b.content[main] ?? []).flatMap((s) => ("seg" in s ? [s.seg] : []));
+    return segments.get((end ? spans.at(-1) : spans[0]) ?? "");
+  };
+  const visible = structureBlocks(draft, main);
+  const ops: ImportOp[] = [];
+  for (let i = visible.length - 2; i >= 0; i--) {
+    const upper = visible[i]!;
+    const lower = visible[i + 1]!;
+    if (Object.keys(upper.content).length > 1 || Object.keys(lower.content).length > 1) continue;
+    if (decidedByHuman(upper) || decidedByHuman(lower)) continue;
+    const a = edge(upper, true);
+    const b = edge(lower, false);
+    if (!a?.area || !b?.area || b.area.page !== a.area.page + 1) continue;
+    if (a.area.column !== b.area.column || a.group !== b.group) continue;
+    const above = draftBlockPlainText(draft, upper, main).trim();
+    const below = draftBlockPlainText(draft, lower, main).trim();
+    if (/[.!?:;…»”")\]·]$/u.test(above) || !/^\p{Ll}/u.test(below)) continue;
+    ops.push({ op: "merge", block: upper.id });
+  }
+  return ops;
 }
 
 const INSTRUCTION_START =
@@ -369,8 +414,9 @@ const SAYS = /(spricht|sagt|singt|liest|ruft|betet|says|sings|reads|exclaims|г�
 /**
  * Where one paragraph of the page holds several blocks (lines joined by
  * <br>): before a line with a known speaker label, before a line that is
- * an instruction ("Anschließend liest …", "Then the priest …"), and after an
- * instruction ending in a colon ("… spricht vor den königlichen Türen:").
+ * an instruction ("Anschließend liest …", "Then the priest …"), after an
+ * instruction ending in a colon ("… spricht vor den königlichen Türen:"), and
+ * around a genre label on a line of its own.
  */
 export function lineSplitOffsets(text: string): number[] {
   const out: number[] = [];
@@ -380,7 +426,14 @@ export function lineSplitOffsets(text: string): number[] {
     const line = lines[i]!;
     if (i > 0 && line.trim()) {
       const prev = lines[i - 1]!.trim();
-      if (speakerLabelAt(line.trimStart()) || INSTRUCTION_START.test(line.trimStart()) || (SAYS.test(prev) && !speakerLabelAt(prev))) {
+      if (
+        speakerLabelAt(line.trimStart()) ||
+        INSTRUCTION_START.test(line.trimStart()) ||
+        (SAYS.test(prev) && !speakerLabelAt(prev)) ||
+        // "Troparion, 4. Ton" / "Psalm 50" on a line of its own names what follows.
+        readerKindOf(line) === "heading" ||
+        readerKindOf(prev) === "heading"
+      ) {
         out.push(at);
       }
     }

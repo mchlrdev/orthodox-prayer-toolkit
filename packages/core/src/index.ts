@@ -287,6 +287,7 @@ export {
   labelPrefixEnd,
   inlineNoteRanges,
   readerRuleOps,
+  pageBreakJoinOps,
   readerKindOf,
   standaloneSpeakerLabel,
   speakerRubricAt,

@@ -13,7 +13,10 @@ import { join } from "node:path";
 import { it } from "vitest";
 import {
   createImportDraft,
+  draftBlockPlainText,
+  draftBlockVisible,
   importDraftToPrayer,
+  pageBreakJoinOps,
   suggestTitle,
   type ImportDraft,
   type Prayer,
@@ -52,7 +55,8 @@ it("first draft on the test set", async () => {
   const details: string[] = [];
   /** Model kind decisions by confidence: [right, all] per 0.1 bucket (calibration for UNCERTAIN_BELOW). */
   const buckets = new Map<number, [number, number]>();
-  const total = { blocks: 0, found: 0, merged: 0, level: 0, kind: 0, speakers: 0, speakerHits: 0, notes: 0, noteHits: 0, noise: 0, titles: 0, titleHits: 0, ms: 0 };
+  const structureLog: string[] = [];
+  const total = { blocks: 0, found: 0, merged: 0, cut: 0, joins: 0, joinHits: 0, level: 0, kind: 0, speakers: 0, speakerHits: 0, notes: 0, noteHits: 0, noise: 0, titles: 0, titleHits: 0, ms: 0 };
 
   await withModel(async (runtime) => {
     for (const file of files) {
@@ -66,13 +70,21 @@ it("first draft on the test set", async () => {
         variant: { lang: v.lang, variant: v.variant, title: suggestTitle(source) ?? "" },
       });
       const started = Date.now();
+      const key = draft.variants[0]!.key;
+      const shownBlocks = draft.blocks.filter((x) => draftBlockVisible(draft, x) && x.content[key]);
+      const readerJoins = pageBreakJoinOps(draft).flatMap((op) => {
+        const at = op.op === "merge" ? shownBlocks.findIndex((x) => x.id === op.block) : -1;
+        return at < 0 ? [] : [{ kind: "merge" as const, above: draftBlockPlainText(draft, shownBlocks[at]!, key), below: draftBlockPlainText(draft, shownBlocks[at + 1]!, key), confidence: 1 }];
+      });
+      const structure = readerJoins;
       await runFirstDraft({
         draft,
         runtime,
         current: () => draft,
         apply: (step) => {
           const r = applyImportOps(draft, step.ops, step.origin);
-          if (r.ok) draft = r.draft;
+          if (!r.ok) return;
+          draft = r.draft;
         },
         signal: new AbortController().signal,
       });
@@ -85,7 +97,7 @@ it("first draft on the test set", async () => {
       const byText = new Map(got.structure.map((b) => [norm(textOf(b, got)), b]));
       const wanted = expected.structure.filter((b) => textOf(b, expected));
       const wantedTexts = new Set(wanted.map((b) => norm(textOf(b, expected))));
-      const r = { blocks: wanted.length, found: 0, merged: 0, kind: 0, level: 0, speakers: 0, speakerHits: 0, notes: 0, noteHits: 0, noise: 0 };
+      const r = { blocks: wanted.length, found: 0, merged: 0, cut: 0, joins: 0, joinHits: 0, kind: 0, level: 0, speakers: 0, speakerHits: 0, notes: 0, noteHits: 0, noise: 0 };
       const misses: string[] = [];
       for (const block of wanted) {
         const text = textOf(block, expected);
@@ -100,6 +112,9 @@ it("first draft on the test set", async () => {
         if (block.speaker) r.speakers += 1;
         r.notes += exNotes.length;
         if (!match) {
+          // Cut too often: a block found here is one piece of this expected text.
+          const pieces = norm(text).length >= 12 && got.structure.some((b) => { const t = norm(textOf(b, got)); return t.length >= 6 && norm(text).includes(t); });
+          if (pieces) r.cut += 1;
           misses.push(`- missing [${block.kind}${block.speaker ? ` @${block.speaker}` : ""}] ${text.slice(0, 100)}`);
           continue;
         }
@@ -126,6 +141,20 @@ it("first draft on the test set", async () => {
           if (gotNotes.includes(n)) r.noteHits += 1;
           else misses.push(`- inline annotation not marked: “${n}” in ${text.slice(0, 70)}`);
         }
+      }
+      // Cuts and joins, judged at the seam: a cut is wrong when an expected block
+      // runs across it, a join right when one does. Text the prayer does not have (page
+      // numbers, title pages) does not count either way.
+      const expectedTexts = [...wantedTexts];
+      for (const { kind, above, below, confidence } of structure) {
+        const tail = norm(above).slice(-24);
+        const head = norm(below).slice(0, 24);
+        const known = expectedTexts.some((t) => t.includes(tail)) && expectedTexts.some((t) => t.includes(head));
+        const across = expectedTexts.some((t) => t.includes(`${tail} ${head}`));
+        const verdict = !known ? "not in the prayer" : (kind === "merge") === across ? "right" : "wrong";
+        if (known) r.joins += 1;
+        if (verdict === "right") r.joinHits += 1;
+        structureLog.push(`- ${kind} ${verdict} (${confidence}): ${tail} ‖ ${head}`);
       }
       // Noise: blocks left in that the expected prayer does not have, up to
       // the last expected block found (a cut test file covers only the start).
@@ -161,13 +190,13 @@ it("first draft on the test set", async () => {
     }
   });
   const pct = (a: number, b: number) => (b === 0 ? "–" : `${Math.round((a / b) * 100)}%`);
-  const summary = `Total ${total.blocks} blocks · found ${pct(total.found, total.blocks)} (merged ${pct(total.merged, total.found)}) · kind ${pct(total.kind, total.found)} (role ${pct(total.level, total.found)}) · speaker ${pct(total.speakerHits, total.speakers)} · inline annotations ${pct(total.noteHits, total.notes)} · noise ${total.noise} · title ${pct(total.titleHits, total.titles)} · ${(total.ms / 1000).toFixed(0)}s`;
+  const summary = `Total ${total.blocks} blocks · found ${pct(total.found, total.blocks)} (exact ${pct(total.found - total.merged, total.blocks)}, merged ${pct(total.merged, total.found)}, cut too often ${total.cut}) · page-break joins ${total.joinHits}/${total.joins} right · kind ${pct(total.kind, total.found)} (role ${pct(total.level, total.found)}) · speaker ${pct(total.speakerHits, total.speakers)} · inline annotations ${pct(total.noteHits, total.notes)} · noise ${total.noise} · title ${pct(total.titleHits, total.titles)} · ${(total.ms / 1000).toFixed(0)}s`;
   const calibration = [...buckets.entries()]
     .sort((a, b) => a[0] - b[0])
     .map(([k, [ok, n]]) => `| ${(k / 10).toFixed(1)}–${((k + 1) / 10).toFixed(1)} | ${n} | ${pct(ok, n)} |`)
     .join("\n");
   console.log(`\nCalibration (model kind decisions)\n${calibration}`);
-  const report = `# First draft ${stamp()}\n\nSource mode: ${process.env.SOURCE ?? "raw"}\n\n${summary}\n\n## Calibration (model kind decisions)\n\n| confidence | decisions | right |\n|---|---|---|\n${calibration}\n\n| prayer | blocks | found | merged | kind | speaker | inline | noise | title | time |\n|---|---|---|---|---|---|---|---|---|---|\n${rows.join("\n")}\n\n${details.join("\n")}`;
+  const report = `# First draft ${stamp()}\n\nSource mode: ${process.env.SOURCE ?? "raw"}\n\n${summary}\n\n## Joins by the reader\n\n${structureLog.join("\n") || "none"}\n\n## Calibration (model kind decisions)\n\n| confidence | decisions | right |\n|---|---|---|\n${calibration}\n\n| prayer | blocks | found | merged | kind | speaker | inline | noise | title | time |\n|---|---|---|---|---|---|---|---|---|---|\n${rows.join("\n")}\n\n${details.join("\n")}`;
   console.log(`\n${summary}\n${writeReport(`import-${stamp()}.md`, report)}`);
   if (existsSync(join(TESTSET, "reports"))) return;
 });
