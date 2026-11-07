@@ -20,6 +20,7 @@ export type ChatAction =
   | "removeText"
   | "setTitle"
   | "merge"
+  | "split"
   | "undo"
   | "answer";
 
@@ -34,6 +35,7 @@ const ACTIONS: Record<ChatAction, string> = {
   removeText: "delete some words or a printed label (“Leser:”) from paragraphs",
   setTitle: "set the prayer's title (“das oben ist der Titel”, “der Titel ist …”)",
   merge: "join neighbouring paragraphs into one (“5 und 6 gehören zusammen”)",
+  split: "cut a paragraph in two (“teile 5 vor „Herr“”, “die erste Zeile ist eine eigene Überschrift”)",
   undo: "undo the last change",
   answer: "answer a question, explain or translate in the chat, changing nothing",
 };
@@ -52,7 +54,7 @@ const ACTION_EXAMPLES: Array<[string, ChatAction]> = [
 /** Actions that make sense in a view (exclude/include and text only in an import). */
 export function chatActions(view: ChatView): ChatAction[] {
   return view === "import"
-    ? ["setKind", "setSpeaker", "removeSpeaker", "exclude", "include", "editText", "note", "removeText", "setTitle", "merge", "undo", "answer"]
+    ? ["setKind", "setSpeaker", "removeSpeaker", "exclude", "include", "editText", "note", "removeText", "setTitle", "merge", "split", "undo", "answer"]
     : ["setKind", "setSpeaker", "removeSpeaker", "answer"];
 }
 

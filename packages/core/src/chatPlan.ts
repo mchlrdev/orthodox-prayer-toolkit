@@ -50,6 +50,8 @@ export type ChatPlan = {
   quote?: string;
   /** For `editText`: what replaces `quote`. */
   replacement?: string;
+  /** For `split`: the cut comes after `quote` ("teile nach …"), not before it. */
+  splitAfter?: boolean;
   /** For `setTitle`: the title as typed (else the target section's text). */
   title?: string;
   /** The instruction means the previous answer's blocks ("das", "dort", "nein, Leser"). */
@@ -126,11 +128,20 @@ const CANNOT: Array<[RegExp, string]> = [
   [/(pdf|speicher|exportier|save (it|this|as)|export|e-?mail|verschick|senden|send it|drucken|print)/iu,
     "I cannot save, export, print or send. Save to library is the button above the editor; export is in the prayer's menu once it is saved."],
   [/(ton auf|tone to|set the tone|töne als|glas auf)/iu, "I cannot set a tone from the chat; it is a field in Prayer settings after saving."],
-  [/(teil\w* .*\bauf\b|aufteilen|aufspalten|in (einzelne|zwei) (zeilen|abschnitte|teile)|trennen|split|separate (it|them|this|the)|break .* into)/iu,
-    "To split a section, put the cursor where the new one should start and press Enter in the editor. A speaker label at the start of a line (\"Wir: Amen.\") is split off by itself on import."],
   [/(ans ende setzen|hinzufügen|dazuschreiben|ergänz|add (an? )?(amen|line|verse)|insert|einfügen)/iu,
     "I do not add liturgical text. Type it in the editor where it belongs."],
 ];
+
+const SPLIT_WORD = /(\b(teile|teilen|teil (das|den|die|es|ihn|abschnitt))\b|aufteilen|aufspalten|in zwei (abschnitte|teile)|\btrenn\w*|\bsplit|separate (it|them|this|the)|break .* into)/iu;
+/** "… ist eine eigene Überschrift", "a section of its own": a part becomes its own block. */
+const OWN_BLOCK = /(\beigene[rnms]?\s+(überschrift|abschnitt|zeile|block|titel)|\b(own|separate)\s+(heading|section|block|line|title)|\bof its own\b)/iu;
+/** "nicht teilen", "keine eigene Überschrift": no request to cut. */
+const NO_SPLIT = /\b(nicht (auf)?teilen|nicht trennen|don'?t split|do not split|keine eigene\w*)\b/iu;
+/** "in einzelne Zeilen": the lines of a verse, not two blocks. */
+const INTO_LINES = /\bin (einzelne|mehrere) zeilen\b|\binto (single |separate )?lines\b/iu;
+const AFTER_WORD = /(\bnach\b|\bhinter\b|\bafter\b|\bbehind\b)/iu;
+const SPLIT_ELSEWHERE =
+  "To split a section, put the cursor where the new one should start and press Enter in the editor.";
 
 /** What the chat cannot do, as the honest reply; undefined when it can. */
 export function cannotDo(instruction: string): string | undefined {
@@ -324,6 +335,20 @@ export function ruleChatPlan(
   const bareFix = wrong && !fixedTo ? /^,?\s*[„"]?([\p{L}\p{M}'-]+)[“"]?\s*[.!]?\s*$/iu.exec(wrong[2]!)?.[1] : undefined;
   // "the prayer itself should be verses" names a kind, not new wording.
   const kindNamed = shouldBe ? KIND_WORDS.some(([re]) => re.test(shouldBe[2]!)) : false;
+  if (NO_SPLIT.test(outside)) return { action: "answer", cancel: true };
+  if (INTO_LINES.test(outside)) return { action: "answer", cannot: SPLIT_ELSEWHERE };
+  if ((SPLIT_WORD.test(outside) || OWN_BLOCK.test(outside)) && !EXCLUDE_WORD.test(outside) && !removes) {
+    if (!offer("split")) return { action: "answer", cannot: SPLIT_ELSEWHERE };
+    plan.action = "split";
+    if (kind) plan.kind = kind;
+    if (AFTER_WORD.test(outside)) plan.splitAfter = true;
+    // "da klebt noch Wir: Amen am Priester": a printed label names the place, quoted or not.
+    if (!plan.quote) {
+      const label = /\p{L}{1,12}:\s+\p{L}+/u.exec(outside)?.[0];
+      if (label) plan.quote = label;
+    }
+    return plan;
+  }
   if (shouldBe && !wrong && !kindNamed && offer("editText")) {
     plan.action = "editText";
     plan.quote = shouldBe[1]!;
@@ -623,7 +648,7 @@ Actions:
 - removeSpeaker, exclude (not part of the prayer), include (take back in).
 - note: some words inside a section are an instruction ("(dreimal)", "Verneigung"); put those exact words in quote.
 - removeText: delete the quoted words or a printed label from sections.
-- editText: change wording. setTitle: the prayer's title. merge: join neighbouring sections. undo: take back the last change.
+- editText: change wording. setTitle: the prayer's title. merge: join neighbouring sections. split: cut one section in two before the quoted words. undo: take back the last change.
 - answer: a question; nothing changes.
 Leaving out site menus, footers, comments or "the stuff at the end" is exclude.
 Sections: the numbers the instruction is about; if it says "this", "that", "there" or corrects the previous answer, use the sections of the previous answer.
@@ -806,6 +831,65 @@ export function chatImportOps(
         break;
       }
       for (let i = 1; i < sorted.length; i++) ops.push({ op: "merge", block: sorted[0]!.id });
+      break;
+    }
+    case "split": {
+      let next = draft.nextBlock;
+      for (const b of targets) {
+        if (Object.keys(b.content).length > 1) {
+          skip(b.id, "has a second language; split it with Enter in the editor");
+          continue;
+        }
+        const text = plainOf(draft, b, main);
+        const size = text.trimEnd().length;
+        // Where the wanted part starts and ends; only an own block ("eigene Überschrift") has both.
+        let cuts: number[];
+        let own: "whole" | "first" | "cut" = "first";
+        if (plan.quote) {
+          const at = text.toLowerCase().indexOf(plan.quote.toLowerCase());
+          if (at === -1) {
+            skip(b.id, `„${plan.quote}“ is not in this section`);
+            continue;
+          }
+          const end = at + plan.quote.length;
+          if (plan.kind) {
+            cuts = [at, end];
+            own = at > 0 ? "cut" : "first";
+          } else cuts = plan.splitAfter || at === 0 ? [end] : [at];
+        } else {
+          const line = text.indexOf("\n");
+          if (line === -1) {
+            if (plan.kind) own = "whole";
+            else {
+              skip(b.id, "has one line; name the words where it should be cut (“vor „Herr““)");
+              continue;
+            }
+            cuts = [];
+          } else cuts = [line + 1];
+        }
+        cuts = cuts.filter((c) => text.slice(0, c).trim() && text.slice(c, size).trim());
+        if (own !== "whole" && cuts.length === 0 && !plan.kind) {
+          skip(b.id, "cannot be cut there: it needs text on both sides");
+          continue;
+        }
+        // From the end, so the earlier offset stays valid; each cut makes the next new block.
+        let lastNew: string | null = null;
+        for (const at of [...cuts].reverse()) {
+          ops.push({ op: "split", block: b.id, variant: main, at });
+          lastNew = `b${next++}`;
+        }
+        // "Wir: Amen." split off: the label gives the new block its speaker, like on import.
+        const label = !plan.kind && cuts.length === 1 && lastNew ? speakerLabelAt(text.slice(cuts[0]!)) : null;
+        if (label && lastNew) {
+          ops.push({ op: "removeText", block: lastNew, variant: main, start: 0, end: label.end });
+          ops.push({ op: "setSpeaker", block: lastNew, speaker: label.speaker });
+          ops.push(...speakerNameOps(draft, label.speaker, { [main]: label.label }));
+        }
+        if (plan.kind) {
+          const block = own === "cut" && lastNew ? lastNew : b.id;
+          ops.push({ op: "setKind", target: { block }, kind: plan.kind });
+        }
+      }
       break;
     }
     case "setKind": {
@@ -1004,6 +1088,8 @@ export function chatPlanSummary(plan: ChatPlan, sections: readonly number[], spe
       return plan.title ? `Title „${plan.title}“` : `Title from${where.replace(" in ", " ")}`;
     case "merge":
       return `Merge${where.replace(" in ", " ")}`;
+    case "split":
+      return plan.kind ? `${kindDisplayLabel(plan.kind)} of its own${q}${where.replace(" in ", " from ")}` : `Split${where.replace(" in ", " ")}${plan.quote ? ` ${plan.splitAfter ? "after" : "before"}${q}` : ""}`;
     case "undo":
       return "Undo the last change";
     case "editText":

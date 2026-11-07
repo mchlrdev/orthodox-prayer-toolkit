@@ -1,5 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { groupSkips, readerKindOf, ruleChatPlan, ruleTargets, speakerRubricAt, type ChatSection, type ChatTurn } from "../src/index.js";
+import {
+  applyImportOps,
+  chatImportOps,
+  createImportDraft,
+  draftBlockPlainText,
+  groupSkips,
+  readerKindOf,
+  readText,
+  ruleChatPlan,
+  ruleTargets,
+  speakerRubricAt,
+  type ChatSection,
+  type ChatTurn,
+  type ImportDraft,
+} from "../src/index.js";
 
 /** Sentences from the user test (real model runs, Nov 2026): what the rules must settle on their own. */
 const SECTIONS: ChatSection[] = [
@@ -109,5 +123,69 @@ describe("role prompts", () => {
     const role = firstDraftBatches(d).find((b) => b.kind === "role")!;
     expect(role.examples![0]![0]).toContain("глас");
     expect(role.items.find((i) => i.text.startsWith("Христос"))!.text).toBe("Христос воскресе из мертвых.");
+  });
+});
+
+describe("splitting a section from the chat", () => {
+  const start = (text: string) =>
+    createImportDraft({ sources: [readText(text, { id: "s" })], variant: { lang: "de", variant: "standard", title: "T" } });
+  const run = (d: ImportDraft, sentence: string) => {
+    const plan = ruleChatPlan(sentence, "import");
+    const { ops, skipped } = chatImportOps(d, plan, ["b1"]);
+    const r = applyImportOps(d, ops, { by: "model" });
+    if (!r.ok) throw new Error(r.error);
+    return { plan, skipped, blocks: r.draft.blocks.map((b) => [b.kind, draftBlockPlainText(r.draft, b, "v1")]) };
+  };
+
+  it("cuts before the quoted words", () => {
+    const r = run(start("Troparion Dein Märtyrer, o Herr"), "teile das vor „Dein Märtyrer“");
+    expect(r.plan.action).toBe("split");
+    expect(r.blocks.map((b) => b[1])).toEqual(["Troparion", "Dein Märtyrer, o Herr"]);
+  });
+
+  it("cuts after them on request", () => {
+    const r = run(start("Herr, erbarme Dich. Amen."), "split after „erbarme Dich.“");
+    expect(r.blocks.map((b) => b[1])).toEqual(["Herr, erbarme Dich.", "Amen."]);
+  });
+
+  it("takes the first line when no words are named", () => {
+    const r = run(start("Mein Gebet\nHerr, bleibe bei mir"), "teile abschnitt 1 auf");
+    expect(r.blocks.map((b) => b[1])).toEqual(["Mein Gebet", "Herr, bleibe bei mir"]);
+  });
+
+  it("makes a part its own heading", () => {
+    expect(run(start("Mein Gebet\nHerr, bleibe bei mir"), "die erste Zeile ist eine eigene Überschrift").blocks).toEqual([
+      ["heading", "Mein Gebet"],
+      ["verse", "Herr, bleibe bei mir"],
+    ]);
+    expect(run(start("Herr erbarme Dich Psalm 50 Amen"), "„Psalm 50“ ist eine eigene Überschrift").blocks.map((b) => b[0])).toEqual(["verse", "heading", "verse"]);
+  });
+
+  it("gives what a printed label splits off its speaker", () => {
+    const d = start("Friede allen. Wir: Amen.");
+    const plan = ruleChatPlan("da klebt noch Wir: Amen am priester, kannst du das trennen?", "import");
+    const r = applyImportOps(d, chatImportOps(d, plan, ["b1"]).ops, { by: "model" });
+    if (!r.ok) throw new Error(r.error);
+    expect(r.draft.blocks.map((b) => [draftBlockPlainText(r.draft, b, "v1"), b.speaker])).toEqual([
+      ["Friede allen.", undefined],
+      ["Amen.", "people"],
+    ]);
+  });
+
+  it("does not take the lines of a verse for two blocks", () => {
+    expect(ruleChatPlan("teil den vers in einzelne zeilen auf so wie im buch", "import").cannot).toContain("Enter");
+  });
+
+  it("asks where when one line has nowhere to cut", () => {
+    const r = run(start("Herr, erbarme Dich"), "teile das");
+    expect(r.blocks.length).toBe(1);
+    expect(r.skipped[0]!.reason).toContain("one line");
+  });
+
+  it("says how outside an import, and honours a no", () => {
+    expect(ruleChatPlan("teile das", "prayer").cannot).toContain("Enter");
+    expect(ruleChatPlan("lass se getrennt", "import").action).not.toBe("split");
+    expect(ruleChatPlan("das nicht teilen", "import").action).toBe("answer");
+    expect(ruleChatPlan("das ist nicht Teil des Gebets", "import").action).toBe("exclude");
   });
 });
