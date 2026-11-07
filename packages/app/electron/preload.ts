@@ -6,13 +6,15 @@ import type {
 
 import type { DecisionPrompt } from "@orthodox-prayer-toolkit/core";
 import type { ModelStatus } from "./modelStore";
+import type { ModelDeviceInfo } from "./modelDevice";
 import type { OcrLanguageStatus, RecognizedLine } from "./ocrService";
-import type { GenerateRequest, ModelWorkerMessage } from "./modelWorker";
+import type { GenerateRequest, ModelJobMessage } from "./modelWorker";
 
 export type { AppInfo, AppUpdateCheckResult } from "./updateCheck";
 export type { ModelStatus } from "./modelStore";
+export type { ModelDeviceInfo } from "./modelDevice";
 export type { OcrLanguageStatus, RecognizedLine } from "./ocrService";
-export type { GenerateRequest, ModelWorkerMessage } from "./modelWorker";
+export type { GenerateRequest, ModelJobMessage } from "./modelWorker";
 
 export type CreateLibraryOptions = {
   name: string;
@@ -80,12 +82,15 @@ export type PrayerToolkitApi = {
   cancelModelDownload: () => Promise<void>;
   removeModel: () => Promise<void>;
   onModelStatus: (cb: (status: ModelStatus) => void) => () => void;
+  /** Where the Built-in model runs (null: not installed or unknown), and when that changes. */
+  getModelDevice: () => Promise<ModelDeviceInfo | null>;
+  onModelDevice: (cb: (device: ModelDeviceInfo) => void) => () => void;
   /** Decisions on the Built-in model (in its own process); answers arrive per item. */
   startDecision: (job: number, prompt: DecisionPrompt) => Promise<void>;
   /** Free text from the Built-in model; chunks arrive as "text" messages on `onDecision`. */
   startGenerate: (job: number, request: GenerateRequest) => Promise<void>;
   cancelDecision: (job: number) => Promise<void>;
-  onDecision: (cb: (message: ModelWorkerMessage) => void) => () => void;
+  onDecision: (cb: (message: ModelJobMessage) => void) => () => void;
   /** Tesseract language packs for scans: download on demand, kept for offline use. */
   getOcrLanguages: () => Promise<OcrLanguageStatus[]>;
   downloadOcrLanguage: (code: string) => Promise<void>;
@@ -197,11 +202,19 @@ const api: PrayerToolkitApi = {
       ipcRenderer.removeListener("model:status", handler);
     };
   },
+  getModelDevice: () => ipcRenderer.invoke("model:device"),
+  onModelDevice: (cb) => {
+    const handler = (_event: unknown, device: ModelDeviceInfo) => cb(device);
+    ipcRenderer.on("model:device", handler);
+    return () => {
+      ipcRenderer.removeListener("model:device", handler);
+    };
+  },
   startDecision: (job, prompt) => ipcRenderer.invoke("model:decide", job, prompt),
   startGenerate: (job, request) => ipcRenderer.invoke("model:generate", job, request),
   cancelDecision: (job) => ipcRenderer.invoke("model:cancelDecide", job),
   onDecision: (cb) => {
-    const handler = (_event: unknown, message: ModelWorkerMessage) => cb(message);
+    const handler = (_event: unknown, message: ModelJobMessage) => cb(message);
     ipcRenderer.on("model:decision", handler);
     return () => {
       ipcRenderer.removeListener("model:decision", handler);

@@ -1,5 +1,6 @@
 import { decisionItemPrefix, type DecisionPrompt } from "@orthodox-prayer-toolkit/core";
 import type { Llama, LlamaContext, LlamaContextSequence, LlamaModel, Token } from "node-llama-cpp";
+import { usedGpuFromLog, type ModelDevice } from "./modelDevice.ts";
 
 /**
  * Decisions on a GGUF model with node-llama-cpp. The model reads the prompt
@@ -26,6 +27,8 @@ export type Decider = {
     onText: (text: string) => void,
     signal?: AbortSignal,
   ) => Promise<string>;
+  /** Where this model runs. */
+  device: ModelDevice;
   dispose: () => Promise<void>;
 };
 
@@ -34,11 +37,112 @@ function chatPrompt(system: string, user: string): string {
   return `<|im_start|>system\n${system}<|im_end|>\n<|im_start|>user\n${user}<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n`;
 }
 
+type Runtime = { llama: Llama; usedGpus: () => string[]; forgetUsedGpus: () => void };
+let runtime: Promise<Runtime> | null = null;
+
+/**
+ * The process's one runtime; its log tells which GPUs llama.cpp picked (nothing
+ * else reports that). One only: a second instance in a process no longer gets
+ * the log. It holds little memory, the model is what gets disposed.
+ */
+function startLlama(): Promise<Runtime> {
+  runtime ??= (async () => {
+    const { getLlama, LlamaLogLevel } = await import("node-llama-cpp");
+    let used: string[] = [];
+    const llama = await getLlama({
+      logLevel: LlamaLogLevel.info,
+      logger: (level, message) => {
+        const gpu = usedGpuFromLog(message);
+        if (gpu && !used.includes(gpu)) used.push(gpu);
+        if (level === LlamaLogLevel.error || level === LlamaLogLevel.fatal) console.error(message);
+      },
+    });
+    return { llama, usedGpus: () => used, forgetUsedGpus: () => { used = []; } };
+  })();
+  runtime.catch(() => {
+    runtime = null;
+  });
+  return runtime;
+}
+
+const backendOf = (llama: Pick<Llama, "gpu">) => llama.gpu || null;
+
+/**
+ * Open the model where it fits: as many layers on the GPU as leave room for
+ * the context (a small GPU takes only some), else all on the CPU.
+ */
+export async function openModel(
+  llama: Pick<Llama, "gpu" | "loadModel" | "getGpuDeviceNames" | "getVramState">,
+  modelPath: string,
+  contextSize: number,
+  usedGpus: () => string[],
+): Promise<{ model: LlamaModel; context: LlamaContext; device: ModelDevice }> {
+  const listed = await llama.getGpuDeviceNames().catch(() => []);
+  const gpusOr = (used: string[]) => (used.length > 0 ? used : listed);
+
+  const attempt = async (gpuLayers: Parameters<Llama["loadModel"]>[0]["gpuLayers"]) => {
+    const model = await llama.loadModel({ modelPath, gpuLayers });
+    try {
+      return { model, context: await model.createContext({ contextSize }) };
+    } catch (error) {
+      await model.dispose().catch(() => {});
+      throw error;
+    }
+  };
+
+  let gpuError: unknown = null;
+  let tried: string[] = [];
+  if (llama.gpu) {
+    try {
+      const opened = await attempt({ fitContext: { contextSize } });
+      const { gpuLayers } = opened.model;
+      const placement = gpuLayers === 0 ? "cpu" : gpuLayers < opened.model.fileInsights.totalLayers ? "partial" : "gpu";
+      return {
+        ...opened,
+        device: { placement, backend: backendOf(llama), gpus: gpusOr([...usedGpus()]), listed, fallback: gpuLayers === 0, loaded: true },
+      };
+    } catch (error) {
+      // Too little GPU memory, or a driver that refuses.
+      gpuError = error;
+      tried = gpusOr([...usedGpus()]);
+    }
+  }
+  try {
+    const opened = await attempt(0);
+    return {
+      ...opened,
+      device: { placement: "cpu", backend: backendOf(llama), gpus: tried, listed, fallback: gpuError !== null, loaded: true },
+    };
+  } catch (cpuError) {
+    const why = gpuError ?? cpuError;
+    const vram = llama.gpu ? await llama.getVramState().catch(() => null) : null;
+    const free = vram ? `, ${Math.round(vram.free / 2 ** 20)} of ${Math.round(vram.total / 2 ** 20)} MB free` : "";
+    const gpu = tried.length > 0 ? `on ${tried.join(", ")}${free}, and on the CPU` : "on the CPU";
+    throw new Error(`${why instanceof Error ? why.message : String(why)} (${gpu}). Close other apps and try again.`);
+  }
+}
+
+/**
+ * What a load would pick, without loading the weights: reads only the
+ * vocabulary, so llama.cpp names its GPUs. Cannot tell yet whether they have
+ * enough memory.
+ */
+export async function probeDevice(modelPath: string): Promise<ModelDevice> {
+  const { llama, usedGpus, forgetUsedGpus } = await startLlama();
+  const listed = await llama.getGpuDeviceNames().catch(() => []);
+  if (!llama.gpu) return { placement: "cpu", backend: null, gpus: [], listed, fallback: false, loaded: false };
+  forgetUsedGpus();
+  const model = await llama.loadModel({ modelPath, vocabOnly: true });
+  await model.dispose();
+  const used = usedGpus();
+  return { placement: "gpu", backend: backendOf(llama), gpus: used.length > 0 ? used : listed, listed, fallback: false, loaded: false };
+}
+
 export async function createDecider(modelPath: string, contextSize = 8192): Promise<Decider> {
-  const { getLlama, LlamaGrammarEvaluationState } = await import("node-llama-cpp");
-  const llama: Llama = await getLlama();
-  const model: LlamaModel = await llama.loadModel({ modelPath });
-  const context: LlamaContext = await model.createContext({ contextSize });
+  const { LlamaGrammarEvaluationState } = await import("node-llama-cpp");
+  const { llama, usedGpus, forgetUsedGpus } = await startLlama();
+  forgetUsedGpus();
+  const { model, context, device } = await openModel(llama, modelPath, contextSize, usedGpus);
   const sequence: LlamaContextSequence = context.getSequence();
 
   /**
@@ -58,6 +162,7 @@ export async function createDecider(modelPath: string, contextSize = 8192): Prom
   }
 
   return {
+    device,
     async decide(prompt, onItem, signal) {
       const letters = prompt.letters.map((l) => {
         const tokens = model.tokenize(l);
@@ -112,7 +217,6 @@ export async function createDecider(modelPath: string, contextSize = 8192): Prom
     async dispose() {
       await context.dispose();
       await model.dispose();
-      await llama.dispose();
     },
   };
 }

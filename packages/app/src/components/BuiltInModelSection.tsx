@@ -1,11 +1,13 @@
 import { Button, Group, Stack, Text, UnstyledButton } from "@mantine/core";
 import { getToolkitApi } from "../api";
-import { modelStatusLine } from "../builtInModel/modelStatusText";
-import { useBuiltInModel } from "../builtInModel/useBuiltInModel";
+import { modelDeviceLine, modelOtherGpusLine, modelStatusLine } from "../builtInModel/modelStatusText";
+import { useBuiltInModel, useModelDevice } from "../builtInModel/useBuiltInModel";
 
 /** App settings: download, keep and delete the Built-in model. */
 export function BuiltInModelSection({ active }: { active: boolean }) {
   const status = useBuiltInModel(active);
+  const device = useModelDevice(active && status?.state === "installed");
+  const otherGpus = device ? modelOtherGpusLine(device) : null;
   const api = getToolkitApi();
 
   return (
@@ -23,17 +25,31 @@ export function BuiltInModelSection({ active }: { active: boolean }) {
         leave your computer. Import works without the model too.
       </Text>
       {status === null ? null : status.state === "installed" || status.state === "stand-in" ? (
-        <div className="model-installed">
-          <span className="agent-status-dot" aria-hidden="true" />
-          <Text size="xs" className="model-installed-text">
-            {modelStatusLine(status)}
-          </Text>
-          {status.state === "installed" ? (
-            <UnstyledButton className="model-delete" onClick={() => void api.removeModel()}>
-              Delete
-            </UnstyledButton>
+        <Stack gap={4}>
+          <div className="model-installed">
+            <span className="agent-status-dot" aria-hidden="true" />
+            <Text size="xs" className="model-installed-text">
+              {modelStatusLine(status)}
+            </Text>
+            {status.state === "installed" ? (
+              <UnstyledButton className="model-delete" onClick={() => void api.removeModel()}>
+                Delete
+              </UnstyledButton>
+            ) : null}
+          </div>
+          {status.state === "installed" && device ? (
+            <Stack gap={0}>
+              <Text size="xs" c="dimmed">
+                {modelDeviceLine(device)}
+              </Text>
+              {otherGpus ? (
+                <Text size="xs" c="dimmed">
+                  {otherGpus}
+                </Text>
+              ) : null}
+            </Stack>
           ) : null}
-        </div>
+        </Stack>
       ) : (
         <div className="model-card">
           <Group gap={10} wrap="nowrap">

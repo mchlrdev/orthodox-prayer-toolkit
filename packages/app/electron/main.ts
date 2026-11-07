@@ -33,6 +33,8 @@ import type { DecisionPrompt } from "@orthodox-prayer-toolkit/core";
 import { BUILT_IN_MODEL } from "./modelCatalog";
 import { createModelStore, type ModelStore } from "./modelStore";
 import { createModelProcess } from "./modelProcess";
+import { otherGpus, type ModelDevice, type ModelDeviceInfo } from "./modelDevice";
+import { systemGpus } from "./systemGpus";
 import { createOcrService, OcrCancelled } from "./ocrService";
 import { fetchSource } from "../sourceFetch";
 import { nativeEditContextMenu } from "./nativeContextMenu";
@@ -231,7 +233,16 @@ function builtInModel(): ModelStore {
   return modelStore;
 }
 
-const modelProcess = createModelProcess(join(__dirname, "modelWorker.js"));
+const modelDeviceInfo = async (device: ModelDevice): Promise<ModelDeviceInfo> => ({
+  ...device,
+  others: otherGpus(device.gpus, [...device.listed, ...(await systemGpus())]),
+});
+
+const modelProcess = createModelProcess(join(__dirname, "modelWorker.js"), (device) => {
+  void modelDeviceInfo(device).then((info) => {
+    for (const win of BrowserWindow.getAllWindows()) win.webContents.send("model:device", info);
+  });
+});
 
 function sendCommand(command: AppCommand): void {
   const win =
@@ -677,6 +688,11 @@ function registerIpc(): void {
   ipcMain.handle("model:remove", () => {
     modelProcess.stop();
     builtInModel().remove();
+  });
+  ipcMain.handle("model:device", async () => {
+    const files = builtInModel().installedFiles();
+    const device = files ? await modelProcess.device(files[0]!) : null;
+    return device ? modelDeviceInfo(device) : null;
   });
   ipcMain.handle("model:decide", (event, job: unknown, prompt: unknown) => {
     if (typeof job !== "number" || typeof prompt !== "object" || prompt === null) {

@@ -1,5 +1,5 @@
 import type { DecisionBatch, DecisionPrompt } from "@orthodox-prayer-toolkit/core";
-import type { GenerateRequest, ModelWorkerMessage } from "../../electron/preload";
+import type { GenerateRequest, ModelJobMessage } from "../../electron/preload";
 import { getToolkitApi } from "../api";
 
 /** Answers Decisions and writes free text: the Built-in model (desktop) or the stand-in model. */
@@ -19,7 +19,7 @@ let nextJob = 1;
 /** Run one job in the model process and follow its messages until it ends. */
 function job(
   start: (id: number) => Promise<void>,
-  onMessage: (message: ModelWorkerMessage) => void,
+  onMessage: (message: ModelJobMessage) => void,
   signal: AbortSignal,
 ): Promise<string> {
   const api = getToolkitApi();

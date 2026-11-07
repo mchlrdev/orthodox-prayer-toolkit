@@ -181,6 +181,8 @@ export function createBrowserToolkitApi(): PrayerToolkitApi {
     cancelModelDownload: async () => undefined,
     removeModel: async () => undefined,
     onModelStatus: () => () => undefined,
+    getModelDevice: async () => null,
+    onModelDevice: () => () => undefined,
     // Browser dev decides with the stand-in model in the window (standInModel.ts).
     startDecision: async () => {
       throw new Error("The Built-in model needs the desktop app");

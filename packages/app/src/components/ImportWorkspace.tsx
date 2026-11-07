@@ -46,6 +46,8 @@ import {
 } from "../importDraft/sourceView";
 import { variantKey, type ActiveVariant } from "../variant";
 import { languageName, variantName } from "../languageName";
+import { modelDeviceShort } from "../builtInModel/modelStatusText";
+import { useModelDevice } from "../builtInModel/useBuiltInModel";
 import type { FirstDraft } from "../builtInModel/useFirstDraft";
 
 /** Small progress ring for the model's work. */
@@ -162,6 +164,7 @@ export function ImportWorkspace({
   chatHighlight = null,
   onShownVariantChange,
 }: Props) {
+  const modelDevice = useModelDevice(firstDraft.progress !== null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   /** The Variant the preview shows; the others are checked through the dropdown. */
   const [shownKey, setShownKey] = useState(draft.variants[0]!.key);
@@ -718,6 +721,7 @@ export function ImportWorkspace({
                 ? ` · ${firstDraft.progress.done} of ${firstDraft.progress.total}`
                 : " …"}
             </span>
+            {modelDevice ? <span className="import-model-banner-hint">{modelDeviceShort(modelDevice)}</span> : null}
             <button type="button" className="import-model-banner-action" onClick={firstDraft.stop}>
               Stop
             </button>
