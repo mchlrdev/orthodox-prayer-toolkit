@@ -24,6 +24,8 @@ jobs:
           - os: macos-latest
             eb_args: --mac
             artifact: mac
+            # One runner builds both Mac apps: fetch the native packages of both.
+            install_args: --cpu=x64 --cpu=arm64
           - os: windows-latest
             eb_args: --win
             artifact: win
@@ -47,7 +49,7 @@ jobs:
           cache: pnpm
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile ${{ matrix.install_args }}
 
       - name: Build Core + App renderer/main
         shell: bash

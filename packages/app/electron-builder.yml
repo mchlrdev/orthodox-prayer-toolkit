@@ -34,6 +34,7 @@ publish:
   repo: orthodox-prayer-toolkit
   releaseType: release
 
+afterPack: scripts/afterPack.cjs
 afterSign: scripts/afterSign.cjs
 
 mac:
