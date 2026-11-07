@@ -25,23 +25,35 @@ describe("createLibraryWatcher", () => {
     dir = null;
   });
 
-  it("reports external writes and skips the app's own", async () => {
+  async function writeUntilSeen(path: string, name: string, seen: string[][]) {
+    const deadline = Date.now() + 10_000;
+    for (let i = 0; !seen.flat().includes(name); i++) {
+      if (Date.now() > deadline) throw new Error("The watch never reported a write");
+      writeFileSync(path, `${i}\n`);
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }
+
+  it("reports external writes and skips the app's own", { timeout: 25_000 }, async () => {
     dir = mkdtempSync(join(tmpdir(), "opt-watch-"));
     const seen: string[][] = [];
     const watcher = createLibraryWatcher((_root, paths) => seen.push(paths), 50);
     watcher.start(dir);
     try {
+      // A watch goes live some time after start() (FSEvents, later under load)
+      // and misses what came before: write until it reports, then begin.
+      await writeUntilSeen(join(dir, "ready.json"), "ready.json", seen);
+
       watcher.noteWrite(dir, "own.json", "{}\n");
       writeFileSync(join(dir, "own.json"), "{}\n");
       writeFileSync(join(dir, "other.json"), "{}\n");
       writeFileSync(join(dir, "note.txt"), "x");
-      // FSEvents latency varies under load: wait for the external write, then
-      // a little longer so a wrongly reported own write would arrive too.
-      const deadline = Date.now() + 3000;
+      const deadline = Date.now() + 10_000;
       while (!seen.flat().includes("other.json") && Date.now() < deadline) {
         await new Promise((r) => setTimeout(r, 25));
       }
-      await new Promise((r) => setTimeout(r, 150));
+      // A little longer, so a wrongly reported own write would arrive too.
+      await new Promise((r) => setTimeout(r, 200));
     } finally {
       watcher.stop();
     }
